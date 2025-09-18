@@ -1,0 +1,185 @@
+<div class="container">
+  <div>
+    <c-nav variant="underline-border">
+      <c-nav-item>
+        <a [cTabContent]="tabContent1" [tabPaneIdx]="0" cNavLink class="p-4">
+          Project Settings
+        </a>
+      </c-nav-item>
+      <c-nav-item>
+        <a [cTabContent]="tabContent1" [tabPaneIdx]="1" cNavLink class="p-4">
+         Environment settings
+        </a>
+      </c-nav-item>
+      <c-nav-item>
+        <a [cTabContent]="tabContent1" [tabPaneIdx]="2" cNavLink class="p-4">
+          Quota
+        </a>
+      </c-nav-item>
+      <c-nav-item>
+        <a [cTabContent]="tabContent1" [tabPaneIdx]="3" cNavLink class="p-4">
+          Observability
+        </a>
+      </c-nav-item>
+    </c-nav>
+    <c-tab-content #tabContent1="cTabContent" [activeTabPaneIdx]="0" cRounded="bottom">
+      <c-tab-pane class="p-3 preview" role="tabpanel">
+        <ng-container>
+          <c-card-group>
+          <c-card>
+            <c-card-body>
+              <ul class="nav nav-tabs">
+                <li class="nav-item">
+                  <a class="nav-link active" aria-current="page" (click)="activeTab = 'general'" [class.active]="activeTab === 'general'">General</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" (click)="activeTab = 'danger'" [class.active]="activeTab === 'danger'">Danger</a>
+                </li>
+               
+              </ul>
+              <div *ngIf="activeTab === 'general'">
+                <form cForm [formGroup]="generalProjectForm">
+                    <div class="d-flex gap-3 mb-2 mt-4">
+                      <label for="projectName" class="label">Project Name
+                        <span class="cursor" title="{{nameValidation}}"><i class="bi bi-info-circle"></i>
+                        </span>
+                      </label>
+                      <input id="projectName" type="text" for="projectName" formControlName="projectName" class="form-control custom-width">
+                    </div>
+                    <div *ngIf="generalProjectForm.get('projectName')?.hasError('invalidName') && generalProjectForm.get('projectName')?.touched"
+                        class="text-danger center-text">
+                        Project name is invalid
+                    </div>
+                    <div class="d-flex gap-3 mb-4 mt-4">
+                      <label for="description" class="label">Description</label>
+                      <input id="description" type="text" for="description" formControlName="description" class="form-control custom-width">
+                    </div>
+                    <div class="d-flex mt-5 ">
+                      <button type="submit" class="btn btn-primary w-16 left-align" [disabled]="generalProjectForm.invalid" (click)="updateProject()">Update Project</button>
+                    </div>
+                  </form>
+              </div>
+              <div *ngIf="activeTab === 'danger'">
+                <!-- <div class="section-border mt-4 text-danger small-text"><span ><i class="bi bi-exclamation-triangle-fill mx-2"></i></span>Deleting services from a project will permanently delete all data and deployments for that service in all environments.</div> -->
+                <div class="table-container mt-4">
+                  <table border="1">
+                    <thead>
+                        <tr>
+                            <th >Deployments</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr  *ngFor="let deployment of deployments">
+                          <td>{{ deployment.name }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                </div>
+                <div class="section-border mt-4 text-danger small-text"><span ><i class="bi bi-exclamation-triangle-fill mx-2"></i></span>Deleting the project will permanently delete all data stored in the project plugins for all environments. This can't be undone.</div>
+                <div class="mt-4 d-flex justify-content-left">
+                  <button type="submit" class="btn btn-primary mx-2" (click)="deleteProject()">Delete Project</button>
+              </div>
+              </div>          
+            </c-card-body>
+          </c-card>
+          </c-card-group>
+        </ng-container>
+      </c-tab-pane>
+      <c-tab-pane class="p-3 preview" role="tabpanel">
+        <ng-container>
+          <c-card-group>
+          <c-card>
+            <c-card-body>
+              <div class="table-container" *ngIf="hasEnvVar">
+              <table border="1">
+                <thead>
+                  <tr><th>Environment name</th>
+                    <th>Actions</th>
+                  </tr>
+                  
+                </thead>
+                <tr *ngFor="let env of environments">
+                  <td>{{ env.name }}</td>
+                 <td style="width:1px">
+                  <div class="justify-content-center">
+                    <select id="moreOptions" (change)="onOptionSelected($event, env)"> 
+                      <option value="three-dots" style="display: none;" >⋮</option>
+                      <option value="edit">Edit</option>
+                      <option value="delete">Delete</option>
+                    </select>
+                  </div>
+                  </td>
+                </tr>
+              </table>
+            </div>
+            
+            <div class="mt-4 d-flex justify-content-left">
+              <button type="submit" class="btn btn-primary mx-2" [routerLink]="['/environment']">+ New Environment</button>
+            </div>
+            </c-card-body>
+          </c-card>
+          </c-card-group>
+        </ng-container>
+      </c-tab-pane>
+      <c-tab-pane class="p-3 preview" role="tabpanel">
+        <ng-container>
+          <c-card-group>
+          <c-card>
+            <c-card-body>
+              
+                      <div class="card-left">
+                           <app-resource-quota></app-resource-quota>
+                      </div>
+                      
+                      <div class="card-right">
+                        <app-service-quota></app-service-quota>
+                      </div>
+                 
+            </c-card-body>
+          </c-card>
+          </c-card-group>
+        </ng-container>
+      </c-tab-pane>
+      <c-tab-pane class="p-3 preview" role="tabpanel">
+        <ng-container>
+          <c-card-group>
+            <c-card-body>
+              <c-card>
+                  <div >
+                    <app-observability-logging></app-observability-logging>
+                  </div>
+              </c-card>
+            </c-card-body>
+          </c-card-group>
+        </ng-container>
+      </c-tab-pane>
+    </c-tab-content>
+    <app-loader></app-loader>
+  </div>
+</div>
+
+<app-modal #editEnvironmentsModel [modalConfig]="editEnvironmentsModelConfig">
+  
+  <div class="container">
+    <form [formGroup]="environmentForm">
+    <div class="mt-2">
+      <label for="environmentName">Environment Name
+        <span class="cursor"  title="{{nameValidation}}"><i class="bi bi-info-circle"></i>
+        </span>
+      </label>
+    </div>
+    <div class="mt-2">
+      <input class="form-control" type="text" formControlName="envName">
+    </div>
+    <div *ngIf="environmentForm.get('envName')?.hasError('invalidName') && environmentForm.get('envName')?.touched"
+    class="text-danger right-text">
+   Environment name is invalid
+  </div>
+    <div class="mt-4 text-right">
+      <button type="submit" class="btn btn-primary mx-2 px-3 py-1" (click)="updateEnvironment()" [disabled]="environmentForm.invalid" id="updateButton">Update</button>
+      <button class="btn btn-secondary mx-2 px-3 py-1" (click)="closeModal()" aria-label="Cancel">Cancel</button>
+    </div>
+  </form>
+    </div>
+  
+</app-modal>

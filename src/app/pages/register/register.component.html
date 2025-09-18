@@ -1,0 +1,136 @@
+<div class="d-flex  align-items-center vh-100 section">
+  <div class="text-center align-items-center w-100">
+    <div class="my-4">
+      <img src="assets/images/logo-dark.png" class="sidebar-brand-narrow" />
+    </div>
+    <h1>Deploy Smarter. Start Now</h1>
+    <p>Create your account and streamline your application delivery pipeline.</p>
+  </div>
+
+  <div class="d-flex flex-column justify-content-center align-items-center vh-100 bg-white p-3 w-100">
+
+    <ng-container *ngIf="!isRegistrationSuccess; else successContent">
+      <h2 class="my-4"><b>{{ isPasswordReset ? 'Forgot Password' : 'Create an account' }}</b></h2>
+      <div class="d-flex justify-content-center align-items-center">
+        <div class="rounded" style="width: 500px;">
+          <div class="card-body">
+            <form [formGroup]="registrationForm" (ngSubmit)="onSubmit()">
+              <div class="form-group mb-3">
+                <div class="input-group">
+                  <span class="input-group-text">
+                    <i class="bi bi-person"></i>
+                  </span>
+                  <input type="text" class="form-control" placeholder="Username *" formControlName="username" />
+                </div>
+                <div
+                  *ngIf="registrationForm.get('username')?.invalid && (submitted || registrationForm.get('username')?.touched || registrationForm.get('username')?.dirty)"
+                  class="text-danger mt-1">
+                  Username is required.
+                </div>
+              </div>
+              <div class="form-group mb-3">
+                <div class="input-group">
+                  <span class="input-group-text">
+                    <i class="bi bi-envelope"></i>
+                  </span>
+                  <input type="email" class="form-control" placeholder="Email *" formControlName="email" />
+                </div>
+                <div
+                  *ngIf="registrationForm.get('email')?.invalid && (submitted || registrationForm.get('email')?.touched || registrationForm.get('email')?.dirty)"
+                  class="text-danger mt-1">
+                  Email is required.
+                </div>
+              </div>
+              <div class="form-group mb-3">
+                <div class="input-group">
+                  <span class="input-group-text">
+                    <i class="bi bi-lock"></i>
+                  </span>
+                  <input [type]="showPassword ? 'text' : 'password'" class="form-control" placeholder="Password *"
+                    formControlName="password" />
+                  <span class="input-group-text password-toggle" style="cursor:pointer;"
+                    (click)="togglePasswordVisibility()">
+                    <i class="bi" [ngClass]="showPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
+                  </span>
+                </div>
+                <div
+                  *ngIf="registrationForm.get('password')?.hasError('required') && (submitted || registrationForm.get('password')?.touched || registrationForm.get('password')?.dirty)"
+                  class="text-danger mt-1">
+                  Password is required.
+                </div>
+                <div class="text-danger mt-1"
+                  *ngIf="registrationForm.get('password')?.hasError('pattern') && (submitted || registrationForm.get('password')?.touched || registrationForm.get('password')?.dirty)">
+                  Password must be at least 8 characters long and include at least one uppercase letter, one lowercase
+                  letter, one number, and one special character.
+                </div>
+              </div>
+              <div class="form-group mb-3">
+                <div class="input-group">
+                  <span class="input-group-text">
+                    <i class="bi bi-person-badge"></i>
+                  </span>
+                  <select id="type" class="form-select" formControlName="type">
+                    <option value="individual">Individual</option>
+                    <option value="business">Business</option>
+                  </select>
+                </div>
+                <div
+                  *ngIf="registrationForm.get('type')?.invalid && (submitted || registrationForm.get('type')?.touched)"
+                  class="text-danger mt-1">
+                  Please select an account type.
+                </div>
+              </div>
+              <div class="form-group mb-3" *ngIf="registrationForm.get('type')?.value === 'business'">
+                <div class="input-group">
+                  <span class="input-group-text">
+                    <i class="bi bi-building"></i>
+                  </span>
+                  <input type="text" class="form-control" placeholder="Organization Name *" formControlName="orgName" />
+                </div>
+                <div
+                  *ngIf="registrationForm.get('orgName')?.hasError('required') && (submitted || registrationForm.get('orgName')?.touched || registrationForm.get('orgName')?.dirty)"
+                  class="text-danger mt-1">
+                  Organization name is required.
+                </div>
+                <div class="text-danger mt-1"
+                  *ngIf="registrationForm.get('orgName')?.hasError('pattern') && (submitted || registrationForm.get('orgName')?.touched || registrationForm.get('orgName')?.dirty)">
+                  Only lowercase letters, numbers, and hyphens are allowed.
+                </div>
+              </div>
+              <div class="form-group mb-3 form-check" *ngIf="!isPasswordReset">
+                <input type="checkbox" class="form-check-input" id="terms" formControlName="terms" />
+                <label class="form-check-label" for="terms">
+                  I agree to the <a href="#" target="_blank" class="form-check-label">Terms of Use</a>
+                </label>
+                <div
+                  *ngIf="registrationForm.get('terms')?.invalid && (submitted || registrationForm.get('terms')?.touched)"
+                  class="text-danger mt-1">
+                  You must agree to the Terms of Use.
+                </div>
+              </div>
+              <div class="d-grid my-3">
+                <button type="submit" class="btn btn-submit p-2">{{ isPasswordReset ? 'Submit' : 'Register' }}</button>
+              </div>
+              <p class="text-center">
+                Already have an account?
+                <a href="#" class="text-decoration-none text-orange">Sign in</a>
+              </p>
+            </form>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+    <ng-template #successContent>
+      <div class="d-flex justify-content-center align-items-center vh-100">
+        <div class="mx-5 text-center">
+          <h4 class="text-success">Success!</h4>
+          <div *ngFor="let line of successMessage.split('\\n')">
+            <p>{{ line }}</p>
+          </div>
+          <a routerLink="/login" class="btn btn-link mt-3">Back to Login</a>
+        </div>
+      </div>
+    </ng-template>
+  </div>
+
+</div>

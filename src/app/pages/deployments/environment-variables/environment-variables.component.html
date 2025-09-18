@@ -1,0 +1,111 @@
+<c-alert color="warning" *ngIf="deploymentResourceExhausted">
+  <div class="warn-text">
+    <i class="bi bi-exclamation-triangle-fill"></i>
+    Environment variables count has exhausted. Please upgrade to nimbuz business
+  </div>
+</c-alert>
+<form [formGroup]="newVariableForm">
+  <div class="card-child">
+    <fieldset [disabled]="freezeAddNewData" class="mb-2">
+      <div class="d-flex justify-content-end mb-2 gap-3" *ngIf="!showNewVariableForm && !deploymentResourceExhausted">
+        <button class="btn button-format-solid custom-label mt-2" (click)="cancelVariableForm()">
+          <i class="bi bi-plus mx-1"></i> New Variables
+        </button>
+        <button class="btn button-format-solid custom-label mt-2" (click)="openRawEditor()">Raw Editor</button>
+      </div>
+
+      <c-callout color="light" *ngIf="showNewVariableForm">
+        <div formArrayName="rules">
+          <div *ngFor="let rule of rulesFormArray.controls; let i = index; let isLast = last" [formGroupName]="i">
+            <div class="d-flex gap-2 mb-2 align-items-start">
+              <!-- Variable Name -->
+              <div class="flex-fill w-100">
+                <label class="custom-label mb-2">Variable Name</label>
+                <input type="text" formControlName="name" class="form-control custom-values"
+                  placeholder="VARIABLE_NAME">
+                <div class="ps-1  my-1" style="min-height: 1.25rem;">
+                  <small
+                    *ngIf="rule.get('name')?.invalid && rule.get('name')?.dirty && rule.get('name')?.errors?.['pattern']"
+                    class="text-danger">
+                    Only letters (A-Z, a-z, 0-9) and underscores (_) are allowed.
+                  </small>
+                </div>
+              </div>
+
+              <!-- Value -->
+              <div class="flex-fill w-100">
+                <label class="custom-label mb-2">Value</label>
+                <input type="text" formControlName="value" class="form-control custom-values" placeholder="VALUE">
+                <div class="ps-1 my-1" style="min-height: 1.25rem;">
+                  <small *ngIf="rule.errors?.['valueRequired'] && (rule.dirty || rule.touched)" class="text-danger">
+                    Value is required if name is provided.
+                  </small>
+                </div>
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="icon-group d-flex flex-column justify-content-center align-items-center">
+                <button type="button" class="btn" *ngIf="isLast" (click)="addRule()">
+                  <i class="bi bi-plus"></i>
+                </button>
+                <button type="button" class="btn" *ngIf="rulesFormArray.length > 1" (click)="removeRule(i)">
+                  <i class="bi bi-dash"></i>
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-end gap-3 add-variables mt-3">
+          <button type="button" class="btn button-format-solid custom-label" (click)="addVariable()" [disabled]="!newVariableForm.valid">Add Env to
+            List</button>
+          <button type="button" class="btn btn-light btn-sm" (click)="cancelVariableForm()">Cancel</button>
+        </div>
+      </c-callout>
+    </fieldset>
+
+    <!-- Variable Display List -->
+    <div class="mb-3" *ngIf="envList.length > 0">
+      <c-callout color="light" class="d-flex justify-content-center row ">
+        <div *ngFor="let variable of envList; let i = index" class="variable-container row w-100">
+          <div class="col-md-4">
+            <div class="variable-name">{{ variable.EnvVariable }}</div>
+          </div>
+          <div class="col-md-7">
+            <div class="variable-value-wrapper font-sm password-value"><span title="{{ variable.Value }}">{{ variable.Value }}</span></div>
+          </div>
+          <div class="col-md-1">
+            <div class="dropdown-wrapper">
+              <c-dropdown class="action-dropdown">
+                <button class="btn btn-icon" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  <i class="bi bi-three-dots-vertical"></i>
+                </button>
+                <ul cDropdownMenu class="dropdown-menu dropdown-menu-end">
+                  <li>
+                    <a class="dropdown-item" (click)="editDetails(i)">Edit</a>
+                  </li>
+                  <li>
+                    <a class="dropdown-item" (click)="deleteDetails(i)">Delete</a>
+                  </li>
+                </ul>
+              </c-dropdown>
+            </div>
+          </div>
+        </div>
+      </c-callout>
+      <!-- No Data State -->
+
+    </div>
+    <div *ngIf="envList.length === 0" class="text-center">
+      <c-callout color="light" class="d-flex justify-content-center align-items-center" style="height: 100px;">
+        <div class="custom-content">No Environment Variables</div>
+      </c-callout>
+    </div>
+  </div>
+</form>
+
+<app-modal #rawEditorModel [modalConfig]="modalConfig">
+  <app-raw-editor (closeModal)="closeModal($event)" [data]="envList" (variablesUpdated)="onVariablesUpdated($event)">
+  </app-raw-editor>
+</app-modal>

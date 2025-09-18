@@ -1,0 +1,33 @@
+@import "../../../../scss/variables";
+
+.breadcrumb {
+  background: transparent;
+  padding: 8px 0;
+  margin: 10px auto 15px;
+
+  .breadcrumb-item {
+    a {
+      color: #001225;
+      font-family: 'plusFont', sans-serif;
+      font-size: 14px;
+      font-style: normal;
+      font-weight: 400;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    span {
+      color: #8C8C8C;
+      font-family: 'plusFont', sans-serif;
+      font-size: 14px;
+      font-style: normal;
+      font-weight: 400;
+    }
+  }
+
+  .breadcrumb-item+.breadcrumb-item::before {
+    content: ">";
+    color: #8C8C8C;
+    padding: 0 8px;
+  }
+}

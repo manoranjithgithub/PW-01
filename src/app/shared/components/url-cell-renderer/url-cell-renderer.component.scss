@@ -1,0 +1,38 @@
+    .url-wrapper {
+        display: flex;
+        flex-direction: column;
+        max-width: 100%;
+    }
+
+    .url-line {
+        display: flex;
+        align-items: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        // line-height: 1.3;
+    }
+
+    .ellipsis {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: inline-block;
+        max-width: 230px;
+        margin-left: 4px;
+    }
+
+    .url-line+.url-line {
+        line-height: 1.3;
+    }
+
+    a {
+        color: #f60;
+    }
+
+    .disabled-link {
+        pointer-events: none;
+        color: grey;
+        text-decoration: none;
+        cursor: not-allowed;
+    }

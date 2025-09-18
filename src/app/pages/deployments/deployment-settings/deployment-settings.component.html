@@ -1,0 +1,235 @@
+<c-alert color="warning" *ngIf="overprovisioned">
+  <div class="warn-text">
+    <i class="bi bi-exclamation-circle-fill"></i> Deployment is overprovisioned. Please consider scaling down the
+    Instance Type.
+  </div>
+</c-alert>
+<c-alert color="warning" *ngIf="underprovisioned">
+  <div class="warn-text">
+    <i class="bi bi-exclamation-circle-fill"></i> Deployment is underprovisioned. Please consider scaling up the
+    Instance Type.
+  </div>
+</c-alert>
+<fieldset [disabled]="freezeAddNewData" class="card-child">
+  <c-accordion class="accordion-gap">
+    <c-accordion-item #item0="cAccordionItem" [visible]="true">
+      <ng-template cTemplateId="accordionHeaderTemplate">
+        <button (click)="item0.toggleItem()" [collapsed]="!item0.visible" cAccordionButton>
+          <i class="bi bi-gear mx-1"></i> General
+        </button>
+      </ng-template>
+      <ng-template cTemplateId="accordionBodyTemplate">
+        <div class="accordion-body">
+          <div>
+            <div class="sub-header">Source</div>
+            <form cForm [formGroup]="sourceSettingsForm" (ngSubmit)="onSourceSubmit()">
+              <div class="d-flex gap-2">
+                <div class=" mb-3 w-50">
+                  <label for="type" class="custom-label">Type</label>
+                  <select id="type" formControlName="type" class="form-select custom-values py-2">
+                    <option *ngFor="let item of type" [value]="item.name">{{ item.name }}</option>
+                  </select>
+                </div>
+                <ng-container *ngIf="!zipUpload && vcsDeploy">
+                  <div class=" mb-3 w-50 ">
+                    <label for="provider" class="custom-label">Provider</label>
+                    <input id="provider" type="text" formControlName="provider" class="form-control custom-values">
+                  </div>
+                </ng-container>
+                <ng-container *ngIf="zipUpload && !vcsDeploy">
+                  <div class=" mb-3  w-50">
+                    <label for="fileName" class="custom-label">Zip Filename</label>
+                    <input id="fileName" type="text" formControlName="fileName" class="form-control custom-values">
+                  </div>
+                </ng-container>
+              </div>
+              <ng-container *ngIf="!zipUpload && vcsDeploy">
+                <div class="d-flex gap-2">
+                  <div class="flex-fill mb-3">
+                    <label for="branchName" class="custom-label">Branch Name</label>
+                    <input id="branchName" type="text" formControlName="branchName" class="form-control custom-values">
+                  </div>
+
+                  <div class="flex-fill mb-3">
+                    <label for="repoUrl" class="custom-label">Repo URL</label>
+                    <input id="repoUrl" type="text" formControlName="repoUrl" class="form-control custom-values">
+                  </div>
+                </div>
+              </ng-container>
+
+              <div *ngIf="zipUpload && !vcsDeploy" class="d-flex gap-2">
+                <div class="flex-fill mb-3">
+                  <label for="fileInput" class="custom-label">Select a file to upload (.zip or .tar):</label>
+                  <input type="file" id="fileInput" formControlName="fileInput" class="form-control custom-label"
+                    [accept]="'.zip,.tar'" (change)="onFileSelect($event)" />
+                  <div
+                    *ngIf="sourceSettingsForm.get('fileInput')?.hasError('invalidFileType') && sourceSettingsForm.get('fileInput')?.touched"
+                    class="text-danger">
+                    Invalid file type. Only .zip and .tar files are allowed.
+                  </div>
+                </div>
+
+                <div class="flex-fill mt-4">
+                  <button type="button" class="btn btn-primary custom-label" [disabled]="sourceSettingsForm.invalid"
+                    (click)="onZipUpload()">
+                    <i class="bi bi-upload"></i> Upload
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+          <hr>
+          <div>
+            <div class="sub-header">Settings</div>
+            <form cForm [formGroup]="generalSettingsForm" (ngSubmit)="onGeneralSubmit()">
+              <div class="d-flex flex-wrap gap-2">
+                <div class="w-50 mb-3 mt-2">
+                  <label for="name" class="custom-label">Name
+                  </label>
+                  <input id="name" type="text" for="name" formControlName="name" class="form-control custom-values">
+                  <div class="text-danger my-1" *ngIf="isError('name', 'maxlength')">
+                    Maximum 40 characters allowed.
+                  </div>
+                </div>
+                <div class="flex-grow-1 mb-3" style="min-width: 0;">
+                  <label class="form-label w-100">
+                    <div class="d-flex custom-label justify-content-between align-items-center text-nowrap">
+                      <span>
+                        Instance Type <span class="required text-danger">*</span>
+                      </span>
+                      <span class="text-gray ml-auto text-nowrap custom-label">
+                        ( <span class="mx-1"><b>CPU:</b> {{selectedResource?.cpu}}</span>
+                        <span class="mx-1"><b>Memory:</b> {{selectedResource?.memory}}</span>
+                        <span class="mx-1"><b>Price:</b> {{selectedResource?.price}}</span> )
+                      </span>
+                    </div>
+                  </label>
+                  <select formControlName="instanceType" id="resource" class="form-select custom-values"
+                    (change)="onInstanceTypeChange()">
+                    <!-- <option value="">Select a Resource</option> -->
+                    <option *ngFor="let resource of resources" [value]="resource.name">
+                      {{ resource.name }}
+                    </option>
+                  </select>
+                  <div class="text-danger my-1" *ngIf="isError('instanceType', 'required')">
+                    Instance type is required.
+                  </div>
+                  <div class="text-danger my-1" *ngIf="cpuExhausted">
+                    CPU usage exceeded.
+                  </div>
+                  <div class="text-danger my-1" *ngIf="ramExhausted">
+                    RAM usage exceeded.
+                  </div>
+                </div>
+              </div>
+              <div class="d-flex gap-2">
+                <div class="flex-fill mb-3">
+                  <label for="region" class="custom-label">Region
+                  </label>
+                  <input id="region" type="text" for="region" formControlName="region"
+                    class="form-control custom-values">
+                </div>
+                <div class="flex-fill mb-3">
+                  <label for="replicas" class="custom-label">Replicas
+                  </label>
+                  <input id="replicas" type="text" for="replicas" formControlName="replicas"
+                    class="form-control custom-values">
+                  <div
+                    *ngIf="generalSettingsForm.get('replicas')?.invalid && generalSettingsForm.get('replicas')?.touched"
+                    class="text-danger text-format">
+                    <small>Replicas is required</small>
+                  </div>
+                </div>
+              </div>
+
+              <div class="d-flex flex-wrap gap-2">
+                <!-- Port -->
+                <div class="w-50 mb-3">
+                  <label for="port" class="custom-label">Port</label>
+                  <input id="port" type="text" formControlName="port" class="form-control custom-values"
+                    (blur)="Port()">
+                </div>
+
+                <div class="flex-grow-1 mb-3" style="min-width: 0;">
+                  <label class="custom-label d-flex justify-content-between align-items-center text-nowrap">
+                    <span>
+                      Ephemeral Storage
+                      <span [cTooltip]="storageValidation" cTooltipPlacement="top" class="text-warning cursor mx-1">
+                        <i class="bi bi-exclamation-circle"></i>
+                      </span>
+                    </span>
+                    <!-- <span class="text-gray ml-auto text-nowrap custom-label">
+                      ( <span class="mx-1"> <b>Current:</b> {{ ephemeralQuota?.current_usage }}Gi </span>
+                      <span class="mx-1"><b>Max:</b> {{ ephemeralQuota?.max_limit }}Gi</span>
+                      <span class="mx-1"><b>Unused:</b> {{ ephemeralQuota?.remaining }}Gi</span> )
+                    </span> -->
+                  </label>
+                  <input type="text" class="form-control custom-values" formControlName="ephemeralStorage"
+                    (blur)="onEphemeralMouseOut()">
+                  <div class="text-danger my-1" *ngIf="ephemeralExhausted">
+                    Ephemeral storage usage exceeded.
+                  </div>
+                  <div class="text-danger my-1" *ngIf="isError('ephemeralStorage', 'pattern')">
+                    Only numbers are allowed.The value will be considered in 'Gi'.
+                  </div>
+                </div>
+              </div>
+
+              <div class="d-flex gap-2">
+                <div class="flex-fill mb-3">
+                  <label for="buildCommand" class="custom-label">Build command</label>
+                  <input type="text" placeholder="npm run build" class="form-control custom-values"
+                    formControlName="buildCommand">
+                  <div class="text-danger my-1" *ngIf="isError('buildCommand', 'maxlength')">
+                    Maximum 250 characters allowed.
+                  </div>
+                </div>
+                <div class="flex-fill mb-3">
+                  <label for="startCommand" class="custom-label">Start command</label>
+                  <input type="text" placeholder="npm run start" class="form-control custom-values"
+                    formControlName="startCommand">
+                  <div class="text-danger my-1" *ngIf="isError('startCommand', 'maxlength')">
+                    Maximum 250 characters allowed.
+                  </div>
+                </div>
+              </div>
+              <div class="d-flex gap-2">
+                <div class="flex-fill mb-3">
+                  <label for="installCommand" class="custom-label">Install command</label>
+                  <input type="text" placeholder="npm install" class="form-control custom-values"
+                    formControlName="installCommand">
+                  <div class="text-danger my-1" *ngIf="isError('installCommand', 'maxlength')">
+                    Maximum 250 characters allowed.
+                  </div>
+                </div>
+                <div class="flex-fill mb-3">
+                  <label for="healthEndpoint" class="custom-label">Health Endpoint
+                  </label>
+                  <input id="healthEndpoint" type="text" for="healthEndpoint" formControlName="healthEndpoint"
+                    placeholder="/health" class="form-control custom-values custom-txt-width">
+                </div>
+              </div>
+
+              <div class="d-flex justify-content-end">
+                <button type="submit" class="btn btn-primary custom-label mt-2"
+                  [disabled]="!(isGeneralSettingsChanged || isSourceSettingsChanged) || generalSettingsForm.invalid"><i
+                    class="bi bi-save"></i> Save changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </ng-template>
+    </c-accordion-item>
+  </c-accordion>
+  <div class="card">
+    <div class="custom-heading">Delete Application</div>
+    <div class="custom-content">Deleting this application will permanently delete all its deployments and remove it from
+      this environment. This cannot be undone.</div>
+    <div class="mt-2">
+      <button class="btn button-format-solid custom-label" (click)="deleteDeployment()">
+        <i class="bi bi-trash"></i> Delete Application
+      </button>
+    </div>
+  </div>
+</fieldset>

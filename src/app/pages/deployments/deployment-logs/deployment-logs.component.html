@@ -1,0 +1,25 @@
+<div class="container">
+    <div class="d-flex justify-content-space-between">
+        <span class="cursor arrow-alignment my-2" (click)="goToDeployments()"><i class="bi bi-arrow-left"></i> Back</span>
+
+        <div class="d-flex my-2 right-control justify-content-end">
+            <div class="my-2 mx-2">
+                <label for="checkbox">Previous Logs</label>
+                <input class="custom-checkbox" type="checkbox" (change)="onPreviousLogsChange($event)" />
+            </div>
+            <div class="my-2 mx-2">
+                <label for="toggle"> Auto Refresh</label>
+            </div>
+            <div class="toggle-bar">
+                <div class="form-check form-switch">
+                    <input id="toggle" type="checkbox" [checked]="isAutoRefresh" class="form-check-input"
+                        (change)="toggleAutoRefresh()" />
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card p-2" [ngClass]="tableTheme === 'dark' ? 'background-grey' : 'background-lightgrey'">
+      <pre id="logContainer">{{deploymentLogs}}</pre>
+    </div>
+    <app-loader></app-loader>
+</div>

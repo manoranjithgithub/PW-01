@@ -1,0 +1,176 @@
+::ng-deep .accordion-button:not(.collapsed) {
+  background-color: rgba(233, 131, 29, 0.1);
+  color: #ea7131;
+}
+
+::ng-deep .accordion-button {
+  box-shadow: none !important;
+}
+
+.accordion-body {
+  overflow: visible !important;
+}
+
+bi-three-dots-vertical {
+  box-shadow: none !important;
+}
+
+.custom-email-input {
+  border: 1.5px solid #7a7878;
+  border-radius: 0.75rem;
+  width: 400px;
+}
+
+.text-secondary {
+  color: #7a7878 !important;
+}
+
+
+
+.custom-dropdown-menu {
+  // right: 50px;
+  // top: 51%;
+  top: 20px;
+}
+
+.accordion-header {
+  font-family: 'plusFont', sans-serif;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: normal;
+}
+
+.field-label {
+  color: #99A0AE;
+  font-family: 'plusFont', sans-serif;
+  font-size: 16px;
+  margin: 0;
+}
+
+.field-value {
+  color: #232323;
+  font-family: 'plusFont', sans-serif;
+  font-size: 16px;
+
+}
+
+.accordion-sub-title {
+  color: #001225;
+  font-family: 'plusFont', sans-serif;
+  font-size: 18px !important;
+  font-weight: 500 !important;
+  ;
+}
+
+.resource-table {
+  thead th {
+    color: #9A9A9A;
+    font-family: 'plusFont', sans-serif;
+    font-size: 16px;
+    border-bottom: 1px solid #F60;
+    font-weight: 400;
+    width: 400px;
+  }
+
+  tbody tr {
+    td {
+      color: #001225;
+      font-family: 'plusFont', sans-serif;
+      font-size: 16px;
+      font-weight: 500;
+      border: 0;
+    }
+  }
+
+  tfoot td {
+    border-top: 1px solid #F60;
+    border-bottom: 1px solid #F60;
+    font-weight: 600;
+  }
+
+  tfoot td:first-child {
+    color: #9A9A9A;
+    font-family: 'plusFont', sans-serif;
+    font-size: 16px;
+  }
+}
+
+.environment-list {
+
+  // border-bottom: 1px solid #F60;
+  thead {
+
+
+    th {
+      color: #99A0AE;
+      font-family: 'plusFont', sans-serif;
+      font-size: 14px;
+      border-bottom: 1px solid #F60;
+      
+    }
+  }
+
+  td {
+    color: #232323;
+    font-family: 'plusFont', sans-serif;
+    font-size: 14px;
+  }
+
+  td:first-child {
+    font-size: 16px !important;
+    font-style: normal;
+    font-weight: 500;
+  }
+
+  .items,
+  .border-top {
+    border-bottom: 1px solid #F60;
+  }
+
+  .env-resource {
+    .title {
+      color: #99A0AE;
+      font-family: 'plusFont', sans-serif;
+      font-size: 14px;
+      border-bottom: 1px solid #F60;
+    }
+
+    .value {
+      color: #232323;
+      font-family: 'plusFont', sans-serif;
+      font-size: 14px;
+    }
+  }
+
+  .env-name {
+    color: #001225;
+    font-family: 'plusFont', sans-serif;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 500;
+  }
+}
+::ng-deep .limits{
+  font-weight: 600;
+  padding-left: 10px;
+}
+::ng-deep .limits:first-child{
+  padding: 0;
+}
+
+@media (max-width: 550px) {
+.custom-email-input {
+  width: 100%;
+  max-width: 400px;
+
+  min-width: 0;
+  flex: 1 1 auto;
+}
+}
+
+.accordion-button:not(.collapsed) {
+    color: #ea7131;
+    background-color:rgba(233, 131, 29, 0.1);
+    box-shadow: inset 0 calc(-1 * var(--cui-accordion-border-width)) 0 var(--cui-accordion-border-color);
+}

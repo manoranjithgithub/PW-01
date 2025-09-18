@@ -1,0 +1,245 @@
+<div class="container">
+     <c-card-group>
+        <c-card>
+                <mat-vertical-stepper [linear]="true" #stepper="matVerticalStepper"  [ngClass]="tableTheme === 'dark' ? 'dark-theme' : 'light-theme'">
+                    <mat-step [stepControl]="firstFormGroup">
+                        <form class="container section-border mt-2" [formGroup]="firstFormGroup">
+                            <ng-template matStepLabel>Deployment Configuration</ng-template>
+                            <div class="d-flex gap-3">
+                                <div class="flex-fill">
+                                    <mat-label for="name">Name*</mat-label>
+                                    <input matInput id="name" formControlName="name" class="form-control" />
+                                    <div *ngIf="firstFormGroup.get('name')?.invalid && firstFormGroup.get('name')?.touched"
+                                        class="text-danger">
+                                        This field is required.
+                                    </div>
+                                </div>
+
+                                <div class="flex-fill">
+                                    <mat-label for="name">Replica count*</mat-label>
+                                    <input matInput id="replicaCount" formControlName="replicaCount"
+                                        class="form-control" />
+                                    <div *ngIf="firstFormGroup.get('replicaCount')?.invalid && firstFormGroup.get('replicaCount')?.touched && 
+                                    !firstFormGroup.get('replicaCount')?.hasError('notZero')" class="text-danger">
+                                        This field is required.
+                                    </div>
+                                    <div *ngIf="firstFormGroup.get('replicaCount')?.hasError('notZero') && firstFormGroup.get('replicaCount')?.touched"
+                                    class="text-danger">
+                                        Value cannot be zero.
+                                      </div>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-3 mt-4">
+                                <div class="flex-fill">
+                                    <mat-label for="resourceType">Resource Type*</mat-label>
+                                    <select class="form-control" formControlName="resourceType"
+                                        (change)="onDropdownChange()">
+                                        <option *ngFor="let resourceType of resourceTypes" [value]="resourceType">
+                                            {{ resourceType }}
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="flex-fill">
+                                    <mat-label for="resourceClass">Resource Class*</mat-label>
+                                    <select class="form-control" formControlName="resourceClass"
+                                        (change)="onDropdownChange()">
+                                        <option *ngFor="let resourceClass of resourceClasses" [value]="resourceClass">
+                                            {{ resourceClass }}
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="mt-4">
+                                    <p><b>{{costComputation}}</b></p>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-1 mt-4">
+                                <div class="flex-fill">
+                                    <mat-label for="ephemeralStorage">Ephemeral Storage*</mat-label>
+                                    <input matInput id="ephemeralStorage" formControlName="ephemeralStorage"
+                                        class="form-control" />
+                                    <div *ngIf="firstFormGroup.get('ephemeralStorage')?.invalid && firstFormGroup.get('ephemeralStorage')?.touched"
+                                        class="text-danger">
+                                        This field is required.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-3 mt-4">
+                                <div class="flex-fill">
+                                    <mat-label for="repoName">Repo name</mat-label>
+                                    <input matInput id="repoName" formControlName="repoName" class="form-control" />
+                                </div>
+                                <div class="flex-fill">
+                                    <mat-label for="cloneUrl">Clone URL</mat-label>
+                                    <input matInput id="cloneURL" formControlName="cloneUrl" class="form-control" />
+                                </div>
+                            </div>
+                        </form>
+                        <div class="mt-4 d-flex  justify-content-end">
+                            <button mat-button matStepperNext class="btn btn-primary"
+                                [disabled]="firstFormGroup.invalid">Next</button>
+                        </div>
+                    </mat-step>
+                    <mat-step [stepControl]="secondFormGroup">
+                        <form class="container section-border mt-2" [formGroup]="secondFormGroup">
+                            <ng-template matStepLabel>Environment Variables (Optional)</ng-template>
+                            <div formArrayName="data" *ngIf="hasEnvVar">
+                                <div *ngFor="let item of data.controls; let i = index" [formGroupName]="i" class="mb-2">
+                                    <div class="d-flex gap-3">
+                                        <div class="flex-fill mb-3">
+                                            <mat-label>Key:</mat-label>
+                                            <input formControlName="key" class="form-control" autocomplete="off" />
+                                        </div>
+                                        <div class="flex-fill">
+                                            <mat-label>Value:</mat-label>
+                                            <input formControlName="value" class="form-control"
+                                                autocomplete="new-password" />
+                                        </div>
+                                        <button type="button" class="btn text-danger" (click)="removeData(i)"> <span
+                                                class="material-icons">remove_circle</span></button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div *ngIf="!hasEnvVar">
+                                <p style="text-align: center;">{{hasNoEnvVarString}}</p>
+                            </div>
+                            <div class=" d-flex  justify-content-center">
+                                <button type="button" class="btn btn-primary" (click)="addData()">Add new
+                                    key</button>
+                            </div>
+                        </form>
+                        <div class="mt-4 d-flex  justify-content-end">
+                            <button mat-button matStepperPrevious class="btn btn-primary mx-2">Back</button>
+                            <button mat-button matStepperNext class="btn btn-primary">Next</button>
+                        </div>
+                    </mat-step>
+                    <mat-step [stepControl]="thirdFormGroup">
+                        <form class="container section-border mt-2" [formGroup]="thirdFormGroup">
+                            <ng-template matStepLabel>Volume Management (Optional)</ng-template>
+                            <div formArrayName="volumeData" *ngIf="hasVolume">
+                                <div *ngFor="let item of volumeData.controls; let i = index" [formGroupName]="i"
+                                    class="mb-2">
+                                    <div class="d-flex gap-5">
+                                        <div class="flex-fill mb-3">
+                                            <mat-label>Name:</mat-label>
+                                            <input formControlName="name" class="form-control" autocomplete="off" />
+                                        </div>
+                                        <div class="flex-fill">
+                                            <mat-label>Storage:</mat-label>
+                                            <input formControlName="storage" class="form-control" autocomplete="off" />
+                                        </div>
+                                        <div class="flex-fill">
+                                            <mat-label>Folder path:</mat-label>
+                                            <input formControlName="folderPath" class="form-control"
+                                                autocomplete="off" />
+                                        </div>
+                                        <button type="button" class="btn text-danger" (click)="removeVolume(i)"> <span
+                                                class="material-icons">remove_circle</span></button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div *ngIf="!hasVolume">
+                                <p style="text-align: center;">{{hasNoVolumeString}}</p>
+                            </div>
+                            <div class="  d-flex justify-content-center">
+                                <button type="button" class="btn btn-primary" (click)="addVolumeData()">Add new
+                                    volume</button>
+                            </div>
+                        </form>
+                        <div class="mt-4 d-flex  justify-content-end">
+                            <button mat-button matStepperPrevious class="btn btn-primary mx-2">Back</button>
+                            <button mat-button matStepperNext class="btn btn-primary">Next</button>
+                        </div>
+                    </mat-step>
+                    <mat-step [stepControl]="fourthFormGroup">
+                        <form [formGroup]="fourthFormGroup">
+                        <ng-template matStepLabel>Endpoint Configuration (Optional)</ng-template>
+                        <app-create-endpoints [showButton]="showButtonInChild"></app-create-endpoints>
+                        <div class="mt-4 d-flex  justify-content-end">
+                            <button mat-button matStepperPrevious class="btn btn-primary mx-2">Back</button>
+                            <button mat-button matStepperNext class="btn btn-primary" (click)="onSubmit()">Next</button>
+                        </div>
+                    </form>
+                    </mat-step>
+                    <mat-step [stepControl]="fifthFormGroup">
+                        <form class="container mt-2" [formGroup]="fifthFormGroup">
+                            <ng-template matStepLabel>Review & Summary</ng-template>
+
+                            <section class="section-border">
+                                <h2 class="summary-title">Deployment Configuration for <b>{{
+                                        firstFormGroup.get('name')?.value }}</b></h2>
+                                <div class="summary-content">
+                                    <p> Replica Count : {{ firstFormGroup.get('replicaCount')?.value }} </p>
+                                    <p> Resource Type : {{ firstFormGroup.get('resourceType')?.value }} </p>
+                                    <p> Resource Class : {{ firstFormGroup.get('resourceClass')?.value }} </p>
+                                    <p> Ephemeral Storage : {{ firstFormGroup.get('ephemeralStorage')?.value }} </p>
+                                    <p> Configuration opted: {{ this.costComputation }} </p>
+                                </div>
+                            </section>
+                            <section class="section-border">
+                                <h2 class="summary-title">Environment Variables</h2>
+                                <div class="summary-content" *ngIf="!hasEnvVar">
+                                    <p> No details to show </p>
+                                </div>
+                                <div *ngIf="hasEnvVar">
+                                    <table border="1">
+                                        <thead>
+                                            <tr>
+                                                <th class="summary-content" >Key</th>
+                                                <th class="summary-content" >Value</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody formArrayName="data">
+                                            <tr *ngFor="let envVar of data.controls; let i = index" [formGroupName]="i">
+                                                <td><label class="summary-content" >{{ envVar.get('key')?.value }}</label></td>
+                                                <td> <label class="summary-content" >{{ envVar.get('value')?.value }}</label></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </section>
+                            <section class="section-border">
+                                <h2 class="summary-title">Volume Management</h2>
+                                <div class="summary-content" *ngIf="!hasVolume">
+                                    <p> No details to show </p>
+                                </div>
+                                <div class="summary-content" *ngIf="hasVolume">
+                                    <table border="1">
+                                        <thead>
+                                            <tr>
+                                                <th class="summary-content" >Name</th>
+                                                <th class="summary-content" >Storage</th>
+                                                <th class="summary-content" >Folder Path</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody formArrayName="volumeData">
+                                            <tr *ngFor="let volume of volumeData.controls; let i = index"
+                                                [formGroupName]="i">
+                                                <td><label class="summary-content" >{{ volume.get('name')?.value }}</label></td>
+                                                <td> <label class="summary-content" >{{ volume.get('storage')?.value }}</label></td>
+                                                <td> <label class="summary-content" >{{ volume.get('folderPath')?.value }}</label></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </section>
+                            <section class="section-border">
+                                <h2 class="summary-title">Endpoint Configuration</h2>
+                                <div class="summary-content" *ngIf="endpointName === ''">
+                                    <p> No details to show </p>
+                                </div>
+                                <div class="summary-content" *ngIf="endpointName !== ''">
+                                    <p> Endpoint Name : {{ endpointName }} </p>
+                                    <p> Host Name : {{hostName}}  </p>
+                                    <p> Enable Authentication : {{ showAuthentication }} </p>
+                                </div>
+                            </section>
+                            <div class="mt-4 d-flex justify-content-end">
+                                <button mat-button matStepperPrevious class="btn btn-primary mx-2">Back</button>
+                                <button mat-button class="btn btn-primary mx-2" [disabled]="firstFormGroup.invalid">Submit</button>
+                            </div>
+                        </form>
+                    </mat-step>
+                </mat-vertical-stepper>
+        </c-card> 
+    </c-card-group>
+</div>

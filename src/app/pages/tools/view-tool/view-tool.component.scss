@@ -1,0 +1,41 @@
+.container {
+  padding: 0;
+}
+.custom-tool-btn {
+  display: inline-flex;
+  height: 50px;
+  padding: 11px 25px;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  border: 2px solid #000;
+  background: #fff;
+  color: #000;
+  font-weight: 500;
+  i {
+    margin-right: 8px;
+  }
+  &:hover {
+    background: #f2f2f2;
+  }
+}
+.tool-text {
+  font-family: 'plusFont', sans-serif;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 150%;
+  text-transform: capitalize;
+  margin-right: 12px;
+}
+
+.input-style {
+  border-radius: 10px;
+}
+
+.input-group-addon {
+  padding: 10px;
+  border: 1px solid #ccc;
+}

@@ -1,0 +1,130 @@
+.stepper {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 1rem;
+  padding: 1rem 0;
+  // border-bottom: 1px solid #e0e0e0;
+  max-width: 680px;
+  margin: auto auto 20px;
+
+  .step {
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    color: #999;
+    font-size: 14px;
+    transition: color 0.3s ease;
+
+    &.active {
+      .circle {
+        border: 2px solid #FF6600;
+      }
+
+      .label {
+        color: #FF6600;
+      }
+    }
+
+    .circle {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 2px solid #999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 4px;
+    }
+
+    .label {
+      text-align: center;
+      padding: 0;
+      width: auto;
+    }
+
+
+  }
+
+  .step.completed {
+    .circle {
+      background-color: #00BB00;
+      color: white;
+      border: none;
+    }
+
+    .label {
+      color: #00BB00;
+    }
+  }
+
+}
+
+.step.completed.incomplete {
+  .circle {
+    background-color: #999;
+    color: white;
+    border: none;
+  }
+
+  .label {
+    color: #999;
+  }
+}
+
+.step-content {
+  // text-align: center;
+
+  .stepper-footer {
+    text-align: right;
+  }
+}
+
+
+
+.btn:disabled,
+.btn.disabled,
+fieldset:disabled .btn {
+  background: transparent !important;
+  cursor: not-allowed !important;
+}
+
+.form-label {
+  font-weight: bold;
+  font-size: 13px;
+}
+
+.form-control,
+.form-select {
+  font-size: 14px;
+}
+
+.step-content-section {
+  // min-height: 250px;
+  overflow-y: auto;
+}
+
+.btn-visible-disabled:disabled {
+  background-color: black !important;
+  color: white;
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.custom-select-label {
+  font-size: 13px;
+  font-family: "plusFont", sans-serif !important;
+  color: #333;
+  font-weight: bold;
+}
+
+#deployOptions {
+  // height: 35px;
+  padding: 7px 10px;
+}
+
+
+.mat-mdc-select-min-line{
+  font-weight: 500;
+}
