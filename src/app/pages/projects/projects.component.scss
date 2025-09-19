@@ -1,0 +1,136 @@
+.dotted-outline {
+  border: 1px dashed #F60;
+  border-radius: 10px;
+}
+.scrollable-row-wrapper {
+  max-height: 300px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 8px;
+}
+.header-format {
+  color: #232323;
+  font-weight: 600;
+  font-size: 18px;
+  font-family: 'plusFont', sans-serif;
+}
+.custom-card-height {
+  height: 100px;
+}
+.solid-outline {
+  border: 1px solid #CCCCCC;
+  border-radius: 8px;
+}
+.custom-radio {
+  position: relative;
+  padding-left: 24px; 
+  cursor: pointer;
+  display: flex;
+  align-items: center; 
+  justify-content: center;
+  height: 100%;
+  margin-bottom: 0; 
+}
+.custom-radio input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+}
+.checkmark {
+  position: absolute;
+  top: 50%;               
+  left: 0;
+  transform: translateY(-50%); 
+  height: 17px;
+  width: 17px;
+  border: 2px solid #001225;
+  border-radius: 50%;
+  background-color: #fff;
+}
+.custom-radio input:checked~.checkmark::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 10px;
+  height: 10px;
+  background-color: #FF6600;
+  border-radius: 50%;
+}
+.radio-label {
+  font-size: 14px !important;
+  font-style: normal;
+  font-weight: bold;
+  line-height: 13px;
+  margin-left: 5px;
+}
+.project-list, .environments-list {
+  .card-title{
+    font-size: 14px !important;
+    font-weight: bold;
+    word-break: break-word;
+    white-space: normal;
+  }
+}
+.selected-card {
+  border: 2px solid rgba(0, 18, 37, 0.4);
+  background-color: #F8F8F8; 
+}
+.project-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(4, 1fr); 
+}
+.env-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(4, 1fr); 
+}
+.env-btn{
+  background: transparent;
+  border:0;
+}
+@media (max-width: 1300px) {
+  .project-grid {
+    grid-template-columns: repeat(3, 1fr); 
+  }
+}
+@media (max-width: 1100px) {
+  .project-grid {
+    grid-template-columns: repeat(2, 1fr); 
+  }
+}
+@media (max-width: 600px) {
+  .project-grid {
+    grid-template-columns: repeat(1, 1fr); 
+  }
+}
+@media (max-width: 1300px) {
+  .env-grid {
+    grid-template-columns: repeat(3, 1fr); 
+  }
+}
+@media (max-width: 1100px) {
+  .env-grid {
+    grid-template-columns: repeat(2, 1fr); 
+  }
+}
+@media (max-width: 600px) {
+  .env-grid {
+    grid-template-columns: repeat(1, 1fr); 
+  }
+}
+.env-btn{
+  background: transparent;
+  border:0;
+}
+.text-break{
+  margin-bottom: 4px;
+}
+.pull-right {
+  float: right;
+} 
+
+.pointer-events-none {
+  pointer-events: none;
+}

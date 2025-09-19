@@ -1,0 +1,68 @@
+<nav class="project-switch-nav">
+  <ul class="list-unstyled d-flex m-0 align-items-center gap-2">
+    <li *ngFor="let item of [selectedProject, selectedRegion, selectedEnvironment]; let last = last">
+      <a class="text-decoration-none project-env">{{ item }}</a>
+      <span *ngIf="!last" class="text-theme mx-1"> > </span>
+    </li>
+
+    <li>
+      <div class="vr h-100 mx-2 text-body text-opacity-75"></div>
+    </li>
+
+    <li class="change-env">
+      <a class="text-decoration-none text-theme fw-medium d-flex align-items-center gap-1" (click)="showEnvironment()">
+        <img src="assets/images/swap-arrow.svg" /> <span class="px-2">Switch</span>
+      </a>
+    </li>
+  </ul>
+</nav>
+
+<app-modal #showEnvironmentModel [modalConfig]="showEnvironmentConfig">
+  <div class="container">
+    <!-- <h6 class="section-info text-secondary mb-3 fw-medium">Please choose you projecct and environment based on your
+      preference</h6> -->
+    <form class="border-bottom py-4 my-4" [formGroup]="form">
+      <div class="d-flex justify-content-between gap-3">
+        <div class=" w-100">
+          <label class="form-label">Projects</label>
+          <select class="form-select" formControlName="project">
+            <option *ngFor="let list of listOfProjects" [ngValue]="list">
+              {{ list.name }}
+            </option>
+          </select>
+        </div>
+
+        <div class=" w-100">
+          <label class="form-label">Region</label>
+          <select class="form-select" formControlName="region">
+            <option *ngFor="let region of listOfRegions" [ngValue]="region">
+              {{ region.name }}
+            </option>
+          </select>
+        </div>
+      </div>
+    </form>
+    <div class="env-section ">
+      <label class="form-label">Environments</label>
+      <div class="d-flex gap-3 flex-wrap">
+        <div *ngFor="let environment of listOfenvironments" (click)="getSelectedEnv(environment)"
+          [class.active]="isSelectedEnv(environment)" class="environment-card rounded-4 p-2">
+          <div class="env-icon">
+            <img [src]="isSelectedEnv(environment)
+                  ? 'assets/images/icons/env-logo-active.png'
+                  : 'assets/images/icons/env-logo.png'" alt="env-icon" />
+          </div>
+          <div class="env-content">
+            <div class="env-name">{{ environment.name }}</div>
+            <div class="env-date text-muted">{{ environment.created_at | date: 'dd MMM yyyy' }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="d-flex justify-content-end gap-2 m-4">
+      <button class="btn button-format-outline mx-2" (click)="closeModal()">Cancel</button>
+      <button class="btn button-format-solid" (click)="updateEnvSelection()">Proceed</button>
+    </div>
+
+  </div>
+</app-modal>

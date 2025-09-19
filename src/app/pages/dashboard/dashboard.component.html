@@ -1,0 +1,103 @@
+<div class="container">
+    <!-- <div class="d-flex justify-content-between align-items-end my-4">
+        <div class="w-35">
+            <label for="dateRangeInput" class="form-label">Date range</label>
+            <div class="input-group">
+                <input #dateRangeInput type="text" class="form-control" placeholder="Select date range" readonly />
+                <span class="input-group-text">
+                    <i class="bi bi-calendar4-week" (click)="openPicker()"></i>
+                </span>
+            </div>
+        </div>
+        <div class=" d-flex gap-2 filter-buttons">
+            <button class="btn button-format-outline">
+                Filter <i class="bi bi-funnel"></i></button>
+            <button class="btn button-format-outline">
+                Export <i class="bi bi-upload"></i></button>
+        </div>
+    </div> -->
+    <div class="row">
+        <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-4" *ngFor="let card of cards">
+            <app-summary-card [value]="card.value" [label]="card.label" [change]="card.change"
+                [description]="card.description">
+            </app-summary-card>
+        </div>
+    </div>
+
+    <div class="row my-4">
+        <div class="col-12 col-sm-6 col-md-6 col-lg-4 mb-4 custom-col" *ngFor="let chart of utilizationData">
+            <app-utilization-chart [title]="chart.title" [subtitle]="chart.subtitle" [value]="chart.value"
+                [rawValue]="chart.rawValue">
+            </app-utilization-chart>
+        </div>
+    </div>
+
+    <div class="endpoint-list my-4 py-4 overflow-hidden">
+        <div class="row">
+            <div class="col-md-12">
+                <h3 class="">Endpoint list</h3>
+                <p class="">The following table lists the endpoints for your account.</p>
+                <div class="table-responsive">
+                    <table class="table align-middle table-hover">
+                        <thead class="border-0">
+                            <tr class="text-muted">
+                                <th scope="col">Health status</th>
+                                <th scope="col">Endpoint name</th>
+                                <th scope="col">URL</th>
+                                <th scope="col" class="text-center">Manage</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let endpoint of endpoints">
+                                <td>
+                                    <ng-container *ngIf="endpoint.status === 'accessible'; else failedContent">
+                                        <span class="text-success me-1">
+                                            <i class="bi bi-check-circle-fill"></i>
+                                        </span> {{ endpoint.status }}
+                                    </ng-container>
+                                    <ng-template #failedContent>
+                                        <span class="text-danger me-1">
+                                            <i class="bi bi-x-circle-fill"></i>
+                                        </span> {{ endpoint.status }}
+                                    </ng-template>
+                                </td>
+                                <td>{{ endpoint.name }}</td>
+                                <td>
+                                    <span [ngClass]="{'disabled-link': endpoint.status !== 'accessible'}"
+                                        [attr.title]="endpoint.status === 'unreachable' ? 'Endpoint not ready yet' : endpoint.host">
+
+                                        <button class="btn btn-link p-0 ms-2" (click)="copyToUrl(endpoint.host)"
+                                            title="Copy URL">
+                                            <i class="bi bi-clipboard"></i>
+                                        </button>
+                                        {{ endpoint.host }}
+                                    </span>
+                                </td>
+                                <td class="text-center text-info">
+                                    <c-dropdown class="action-dropdown">
+                                        <button class="btn btn-icon" type="button" data-bs-toggle="dropdown"
+                                            aria-expanded="false">
+                                            <i class="bi bi-three-dots-vertical"></i>
+                                        </button>
+                                        <ul cDropdownMenu class="dropdown-menu dropdown-menu-end">
+                                            <li>
+                                                <a class="dropdown-item" (click)="viewEndpoint(endpoint)">View</a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" (click)="deleteEndpoint(endpoint)">Delete</a>
+                                            </li>
+                                        </ul>
+                                    </c-dropdown>
+                                </td>
+                            </tr>
+                            <tr *ngIf="endpoints.length === 0">
+                                <td colspan="4">
+                                    <p class="text-center">No data found.</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>

@@ -1,0 +1,57 @@
+.review-details {
+   margin: 30px auto;
+   overflow-x: hidden;
+    p.fw-bold {
+        color: #001225;
+        font-size: 19px;
+    }
+
+    label {
+      color: #99A0AE;
+    }
+
+    span {
+        color: #232323;
+    }
+}
+
+.masked-value .value {
+    color: transparent;
+    text-shadow: 0 0 8px #000;
+    transition: color 0.3s ease;
+    cursor: pointer;
+  }
+  
+  .masked-value:hover .value {
+    color: inherit;
+    text-shadow: none;
+  }
+
+  .env-container {
+  max-width: 100%;
+  padding: 10px;
+  
+}
+
+.env-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.env-label {
+  // width: 220px;
+  // font-weight: bold;
+  color: #999;
+  flex-shrink: 0;
+  padding-right: 10px;
+}
+
+.env-value {
+  max-width: 600px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #232323;
+  font-size: 14px;
+}

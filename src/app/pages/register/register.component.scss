@@ -1,0 +1,45 @@
+.btn-submit {
+  font-family: 'plusFont', sans-serif !important;
+  background-color: #f26a1b;
+  border: none;
+  color: #fff;
+
+  &:hover {
+    box-shadow: 0 0 1px 1px #f26a1b;
+  }
+}
+
+.text-orange {
+  font-family: 'plusFont', sans-serif !important;
+  color: #f26a1b
+}
+
+p {
+  font-size: 13px;
+}
+
+.section {
+  position: relative;
+  background-color: #fef6f1;
+  // padding: 5rem 2rem 10rem;
+  overflow: hidden;
+}
+
+.section::before {
+  content: url('/assets/images/bannar-bg-icon.png');
+  position: absolute;
+  bottom: 10%;
+  left: 0;
+  width: 400px;
+  height: 400px;
+  /* background: radial-gradient(circle at center, #ffd8b3, #fff0e6); */
+  border-radius: 60% 40% 60% 40%;
+  transform: rotate(286deg);
+  z-index: 0;
+}
+.form-check{
+  position: relative;z-index: 999;
+  .form-check-input{
+  cursor: pointer;
+  }
+}

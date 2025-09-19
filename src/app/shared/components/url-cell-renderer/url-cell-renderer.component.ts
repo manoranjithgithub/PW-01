@@ -1,0 +1,29 @@
+import { CommonModule } from '@angular/common';
+import { Component } from '@angular/core';
+import { SrvRecord } from 'dns';
+
+@Component({
+  selector: 'app-url-cell-renderer',
+  standalone: true,
+  imports: [CommonModule],
+  templateUrl: './url-cell-renderer.component.html',
+  styleUrl: './url-cell-renderer.component.scss'
+})
+export class UrlCellRendererComponent {
+  public publicUrl!: string;
+  public privateUrl?: string;
+  public endpointStatus: boolean = false;
+
+  agInit(params: any): void {
+    const data = params.data;
+    this.endpointStatus = data.endpointStatus == 'accessible' ? true : false ;
+    this.publicUrl = data?.is_custom_dns
+      ? data?.custom_domain
+      : data?.custom_domain || data?.app_ingress_domain || null;
+    this.privateUrl = data?.name || null;
+  }
+
+  refresh(): boolean {
+    return false;
+  }
+}

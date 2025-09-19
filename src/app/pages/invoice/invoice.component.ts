@@ -1,0 +1,174 @@
+import { CommonModule } from '@angular/common';
+import { Component, OnInit } from '@angular/core';
+import { AgGridTableComponent } from '../../shared/components/ag-grid-table/ag-grid-table.component';
+import { PricingsService } from './pricing.service';
+import { CellClickedEvent, ColDef } from 'ag-grid-community';
+import { ToastrService } from 'ngx-toastr';
+declare const Cashfree: any;
+
+@Component({
+  selector: 'app-invoice',
+  standalone: true,
+  imports: [CommonModule, AgGridTableComponent],
+  templateUrl: './invoice.component.html',
+  styleUrl: './invoice.component.scss',
+  providers: [PricingsService]
+})
+export class InvoiceComponent implements OnInit {
+
+  tableData: any[] = [];
+  columnDefs: ColDef[] = [
+    {
+      field: 'invoiceNumber', headerName: 'Invoice Number', flex: 2, tooltipField: 'invoiceNumber',
+      cellStyle: { 'white-space': 'nowrap', 'overflow': 'hidden !important', 'text-overflow': 'ellipsis' },
+    },
+    {
+      field: 'amount', headerName: 'Amount Payable', flex: 1,
+      valueFormatter: params =>
+        new Intl.NumberFormat('en-US', {
+          style: 'currency',
+          currency: params.data.currency || 'USD',
+          minimumFractionDigits: 2,
+        }).format(params.value),
+    },
+    {
+      field: 'invoiceAmount', headerName: 'Outstanding Amount', flex: 1,
+      valueFormatter: params =>
+        new Intl.NumberFormat('en-US', {
+          style: 'currency',
+          currency: params.data.currency || 'USD',
+          minimumFractionDigits: 2,
+        }).format(params.value)
+    },
+    {
+      field: 'creditApplied', headerName: 'Credit Applied', flex: 1,
+      valueFormatter: params =>
+        new Intl.NumberFormat('en-US', {
+          style: 'currency',
+          currency: params.data.currency || 'USD',
+          minimumFractionDigits: 2,
+        }).format(params.value),
+    },
+    // { field: 'currency', headerName: 'Currency' },
+    {
+      field: 'status',
+      headerName: 'Status',
+      flex: 1,
+      cellRenderer: (params: any) => {
+        const wrapper = document.createElement('div');
+        wrapper.style.textAlign = 'left';
+        wrapper.style.color = '#659711';
+        wrapper.style.textTransform = 'capitalize';
+
+        if (params.value === 'unpaid') {
+          const link = document.createElement('a');
+          link.className = 'pay-now-link';
+          link.textContent = 'Pay now';
+          link.style.textDecoration = 'underline';
+          link.style.color = '#F60';
+          link.style.cursor = 'pointer';
+
+          wrapper.appendChild(link);
+        } else {
+          wrapper.textContent = params.value;
+        }
+
+        return wrapper;
+      },
+      onCellClicked: (event: CellClickedEvent) => {
+        if (
+          event.colDef.field === 'status' &&
+          event.value === 'unpaid'
+        ) {
+          this.openPayNow(event.data);
+        }
+      }
+    },
+
+    {
+      field: 'issueDate', headerName: 'Issue Date', flex: 1,
+      valueFormatter: params => {
+        return new Date(params.value).toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit'
+        });
+      }
+    },
+    {
+      field: 'dueDate', headerName: 'Due Date',
+      flex: 1, valueFormatter: params => {
+        return new Date(params.value).toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit'
+        });
+      }
+    }
+  ];
+  cashfree: any;
+
+  constructor(private http: PricingsService, private toastr: ToastrService) { }
+
+  ngOnInit(): void {
+    this.getInvoiceList()
+    this.cashfree = Cashfree({ mode: 'sandbox' });
+    this.cashfree.on('payment.success', (event: any) => {
+      console.log('Payment Success:', event);
+      this.toastr.success(event.transaction.txnId);
+    });
+
+    this.cashfree.on('payment.failed', (event: any) => {
+      console.error('Payment Failed:', event);
+      this.toastr.error(event.transaction.message);
+    });
+
+    this.cashfree.on('payment.dismissed', (event: any) => {
+      console.warn('Payment Dismissed:', event);
+      this.toastr.warning('Payment Dismissed');
+    });
+  }
+
+  goToNewDeployModel(data: any) {
+    console.log('Navigating to new deployment modal with data:', data);
+  }
+
+  openPayNow(data: any) {
+    this.http.paynow(data.invoiceNumber).subscribe({
+      next: (data: any) => {
+        const sessionId = data.order.payment_session_id;
+
+        const checkoutOptions = {
+          paymentSessionId: sessionId,
+          redirectTarget: '_modal',
+        };
+        this.cashfree.checkout(checkoutOptions).then((res: any) => {
+          const message = res?.paymentDetails?.paymentMessage;
+          if (message === 'Payment finished. Check status.') {
+            this.getInvoiceList()
+          }
+        }, (error: any) => {
+          this.toastr.error('Payment Dismissed');
+        });
+
+      }
+
+    });
+  }
+  getInvoiceList() {
+    const userId = localStorage.getItem('userId');
+
+    if (userId) {
+      this.http.getInvoiceList(userId).subscribe({
+        next: (data: any) => {
+          if (data.status.toLowerCase() === 'success') {
+            this.tableData = data.data || [];
+          }
+        },
+        error: (error) => {
+          console.error('Error fetching invoice data:', error);
+        }
+      });
+    }
+  }
+}

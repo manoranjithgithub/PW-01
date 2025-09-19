@@ -1,0 +1,46 @@
+<div class="container mt-2">
+  <c-card class="p-4">
+    <form cForm [formGroup]="accountForm">
+      <div class="mb-2"><b>Account Information</b></div>
+      <div class="row my-3">
+        <div class="col-md-6">
+          <label for="name" class="form-label">Name</label>
+          <input id="name" formControlName="name" class="form-control" />
+          <div *ngIf="isInvalid('name') || submitted" class="text-danger small">
+            <div *ngIf="accountForm.get('name')?.errors?.['required']">Name is required.</div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <label for="email" class="form-label">Email</label>
+          <input id="email" formControlName="email" class="form-control" />
+          <div *ngIf="isInvalid('email') || submitted" class="text-danger small">
+            <div *ngIf="accountForm.get('email')?.errors?.['required']">Email is required.</div>
+            <div *ngIf="accountForm.get('email')?.errors?.['email']">Invalid email format.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label for="username" class="form-label">User Name</label>
+          <input id="name" formControlName="userName" class="form-control" />
+        </div>
+
+        <div class="col-md-6">
+          <label for="avatar" class="form-label">Avatar</label>
+          <div class="d-flex align-items-center gap-2">
+            <input id="avatar" formControlName="avatar" class="form-control w-100" (input)="updateAvatarPreview()" />
+            <div class="avatar-preview">
+              <img *ngIf="avatarPreview" [src]="avatarPreview" alt="Avatar Preview" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="text-end">
+        <button type="submit" class="btn button-format-solid" (click)="onSubmit()">Update Info</button>
+      </div>
+    </form>
+  </c-card>
+</div>

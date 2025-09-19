@@ -1,0 +1,89 @@
+::ng-deep .modal-centered {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+// ::ng-deep .modal-right .modal-dialog {
+//   position: fixed;
+//   right: 0;
+//   top: 0;
+//   height: 100%;
+//   margin: 0;
+//   // max-width: 400px;
+//   /* Adjust width */
+// }
+
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+::ng-deep .modal-right .modal-dialog {
+  position: fixed;
+  right: 0;
+  top: 0;
+  height: 100%;
+  margin: 0;
+  // max-width: 400px;
+  // width: 80vw;
+  max-width: none !important;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+}
+
+::ng-deep .modal-right .modal-content {
+  height: 100%;
+  border-radius: 0;
+  border-top-left-radius: 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+
+::ng-deep .modal-right.show .modal-dialog {
+  animation: slideInRight 0.3s forwards;
+  margin-top: 20px;
+}
+
+::ng-deep .modal-right.hide .modal-dialog {
+  animation: slideOutRight 0.3s forwards;
+}
+
+::ng-deep .modal-right .modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 15px;
+  max-height: calc(100vh - 100px);
+}
+
+::ng-deep .modal-title {
+  color: #232323;
+  font-family: 'plusFont', sans-serif;
+  font-size: 24px;
+  font-style: normal;
+  font-weight: 400;
+}

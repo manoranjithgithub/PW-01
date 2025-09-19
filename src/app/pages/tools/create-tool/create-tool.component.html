@@ -1,0 +1,149 @@
+<div class="container">
+    <ng-container *ngIf="isInstall">
+        <hr />
+        <div class="row g-3 mb-4">
+            <div class="col-12 col-sm-6 col-md-6 col-lg-4" *ngFor="let tool of imgList">
+                <div class="card tool-card" [ngClass]="{'selected-tool-card': selectedTool === tool.name}">
+                    <div class="card-body d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <div class="tool-img-container me-3">
+                                <img [src]="tool.imageSrc" class="tool-img" alt="{{ tool.name }}" />
+                            </div>
+                            <div class="custom-text capitalize-text">{{ tool.name }}
+                                <div><a (click)="showTools(tool)" class="text-orange ">View details</a></div>
+                            </div>
+                        </div>
+                        <label class="custom-radio mb-0">
+                            <input type="radio" name="toolSelect" [value]="tool.name" (click)="onImageClick(tool)"
+                                [(ngModel)]="selectedTool" checked />
+                            <span class="checkmark"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <hr />
+        <div class="d-flex justify-content-between">
+            <!-- <button class="btn button-format-outline" (click)="toolsBack()">
+                <i class="bi bi-arrow-left"></i> Tools list
+            </button> -->
+            <!-- <div>
+                <button class="btn button-format-outline me-2" (click)="showTools()">View details</button>
+                <button class="btn button-format-solid" (click)="install()">Install</button>
+            </div> -->
+        </div>
+    </ng-container>
+
+    <div class="container me-3">
+        <form [formGroup]="form" *ngIf="isShowForm">
+            <div class="d-flex align-items-center">
+                <div class="tool-text me-3">{{ selectedTool }}</div>
+                <!-- <i class="bi bi-info-circle"></i> -->
+            </div>
+            <hr class="mb-2" />
+            <div class="row mt-4">
+                <div *ngFor="let field of formStructure" class="col-md-6 mt-2">
+                    <label class="form-label text-capitalize d-flex justify-content-between" [for]="field.key">
+                        <span>{{ field.label }} <span class="text-danger">*</span></span>
+                        <span class="text-gray ml-auto text-nowrap" *ngIf="field.label === 'Instance Type' && selectedResource">
+                            ( <span class="mx-1"><b>CPU:</b> {{selectedResource.cpu}}</span>
+                            <span class="mx-1"><b>Memory:</b> {{selectedResource.memory}}</span>
+                            <span class="mx-1"><b>Price:</b> {{selectedResource.price}}</span> )
+                        </span>
+                    </label>
+                    <ng-container [ngSwitch]="field.type">
+                        <input class="form-control " *ngSwitchCase="'text'" [formControlName]="field.key"
+                            [id]="field.key" type="text" (blur)="onFieldBlur(field.key)"
+                            placeholder="{{field.placeholder}}">
+
+                        <div class="input-group" *ngSwitchCase="'password'">
+                            <input id="{{field.key}}" [formControlName]="field.key"
+                                [type]="hide[field.key] ? 'password' : 'text'" class="form-control"
+                                autocomplete="new-password" />
+
+                            <span class="input-group-addon">
+                                <i class="positioning glyphicon bi"
+                                    [ngClass]="{'bi-eye': !hide[field.key], 'bi-eye-slash': hide[field.key]}"
+                                    (click)="toggleVisibility(field.key)">
+                                </i>
+                            </span>
+                        </div>
+                        <div class="position-relative" *ngSwitchCase="'select'">
+                            <select class="form-select" [formControlName]="field.key" [id]="field.key" (change)="onFieldChange($event,field.label)">
+                                <option *ngFor="let option of field.options" [value]="option">{{option}}</option>
+                            </select>
+                        </div>
+                    </ng-container>
+                    <div *ngIf="form.get([field.key])?.errors?.['regex']" class="text-danger mt-1">
+                        {{ form.get([field.key])?.errors?.['regex']}}
+                    </div>
+                    <div *ngIf="form.get([field.key])?.errors?.['required'] && (form.get([field.key])?.touched || submitted)"
+                        class="text-danger mt-1">
+                        This field is required.
+                    </div>
+                    <div class="text-danger mt-1"
+                        *ngIf="form.get([field.key])?.errors?.['forbiddenName'] && (form.get([field.key])?.touched || submitted)">
+                        {{ form.get([field.key])?.errors?.['forbiddenName'] }}
+                    </div>
+
+                    <div *ngIf="form.get([field.key])?.errors?.['maxlength'] && (form.get([field.key])?.touched || submitted)"
+                        class="text-danger mt-1">
+                        Maximum 30 characters allowed.
+                    </div>
+
+                    <!-- <small *ngIf="form.get(field.key)?.errors?.['lowercase'] && form.get(field.key)?.value?.length"
+                        class="text-danger">
+                        Only lowercase letters are allowed.
+                    </small> -->
+                    <!-- <div *ngIf="form.get([field.key])?.errors && form.get([field.key])?.value?.length">
+                        <div *ngIf="form.get([field.key])?.hasError('minLength')">
+                            <small class="text-danger">Minimum length is 10 characters</small>
+                        </div>
+                        <div *ngIf="form.get([field.key])?.hasError('letter')">
+                            <small class="text-danger">At least one letter</small>
+                        </div>
+                        <div *ngIf="form.get([field.key])?.hasError('specialChar')">
+                            <small class="text-danger">At least one special character</small>
+                        </div>
+                        <div *ngIf="form.get([field.key])?.hasError('number')">
+                            <small class="text-danger">At least one number</small>
+                        </div>
+                        <div *ngIf="form.get([field.key])?.hasError('noSpaces')">
+                            <small class="text-danger">No spaces allowed</small>
+                        </div>
+                    </div> -->
+                    <!-- <small
+                        *ngIf="form.get([field.key])?.hasError('gigabyteValidator') && form.get([field.key])?.value?.length"
+                        class="text-danger">
+                        Only numbers are allowed. The values will be considered as 'GI'
+                    </small> -->
+                </div>
+            </div>
+
+            <hr class="my-4" />
+            <div class="d-flex justify-content-between  my-4">
+                <button class="btn button-format-outline" (click)="toolsListBack()">
+                    <i class="bi bi-arrow-left"></i> Back
+                </button>
+                <div>
+                    <button class="btn button-format-solid" (click)="onSubmit()">Submit</button>
+                </div>
+            </div>
+        </form>
+    </div>
+    <app-loader></app-loader>
+</div>
+
+<app-modal #showToolsModel [modalConfig]="showToolsConfig">
+    <div class="container" *ngIf="toolDetails">
+        <div class="d-flex justify-content-between gap-3">
+            <markdown [data]="getmarkData(toolDetails?.description)"></markdown>
+        </div>
+
+        <hr class="my-4" />
+
+        <div class="d-flex justify-content-end gap-2 m-4">
+            <button class="btn button-format-solid" (click)="closeTools()">Ok</button>
+        </div>
+    </div>
+</app-modal>

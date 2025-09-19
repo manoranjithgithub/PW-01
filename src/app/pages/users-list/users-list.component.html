@@ -1,0 +1,65 @@
+<ng-container *ngIf="showAddUserSection">
+    <label class="title mb-1">Add New User</label>
+    <div class="card mb-3 border">
+        <div class="card-body pb-0">
+            <form [formGroup]="addUserForm" (ngSubmit)="onSubmitAddUser()" class="mb-0">
+                <div class="d-flex gap-2 my-2 justify-content-between">
+                    <div class="form-group w-100">
+                        <label for="username" class="form-label"> organization Name</label>
+                        <input type="text" id="orgName" formControlName="orgName" class="form-control"
+                            placeholder="Organization Name *" readonly required />
+                        <div *ngIf="addUserForm.get('orgName')?.touched && addUserForm.get('orgName')?.invalid"
+                            class="text-danger">
+                            <small *ngIf="addUserForm.get('orgName')?.errors?.['required']">Organization Name is
+                                required.</small>
+                        </div>
+                    </div>
+                    <div class="form-group w-100">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" id="username" formControlName="username" class="form-control"
+                            placeholder="Username *" required />
+                        <div *ngIf="addUserForm.get('username')?.touched && addUserForm.get('username')?.invalid"
+                            class="text-danger">
+                            <small *ngIf="addUserForm.get('username')?.errors?.['required']">Username is
+                                required.</small>
+                        </div>
+                    </div>
+                    <div class="form-group w-100">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" id="email" formControlName="email" class="form-control"
+                            placeholder="Email *" required />
+                        <div *ngIf="addUserForm.get('email')?.touched && addUserForm.get('email')?.invalid"
+                            class="text-danger">
+                            <small *ngIf="addUserForm.get('email')?.errors?.['required']">Email is required.</small>
+                            <small *ngIf="addUserForm.get('email')?.errors?.['email']">Enter a valid email.</small>
+                        </div>
+                    </div>
+                </div>
+                <!-- <div class="form-group">
+            <label for="role">Role</label>
+            <select id="role" formControlName="role" class="form-control" required>
+                <option value="" disabled>Select role</option>
+                <option value="admin">Admin</option>
+                <option value="user">User</option>
+            </select>
+            <div *ngIf="addUserForm.get('role')?.touched && addUserForm.get('role')?.invalid" class="text-danger">
+                <small *ngIf="addUserForm.get('role')?.errors?.['required']">Role is required.</small>
+            </div>
+        </div> -->
+                <div class="text-right mt-4">
+                    <button type="reset" class="btn button-format-outline me-2" (click)="resetForm()">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn button-format-solid" [disabled]="addUserForm.invalid">
+                        Add User
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</ng-container>
+<div class="container">
+    <app-ag-grid-table [rowData]="tableData" [columnDefs]="columnDefs" [showProjectButton]="false"
+        [showDeployButton]="false" [showAddUser]="!showAddUserSection"
+        (addUuserEvent)="addnewUser($event)"></app-ag-grid-table>
+</div>

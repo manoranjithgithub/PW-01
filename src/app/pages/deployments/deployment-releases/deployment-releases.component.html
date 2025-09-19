@@ -1,0 +1,187 @@
+<div class="card-child">
+  <c-accordion class="accordion-gap  mb-4">
+    <c-accordion-item #item0="cAccordionItem" [visible]="true">
+      <ng-template cTemplateId="accordionHeaderTemplate">
+        <button (click)="item0.toggleItem()" [collapsed]="!item0.visible" cAccordionButton>
+          <i class="bi bi-activity mx-1"></i>Active
+        </button>
+      </ng-template>
+      <ng-template cTemplateId="accordionBodyTemplate">
+        <div class="accordion-body">
+          <!-- <div>
+            <app-ag-grid-table [rowData]="tableData" [columnDefs]="columnDefs" [showButtons]="false"
+              ></app-ag-grid-table>
+          </div> -->
+          <div class="d-flex justify-content-between align-items-start">
+            <div class="m-4">
+              <!-- *ngIf="hasFailedStatus()" -->
+              <div class="realse-status-header">
+                <!-- <span class="status-dot failed"></span> -->
+                <div class="status-title" [ngClass]="getStatusClass(currentStatus)"> <i class="bi"
+                    [ngClass]="getIcons(currentStatus)"></i> {{
+                  currentStatus
+                  }}</div>
+
+                <p class="mb-0 status-des">{{deploymentdetails?.name}} {{active?.updated_at | date}}</p>
+                <p class="status-subtitle">Last updated via {{active?.type === 'VCS' ? active?.provider : 'zip/tar'}}
+                </p>
+              </div>
+
+              <div class="timeline-section">
+                <div class="timeline">
+                  <div class="step" *ngFor="let step of steps; let i = index" [ngClass]="step.status">
+                    <div class="circle"></div>
+                    <div class="content">
+                      <div class="title">
+                        <span>{{ step.title }}<button class="btn px-2 font-sm"
+                            *ngIf="(step.title !== 'Initiated' && step.status !== 'pending')"
+                            (click)="getLogsInfo(active, i)"> ( view logs )</button></span>
+                      </div>
+                      <div class="time">{{ step.time | date: 'short'}}</div>
+                     <div *ngIf="step.status" class="title" [innerHTML]="step.message"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="custom-dropdown" (click)="toggleDropdown('active', $event)">
+              <button class="btn btn-icon" type="button">
+                <i class="bi bi-three-dots-vertical"></i>
+              </button>
+              <ul *ngIf="openDropdown === 'active'" class="custom-dropdown-menu">
+                <li (click)="onOptionSelected('view', active, 'active')">
+                  <a class="custom-dropdown-item">View logs</a>
+                </li>
+                <li (click)="onOptionSelected('redeploy', active, 'active')"
+                  [class.disabled]="active?.status === 'Building' || active?.status === 'Paused' ">
+                  <a class="custom-dropdown-item">Redeploy</a>
+                </li>
+                <li (click)="onOptionSelected(active?.status === 'Paused' ? 'resume' : 'pause', active, 'active')"
+                  [class.disabled]="active?.status === 'Building'">
+                  <a class="custom-dropdown-item">{{ active?.status === 'Paused' ? 'Resume' : 'Pause'}}</a>
+                </li>
+              </ul>
+            </div>
+
+          </div>
+        </div>
+      </ng-template>
+    </c-accordion-item>
+  </c-accordion>
+
+  <c-accordion class="accordion-gap">
+    <c-accordion-item #item1="cAccordionItem" [visible]="true">
+      <ng-template cTemplateId="accordionHeaderTemplate">
+        <button (click)="item1.toggleItem()" [collapsed]="!item1.visible" cAccordionButton>
+          <i class="bi bi-clock-history mx-1"></i>History
+        </button>
+      </ng-template>
+      <ng-template cTemplateId="accordionBodyTemplate">
+        <div class="accordion-body">
+          <div *ngIf="history?.length === 0">
+            <c-callout color="secondary">
+              <div class="custom-heading">No history of deployments yet.</div>
+            </c-callout>
+          </div>
+
+          <div *ngIf="history?.length > 0" class="my-4">
+            <div class="deployment-history">
+              <div class="history-item" *ngFor="let item of history; let last = last">
+                <div class="history-timeline-line" [class.hide-line]="last"></div>
+
+                <div class="history-content">
+                  <div class="history-left">
+                    <i class="bi me-2" [ngClass]="getClassList(item?.status)"></i>
+                    <div class="history-text">
+                      <div class="job-title">
+                        <a class="job-link">
+                          {{ deploymentdetails?.name }} <span class="updated-date">({{ item?.updated_at | date: 'MM/dd/yyyy, HH:mm a' }})</span>
+                        </a>
+                      </div>
+                      <div class="status-date">
+                        <span>
+                          {{ item?.status }}
+                        </span>
+                        <span class="date">{{ item?.updated_at | relativeTime }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="history-right">
+                    <div class="dropdown" (click)="toggleDropdown(item?.id, $event)">
+                      <button class="btn btn-icon" type="button">
+                        <i class="bi bi-three-dots-vertical"></i>
+                      </button>
+                      <ul *ngIf="openDropdown === item?.id" class="dropdown-menu show">
+                        <li (click)="onOptionSelected('view', item, 'history')">
+                          <a class="dropdown-item">View logs</a>
+                        </li>
+                        <!-- <li (click)="onOptionSelected('rollback', item?.id, 'history')">
+                          <a class="dropdown-item">Rollback</a>
+                        </li>
+                        <li (click)="onOptionSelected('redeploy', item?.id, 'history')">
+                          <a class="dropdown-item">Re-deploy</a>
+                        </li> -->
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+
+          </div>
+        </div>
+      </ng-template>
+    </c-accordion-item>
+  </c-accordion>
+</div>
+
+
+<app-modal #logsModal [modalConfig]="logsModalConfig">
+  <!-- <div class="mb-3 d-flex align-items-center toggle-bar">
+    <label for="toggleMode" class="mr-5 fz-13"><b>Mode</b> </label>
+    <div class="form-check form-switch">
+      <input id="toggleMode" type="checkbox" class="form-check-input"
+        (change)="toggleMode($event)" />
+    </div>
+  </div> -->
+  <c-nav variant="underline-border" class="d-flex align-items-center w-100">
+    <div class="d-flex flex-grow-1">
+      <c-nav-item (click)="getLogData(0,'build', true)">
+        <a [cTabContent]="tabContent1" [tabPaneIdx]="0" cNavLink class="px-4 py-2">
+          Build log
+        </a>
+      </c-nav-item>
+      <c-nav-item (click)="getLogData(1,'deploy', true)">
+        <a [cTabContent]="tabContent1" [tabPaneIdx]="1" cNavLink class="px-4 py-2">
+          Deploy log
+        </a>
+      </c-nav-item>
+    </div>
+
+    <div class="ms-auto theme-toggle">
+      <span class="switch-label">Switch mode</span>
+      <label class="switch">
+        <input type="checkbox" [checked]="isLightMode" (change)="toggleMode($event)">
+        <span class="slider">
+          <i class="bi bi-moon icon-moon"></i>
+          <i class="bi bi-sun icon-sun"></i>
+        </span>
+      </label>
+    </div>
+  </c-nav>
+
+  <c-tab-content #tabContent1="cTabContent" [activeTabPaneIdx]="activeTabIndex" cRounded="bottom">
+    <c-tab-pane class="p-3 preview" role="tabpanel">
+      <app-log-viewer [logs]="deploymentLogs" [itemsPerPage]="itemsPerPage" [pageSizes]="pageSizes" [currentPage]="currentPage" 
+        [isLightMode]="isLightMode" [totalItems]="totalPages" (getLogs)="onPageSizeChange($event, 'build')">
+      </app-log-viewer>
+    </c-tab-pane>
+    <c-tab-pane class="p-3 preview" role="tabpanel">
+      <app-log-viewer [logs]="deploymentLogs" [itemsPerPage]="itemsPerPage" [pageSizes]="pageSizes" [currentPage]="currentPage"
+        [isLightMode]="isLightMode" [totalItems]="totalPages" (getLogs)="onPageSizeChange($event, 'deploy')">
+      </app-log-viewer>
+    </c-tab-pane>
+  </c-tab-content>
+</app-modal>
