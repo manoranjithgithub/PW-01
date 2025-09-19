@@ -32,8 +32,8 @@ build:
   script:
     - echo $CI_REGISTRY
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - docker build -t registry.dilligentech.com/dt/paas/portal-fe:dev --build-arg ENV=dev .
-    - docker push registry.dilligentech.com/dt/paas/portal-fe:dev
+    - docker build -t registry.dilligentech.com/dt/paas/nimbuz-portal-fe:dev --build-arg ENV=dev .
+    - docker push registry.dilligentech.com/dt/paas/nimbuz-portal-fe:dev
   only:
     - dev
 
@@ -51,8 +51,8 @@ image-release:
     - echo $CI_REGISTRY
     - apk add jq
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - docker build -t registry.dilligentech.com/dt/paas/portal-fe:$(jq .version package.json -r) --build-arg ENV=prod .
-    - docker push registry.dilligentech.com/dt/paas/portal-fe:$(jq .version package.json -r)
+    - docker build -t registry.dilligentech.com/dt/paas/nimbuz-portal-fe:$(jq .version package.json -r) --build-arg ENV=prod .
+    - docker push registry.dilligentech.com/dt/paas/nimbuz-portal-fe:$(jq .version package.json -r)
   only:
     - main
 
@@ -66,7 +66,7 @@ deploy:
     - mv linux-amd64/helm /usr/bin/
     - rm -rf linux-amd64
     - helm repo add --username $HELM_REGISTRY_USER --password $HELM_REGISTRY_TOKEN dt-charts ${CI_API_V4_URL}/projects/34/packages/helm/stable
-    - helm upgrade --install portal dt-charts/microservice --set namespace=paas-dev --set env=dev --set subDomain=app --set appName=portal --set image.repository=registry.dilligentech.com/dt/paas/portal-fe --set image.tag=dev --set image.pullPolicy=Always --set service.targetPort=80 --namespace paas-dev
+    - helm upgrade --install portal dt-charts/microservice --set namespace=paas-dev --set env=dev --set subDomain=app --set appName=portal --set image.repository=registry.dilligentech.com/dt/paas/nimbuz-portal-fe --set image.tag=dev --set image.pullPolicy=Always --set service.targetPort=80 --namespace paas-dev
   only:
     - dev
 
@@ -81,6 +81,6 @@ deploy-prod:
     - mv linux-amd64/helm /usr/bin/
     - rm -rf linux-amd64
     - helm repo add --username $HELM_REGISTRY_USER --password $HELM_REGISTRY_TOKEN dt-charts ${CI_API_V4_URL}/projects/34/packages/helm/stable
-    - helm upgrade --install portal dt-charts/microservice --set namespace=nimbuz-prod --set env=prod --set subDomain=app --set appName=portal --set image.repository=registry.dilligentech.com/dt/paas/portal-fe --set image.tag=$(jq .version package.json -r) --set image.pullPolicy=Always --set service.targetPort=80 --namespace nimbuz-prod
+    - helm upgrade --install portal dt-charts/microservice --set namespace=nimbuz-prod --set env=prod --set subDomain=app --set appName=portal --set image.repository=registry.dilligentech.com/dt/paas/nimbuz-portal-fe --set image.tag=$(jq .version package.json -r) --set image.pullPolicy=Always --set service.targetPort=80 --namespace nimbuz-prod
   only:
     - main
