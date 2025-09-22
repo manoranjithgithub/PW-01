@@ -65,7 +65,7 @@ export class AuthService {
     return !!token;
   }
 
-  private processDecodedToken(token: string): void {
+  public processDecodedToken(token: string): void {
     const decodeData = this.getDecodedAccessToken(token);
     if (decodeData) {
       localStorage.setItem('userId', decodeData?.properties?.nimbuzUserId || '');

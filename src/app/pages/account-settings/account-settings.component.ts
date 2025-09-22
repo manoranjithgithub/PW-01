@@ -5,6 +5,8 @@ import { RowComponent, ColComponent, TextColorDirective, CardComponent, CardHead
 import { ToastrService } from 'ngx-toastr';
 import { AccountSettingsService } from './account-settings.service';
 import { SharedService } from '../../shared/services/shared.service';
+import { UserService } from '../../core/services/user.service';
+import { AuthService } from '../../core/services/auth.service';
 @Component({
   selector: 'app-account',
   standalone: true,
@@ -18,9 +20,15 @@ export class AccountComponent implements OnInit {
   accountForm!: FormGroup;
   avatarPreview: string = '';
   accountData: any;
+  resetPasswordForm!: FormGroup;
+  showOldPassword = false;
+  showNewPassword = false;
+  showConfirmPassword = false;
+  isResetPasswordSubmitted = false;
+  userData: any;
 
   constructor(private fb: FormBuilder, private http: AccountSettingsService, private toaster: ToastrService,
-    private sharedService: SharedService
+    private sharedService: SharedService, private userService: UserService, private authService: AuthService
   ) { }
 
   initializeForm(): void {
@@ -30,9 +38,37 @@ export class AccountComponent implements OnInit {
       userName: [{ value: '', disabled: true }, Validators.required],
       avatar: ['', Validators.required],
     });
+
+    this.resetPasswordForm = this.fb.group({
+      oldPassword: ['', Validators.required],
+      password: ['', [Validators.required, Validators.minLength(8), Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/)]],
+      confirmPassword: ['', Validators.required],
+    }, { validators: this.passwordsMatchValidator });
+
+  }
+
+  passwordsMatchValidator(form: FormGroup) {
+    const password = form.get('password');
+    const confirmPassword = form.get('confirmPassword');
+    if (!password || !confirmPassword) return null;
+    if (password.value !== confirmPassword.value) {
+      confirmPassword.setErrors({ ...(confirmPassword.errors || {}), mismatch: true });
+    } else {
+      if (confirmPassword.errors) {
+        delete confirmPassword.errors['mismatch'];
+        if (!Object.keys(confirmPassword.errors).length) {
+          confirmPassword.setErrors(null);
+        } else {
+          confirmPassword.setErrors(confirmPassword.errors);
+        }
+      }
+    }
+    return null;
   }
 
   ngOnInit(): void {
+    this.authService.processDecodedToken(localStorage.getItem('accessToken') || '');
+    this.userData = this.sharedService.getUser();
     this.http.getAccountInfo().subscribe((res: any) => {
       this.accountData = res.data;
       console.log('AccountInfoData', this.accountData);
@@ -66,5 +102,25 @@ export class AccountComponent implements OnInit {
   updateAvatarPreview(): void {
     this.avatarPreview = this.accountForm.get('avatar')?.value;
   }
+  onResetPassword(): void {
+    this.isResetPasswordSubmitted = true;
+    if (this.resetPasswordForm.invalid) return;
+    const req = {
+      password: this.resetPasswordForm.get('password')?.value,
+      oldPassword: this.resetPasswordForm.get('oldPassword')?.value,
+      orgName: this.userData?.owner,
+      username: this.userData?.userName,
+    }
+    this.userService.resetPassword(req).subscribe((res: any) => {
+      if (res.status.toLowerCase() === 'success') {
+        this.toaster.success('Password reset successfully');
+      }
+    })
+  }
 
+  togglePassword(field: 'old' | 'new' | 'confirm') {
+    if (field === 'old') this.showOldPassword = !this.showOldPassword;
+    if (field === 'new') this.showNewPassword = !this.showNewPassword;
+    if (field === 'confirm') this.showConfirmPassword = !this.showConfirmPassword;
+  }
 }

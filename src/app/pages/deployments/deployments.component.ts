@@ -254,7 +254,7 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
 
   getDeployment(env: any): void {
     if (env) {
-      this.deploymentsService.getDeployments(env.id).subscribe((res: any) => {
+      this.deploymentsService.getDeployments().subscribe((res: any) => {
         if (res.status === "Success") {
           this.tableData = res.data;
           // const deploymentNames = res.dat.map(item => item.name);

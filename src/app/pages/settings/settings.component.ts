@@ -116,7 +116,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
   }
 
   getDeploymentsByProject(): void {
-    this.deploymentService.getDeployments(this.envId).subscribe((res: any) => {
+    this.deploymentService.getDeployments().subscribe((res: any) => {
       if (res.status === "Success") {
         this.deployments = res.data;
       }

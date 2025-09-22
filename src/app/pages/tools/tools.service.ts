@@ -9,16 +9,13 @@ import { environment } from '../../../environments/environment';
     providedIn: 'root'
 })
 export class ToolsService {
-    private apiUrl = environment.apiUrl;
-    private legacyUrl = environment.legacyUrl;
     private deploymentUrl = environment.deploymentManagement;
 
     constructor(public http: HttpClient, private toastr: ToastrService) { }
 
     getToolsList(env: string) {
-        return this.http.get(`${this.deploymentUrl}/tools/allInstalledTools/${env}`).pipe(
+        return this.http.get(`${this.deploymentUrl}/tools/installed/${env}`).pipe(
             catchError((error: HttpErrorResponse) => {
-                // this.toastr.error(error.error?.error || 'Unknown error', 'Error');
                 return throwError(() => new Error('Something bad happened; please try again later.'));
             })
         );
@@ -32,42 +29,42 @@ export class ToolsService {
     }
 
     getToolsValuesToUpdate(env: string, name: string) {
-        return this.http.get(`${this.deploymentUrl}/${env}/tools/${name}/values`)
+        return this.http.get(`${this.deploymentUrl}/${env}/tools/supported/${name}/values`)
             .pipe(
                 catchError(this.handleError)
             );
     }
 
-    createTools(env: string, req: any) {
-        return this.http.post(`${this.deploymentUrl}/tools/${env}`, req)
+    createTools(req: any) {
+        return this.http.post(`${this.deploymentUrl}/tools/`, req)
             .pipe(
                 catchError(this.handleError.bind(this))
             );
     }
 
     getToolDetailsById(env: string, id: any) {
-        return this.http.get(`${this.deploymentUrl}/tools/${env}/getToolValues/${id}`)
+        return this.http.get(`${this.deploymentUrl}/tools/values?environmentId=${env}&name=${id}`)
             .pipe(
                 catchError(this.handleError)
             );
     }
 
-    updateTools(env: string, req: any) {
-        return this.http.post(`${this.deploymentUrl}/tools/${env}`, req)
+    updateTools(req: any) {
+        return this.http.patch(`${this.deploymentUrl}/tools`, req)
             .pipe(
                 catchError(this.handleError.bind(this))
             );
     }
 
     deleteTools(env: string, name: string) {
-        return this.http.delete(`${this.deploymentUrl}/${env}/tools/${name}`)
+        return this.http.delete(`${this.deploymentUrl}/tools`, { body: { environmentId: env, name } })
             .pipe(
                 catchError(this.handleError.bind(this))
             );
     }
 
     getAvailableToolsList() {
-        return this.http.get(`${this.deploymentUrl}/tools/getAllTools`)
+        return this.http.get(`${this.deploymentUrl}/tools/supported`)
             .pipe(
                 catchError(this.handleError)
             );

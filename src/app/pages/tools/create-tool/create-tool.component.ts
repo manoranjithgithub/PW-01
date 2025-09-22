@@ -240,10 +240,11 @@ export class CreateToolComponent implements OnInit, OnDestroy {
         chart: this.toolDetails.chart,
         version: this.toolDetails.version,
         repository: this.toolDetails.repository,
-        values: formValues
+        values: formValues,
+        environmentId: this.env
       }
       if (this.env) {
-        this.http.createTools(this.env, req).subscribe((res: any) => {
+        this.http.createTools(req).subscribe((res: any) => {
           if (res.status) {
             this.toastr.success('Created successfully');
             this.route.navigate(['/tools'])

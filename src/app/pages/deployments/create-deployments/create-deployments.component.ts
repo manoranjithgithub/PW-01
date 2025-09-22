@@ -327,7 +327,7 @@ export class CreateDeploymentsComponent
         if (provider === 'github') {
           this.selectedVCS = 'github';
           this.stepOneForm.get('type')?.setValue('github');
-         
+
           this.deploymentsService.getVCSCallback(code, this.currentProjectId, provider).subscribe((res: any) => {
             if (res && res.status?.toLowerCase() === 'success') {
               this.getGitHubRepos();
@@ -515,7 +515,7 @@ export class CreateDeploymentsComponent
         //   });
         //   this.stepOneForm.get('selectedRepo')?.setValue(this.reposList[0].id);
         // }
-         else {
+        else {
           this.reposList = [];
         }
 
@@ -547,7 +547,7 @@ export class CreateDeploymentsComponent
       this.gitLabAuthenticated = false;
       this.redirectToOAuth('gitlab');
     }
-    
+
   }
   submitChanges() {
     const filePathControl = this.fileUploadForm.get('filePath')?.value;
@@ -566,29 +566,40 @@ export class CreateDeploymentsComponent
       : null;
 
     const req = {
-      // envId: JSON.parse(this.shared.getCookie('environment')).id,
-      envId: JSON.parse(localStorage.getItem('environment') || '{}').id,
+      environmentId: JSON.parse(localStorage.getItem('environment') || '{}').id,
       name: this.stepOneForm.getRawValue().name,
-      type: this.selectedVCS == 'zip' ? 'zip' : 'VCS',
-      provider: this.selectedVCS,
-      ...this.selectedRepoDetails,
-      zipFileName: this.stepOneForm.getRawValue().zipFilename,
-      replicas: this.stepOneForm.value.replicas || 0,
-      instanceType: this.stepOneForm.value.instanceType,
-      buildCommand: this.stepOneForm.value.buildCommand,
-      startCommand: this.stepOneForm.value.startCommand,
-      installCommand: this.stepOneForm.value.installCommand,
-      healthEndpoint: this.stepOneForm.value.healthEndpoint,
-      storage: this.stepOneForm.value.storage,
-      port:
-        this.stepOneForm.value.port == ''
-          ? null
-          : Number(this.stepOneForm.value.port),
-      ephemeralStorage,
-      stageToExecute: 'BuildDeploy',
-      configFileEnabled: filePathControl ? true : false,
-      configFilePath: filePathControl,
-      configFileKey: fileName?.replace(/\.[^/.]+$/, ''),
+      sourceCode: {
+        type: this.selectedVCS == 'zip' ? 'zip' : 'VCS',
+        gitUrl: this.selectedVCS == 'zip' ? null : this.selectedRepoDetails.repoUrl,
+        s3FileKey: this.selectedVCS == 'zip' ? this.stepOneForm.getRawValue().zipFilename : null,
+      },
+      application: {
+        replicas: this.stepOneForm.value.replicas || 0,
+        instanceType: this.stepOneForm.value.instanceType,
+        installCommand: this.stepOneForm.value.installCommand,
+        buildCommand: this.stepOneForm.value.buildCommand,
+        startCommand: this.stepOneForm.value.startCommand,
+        ephemeralStorage: ephemeralStorage,
+        storage: this.stepOneForm.value.storage
+          ? `${this.stepOneForm.value.storage}Gi`
+          : null,
+      },
+      network: {
+        port:
+          this.stepOneForm.value.port == ''
+            ? null
+            : Number(this.stepOneForm.value.port),
+        healthEndpoint: this.stepOneForm.value.healthEndpoint || null,
+        isCustomDns: false,
+        appIngressDomain: null,
+        customDomain: null,
+
+      },
+      config: {
+        name: fileName ? fileName?.replace(/\.[^/.]+$/, '') : null,
+        path: filePathControl ? filePathControl : null,
+        data: null,
+      }
     };
     const payload = this.cleanPayload(req);
     // const envId = JSON.parse(this.shared.getCookie('environment')).id;
@@ -768,7 +779,7 @@ export class CreateDeploymentsComponent
       this.selectedLabRepo = event;
       console.log('Selected Lab Repo:', this.selectedLabRepo);
       this.deploymentsService
-        .getAvailableBranches(this.currentProjectId,'gitlab',this.selectedLabRepo?.id)
+        .getAvailableBranches(this.currentProjectId, 'gitlab', this.selectedLabRepo?.id)
         .subscribe((branchDetails: any) => {
           this.branches = branchDetails.data;
           this.stepOneForm.get('branchName')?.setValue(this.branches[0]);
@@ -785,7 +796,7 @@ export class CreateDeploymentsComponent
             this.currentProjectId,
             'github',
             this.githubRepoDetails.full_name,
-            
+
           )
           .subscribe((hubBranch: any) => {
             this.branches = hubBranch.data;
