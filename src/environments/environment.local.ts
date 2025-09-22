@@ -23,13 +23,13 @@ export const environment = {
     loginUrl: 'https://api.dev.nimbuz.tech',
     projectsApiUrl: 'https://api.dev.nimbuz.tech/project/v1/projects',
     projectsBaseUrl: 'https://api.dev.nimbuz.tech/project/v1',
-    usermanagementApiUrl: 'https://api.dev.nimbuz.tech/user-management/v1/users/user',
-    usermanagementBaseUrl: 'https://api.dev.nimbuz.tech/user-management/v1',
-    deploymentManagement: 'https://api.dev.nimbuz.tech/deployment-management/v1',
+    usermanagementApiUrl: 'https://api.dev.nimbuz.tech/user/v1/users/user',
+    usermanagementBaseUrl: 'https://api.dev.nimbuz.tech/user/v1',
+    deploymentManagement: 'https://api.dev.nimbuz.tech/deployment/v1',
     jobExecutorBaseUrl: 'https://api.dev.nimbuz.tech/job-executor/v1',
     wss: 'wss://api.dev.nimbuz.tech/job-executor',
     pricingManagement: 'http://pricing-engine-sme.nimbuz.dev',
-    userManagement: 'https://api.dev.nimbuz.tech/user-management/v1/business/organisation',
+    userManagement: 'https://api.dev.nimbuz.tech/user/v1/business/organisation',
     logServiceUrl: 'https://api.dev.nimbuz.tech/nimbuz-logs-be',
 
 };

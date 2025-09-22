@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, EventEmitter, Input, OnInit, Output, ViewChild , ViewEncapsulation } from '@angular/core';
+import { AfterViewInit, Component, EventEmitter, Input, OnInit, Output, ViewChild, ViewEncapsulation } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import {
   AccordionButtonDirective,
@@ -100,7 +100,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
   ingressDomain: string = '';
   @Input() currentStatus: string = '';
   freezeAddNewData: boolean = false;
-  endpointStatus:string= '';
+  endpointStatus: string = '';
 
   constructor(private fb: FormBuilder, private sharedService: SharedService, private deploymentService: DeploymentsService,
     private toaster: ToastrService, private modalService: NgbModal, private route: Router, private ac: ActivatedRoute,
@@ -196,7 +196,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
     // this.networkSettingsForm.get('service')?.valueChanges.subscribe(value => {
     //   let envType = '';
     //   const region = localStorage.getItem('region') || 'ap-south-1a';
-      
+
     //   if (environment) {
     //     const envObj = JSON.parse(environment);
     //     envType = envObj?.type || '';
@@ -501,12 +501,35 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
 
     const ephemeralStorage = formValue.ephemeralStorage ? `${formValue.ephemeralStorage}Gi` : null;
     const req = {
-      ...formValue,
-      ephemeralStorage,
-      region: regionCookie,
-      zipFileName: sourceFormValue.fileName,
-      stageToExecute,
-      status: this.deploymentdetails?.status,
+      name: formValue.name,
+      environmentId: JSON.parse(localStorage.getItem('environment') || '{}').id,
+      sourceCode: {
+        type: sourceFormValue.type,
+        gitUrl: sourceFormValue.repoUrl,
+        s3FileKey: sourceFormValue.type === 'zip' ? fileName : null,
+      },
+      application: {
+        replicas: formValue.replicas,
+        instanceType: formValue.instanceType,
+        installCommand: formValue.installCommand,
+        buildCommand: formValue.buildCommand,
+        startCommand: formValue.startCommand,
+        ephemeralStorage: ephemeralStorage,
+        storage: formValue.storage,
+      },
+      network: {
+        healthEndpoint: formValue.healthEndpoint,
+        port: formValue.port,
+        isCustomDns: this.showCustomDnsHost,
+        customDomain: this.customDnsHost?.value || null,
+        appIngressDomain: this.ingressDomain
+
+      },
+      config: {
+        path: this.deploymentdetails?.config?.path || null,
+        name: this.deploymentdetails?.config?.filename || null,
+        data: this.deploymentdetails?.config?.data || null
+      }
     }
     this.deploymentService.updateDeployment(this.deploymentdetails?.id, req).subscribe((res: any) => {
       if (res.status === "Success") {
@@ -661,7 +684,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
     const environment = localStorage.getItem('environment');
     const envId = environment ? JSON.parse(environment).id : null;
     if (envId) {
-      this.deploymentService.getDeployments(envId).subscribe((res: any) => {
+      this.deploymentService.getDeployments().subscribe((res: any) => {
         if (res.status === "Success") {
           this.serviceList = res.data;
         }

@@ -237,10 +237,11 @@ export class EditToolComponent implements OnInit, OnDestroy {
         chart: this.toolDetails.data.chart,
         version: this.toolDetails.data.version,
         repository: this.toolDetails.data.repository,
-        values: formValues
+        values: formValues,
+        environmentId: this.env
       }
       if (this.paramsEdit) {
-        this.http.updateTools(this.env, req).subscribe((res: any) => {
+        this.http.updateTools(req).subscribe((res: any) => {
           if (res.status) {
             this.toastr.success('Updated successfully!');
           }

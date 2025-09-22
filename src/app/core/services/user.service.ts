@@ -8,20 +8,25 @@ export interface LoginData {
 }
 
 export interface RegistrationData {
-  type: string;
-  orgName: string;
-  username: string;
-  password: string;
-  email: string;
-  address: string;
-  terms: boolean;
+    type: string;
+    orgName: string;
+    username: string;
+    password: string;
+    email: string;
+    address: string;
+    terms: boolean;
 }
-
+export interface ResetPasswordData {
+    password: string;
+    oldPassword: string;
+    orgName: string;
+    username: string;
+}
 @Injectable({
     providedIn: 'root'
 })
 export class UserService {
-   private apiUrl = 'https://api.dev.nimbuz.tech/user/v1/user';
+    private apiUrl = 'https://api.dev.nimbuz.tech/user/v1/user';
 
     constructor(private http: HttpClient) { }
 
@@ -34,5 +39,13 @@ export class UserService {
     }
     forgotPassword(data: LoginData): Observable<any> {
         return this.http.post<any>(`${this.apiUrl}/forgot-password`, data);
+    }
+    resetPassword(req: ResetPasswordData): Observable<any> {
+        const accessToken = localStorage.getItem('accessToken');
+        const headers: { [header: string]: string } = {};
+        if (accessToken) {
+            headers['Authorization'] = `Bearer ${accessToken}`;
+        }
+        return this.http.post<any>(`${this.apiUrl}/reset-password`, req, { headers });
     }
 }

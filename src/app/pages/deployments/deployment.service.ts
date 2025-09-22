@@ -10,7 +10,6 @@ import { environment } from '../../../environments/environment';
 })
 export class DeploymentsService {
   private pricingManagement = environment.pricingManagement;
-  private apiUrl = environment.apiUrl;
   private deploymentManagement = environment.deploymentManagement;
   private jobExecutorUrl = environment.jobExecutorBaseUrl;
   private logServiceUrl = environment.logServiceUrl;
@@ -78,8 +77,8 @@ export class DeploymentsService {
       );
   }
 
-  getDeployments(env: string) {
-    return this.http.get(`${this.deploymentManagement}/environments/${env}/deployments`)
+  getDeployments() {
+    return this.http.get(`${this.deploymentManagement}/deployments`)
       .pipe(
         catchError(this.handleError.bind(this))
       );

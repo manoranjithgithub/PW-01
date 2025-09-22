@@ -71,7 +71,7 @@ export class LoginComponent implements OnInit {
   private getSubdomain(): string {
     const hostname = window.location.hostname;
     const subdomain = hostname.split('.')[0];
-    const isIndividual = subdomain === 'localhost';
+    const isIndividual = subdomain === 'app';
     return isIndividual ? 'nimbuz' : subdomain;
   }
 }
