@@ -83,4 +83,4 @@ deploy-prod:
     - helm repo add --username $HELM_REGISTRY_USER --password $HELM_REGISTRY_TOKEN dt-charts ${CI_API_V4_URL}/projects/34/packages/helm/stable
     - helm upgrade --install portal dt-charts/microservice --set namespace=nimbuz-prod --set env=prod --set subDomain=app --set appName=portal --set image.repository=registry.dilligentech.com/dt/paas/nimbuz-portal-fe --set image.tag=$(jq .version package.json -r) --set image.pullPolicy=Always --set service.targetPort=80 --namespace nimbuz-prod
   only:
-    - main
+    - master
