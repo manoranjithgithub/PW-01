@@ -22,9 +22,9 @@
                   </ng-container>
                   <ng-template #editEnvName>
                     <input formControlName="name" class="form-control" [placeholder]="envName" />
-                      <small class="text-danger mt-1" *ngIf="environmentForm.get('name')?.hasError('maxlength')">
-                        Maximum 50 characters allowed.
-                      </small>
+                    <small class="text-danger mt-1" *ngIf="environmentForm.get('name')?.hasError('maxlength')">
+                      Maximum 50 characters allowed.
+                    </small>
                   </ng-template>
                 </div>
 
@@ -229,7 +229,7 @@
     </c-accordion-item>
   </c-accordion> -->
 
-  <!-- <c-accordion>
+  <c-accordion>
     <c-accordion-item #item5="cAccordionItem" [visible]="true">
       <ng-template cTemplateId="accordionHeaderTemplate">
         <button (click)="item5.toggleItem()" [collapsed]="!item5.visible" cAccordionButton>
@@ -238,74 +238,75 @@
       </ng-template>
       <ng-template cTemplateId="accordionBodyTemplate">
         <div class="accordion-body">
+          <div class="col-md-12 text-end mb-4">
+            <button *ngIf="!isGeneralEditMode" class="btn btn-link p-0" (click)="toggleGeneralEditMode()">
+              <i class="bi bi-pencil-square edit-icon"></i>
+            </button>
+            <button *ngIf="isGeneralEditMode" class="btn btn-sm border border-2 border-black text-black"
+              (click)="saveEnvChanges()">
+              Save
+            </button>
+          </div>
           <form cForm [formGroup]="resourceQuotaForm">
-                      <div class="resource-grid">
-                          <div class="resource-card outline-blue text-format">
-                              <div formGroupName="ram">
-                                  <label for="current_ram">Max <b>RAM</b></label>
-                                  <div class="input-slider-container slider-row">
-                                      <input id="current_ram" type="range" class="custom-range-blue"
-                                          [min]="resourceQuotaForm.get('ram.min_ram')?.value"
-                                          [max]="resourceQuotaForm.get('ram.max_ram')?.value"
-                                          formControlName="current_ram" />
-                                      <span class="mx-2 value-display">{{
-                                          resourceQuotaForm.get('ram.max_ram')?.value
-                                          }} {{resourceQuotaForm.get('ram.unit')?.value}}</span>
-                                  </div>
-                                  <div class="d-flex justify-content-between my-4 custom-ram-label">
-                                      <span><small>{{
-                                              resourceQuotaForm.get('ram.current_ram')?.value }}
-                                              {{resourceQuotaForm.get('ram.unit')?.value}}</small></span>
-                                  </div>
-                              </div>
-                          </div>
-                          <div class="resource-card outline-green text-format">
-                              <div formGroupName="cpu">
-                                  <label for="current_cpu">Max <b>CPU</b></label>
-                                  <div class="input-slider-container slider-row">
-                                      <input id="current_cpu" type="range" step="0.5" class="custom-range-green"
-                                          [min]="resourceQuotaForm.get('cpu.min_cpu')?.value"
-                                          [max]="resourceQuotaForm.get('cpu.max_cpu')?.value"
-                                          formControlName="current_cpu" />
-                                      <span class="mx-2 value-display">{{
-                                          resourceQuotaForm.get('cpu.max_cpu')?.value
-                                          }} {{resourceQuotaForm.get('cpu.unit')?.value}}</span>
-                                  </div>
-                                  <div class="d-flex justify-content-between my-4 custom-cpu-label">
-                                      <span><small>{{
-                                              resourceQuotaForm.get('cpu.current_cpu')?.value }}
-                                              {{resourceQuotaForm.get('cpu.unit')?.value}}</small></span>
-                                  </div>
-                              </div>
-                          </div>
-                          <div class="resource-card outline-orange text-format">
-                              <div formGroupName="storage">
-                                  <label for="current_storage">Max <b>Storage</b></label>
-                                  <div class="input-slider-container slider-row">
-                                      <input id="current_storage" type="range" class="custom-range-orange"
-                                          [min]="resourceQuotaForm.get('storage.min_storage')?.value"
-                                          [max]="resourceQuotaForm.get('storage.max_storage')?.value"
-                                          formControlName="current_storage" />
-                                      <span class="mx-2 value-display">{{
-                                          resourceQuotaForm.get('storage.max_storage')?.value
-                                          }} {{resourceQuotaForm.get('storage.unit')?.value}}</span>
-                                  </div>
-                                  <div class="d-flex justify-content-between my-4 custom-storage-label">
-                                      <span><small>{{
-                                              resourceQuotaForm.get('storage.current_storage')?.value
-                                              }}
-                                              {{resourceQuotaForm.get('storage.unit')?.value}}</small></span>
-                                  </div>
-                              </div>
-                          </div>
-                      </div>
-                  </form>
+            <div class="resource-grid">
+              <div class="resource-card outline-blue text-format">
+                <label for="memoryMaxUserLimit">Max <b>RAM</b></label>
+                <div class="input-slider-container slider-row">
+                  <input id="memoryMaxUserLimit" type="range" class="custom-range-blue" [min]="0"
+                    [max]="resourceQuotaForm.get('memoryMaxPlatformLimit')?.value"
+                    formControlName="memoryMaxUserLimit" />
+                  <span class="mx-2 value-display">{{ resourceQuotaForm.get('memoryMaxPlatformLimit')?.value }}
+                    GB</span>
+                </div>
+                <div class="d-flex justify-content-between my-4 custom-ram-label">
+                  <span><small>{{ resourceQuotaForm.get('memoryMaxUserLimit')?.value }} GB</small></span>
+                </div>
+              </div>
+              <div class="resource-card outline-green text-format">
+                <label for="cpuMaxUserLimit">Max <b>CPU</b></label>
+                <div class="input-slider-container slider-row">
+                  <input id="cpuMaxUserLimit" type="range" step="0.5" class="custom-range-green" [min]="0"
+                    [max]="resourceQuotaForm.get('cpuMaxPlatformLimit')?.value" formControlName="cpuMaxUserLimit" />
+                  <span class="mx-2 value-display">{{ resourceQuotaForm.get('cpuMaxPlatformLimit')?.value }} vCPU</span>
+                </div>
+                <div class="d-flex justify-content-between my-4 custom-cpu-label">
+                  <span><small>{{ resourceQuotaForm.get('cpuMaxUserLimit')?.value }} vCPU</small></span>
+                </div>
+              </div>
+              <div class="resource-card outline-orange text-format">
+                <label for="ephemeralStorageMaxUserLimit">Max <b>Storage</b></label>
+                <div class="input-slider-container slider-row">
+                  <input id="ephemeralStorageMaxUserLimit" type="range" class="custom-range-orange" [min]="0"
+                    [max]="resourceQuotaForm.get('ephemeralStorageMaxPlatformLimit')?.value"
+                    formControlName="ephemeralStorageMaxUserLimit" />
+                  <span class="mx-2 value-display">{{ resourceQuotaForm.get('ephemeralStorageMaxPlatformLimit')?.value
+                    }} GB</span>
+                </div>
+                <div class="d-flex justify-content-between my-4 custom-storage-label">
+                  <span><small>{{ resourceQuotaForm.get('ephemeralStorageMaxUserLimit')?.value }} GB</small></span>
+                </div>
+              </div>
+              <div class="resource-card outline-orange text-format">
+                <label for="pvcStorageMaxUserLimit">Max <b>persisitanceVolumeClaims</b></label>
+                <div class="input-slider-container slider-row">
+                  <input id="pvcStorageMaxUserLimit" type="range" class="custom-range-orange" [min]="0"
+                    [max]="resourceQuotaForm.get('pvcStorageMaxPlatformLimit')?.value"
+                    formControlName="pvcStorageMaxUserLimit" />
+                  <span class="mx-2 value-display">{{ resourceQuotaForm.get('pvcStorageMaxPlatformLimit')?.value }}
+                    GB</span>
+                </div>
+                <div class="d-flex justify-content-between my-4 custom-storage-label">
+                  <span><small>{{ resourceQuotaForm.get('pvcStorageMaxUserLimit')?.value }} GB</small></span>
+                </div>
+              </div>
+            </div>
+          </form>
 
-                  <div class="d-flex justify-content-center mt-5" *ngIf="!isBusiness">
-                      <a class="link">
-                          Upgrade to Nimbuz Business to enable the resource limits.
-                      </a>
-                  </div>
+          <div class="d-flex justify-content-center mt-5" *ngIf="!isBusiness">
+            <a class="link">
+              Upgrade to Nimbuz Business to enable the resource limits.
+            </a>
+          </div>
           <div class="row">
             <div class="col-md-6 col-lg-4 mb-4" *ngFor="let item of resourceQuotas">
               <div class="card h-100 shadow-sm border">
@@ -337,7 +338,7 @@
         </div>
       </ng-template>
     </c-accordion-item>
-  </c-accordion> -->
+  </c-accordion>
 
 
   <!-- <c-accordion class="accordion-gap  mb-4">

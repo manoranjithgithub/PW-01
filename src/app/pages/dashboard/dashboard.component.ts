@@ -37,7 +37,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   cards = [
     { value: 0, label: 'Spent cost', change: -3.4, description: 'Month to date' },
     { value: 0, label: 'Estimated cost', change: 3.4, description: ' ' },
-    { value: '', label: 'Active/Paused deployments', change: -6.2, description: ' ' },
+    { value: '0', label: 'Active/Paused deployments', change: -6.2, description: ' ' },
     { value: 0, label: 'Failed/Pending deployments', change: -9.5, description: ' ' },
   ];
   form!: FormGroup;
@@ -82,43 +82,43 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       toTimestamp: new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0, 23, 59, 59, 999)).toISOString(),
       userId: localStorage.getItem('userId')
     };
-    this.http.getUsageCost(req).subscribe((res: any) => {
-      if (res.status.toLowerCase() === 'success') {
-        const totalCostSum = res.data?.usage?.reduce(
-          (acc: number, item: any) => acc + (item.totalCost || 0),
-          0
-        ) ?? 0;
-        const roundedTotalCost = Math.round(totalCostSum * 100) / 100;
+    // this.http.getUsageCost(req).subscribe((res: any) => {
+    //   if (res.status.toLowerCase() === 'success') {
+    //     const totalCostSum = res.data?.usage?.reduce(
+    //       (acc: number, item: any) => acc + (item.totalCost || 0),
+    //       0
+    //     ) ?? 0;
+    //     const roundedTotalCost = Math.round(totalCostSum * 100) / 100;
 
-        this.cards[0].value = totalCostSum === 0
-          ? '$0.00'
-          : roundedTotalCost.toLocaleString('en-US', {
-            style: 'currency',
-            currency: 'USD',
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-          });
+    //     this.cards[0].value = totalCostSum === 0
+    //       ? '$0.00'
+    //       : roundedTotalCost.toLocaleString('en-US', {
+    //         style: 'currency',
+    //         currency: 'USD',
+    //         minimumFractionDigits: 2,
+    //         maximumFractionDigits: 2
+    //       });
 
-        const estimatedCostSum =
-          res.data?.estimatedUsage && res.data.estimatedUsage.length > 0
-            ? res.data.estimatedUsage.reduce(
-              (acc: number, item: any) => acc + (item.estimatedCost || 0),
-              0
-            )
-            : 150;
-        console.log(estimatedCostSum)
-        const roundedEstimatedCost = Math.round(estimatedCostSum * 100) / 100;
+    //     const estimatedCostSum =
+    //       res.data?.estimatedUsage && res.data.estimatedUsage.length > 0
+    //         ? res.data.estimatedUsage.reduce(
+    //           (acc: number, item: any) => acc + (item.estimatedCost || 0),
+    //           0
+    //         )
+    //         : 150;
+    //     console.log(estimatedCostSum)
+    //     const roundedEstimatedCost = Math.round(estimatedCostSum * 100) / 100;
 
-        this.cards[1].value = estimatedCostSum === 0
-          ? '$0'
-          : roundedEstimatedCost.toLocaleString('en-US', {
-            style: 'currency',
-            currency: 'USD',
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-          });
-      }
-    })
+    //     this.cards[1].value = estimatedCostSum === 0
+    //       ? '$0'
+    //       : roundedEstimatedCost.toLocaleString('en-US', {
+    //         style: 'currency',
+    //         currency: 'USD',
+    //         minimumFractionDigits: 2,
+    //         maximumFractionDigits: 2
+    //       });
+    //   }
+    // })
     // const environment = this.sharedService.getCookie('environment');
     const environment = localStorage.getItem('environment');
     if (environment) {
