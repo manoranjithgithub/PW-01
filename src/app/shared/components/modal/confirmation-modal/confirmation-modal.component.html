@@ -1,0 +1,23 @@
+<div class="modal-content text-center p-4 rounded-xl shadow-lg" >
+  <div class="flex justify-center">
+    <div class="modal-icon-wrapper p-2">
+      <div class="modal-icon-circle">
+        <i class="bi bi-exclamation-circle-fill text-red-600 text-3xl"></i>
+      </div>
+    </div>
+  </div>
+  <ng-container *ngIf="selectedItem !== 'disconnect'; else disconnectTemplate">
+  <h4 class="text-red-600 font-semibold text-lg">Delete {{selectedItem}}?</h4>
+  <p class="mt-2 modal-text">Do you really want to delete this {{selectedItem}}? Click 'Confirm' to continue.</p>
+  </ng-container>
+  <ng-template #disconnectTemplate>
+    <h4 class="text-red-600 font-semibold text-lg">Disconnect Profile?</h4>
+    <p class="mt-2 modal-text">Are you sure you want to disconnect the selected profile from Nimbuz? Click 'Confirm' to continue</p>
+  </ng-template>
+
+  <hr/>
+  <div class="my-4 d-flex justify-content-center align-items-center gap-4">
+    <button type="button" class="px-5 py-2 btn-outline" (click)="cancel()">Cancel</button>
+    <button type="button" class="px-5 py-2 btn-solid" (click)="confirm()">Confirm</button>
+  </div>
+</div>

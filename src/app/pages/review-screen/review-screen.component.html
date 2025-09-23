@@ -1,0 +1,159 @@
+<div class="review-details">
+    <p class="fw-bold title">Review details</p>
+
+    <hr class="mb-4">
+    <div class="d-flex justify-content-between">
+        <h6 class="fw-bold mb-3">General</h6>
+        <button (click)="edit(0)" class="btn"><i class="bi bi-pencil-square edit-icon"></i></button>
+    </div>
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <label class="mb-1">Deployment type</label>
+            <span class="d-block">{{generalDetails?.type }}</span>
+        </div>
+        <div class="col-md-6" *ngIf="generalDetails?.type !== 'zip'">
+            <label class="mb-1">Deployment from</label>
+            <span class="d-block">{{selectedRepoName }} -
+                {{generalDetails?.branchName}}</span>
+        </div>
+    </div>
+    <!-- <div class="row mb-4">
+        <div class="col-md-6">
+            <label class="mb-1">Branch</label>
+            <span class="d-block">{{ review.stepOne.selectedBranch }}</span>
+        </div>
+    </div> -->
+
+    <hr class="mb-4">
+    <div class="d-flex justify-content-between">
+        <h6 class="fw-bold mb-3">Configuration</h6>
+        <button (click)="edit(0)" class="btn"><i class="bi bi-pencil-square edit-icon"></i></button>
+    </div>
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <label class="mb-1">Name</label>
+            <span class="d-block">{{generalDetails?.name }}</span>
+        </div>
+        <div class="col-md-6">
+            <label class="mb-1">Port Number</label>
+            <span class="d-block">{{generalDetails?.port }}</span>
+        </div>
+    </div>
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <label class="mb-1">Replicas</label>
+            <span class="d-block">{{generalDetails?.replicas }}</span>
+        </div>
+        <div class="col-md-6">
+            <label class="mb-1">Instance type</label>
+            <span class="d-block">{{generalDetails?.instanceType }}</span>
+        </div>
+    </div>
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <label class="mb-1">Build command</label>
+            <span class="d-block">{{generalDetails?.buildCommand ? generalDetails?.buildCommand : ' - '}}</span>
+        </div>
+        <div class="col-md-6">
+            <label class="mb-1">Start command</label>
+            <span class="d-block">{{generalDetails?.startCommand ? generalDetails?.startCommand : ' - '}}</span>
+        </div>
+    </div>
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <label class="mb-1">Install command</label>
+            <span class="d-block">{{generalDetails?.installCommand ? generalDetails?.installCommand : ' - '}}</span>
+        </div>
+        <div class="col-md-6">
+            <label class="mb-1">Health endpoint</label>
+            <span class="d-block">{{generalDetails?.healthEndpoint ? generalDetails?.healthEndpoint : ' -
+                '}}</span>
+        </div>
+        
+    </div>
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <label class="mb-1">Storage</label>
+            <span class="d-block">{{generalDetails?.storage ? generalDetails?.storage : ' - '}}</span>
+        </div>
+        <div class="col-md-6">
+            <label class="mb-1">Ephemeral storage</label>
+            <span class="d-block">{{generalDetails?.ephemeralStorage ? generalDetails?.ephemeralStorage : ' -
+                '}}</span>
+        </div>
+    </div>
+
+    <hr class="mb-4">
+    <div class="">
+        <div class="d-flex justify-content-between">
+            <h6 class="fw-bold mb-3">Environment variables</h6>
+            <button (click)="edit(1)" class="btn"><i class="bi bi-pencil-square edit-icon"></i></button>
+        </div>
+        <div class="row mb-4" *ngIf="hasData(envData.data);else noEnv">
+            <!-- <div class="col-md-6">
+                <label class="mb-1">Name</label>
+                <span class="d-block">{{envData?.name}}</span>
+            </div> -->
+            <div class="row mb-4">
+                <div *ngFor="let entry of objectKeys(envData.data)" class="col-md-6">
+                    <!-- <label class="mb-1">{{entry}} :</label>
+                    <span class="">{{envData.data[entry]}}</span> -->
+                    <div class="env-row">
+                        <label class="env-label">{{entry}} :</label>
+                        <span class="env-value" title="{{envData.data[entry]}}">{{envData.data[entry]}}</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <ng-template #noEnv>
+            <p class="text-center">No data found.</p>
+        </ng-template>
+    </div>
+
+    <hr class="mb-4">
+    <div class="">
+        <div class="d-flex justify-content-between">
+            <h6 class="fw-bold mb-3">Secrets</h6>
+            <button (click)="edit(2)" class="btn"><i class="bi bi-pencil-square edit-icon"></i></button>
+        </div>
+        <div class="row mb-4" *ngIf="hasData(secretData.data);else noSecrets">
+            <!-- <div class="col-md-6">
+                <label class="mb-1">Name</label>
+                <span class="d-block">{{secretData?.name}}</span>
+            </div> -->
+            <div class="row mb-4">
+                <div *ngFor="let entry of objectKeys(secretData.data)" class="col-md-6">
+                    <div class="env-row">
+                        <label class="env-label">{{entry}} :</label>
+                        <span class="env-value" title="{{secretData.data[entry]}}">{{secretData.data[entry]}}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <ng-template #noSecrets>
+            <p class="text-center">No data found.</p>
+        </ng-template>
+    </div>
+
+    <hr class="mb-4">
+    <div class="">
+        <div class="d-flex justify-content-between">
+            <h6 class="fw-bold mb-3">Config as file</h6>
+            <button (click)="edit(3)" class="btn"><i class="bi bi-pencil-square edit-icon"></i></button>
+        </div>
+        <div class="row mb-4" *ngIf="hasData(configFileData);else noFiles">
+            <div class="col-md-6">
+                <label class="mb-1">Path Name</label>
+                <span class="d-block">{{configFileData?.filePath}}</span>
+            </div>
+            <div class="col-md-6">
+                <label class="mb-1">Selected File</label>
+                <span class="d-block">{{getFileNameOnly(configFileData?.fileInput)}}</span>
+            </div>
+        </div>
+        <ng-template #noFiles>
+            <p class="text-center">No data found.</p>
+        </ng-template>
+    </div>
+</div>

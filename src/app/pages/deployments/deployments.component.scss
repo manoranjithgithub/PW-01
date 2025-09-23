@@ -1,0 +1,54 @@
+.table-primary,
+.table-primary>th,
+.table-primary>td {
+    background-color: #3114cd;
+    color: #fff;
+    font-size: 13px;
+}
+
+.dropdown {
+    position: absolute;
+    background: white;
+    border: 1px solid #ccc;
+    z-index: 1000;
+}
+
+.dropdown ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.dropdown li {
+    padding: 8px 12px;
+    cursor: pointer;
+}
+
+.dropdown li:hover {
+    background-color: #f0f0f0;
+}
+.url-cell-wrapper {
+  display: flex;
+  flex-direction: column;
+  max-width: 300px;
+}
+
+.url-line {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ellipsis-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-block;
+  max-width: 230px;
+}
+// .badge{
+//   background: #fff !important;
+//   border: 1px solid #CACFD8;
+// }

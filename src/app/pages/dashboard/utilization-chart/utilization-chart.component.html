@@ -1,0 +1,32 @@
+<div class="chart-container" style="position: relative;">
+  <div *ngIf="title === 'Storage'" class="chart-overlay">
+    Coming soon...
+  </div>
+
+  <div class="chart-header">
+    <h4>
+      <b>{{ title }}</b> Utilization
+      <i class="bi bi-info-circle"
+         [cTooltip]="'Usage for the past 5 minutes'"
+         cTooltipPlacement="top"
+         container="body"
+         placement="top"></i>
+    </h4>
+    <p>{{ subtitle }}</p>
+  </div>
+
+  <div class="chart-wrapper">
+    <canvas #chartCanvas></canvas>
+    <div class="chart-center-label">
+      <div>Total utilization</div>
+      <div class="utilization-value" [ngStyle]="{ color: getValueColor(value) }">{{ value }}%</div>
+      <div *ngIf="rawValue" class="chart-raw">({{ rawValue }})</div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span class="legend-item"><span class="dot green"></span> Low</span>
+    <span class="legend-item"><span class="dot yellow"></span> Moderate</span>
+    <span class="legend-item"><span class="dot red"></span> Critical</span>
+  </div>
+</div>

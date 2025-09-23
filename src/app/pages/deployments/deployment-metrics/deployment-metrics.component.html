@@ -1,0 +1,106 @@
+<div class="container">
+  <form [formGroup]="filterForm" (ngSubmit)="onFilter()"
+    class="filter-bar d-flex align-items-end gap-3 p-3 border rounded flex-wrap-md-nowrap w-100">
+
+    <div class="custom-multiselect w-30">
+      <label class="custom-label">Pods:
+        <div *ngIf="showPodError" class="text-danger">
+          (Please select at least one pod.)
+        </div>
+      </label>
+      <div class="dropdown-box custom-values" (click)="toggleDropdown()">
+        {{ selectedPods.length ? selectedPods.join(', ') : 'Select Pod Names' }}
+        <span class="arrow">&#9662;</span>
+      </div>
+
+      <div class="dropdown-list custom-label" *ngIf="dropdownOpen">
+        <label *ngFor="let pod of podList" class="dropdown-item custom-values">
+          <input type="checkbox" [value]="pod" [checked]="isSelected(pod)" (change)="onOptionChange($event)">
+          {{ pod }}
+        </label>
+      </div>
+
+    </div>
+
+    <div class="form-group mb-0" style="min-width: 100px;">
+      <label for="duration" class="custom-label">Time Duration:</label>
+      <select id="duration" formControlName="duration" class="form-control custom-values">
+        <option *ngFor="let duration of durations" [value]="duration.value">
+          {{ duration.label }}
+        </option>
+      </select>
+    </div>
+
+    <div class="form-group mb-0" style="min-width: 70px;">
+      <label for="interval" class="custom-label">Interval:</label>
+      <select id="interval" formControlName="interval" class="form-control custom-values">
+        <option *ngFor="let interval of intervals" [value]="interval.value">
+          {{ interval.label }}
+        </option>
+      </select>
+    </div>
+
+    <ng-container *ngIf="filterForm.get('duration')?.value === 'custom'">
+      <div class="d-flex gap-3 align-items-end">
+        <div class="form-group mb-0">
+          <label class="custom-label">From:</label>
+          <input type="datetime-local" formControlName="fromTimestamp"
+            class="form-control custom-values datetime-input" />
+        </div>
+
+        <div class="form-group mb-0">
+          <label class="custom-label">To:</label>
+          <input type="datetime-local" formControlName="toTimestamp"
+            class="form-control custom-values datetime-input" />
+        </div>
+      </div>
+    </ng-container>
+
+    <div class="form-group mb-0">
+      <button type="submit" class="btn btn-primary p-2 custom-label">Apply Filter</button>
+    </div>
+
+    <!-- <div class="ms-auto mb-0">
+        <button type="button" class="btn btn-outline-secondary" (click)="onRefresh()">
+          <i class="bi bi-arrow-clockwise"></i>
+        </button>
+      </div> -->
+  </form>
+
+  <hr>
+
+  <div class="usage-container">
+    <div class="usage-box">
+      <h4><b>CPU Usage</b></h4>
+      <div *ngIf="showNoDataMessage">
+        <p>No data to display</p>
+      </div>
+      <div *ngIf="!showNoDataMessage" class="chart-container">
+        <canvas #cpuChartCanvas></canvas>
+      </div>
+    </div>
+    <div class="usage-box">
+      <h4><b>RAM Usage</b></h4>
+      <div *ngIf="showNoDataMessage">
+        <p>No data to display</p>
+      </div>
+      <div *ngIf="!showNoDataMessage" class="chart-container">
+        <canvas #ramChartCanvas></canvas>
+      </div>
+    </div>
+    <div class="usage-box" style="position: relative;">
+      <div  class="chart-overlay">
+        Coming soon...
+      </div>
+      <h4><b>Storage Usage</b></h4>
+      <div *ngIf="showNoDataMessage">
+        <p>No data to display</p>
+      </div>
+      <div *ngIf="!showNoDataMessage" class="chart-container">
+        <canvas #storageChartCanvas></canvas>
+      </div>
+    </div>
+  </div>
+
+  <app-loader></app-loader>
+</div>

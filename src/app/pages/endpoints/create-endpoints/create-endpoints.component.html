@@ -1,0 +1,194 @@
+<div class="container mt-2">
+    <div class="d-flex justify-content-space-between">
+        <span class="cursor arrow-alignment" (click)="goToEndpoints()" *ngIf="showButton"><i class="bi bi-arrow-left"></i> Back</span>
+        <div class=" d-flex justify-content-end right-control">
+            <div class="my-2 mx-2" *ngIf="isView">
+                <button class="btn btn-primary px-4" (click)="toggleForm(endpointForm, false)"> <i
+                        class="bi bi-pencil"></i> Edit</button>
+            </div>
+            <div class=" my-2" *ngIf="isView">
+                <button class="btn btn-warning px-4" (click)="openConfirmationDialog()"><i class="bi bi-trash"></i> Delete</button>
+            </div>
+        </div>
+    </div>
+    <c-card-group>
+        <c-card class="p-4">
+            <c-card-body>
+                <form cForm [formGroup]="endpointForm">
+                    <div class="d-flex gap-3">
+                        <div class="flex-fill">
+                            <label for="name">Name</label>
+                            <input id="name" formControlName="name" class="form-control" />
+                            <div *ngIf="isInvalid('name') || submitted" class="text-danger">
+                                <div *ngIf="endpointForm.get('name')?.errors?.['required']" class="small">Name is
+                                    required.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex-fill custom-form-group">
+                            <c-form-check>
+                                <input cFormCheckInput id="checkOne" type="checkbox" [checked]="!isHostDisabled"
+                                    (change)="toggleHost($event)" [disabled]="isView" formControlName="customDns" />
+                                <label cFormCheckLabel for="checkOne">Enable custom DNS</label>
+                            </c-form-check>
+                        </div>
+                        <div class="flex-fill">
+                            <label for="host">Host</label>
+                            <input id="host" formControlName="host" class="form-control" />
+                            <div *ngIf="isInvalid('host') || submitted" class="text-danger">
+                                <div *ngIf="endpointForm.get('host')?.errors?.['required']" class="small">Host is
+                                    required.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <b>Rules</b>
+                    <div formArrayName="rules" class="rules-section">
+                        <div *ngFor="let rule of rules.controls; let i = index" [formGroupName]="i"
+                            class="d-flex gap-3">
+                            <div class="mb-3 flex-fill">
+                                <label>Path</label>
+                                <input formControlName="path" class="form-control" />
+                                <div *ngIf="isArrayInvalid(i, 'path') || submitted" class="text-danger">
+                                    <div *ngIf="rules.at(i).get('path')?.errors?.['required']" class="small">Path is
+                                        required.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex-fill">
+                                <label>Path Type</label>
+                                <select formControlName="path_type" class="form-control">
+                                    <option *ngFor="let type of pathTypes" [value]="type.value">{{ type?.name}}</option>
+                                </select>
+                                <div *ngIf="isArrayInvalid(i, 'path_type') || submitted" class="text-danger">
+                                    <div *ngIf="rules.at(i).get('path_type')?.errors?.['required']" class="small">Path
+                                        Type is
+                                        required.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex-fill">
+                                <label>Service</label>
+                                <select formControlName="service" class="form-control" (change)="onServiceChange(i)">
+                                    <option *ngFor="let service of serviceOptions" [value]="service.name">{{
+                                        service?.name
+                                        }}</option>
+                                </select>
+                                <div *ngIf="isArrayInvalid(i,'service') || submitted" class="text-danger">
+                                    <div *ngIf="rules.at(i).get('service')?.errors?.['required']" class="small">Service
+                                        is
+                                        required.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex-fill">
+                                <label>Service Port</label>
+                                <select formControlName="service_port" class="form-control">
+                                    <option *ngFor="let port of availablePorts[i]" [value]="port.number">{{ port?.number
+                                        }}</option>
+                                </select>
+                                <div *ngIf="isArrayInvalid(i, 'service_port') || submitted" class="text-danger">
+                                    <div *ngIf="rules.at(i).get('service_port')?.errors?.['required']" class="small">
+                                        Service Port
+                                        is
+                                        required.</div>
+                                    <div *ngIf="rules.at(i).get('service_port')?.errors?.['pattern']" class="small">
+                                        Service Port
+                                        must be
+                                        a number.</div>
+                                </div>
+                            </div>
+                            <div class="flex-fill" *ngIf="!isView">
+                                <div class="mt-4">
+                                    <span (click)="removeRule(i)" class="text-danger small cursor"
+                                        *ngIf="rules.length > 1"><i class="bi bi-trash"></i></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-right" *ngIf="!isView"><button (click)="addRule()"
+                                class="btn btn-primary small"><i class="bi bi-plus"></i>Add Rule</button></div>
+                    </div>
+
+                    <div class="mb-3 d-flex align-items-center toggle-bar">
+
+                        <label for="toggleAuthentication" class="mr-5">Enable Authentication </label>
+                        <div class="form-check form-switch">
+                            <input id="toggleAuthentication" type="checkbox" class="form-check-input"
+                                formControlName="showAuthentication" (change)="toggleAuthentication($event)" />
+                        </div>
+                    </div>
+                    <div *ngIf="endpointForm.get('showAuthentication')?.value" formGroupName="authentication"
+                        class="d-flex gap-3 mb-3">
+                        <div class="mb-3 flex-fill">
+                            <label for="username">Username</label>
+                            <input id="username" formControlName="username" class="form-control" autocomplete="off"/>
+                            <div *ngIf="isInvalid('authentication.username') || submitted" class="text-danger">
+                                <div *ngIf="authentication.get('username')?.errors?.['required']" class="small">Username
+                                    is
+                                    required.</div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3 flex-fill">
+                            <label for="password">Password</label>
+                            <div class="input-group">
+                                <input id="password" formControlName="password" [type]="hide ? 'password' : 'text'"
+                                    class="form-control" autocomplete="new-password"/>
+                                <span class="input-group-addon"><i class="positioning glyphicon bi"
+                                        [ngClass]="{'bi-eye': hide, 'bi-eye-slash': !hide}"
+                                        (click)="toggleVisibility()"></i></span>
+                            </div>
+                            <div *ngIf="isInvalid('authentication.password') || submitted" class="text-danger">
+                                <div *ngIf="authentication.get('password')?.errors?.['required']" class="small">Password
+                                    is
+                                    required.</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-right" *ngIf="!isView && showButton">
+                        <button class="btn btn-secondary w-20 mx-2"
+                            (click)="toggleForm(endpointForm, true)">Cancel</button>
+                        <button type="submit" class="btn btn-primary w-20" (click)="onSubmit()">Submit</button>
+                    </div>
+                </form>
+            </c-card-body>
+        </c-card>
+    </c-card-group>
+    <app-loader></app-loader>
+</div>
+
+
+<app-modal #confirmationModel [modalConfig]="confirmationConfig">
+    <form class="m-2">
+        <div class="form-group">
+            <h6><b>Set up your domain manually by addingthe following records</b></h6>
+            <div class="d-flex">
+                <div>
+                    <label class="">Record </label>
+                    <input type="text" value="A" class="form-control" readonly />
+                </div>
+                <div class="mx-2">
+                    <label class="">Host </label>
+                    <input type="text" value="@" class="form-control" readonly />
+                </div>
+            </div>
+            <div class=" my-2">
+                <label>Required Value </label>
+                <div class="input-group">
+                    <input type="text" class="form-control" [(ngModel)]="domainValue" name="domainValue"
+                        class="form-control" #userinput readonly>
+                    <div class="input-group-append">
+                        <span class="input-group-text" (click)="copyDomainValue(userinput)"><i class="bi bi-clipboard"
+                                aria-hidden="true"></i></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+    <div class="mt-4 text-right">
+        <button class="btn btn-primary mx-2 px-3 py-1" (click)="closeModal()">Ok</button>
+    </div>
+</app-modal>

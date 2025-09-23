@@ -1,0 +1,19 @@
+<div class="url-wrapper">
+    <ng-container *ngIf="publicUrl">
+        <div class="url-line" [attr.title]="!endpointStatus ? 'Endpoint not ready yet' : publicUrl">
+            <span>Public:</span>
+            <a class="ellipsis" href="https://{{publicUrl}}" target="_blank"
+                [ngClass]="{'disabled-link': !endpointStatus}"
+                >{{'https://' + publicUrl }}</a>
+        </div>
+    </ng-container>
+    <ng-container *ngIf="privateUrl">
+        <div class="url-line" [attr.title]="!endpointStatus ? 'Endpoint not ready yet' : privateUrl">
+            <span>Private:</span>
+            <!-- <span class="ellipsis">{{ privateUrl }}</span> -->
+            <a class="ellipsis" href="https://{{privateUrl}}" target="_blank"  [ngClass]="{'disabled-link': !endpointStatus}"
+                [attr.title]="endpointStatus ? 'Endpoint not ready yet' : null">{{ 'http://' + privateUrl }}</a>
+        </div>
+    </ng-container>
+
+</div>

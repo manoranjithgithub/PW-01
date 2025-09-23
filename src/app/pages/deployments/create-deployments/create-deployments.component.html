@@ -1,0 +1,316 @@
+<div class="stepper" *ngIf="currentStep !== 4">
+  <div class="step" *ngFor="let step of steps; let i = index" [ngClass]="{
+        'completed': i < currentStep,
+        'incomplete': i < currentStep && !isStepCompleted(i),
+        'active': i === currentStep,
+        'disabled': !canNavigateToStep(i)
+      }" (click)="canNavigateToStep(i) && goToStep(i)">
+    <div class="circle">
+      <span *ngIf="i < currentStep">
+        <ng-container *ngIf="isStepCompleted(i)">&#10003;</ng-container>
+        <!-- <ng-template #incompleteIcon> <i class="bi bi-x"></i></ng-template> -->
+      </span>
+    </div>
+    <div class="label" [innerHTML]="step.label"></div>
+  </div>
+</div>
+<hr />
+
+<div class="step-content">
+  <div class="step-content-section">
+
+    <ng-container *ngIf="steps[currentStep].label === 'General'">
+      <form [formGroup]="stepOneForm">
+        <div class="container">
+          <div class="row">
+            <div class="col-md-4" style="margin-top:1px">
+              <!-- <label class="form-label">Choose a deployment type</label> -->
+              <!-- <select formControlName="type" id="deployOptions" class="form-select" (change)="selectedType($event)">
+                <option value="" disabled selected hidden>Choose a type to continue</option>
+                <option *ngFor="let option of deployOptions" [value]="option.value">
+                  {{ option.name }}
+                </option>
+              </select> -->
+              <mat-label class="form-label">Choose a deployment type</mat-label>
+              <mat-select formControlName="type" id="deployOptions" class="form-select mt-2">
+                <mat-option value="" disabled selected hidden>Choose a type to continue</mat-option>
+                <mat-option *ngFor="let option of deployOptions" [value]="option.value" (click)="selectedType(option)">
+                  <i class="bi" [ngClass]="option.icon" [style.color]="option.color"></i> {{ option.name }}
+                </mat-option>
+              </mat-select>
+            </div>
+            <div class="col-md-8" *ngIf=" selectedVCS && selectedVCS !== 'zip'">
+              <div class="d-flex justify-content-between gap-2">
+                <div class="w-100">
+                  <label class="form-label">Select {{selectedVCS | lowercase}} repo</label>
+                  <select formControlName="selectedRepo" id="reposList" class="form-select">
+                    <option *ngFor="let option of reposList" [value]="option.id">
+                      {{ option.name }}
+                    </option>
+                  </select>
+                  <div class="mt-2" *ngIf="selectedRepoDetails">
+                    <small
+                      [ngClass]="selectedRepoDetails.webhook ? 'text-success' : 'text-danger'">{{selectedRepoDetails.webhook
+                      ?
+                      'Auto-sync is active. Your changes will update automatically.': 'Auto-sync unavailable, please
+                      update manually'}}</small>
+                  </div>
+                </div>
+                <div class="w-100">
+                  <label class="form-label">Select the branch</label>
+                  <select formControlName="branchName" id="branchName" class="form-select">
+                    <option *ngFor="let option of branches" [value]="option">
+                      {{ option }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-8" *ngIf="selectedVCS === 'zip'">
+              <div class="col-md-4">
+                <label class="form-label">Zip Filename</label>
+                <input type="text" class="form-control" formControlName="zipFilename">
+              </div>
+            </div>
+          </div>
+          <div class="border-bottom mb-4">&nbsp;</div>
+          <!-- <h4>Deployment configuration</h4> -->
+          <div class="container">
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label class="form-label">Name <span class="required text-danger">*</span></label>
+                <input type="text" class="form-control" formControlName="name" (blur)="checkAvailablity()">
+                <div class="text-danger my-1" *ngIf="isError('name', 'required')">
+                  This field is required.
+                </div>
+                <div class="text-danger my-1" *ngIf="isError('name','pattern')">
+                  Name must contain only lowercase letters, numbers, and separators (., -). Consecutive separators
+                  and uppercase letters are not allowed.
+                </div>
+                <div class="text-danger my-1" *ngIf="isError('name','nameValidation')"> Name is already taken</div>
+                <div class="text-danger my-1" *ngIf="isError('name', 'maxlength')">
+                  Maximum 40 characters allowed.
+                </div>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Replicas</label>
+                <input type="text" class="form-control" formControlName="replicas">
+                <!-- <div class="text-danger my-1" *ngIf="isError('replicas', 'required')">
+                  This field is required.
+                </div> -->
+                <div class="text-danger my-1"
+                  *ngIf="isError('replicas', 'pattern') && !isError('replicas', 'required')">
+                  Only numbers are allowed.
+                </div>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label w-100">
+                  <div class="d-flex justify-content-between align-items-center text-nowrap">
+                    <span>
+                      Instance Type <span class="required text-danger">*</span>
+                    </span>
+                    <span class="text-gray ml-auto text-nowrap">
+                      ( <span class="mx-1"><b>CPU:</b> {{selectedResource?.cpu}}</span>
+                      <span class="mx-1"><b>Memory:</b> {{selectedResource?.memory}}</span>
+                      <span class="mx-1"><b>Price:</b> {{selectedResource?.price}}</span> )
+                    </span>
+                  </div>
+                </label>
+                <select formControlName="instanceType" id="resource" class="form-select"
+                  (change)="onInstanceTypeChange()">
+                  <!-- <option value="">Select a Resource</option> -->
+                  <option *ngFor="let resource of resources" [value]="resource.name">
+                    {{ resource.name }}
+                  </option>
+                </select>
+                <div class="text-danger my-1" *ngIf="isError('instanceType', 'required')">
+                  This field is required.
+                </div>
+                <div class="text-danger my-1" *ngIf="cpuExhausted">
+                  CPU usage exceeded.
+                </div>
+                <div class="text-danger my-1" *ngIf="ramExhausted">
+                  RAM usage exceeded.
+                </div>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Port</label>
+                <input type="text" class="form-control" formControlName="port">
+                <div class="text-danger my-1" *ngIf="isError('port', 'maxlength')">
+                  Port can have at most 5 digits.
+                </div>
+                <div class="text-danger my-1" *ngIf="isError('port', 'pattern')">
+                  Port must be a number.
+                </div>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Build Command
+                  <span [cTooltip]="commandValidation" cTooltipPlacement="top" class="text-warning cursor mx-1">
+                    <i class="bi bi-exclamation-circle"></i>
+                  </span>
+                </label>
+                <input type="text" class="form-control" formControlName="buildCommand" placeholder="">
+                <div *ngIf="isError('buildCommand','maxlength')" class="text-danger my-1">
+                  Maximun 60 characters only.
+                </div>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Start Command
+                  <span [cTooltip]="commandValidation" cTooltipPlacement="top" class="text-warning cursor mx-1">
+                    <i class="bi bi-exclamation-circle"></i>
+                  </span>
+                </label>
+                <input type="text" class="form-control" formControlName="startCommand" placeholder="">
+                <div *ngIf="isError('startCommand','maxlength')" class="text-danger my-1">
+                  Maximun 60 characters only.
+                </div>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Install Command
+                  <span [cTooltip]="commandValidation" cTooltipPlacement="top" class="text-warning cursor mx-1">
+                    <i class="bi bi-exclamation-circle"></i>
+                  </span>
+                </label>
+                <input type="text" class="form-control" formControlName="installCommand" placeholder="">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Health Endpoint</label>
+                <input type="text" class="form-control" formControlName="healthEndpoint" placeholder="/health">
+                <div *ngIf="isError('healthEndpoint','maxlength')" class="text-danger my-1">
+                  Maximun 250 characters only.
+                </div>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label w-100">
+                  <div class="d-flex justify-content-between align-items-center text-nowrap">
+                    <span>
+                      Ephemeral Storage
+                      <span [cTooltip]="storageValidation" cTooltipPlacement="top" class="text-warning cursor mx-1">
+                        <i class="bi bi-exclamation-circle"></i>
+                      </span>
+                    </span>
+                    <span *ngIf="ephemeralQuota" class="text-gray ml-auto text-nowrap"> (
+                      <span class="mx-1"><b>Current:</b> {{ephemeralQuota?.current_usage}}Gi</span>
+                      <span class="mx-1"><b>Max:</b> {{ephemeralQuota?.max_limit}}Gi</span>
+                      <span class="mx-1"><b>Unused:</b> {{ephemeralQuota?.remaining}}Gi</span> )
+                    </span>
+                  </div>
+                </label>
+                <div class="input-group">
+                  <input type="text" class="form-control" formControlName="ephemeralStorage"
+                    (blur)="onEphemeralMouseOut()">
+                  <span class="input-group-text">Gi</span>
+                </div>
+                <div class="text-danger my-1" *ngIf="ephemeralExhausted">
+                  Ephemeral storage usage exceeded.
+                </div>
+                <div class="text-danger my-1" *ngIf="isError('ephemeralStorage', 'pattern')">
+                  Only numbers are allowed.The value will be considered in 'Gi'.
+                </div>
+              </div>
+              <div class="col-md-4">
+                <!-- <label class="form-label">Storage
+                  <span [cTooltip]="storageValidation" cTooltipPlacement="top" class="text-warning cursor">
+                    <i class="bi bi-exclamation-circle"></i>
+                </span>
+                </label>
+                <input type="text" class="form-control" formControlName="storage">
+                <div class="text-danger my-1" *ngIf="isError('storage', 'pattern')">
+                  Storage must be a number.
+                </div> -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+    </ng-container>
+    <ng-container *ngIf="steps[currentStep].label === 'Environment variable'">
+      <app-environment-variables (envDetails)="getenvironmentList($event)" [deploymentData]="stepOneForm.value"
+        [canAddVariables]="false" [envDataFromParent]="envData" #envDetails></app-environment-variables>
+    </ng-container>
+    <ng-container *ngIf="steps[currentStep].label === 'Secrets'">
+      <app-deployment-secrets [deploymentData]="stepOneForm.value" [canAddVariables]="false"
+        [secretDataFromParent]="secretData" (secretDetails)="getSecretList($event)"
+        #secretDetails></app-deployment-secrets>
+    </ng-container>
+    <ng-container *ngIf="steps[currentStep].label === 'Config as file'">
+      <div class="container w-50 my-4">
+        <form [formGroup]="fileUploadForm">
+          <div class="form-group">
+            <label for="fileInput" class="form-label">Select a file to upload (in .yml or .json format) :</label>
+            <div class="d-flex align-items-center gap-2">
+              <div class="w-100">
+                <input type="file" id="fileInput" formControlName="fileInput" class="form-control"
+                  accept=".json,.yml,.yaml" (change)="onFileSelect($event, 'config')" />
+              </div>
+              <i class="bi bi-x-circle-fill fs-4 text-dark cursor-pointer" (click)="clearFile()"
+                title="Clear Selected File"></i>
+              <!-- <div class="mx-2" *ngIf="fileName">{{ fileName }}</div> -->
+            </div>
+            <div
+              *ngIf="fileUploadForm.get('fileInput')?.hasError('invalidFileType') && fileUploadForm.get('fileInput')?.touched"
+              class="text-danger my-2">
+              Invalid file type. Only .yml, .json files are allowed.
+            </div>
+            <div
+              *ngIf="fileUploadForm.get('fileInput')?.hasError('fileSizeExceeded') && fileUploadForm.get('fileInput')?.touched"
+              class="text-danger my-2">
+              File size exceeds the limit of 500MB.
+            </div>
+            <div *ngIf="fileUploadForm.get('fileInput')?.hasError('required')" class="text-danger my-2">
+              File is required.
+            </div>
+          </div>
+          <div class="my-2">
+            <label class="form-label">File Path</label>
+            <input type="text" formControlName="filePath" name="filePath" class="form-control"
+              (blur)="checkFileAvailble()" />
+            <div *ngIf="fileUploadForm.get('filePath')?.hasError('required')" class="text-danger my-2">
+              File path is required when a file is uploaded.
+            </div>
+          </div>
+          <!-- <button class="btn btn-primary my-4" [disabled]="fileUploadForm.invalid"
+            (click)="onZipUpload()">Upload</button> -->
+        </form>
+      </div>
+    </ng-container>
+    <ng-container *ngIf="steps[currentStep].label === 'Review'">
+      <app-review-screen [generalDetails]="stepOneForm.value" [envData]="envData" [secretData]="secretData"
+        (editSelectedStep)="editSelectedStep($event)" [configFileData]="fileUploadForm.value"
+        [selectedRepoName]="selectedRepoName"></app-review-screen>
+    </ng-container>
+  </div>
+  <div class="stepper-footer d-flex gap-3 justify-content-between my-4">
+    <div class="">
+      <button class="btn button-format-outline" (click)="prev()" [disabled]="currentStep === 0"
+        *ngIf="currentStep > 0">Previous</button>
+    </div>
+    <div class="">
+      <button class="btn button-format-solid"
+        (click)="next(currentStep === 4 ? 'Submit' : (currentStep === 3 ? 'Review' : 'Save & Continue'))"
+        [disabled]="stepOneForm.invalid">
+        {{ currentStep === 4 ? 'Submit' : (currentStep === 3 ? 'Review' : 'Save & Continue') }}
+      </button>
+    </div>
+  </div>
+</div>
+<app-modal #zipDeploymentModel [modalConfig]="zipDeploymentConfig">
+  <div class="container">
+    <form [formGroup]="zipUploadForm">
+      <div class="form-group">
+        <label for="zipfileInput">Select a file to upload(in .zip or .tar format) :</label>
+        <input type="file" id="zipfileInput" formControlName="zipfileInput" class="form-control mt-2"
+          [accept]="'.zip,.tar'" (change)="onZipFileSelect($event)" />
+        <div
+          *ngIf="zipUploadForm.get('zipfileInput')?.hasError('invalidFileType') && zipUploadForm.get('zipfileInput')?.touched"
+          class="alert alert-danger mt-4">
+          Invalid file type. Only .zip, .tar files are allowed.
+        </div>
+      </div>
+      <div class="d-flex justify-content-center mt-2">
+        <button class="btn btn-primary btn-visible-disabled" [disabled]="zipUploadForm.invalid"
+          (click)="onZipUpload()">Submit</button>
+      </div>
+    </form>
+  </div>
+</app-modal>

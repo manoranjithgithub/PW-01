@@ -1,0 +1,27 @@
+.card {
+    min-width: 180px;
+    // min-height: 155px;
+
+    .card-title {
+        color: var(--Greys-Blue-Grey-900, #151D48) !important;
+        font-family: 'plusFont', sans-serif;
+        font-size: 32px;
+        font-style: normal;
+        font-weight: 500
+    }
+
+    .card-subtitle {
+        color: #425166 !important;
+        font-family: 'plusFont', sans-serif;
+        font-size: 15px !important;
+        font-style: normal;
+        font-weight: 500;
+        line-height: 24px
+    }
+    .text-success{
+        color: #659711 !important;
+    }
+    .text-danger{
+        color: #E31837 !important;
+    }
+}

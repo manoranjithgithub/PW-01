@@ -1,0 +1,30 @@
+<form cForm [formGroup]="serviceQuotaForm" (ngSubmit)="onSubmit()">
+<div class="d-flex gap-3 mb-4 mt-4 label"><b>Service Quota</b></div>
+<div formGroupName="deployments" class="d-flex gap-3 mb-4 mt-4">
+  <label for="current_count" class="label">Deployments </label>
+  <input id="current_count" type="range" [min]="0" [max]="serviceQuotaForm.get('deployments.max_count')?.value"
+    (input)="updateDeploymentsSlider($event)" formControlName="current_count"/>
+  <span>{{ serviceQuotaForm.get('deployments.current_count')?.value }}</span>
+</div>
+<div formGroupName="secrets" class="d-flex gap-3 mb-4 ">
+  <label for="current_count" class="label">Secrets</label>
+  <input id="current_count" type="range" [min]="0" [max]=" serviceQuotaForm.get('secrets.max_count')?.value" 
+    (input)="updateSecretsSlider($event)" formControlName="current_count"/>
+  <span>{{ serviceQuotaForm.get('secrets.current_count')?.value }}</span>
+</div>
+<div formGroupName="configMaps" class="d-flex gap-3 mb-4 ">
+  <label for="current_count" class="label">Configmaps</label>
+  <input id="current_count" type="range" [min]="0" [max]=" serviceQuotaForm.get('configMaps.maxCount')?.value" 
+    (input)="updateConfigmapsSlider($event)" formControlName="current_count"/>
+  <span>{{ serviceQuotaForm.get('configMaps.current_count')?.value }}</span>
+</div>
+<div formGroupName="endpoints" class="d-flex gap-3 mb-4 ">
+  <label for="current_count" class="label">Endpoints</label>
+  <input id="current_count" type="range" [min]="0" [max]=" serviceQuotaForm.get('endpoints.max_count')?.value" 
+    (input)="updateEndpointsSlider($event)" formControlName="current_count"/>
+  <span>{{ serviceQuotaForm.get('endpoints.current_count')?.value }}</span>
+</div>
+<div class="d-flex justify-content-end">
+  <button type="submit" class="btn btn-primary w-20 mt-4 custom-margin">Save</button>
+</div>
+</form>

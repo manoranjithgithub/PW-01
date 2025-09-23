@@ -1,0 +1,91 @@
+<form [formGroup]="filterForm">
+    <div class="d-flex align-items-center justify-content-between w-100">
+        <div class="d-flex align-items-center gap-2 w-50">
+          <label class="form-label mb-0">Search</label>
+          <input
+            type="text"
+            class="form-control"
+            placeholder="Search by keyword..."
+            formControlName="searchText"
+          />
+        </div>
+        <div class="ms-auto">
+          <button type="button" class="btn btn-outline-secondary" (click)="onRefresh()">
+            <i class="bi bi-arrow-clockwise"></i>
+          </button>
+        </div>
+      </div>
+</form>
+<div class="log-container" [ngClass]="isLightMode ? 'log-container-light' : 'log-container-dark'" #scrollContainer>
+    <table class="log-table">
+        <thead>
+            <tr>
+                <th>Timestamp</th>
+                <th>Message</th>
+            </tr>
+        </thead>
+    </table>
+    <div class="log-body">
+        <table class="log-table">
+            <tbody>
+                <tr *ngIf="filteredLogs.length === 0">
+                    <td colspan="2" style="text-align: center;">No logs available</td>
+                </tr>
+                <tr *ngFor="let log of filteredLogs">
+                    <td>{{ log.timestamp }}</td>
+                    <td [innerHTML]="log.message | highlight:filterForm.get('searchText')?.value"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div *ngIf="totalItems > 0" class="pagination d-flex justify-content-between gap-3 my-4">
+    <!-- <pagination-controls
+      [id]="'log-pagination'"
+      [maxSize]="5"
+      [responsive]="true"
+      [autoHide]="false"
+      [directionLinks]="true"
+      [previousLabel]="'Prev'"
+      [nextLabel]="'Next'"
+      [totalItems]="totalItems"
+      [itemsPerPage]="itemsPerPage"
+      [(ngModel)]="currentPage"
+      (pageChange)="onPageChange($event)">
+    </pagination-controls> -->
+    <nav>
+        <ul class="pagination justify-content-center align-items-center">
+            <li class="page-item" [class.disabled]="currentPage === 1">
+                <button class="page-link" (click)="onPageChange(currentPage - 1)">Prev</button>
+            </li>
+            <li class="page-item" *ngIf="pages[0] > 1">
+                <button class="page-link" (click)="onPageChange(1)">1</button>
+            </li>
+            <li class="page-item" *ngIf="pages[0] > 2">
+                <span class="page-link">…</span>
+            </li>
+            <li class="page-item" *ngFor="let page of pages" [class.active]="currentPage === page">
+                <button class="page-link" (click)="onPageChange(page)">{{ page }}</button>
+            </li>
+            <li class="page-item" *ngIf="pages[pages.length - 1] < totalItems - 1">
+                <span class="page-link">…</span>
+            </li>
+            <li class="page-item" *ngIf="pages[pages.length - 1] < totalItems">
+                <button class="page-link" (click)="onPageChange(totalItems)">{{ totalItems }}</button>
+            </li>
+            <li class="page-item" [class.disabled]="currentPage === totalItems">
+                <button class="page-link" (click)="onPageChange(currentPage + 1)">Next</button>
+            </li>
+
+        </ul>
+    </nav>
+
+    <label class="d-flex align-items-center justify-content-between gap-2">
+        <span class="form-label page-options">Page Size:</span>
+        <select [(ngModel)]="itemsPerPage" (change)="onChangePageSize($event)"
+            class="form-select form-select-sm page-options">
+            <option *ngFor="let page of pageSizes" [value]="page">{{ page }}</option>
+        </select>
+    </label>
+</div>

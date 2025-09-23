@@ -1,0 +1,87 @@
+<app-loader></app-loader>
+
+<header class="fixed-header-section">
+  <div class="d-flex justify-content-between w-100 bg-gray-800 px-4">
+    <c-sidebar-header>
+      <c-sidebar-brand [routerLink]="[]">
+        <img src="assets/images/logo-with-name.png" class="sidebar-brand-narrow" height="20" />
+        <img src="assets/images/logo-with-name.png" class="sidebar-brand-full" height="20" />
+        <!-- <span class="logo-title sidebar-brand-full">NIMBUZ</span> -->
+      </c-sidebar-brand>
+    </c-sidebar-header>
+    <app-default-header [cShadowOnScroll]="'sm'" class="d-print-none header header-sticky p-0" position="sticky"
+      sidebarId="sidebar1" [ngClass]="{'shadow-sm': isScrolled}" [userData]="userInfo" />
+  </div>
+
+</header>
+
+<div class="project-switch-section" *ngIf="!isProjectsPage() && showSwitchProject">
+  <app-switch-project></app-switch-project>
+</div>
+<c-sidebar #sidebar1="cSidebar" class="d-print-none sidebar sidebar-fixed" colorScheme="dark" id="sidebar1" visible>
+  <ng-scrollbar #scrollbar="ngScrollbar" (updated)="onScrollbarUpdate(scrollbar.state)" class="overflow"
+    pointerEventsMethod="scrollbar" visibility="hover">
+    <c-sidebar-nav #overflow [navItems]="navItems" dropdownMode="close" compact />
+  </ng-scrollbar>
+  @if (!sidebar1.narrow) {
+  <c-sidebar-footer cSidebarToggle="sidebar1" class="d-none d-lg-flex" toggle="unfoldable" style="cursor: pointer;">
+    <button cSidebarToggler></button>
+  </c-sidebar-footer>
+  }
+  <div class="fixed-profile mx-4 mb-2 rounded mt-3 mb-4">
+    <div class="hstack gap-4">
+      <div class="text-dark mode-type">{{ colorMode() === 'light' ? 'Light Mode' : 'Dark Mode' }}</div>
+      <div class="john-title">
+        <div class="theme-toggle">
+          <label class="switch">
+            <input type="checkbox" [checked]="colorMode() === 'light'" (change)="setTheme($event)">
+            <span class="slider">
+              <i class="bi bi-moon icon-moon"></i>
+              <i class="bi bi-sun icon-sun"></i>
+            </span>
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+</c-sidebar>
+
+<div class="wrapper d-flex flex-column min-vh-100">
+
+
+  <!-- <ul *ngIf="navItems?.length" class="navs mb-4 ">
+    <li *ngFor="let list of navItems">{{ list?.name }}</li>
+  </ul> -->
+
+  <div class="body flex-grow-1 main-container">
+    <app-breadcrumb></app-breadcrumb>
+    <div class="mt-2 mb-4">
+      <div class="d-flex  align-items-start">
+        <div class="d-flex align-items-center gap-2">
+          <h2 class="page-title">{{ pageTitle }}
+            <span *ngIf="selectedItemFromCom" class="selectedItemFromCom">
+              <span class="page-title"> - </span>
+              {{ getItemName() }}
+              <small *ngIf="getItemStatus()" class="font-16">({{ getItemStatus() }})</small>
+            </span>
+          </h2>
+        </div>
+        <div class="mt-1" *ngIf="selectedItemFromCom">
+          <c-dropdown class="action-dropdown">
+            <button class="btn btn-icon" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="bi bi-three-dots-vertical"></i>
+            </button>
+            <ul cDropdownMenu class="dropdown-menu dropdown-menu-end" style="padding: 0;">
+              <li><a class="dropdown-item" (click)="onPageActionClick()">Delete</a></li>
+            </ul>
+          </c-dropdown>
+        </div>
+      </div>
+      <p class="subtitle mb-0">{{subText}}</p>
+    </div>
+    <c-container breakpoint="lg" class="h-auto px-0">
+      <router-outlet #routerOutlet="outlet"></router-outlet>
+    </c-container>
+  </div>
+
+</div>

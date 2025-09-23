@@ -1,0 +1,36 @@
+label {
+    font-weight: bold;
+    font-size: 13px;
+}
+
+.small {
+    font-size: 13px;
+}
+
+.cursor {
+    cursor: pointer;
+}
+
+.rules-section {
+    border: 1px solid #ddd;
+    border-radius: 0.25rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.custom-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.custom-form-group {
+    border-radius: 0.25rem;
+    padding: 2rem;
+}
+
+.positioning {
+    position:absolute;
+    top:35%; 
+    right:3%
+}

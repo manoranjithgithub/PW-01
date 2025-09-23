@@ -1,0 +1,33 @@
+<div class="modal" *ngIf="isOpen">
+	<article class="modal-container" [ngClass]="tableTheme === 'dark' ? 'background-grey' : 'background-lightgrey'">
+		<header class="modal-container-header">
+			<h3 class="modal-container-title">
+         Create your Environment 
+			</h3>
+			<button type="button" class="btn-close" (click)="cancel()"></button>
+		</header>
+		<section class="modal-container-body rtf envmo" >
+          <form [formGroup]="environmentForm">
+		<div >
+			<div >
+				<label for="name">Environment Name
+					<span class="cursor"  title="{{nameValidation}}"><i class="bi bi-info-circle"></i>
+					</span>
+				</label>
+				<input type="text" id="name" name="name" formControlName="name" >
+			</div>
+			  <div *ngIf="environmentForm.get('name')?.invalid && environmentForm.get('name')?.touched" class="text-danger">
+				<small *ngIf="environmentForm.get('name')?.hasError('invalidName')">Environment name is invalid</small>
+			  </div>
+			<div class="mt-4">
+				<label for="region">Region</label>
+				<select formControlName="region" class="form-control mt-2">
+					<option *ngFor="let region of regionOptions" [value]="region.name">{{region?.name}}</option>
+				</select>
+			</div>
+		</div>
+          </form>
+		</section>
+			<button class="btn btn-primary w-25 p-2 mx-auto envcreate" (click)="createEnvironment()" [disabled]="environmentForm.invalid"> Create </button>
+	</article>
+</div>

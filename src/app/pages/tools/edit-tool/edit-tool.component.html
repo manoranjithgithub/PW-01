@@ -1,0 +1,78 @@
+<div class="container">
+    <form [formGroup]="form">
+        <c-alert color="warning" *ngIf="overprovisioned">
+            <div class="warn-text">
+              <i class="bi bi-exclamation-circle-fill"></i> Tool deployment is overprovisioned. Please consider scaling down the
+                Instance Type.
+            </div>
+        </c-alert>
+        <c-alert color="warning" *ngIf="underprovisioned">
+            <div class="warn-text">
+              <i class="bi bi-exclamation-circle-fill"></i> Tool deployment is underprovisioned. Please consider scaling up the
+                Instance Type.
+            </div>
+        </c-alert>
+        <div class="d-flex align-items-center">
+            <div class="tool-text me-3">{{ toolViewName }}</div>
+        </div>
+        <hr class="mb-2" />
+        <div class="row">
+            <div *ngFor="let field of formStructure" class="col-md-6 mt-2">
+                <label class="form-label text-capitalize d-flex justify-content-between" [for]="field.key">
+                        <span>{{ field.label }}<span class="text-danger">*</span></span>
+                        <span class="text-gray ml-auto text-nowrap" *ngIf="field.label === 'Instance Type' && selectedResource">
+                            ( <span class="mx-1"><b>CPU:</b> {{selectedResource.cpu}}</span>
+                            <span class="mx-1"><b>Memory:</b> {{selectedResource.memory}}</span>
+                            <span class="mx-1"><b>Price:</b> {{selectedResource.price}}</span> )
+                        </span>
+                    </label>
+                <ng-container [ngSwitch]="field.type">
+                    <input class="form-control" *ngSwitchCase="'disabled'" [formControlName]="field.key"
+                        [id]="field.key" type="text" [value]="field.key" readonly>
+                    <input class="form-control" *ngSwitchCase="'text'" [formControlName]="field.key" [id]="field.key"
+                        type="text" placeholder="{{field.placeholder}}">
+
+                    <div class="input-group" *ngSwitchCase="'password'">
+                        <input id="{{field.key}}" [formControlName]="field.key"
+                            [type]="hide[field.key] ? 'password' : 'text'" class="form-control"
+                            autocomplete="new-password" />
+
+                        <span class="input-group-addon">
+                            <i class="positioning glyphicon bi"
+                                [ngClass]="{'bi-eye': !hide[field.key], 'bi-eye-slash': hide[field.key]}"
+                                (click)="toggleVisibility(field.key)">
+                            </i>
+                        </span>
+                    </div>
+
+                    <div class="position-relative" *ngSwitchCase="'select'">
+                        <select class="form-select" [formControlName]="field.key" [id]="field.key"  (change)="onFieldChange($event,field.label)">
+                            <option *ngFor="let option of field.options" [value]="option">{{ option }}</option>
+                        </select>
+                    </div>
+                </ng-container>
+
+                <div *ngIf="form.get([field.key])?.errors?.['regex'] && (form.get([field.key])?.touched || submitted)" class="text-danger mt-1">
+                    {{ form.get([field.key])?.errors?.['regex']}}
+                </div>
+
+                <small
+                    *ngIf="form.get([field.key])?.errors?.['required'] && (form.get([field.key])?.touched || submitted)"
+                    class="text-danger mt-1">
+                    This field is required.
+                </small>
+            </div>
+        </div>
+        <hr class="my-4" />
+        <div class="d-flex justify-content-between  my-4">
+        </div>
+        <div class="d-flex justify-content-between  my-4">
+            <button class="btn button-format-outline" (click)="showToolsTable()">
+                <i class="bi bi-arrow-left"></i> Tools list
+            </button>
+            <div>
+                <button class="btn button-format-solid" (click)="onSubmit()">Update</button>
+            </div>
+        </div>
+    </form>
+</div>

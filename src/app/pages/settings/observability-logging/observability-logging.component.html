@@ -1,0 +1,17 @@
+<form cForm [formGroup]="observabilityLoggingForm" (ngSubmit)="onSubmit()">
+<div class="d-flex gap-3 mb-4 mt-4 label"><b>Logging</b></div>
+<div class="d-flex gap-3 mb-4 mt-4">
+    <label for="forwardLogs" class="label"> Select ElasticSearch domain to forward logs</label>
+    <select id="forwardLogs" class="input-select form-control" formControlName="forwardLogs">
+      <option value="" disabled selected> Select a domain</option>
+      <option *ngFor="let service of serviceOptions" [value]="service.name">{{service?.name}}</option>
+    </select>
+  </div>
+  <div class="d-flex gap-3 mb-4 mt-5">
+    <label for="loggingIndex" class="label">Logging Index</label>
+    <input id="loggingIndex" type="text" for="loggingIndex" class="input-select form-control" formControlName="loggingIndex">
+  </div>
+  <div class="d-flex justify-content-center mt-5">
+    <button type="submit" class="btn btn-primary w-20">Save</button>
+  </div>
+</form>
