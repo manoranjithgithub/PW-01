@@ -10,11 +10,12 @@ import { environment } from '../../../environments/environment';
 })
 export class EnvironmentService {
   private apiUrl = environment.projectsApiUrl;
+  private projectsApiUrl = environment.projectsBaseUrl;
 
   constructor(public http: HttpClient, private toastr: ToastrService) { }
 
-  createEnvironment(projectId: string, req: any){
-    return this.http.post(`${this.apiUrl}/${projectId}/environments`, req)
+  createEnvironment(req: any){
+    return this.http.post(`${this.projectsApiUrl}/environments`, req)
     .pipe(
       catchError(this.handleError.bind(this))
     );

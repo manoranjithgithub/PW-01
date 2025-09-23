@@ -64,8 +64,13 @@ export class AuthInterceptor implements HttpInterceptor {
           const message = error.error.error.details;
           this.toastr.error(message, 'Internal Server Error 404:');
         } else if (error.status === 400) {
-          const message = error.error?.message || 'Bad Request';
-          this.toastr.error(message);
+          if (error.error.customError && error.error?.response) {
+            const message = error.error.response.error.message;
+            this.toastr.error(message, message);
+          } else {
+            const message = error.error?.message || 'Bad Request';
+            this.toastr.error(message, message);
+          }
         } else {
           const message = error.error?.error || 'Please try again later';
           console.error('Unhandled error:', message);

@@ -187,30 +187,30 @@ export class ViewEnvironmentComponent implements OnInit, OnDestroy {
       toTimestamp: new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0, 23, 59, 59, 999)).toISOString(),
       userId: localStorage.getItem('userId')
     };
-    if (req) {
-      this.project.getUsageCost(req).subscribe((res: any) => {
-        this.currentUsageData = (res.data?.usage || []).map((item: any) => {
-          const hours = parseFloat(item.usageHours) || 0;
-          const cost = parseFloat(item.totalCost) || 0;
+    // if (req) {
+    //   this.project.getUsageCost(req).subscribe((res: any) => {
+    //     this.currentUsageData = (res.data?.usage || []).map((item: any) => {
+    //       const hours = parseFloat(item.usageHours) || 0;
+    //       const cost = parseFloat(item.totalCost) || 0;
 
-          return {
-            ...item,
-            hoursFormatted: `${hours.toFixed(2)} hours`,
-            costFormatted: `$${cost.toFixed(2)}`
-          };
-        });
-        this.estimatedUsageData = (res.data?.estimatedUsage || []).map((item: any) => {
-          const hours = parseFloat(item.usageHours) || 0;
-          const cost = parseFloat(item.estimatedCost) || 0;
+    //       return {
+    //         ...item,
+    //         hoursFormatted: `${hours.toFixed(2)} hours`,
+    //         costFormatted: `$${cost.toFixed(2)}`
+    //       };
+    //     });
+    //     this.estimatedUsageData = (res.data?.estimatedUsage || []).map((item: any) => {
+    //       const hours = parseFloat(item.usageHours) || 0;
+    //       const cost = parseFloat(item.estimatedCost) || 0;
 
-          return {
-            ...item,
-            hoursFormatted: `${hours.toFixed(2)} hours`,
-            costFormatted: `$${cost.toFixed(2)}`
-          };
-        });
-      })
-    }
+    //       return {
+    //         ...item,
+    //         hoursFormatted: `${hours.toFixed(2)} hours`,
+    //         costFormatted: `$${cost.toFixed(2)}`
+    //       };
+    //     });
+    //   })
+    // }
 
     this.layoutActionService.actionClick$
       .pipe(takeUntil(this.destroy$))
@@ -233,10 +233,15 @@ export class ViewEnvironmentComponent implements OnInit, OnDestroy {
     if (this.envName !== this.environmentForm.get('name')?.value) {
       this.envName = this.environmentForm.get('name')?.value || '';
       const reqBody = {
-        name: this.envName
+        name: this.envName,
+        id: this.envId,
+        projectId: this.projectId,
+        cpuMaxUserLimit: 5,
+        memoryMaxUserLimit: 10,
+        ephemeralStorageMaxUserLimit: 15,
+        pvcStorageMaxUserLimit: 50
       };
-      console.log('Updating environment with body:');
-      this.project.updateEnvironment(this.projectId, this.envId, reqBody).subscribe((res: any) => {
+      this.project.updateEnvironment(reqBody).subscribe((res: any) => {
         if (res.success) {
           this.toaster.success('Updated Successfully');
         } else {
@@ -358,9 +363,9 @@ export class ViewEnvironmentComponent implements OnInit, OnDestroy {
 
   getBarColor(item: any): string {
     const percent = this.getUsagePercent(item);
-    if (percent < 60) return '#198754'; 
+    if (percent < 60) return '#198754';
     if (percent < 85) return '#ffc107';
-    return '#dc3545';              
+    return '#dc3545';
   }
 
   ngOnDestroy(): void {

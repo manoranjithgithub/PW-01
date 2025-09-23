@@ -66,8 +66,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
       this.projectName = JSON.parse(storedValue).name;
       this.projectId = JSON.parse(storedValue).id;
     }
-   // const env = this.shared.getCookie('environment');
-   const env = localStorage.getItem('environment');
+    // const env = this.shared.getCookie('environment');
+    const env = localStorage.getItem('environment');
     if (env) {
       this.envId = JSON.parse(env).id;
     }
@@ -155,8 +155,14 @@ export class SettingsComponent implements OnInit, OnDestroy {
   updateEnvironment(): void {
     const req = {
       name: this.environmentForm.get('envName')?.value,
+      id: this.envId,
+      projectId: this.projectId,
+      cpuMaxUserLimit: 5,
+      memoryMaxUserLimit: 10,
+      ephemeralStorageMaxUserLimit: 15,
+      pvcStorageMaxUserLimit: 50
     }
-    this.projectService.updateEnvironment(this.projectId, this.envId, req).subscribe((res: any) => {
+    this.projectService.updateEnvironment(req).subscribe((res: any) => {
       if (res.status === 'Success') {
         this.toastr.success("Updated successfully");
         this.projectService.getEnvironmentsByProject(this.projectId).subscribe((envRes: any) => {

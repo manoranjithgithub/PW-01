@@ -109,6 +109,12 @@ export class DeploymentsService {
         catchError(this.handleError.bind(this))
       );
   }
+  getIntegrationStatus(projectID: string, provider: string) {
+    return this.http.get(`${this.projectsBaseUrl}/integrations/vcs?projectId=${projectID}&provider=${provider}&vcsUserId=${localStorage.getItem('userId')}`)
+      .pipe(
+        catchError(this.handleError.bind(this))
+      );
+  }
 
   integrateWithVCS(provider: string) {
     return this.http.get(`${this.deploymentManagement}/${provider}`)
