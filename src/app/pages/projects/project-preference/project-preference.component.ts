@@ -124,17 +124,28 @@ export class ProjectPreferenceComponent implements OnInit, OnDestroy {
     });
     this.projectService.getProjectDetailsById(this.currentProjectId).subscribe((res: any) => {
       if (res.status === "Success") {
-        this.updateIntegrationStatus('github', res.data.github,);
-        this.updateIntegrationStatus('gitlab', res.data.gitlab);
+        // this.updateIntegrationStatus('github', res.data.github,);
+        // this.updateIntegrationStatus('gitlab', res.data.gitlab);
+        // this.checkIntegrationStatus('github');
+        // this.checkIntegrationStatus('gitlab');
         this.projectDetails = res.data;
         this.layoutActionService.setExtraTitle(this.projectDetails.name);
         // this.projectEnvNames = (this.projectDetails.environments || []).map((env: any) => env.name);
-        this.projectEnvNames = (this.projectDetails.environments || []).map((env: any) => ({
-          name: env.name,
-          id: env.id,
-          region: env.region
-        }));
-        this.updateEnvironments();
+        this.projectService.getAllEnvironmentsByProject(this.currentProjectId).subscribe((envRes: any) => {
+          this.shared.emitEnvDDChange(envRes.data);
+          this.projectEnvNames = (envRes.data || []).map((env: any) => ({
+            name: env.name,
+            id: env.id,
+            region: env.region
+          }));
+          this.updateEnvironments();
+        });
+        // this.projectEnvNames = (this.projectDetails.environments || []).map((env: any) => ({
+        //   name: env.name,
+        //   id: env.id,
+        //   region: env.region
+        // }));
+        // this.updateEnvironments();
       }
 
       this.generalSettingForm = this.fb.group({
@@ -176,30 +187,30 @@ export class ProjectPreferenceComponent implements OnInit, OnDestroy {
       toTimestamp: new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0, 23, 59, 59, 999)).toISOString(),
       userId: localStorage.getItem('userId')
     };
-    if (req) {
-      this.projectService.getUsageCost(req).subscribe((res: any) => {
-        this.currentUsageData = (res.data?.usage || []).map((item: any) => {
-          const hours = parseFloat(item.usageHours) || 0;
-          const cost = parseFloat(item.totalCost) || 0;
+    // if (req) {
+    //   this.projectService.getUsageCost(req).subscribe((res: any) => {
+    //     this.currentUsageData = (res.data?.usage || []).map((item: any) => {
+    //       const hours = parseFloat(item.usageHours) || 0;
+    //       const cost = parseFloat(item.totalCost) || 0;
 
-          return {
-            ...item,
-            hoursFormatted: `${hours.toFixed(2)} hours`,
-            costFormatted: `$${cost.toFixed(2)}`
-          };
-        });
-        this.estimatedUsageData = (res.data?.estimatedUsage || []).map((item: any) => {
-          const hours = parseFloat(item.usageHours) || 0;
-          const cost = parseFloat(item.estimatedCost) || 0;
+    //       return {
+    //         ...item,
+    //         hoursFormatted: `${hours.toFixed(2)} hours`,
+    //         costFormatted: `$${cost.toFixed(2)}`
+    //       };
+    //     });
+    //     this.estimatedUsageData = (res.data?.estimatedUsage || []).map((item: any) => {
+    //       const hours = parseFloat(item.usageHours) || 0;
+    //       const cost = parseFloat(item.estimatedCost) || 0;
 
-          return {
-            ...item,
-            hoursFormatted: `${hours.toFixed(2)} hours`,
-            costFormatted: `$${cost.toFixed(4)}`
-          };
-        });
-      })
-    }
+    //       return {
+    //         ...item,
+    //         hoursFormatted: `${hours.toFixed(2)} hours`,
+    //         costFormatted: `$${cost.toFixed(4)}`
+    //       };
+    //     });
+    //   })
+    // }
 
     this.layoutActionService.actionClick$
       .pipe(takeUntil(this.destroy$))
@@ -213,12 +224,12 @@ export class ProjectPreferenceComponent implements OnInit, OnDestroy {
       integration.status = isConnected ? 'connected' : 'not connected';
     }
   }
-  // checkIntegrationStatus(provider: string) {
-  //   this.deploymentsService.getUserProfile(this.currentProjectId, provider.toLowerCase()).subscribe((data: any) => {
-  //     const isConnected = data && data.status === 'Success' && Object.keys(data.data).length > 0;
-  //     this.updateIntegrationStatus(provider, isConnected);
-  //   });
-  // }
+  checkIntegrationStatus(provider: string) {
+    this.deploymentsService.getIntegrationStatus(this.currentProjectId, provider.toLowerCase()).subscribe((data: any) => {
+      const isConnected = data && data.status === 'Success' && Object.keys(data.data).length > 0;
+      this.updateIntegrationStatus(provider, isConnected);
+    });
+  }
   updateEnvironments() {
     const envCount = this.projectEnvNames.length;
     this.mapEnvironments(this.projectEnvNames)
@@ -268,8 +279,14 @@ export class ProjectPreferenceComponent implements OnInit, OnDestroy {
   updateEnvironment(): void {
     const req = {
       name: this.environmentForm.get('envName')?.value,
+      id: this.envId,
+      projectId: this.currentProjectId,
+      cpuMaxUserLimit: 5,
+      memoryMaxUserLimit: 10,
+      ephemeralStorageMaxUserLimit: 15,
+      pvcStorageMaxUserLimit: 50
     }
-    this.projectService.updateEnvironment(this.currentProjectId, this.envId, req).subscribe((res: any) => {
+    this.projectService.updateEnvironment(req).subscribe((res: any) => {
       if (res.status === 'Success') {
         this.toastr.success("Updated successfully");
         this.projectService.getEnvironmentsByProject(this.currentProjectId).subscribe((envRes: any) => {

@@ -10,7 +10,7 @@ import { environment } from '../../../environments/environment';
 })
 export class ProjectsService {
   private apiUrl = environment.projectsApiUrl;
-  private projectsApiUrl = environment.projectsApiUrl;
+  private projectsApiUrl = environment.projectsBaseUrl;
   private baseUrl = environment.projectsBaseUrl;
   private deploymentUrl = environment.deploymentManagement;
   private userManagementBaseUrl = environment.usermanagementBaseUrl;
@@ -54,7 +54,7 @@ export class ProjectsService {
   }
 
   updateProject(projectId: string, req: any) {
-    return this.http.put(`${this.projectsApiUrl}/${projectId}`, req)
+    return this.http.patch(`${this.apiUrl}/${projectId}`, req)
       .pipe(
         catchError(this.handleError.bind(this))
       );
@@ -67,15 +67,15 @@ export class ProjectsService {
       );
   }
 
-  createEnvironment(projectId: string, req: any) {
-    return this.http.post(`${this.apiUrl}/${projectId}/environments`, req)
+  createEnvironment(req: any) {
+    return this.http.post(`${this.projectsApiUrl}/environments`, req)
       .pipe(
         catchError(this.handleError.bind(this))
       );
   }
 
-  updateEnvironment(projectId: string, envId: string, req: any) {
-    return this.http.put(`${this.apiUrl}/${projectId}/environments/${envId}`, req)
+  updateEnvironment(req: any) {
+    return this.http.put(`${this.projectsApiUrl}/environments`, req)
       .pipe(
         catchError(this.handleError.bind(this))
       );
@@ -105,7 +105,7 @@ export class ProjectsService {
   }
 
   getEnvironmentById(projectId: string, envId: string) {
-    return this.http.get(`${this.baseUrl}//environments/${envId}`)
+    return this.http.get(`${this.projectsApiUrl}/environments?id=${envId}`)
       .pipe(
         catchError(this.handleError.bind(this))
       );
@@ -113,6 +113,13 @@ export class ProjectsService {
 
   getUsageCost(req: any) {
     return this.http.post(`${this.pricingManagement}/usage-cost`, req)
+      .pipe(
+        catchError(this.handleError.bind(this))
+      );
+  }
+
+  getAllEnvironmentsByProject(projectId: string) {
+    return this.http.get(`${this.projectsApiUrl}/environments?projectId=${projectId}`)
       .pipe(
         catchError(this.handleError.bind(this))
       );
@@ -128,16 +135,16 @@ export class ProjectsService {
       console.error('Internal Server Error 500:', errorMessage);
       this.toastr.error(errorMessage, 'Internal Server Error 500:')
     }
-    else if (error.status === 404 && error.error && error.error?.error.details) {
+    else if (error.status === 404 && error.error?.error.details) {
       const errorMessage = error.error?.error.details;
       console.error('Internal Server Error 404:', errorMessage);
       this.toastr.error(errorMessage, 'Internal Server Error 404:')
     }
-    else if (error.status === 400) {
-      const errorMessage = error.error?.message || 'Bad Request';
-      console.error('Bad Request:', errorMessage);
-      this.toastr.error(errorMessage);
-    }
+    // else if (error.status === 400) {
+    //   const errorMessage = error.response?.message || 'Bad Request';
+    //   console.error('Bad Request:', errorMessage);
+    //   this.toastr.error(errorMessage);
+    // }
     else {
       const errorMessage = error.error?.error || 'Please try again later';
       // this.toastr.error(errorMessage, 'Error');
