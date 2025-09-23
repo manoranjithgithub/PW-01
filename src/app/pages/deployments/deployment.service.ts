@@ -299,7 +299,7 @@ export class DeploymentsService {
       );
   }
 
-  getAvailableBranches(projectID: string, provider: string, repoId:string) {
+  getAvailableBranches(projectID: string, provider: string, repoId: string) {
     let url = `${this.projectsBaseUrl}/integrations/vcs/resources?provider=${provider}&projectId=${projectID}&type=branches`;
     if (provider === 'gitlab') {
       url += `&repoId=${repoId}`;
@@ -308,6 +308,21 @@ export class DeploymentsService {
       url += `&repoName=${repoId}`;
     }
     return this.http.get(url).pipe(
+      catchError(this.handleError.bind(this))
+    );
+  }
+
+
+  getS3Details() {
+    return this.http.get(`${this.deploymentManagement}/artificat?fileExtension=zip`)
+      .pipe(
+        catchError(this.handleError.bind(this))
+      );
+  }
+  uploadZipFile(url: string, file: any, contentType: string) {
+    return this.http.put(url, file, {
+      headers: { 'Content-Type': contentType }
+    }).pipe(
       catchError(this.handleError.bind(this))
     );
   }

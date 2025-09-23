@@ -604,60 +604,80 @@ export class CreateDeploymentsComponent
     const payload = this.cleanPayload(req);
     // const envId = JSON.parse(this.shared.getCookie('environment')).id;
     const envId = JSON.parse(localStorage.getItem('environment') || '{}').id || '';
-
-    const zipUpload$ = this.fileFormData
-      ? this.deploymentsService
-        .uploadZipDeployment(envId, this.fileFormData)
-        .pipe(
-          tap((res: any) => {
-            if (res.status === 'Success') {
-              this.toaster.success('Deployment created successfully');
-            } else {
-              throw new Error('Zip upload failed');
-            }
-          })
-        )
-      : of(null);
-
-    zipUpload$
-      .pipe(
-        switchMap(() => this.deploymentsService.createDeployement(payload)),
-        switchMap(() => {
-          const configData$ =
-            this.envData && Object.keys(this.envData.data || {}).length
-              ? this.deploymentsService.createConfigdata(envId, this.envData)
-              : of(null);
-
-          const secretsData$ =
-            this.secretData && Object.keys(this.secretData.data || {}).length
-              ? this.deploymentsService.createSecretsdata(
-                envId,
-                this.secretData
-              )
-              : of(null);
-
-          const configFile$ =
-            filePathControl && fileName
-              ? this.deploymentsService.uploadConfigFile(envId, formData)
-              : of(null);
-
-          return forkJoin([configData$, secretsData$, configFile$]);
+    this.deploymentsService.getS3Details().subscribe((res: any) => {
+      if (res) {
+        const s3Data = res.data;
+        this.loading = true;
+        this.deploymentsService.uploadZipFile(s3Data.uploadUrl, this.selectedFile, s3Data.contentType).subscribe(res => {
+          console.log(res)
         })
-      )
-      .subscribe({
-        next: ([res2, res3, res4]) => {
-          this.router.navigate(['/deployment']);
-        },
-        error: (err) => {
-          if (err instanceof Error) {
-            console.error('Error message:', err.message);
-            console.error('Stack trace:', err.stack);
-          } else {
-            console.error('Error:', JSON.stringify(err, null, 2));
-          }
-          this.toaster.error('Error during deployment process');
-        },
-      });
+        // if (this.fileFormData) {
+        //   this.fileFormData.append('bucketName', s3Data.bucketName);
+        //   this.fileFormData.append('region', s3Data.region);
+        //   this.fileFormData.append('accessKey', s3Data.accessKey);
+        //   this.fileFormData.append('secretKey', s3Data.secretKey);
+        //   this.fileFormData.append('appName', this.stepOneForm.get('name')?.value);
+        //   this.loading = true;
+        //   this.deploymentsService.uploadZipFile(s3Data.uploadUrl, this.selectedFile).subscribe(res => {
+        //     console.log(res)
+        //   })
+        // }
+      }
+    });
+
+    // const zipUpload$ = this.fileFormData
+    //   ? this.deploymentsService
+    //     .uploadZipDeployment(envId, this.fileFormData)
+    //     .pipe(
+    //       tap((res: any) => {
+    //         if (res.status === 'Success') {
+    //           this.toaster.success('Deployment created successfully');
+    //         } else {
+    //           throw new Error('Zip upload failed');
+    //         }
+    //       })
+    //     )
+    //   : of(null);
+
+    // zipUpload$
+    //   .pipe(
+    //     switchMap(() => this.deploymentsService.createDeployement(payload)),
+    //     switchMap(() => {
+    //       const configData$ =
+    //         this.envData && Object.keys(this.envData.data || {}).length
+    //           ? this.deploymentsService.createConfigdata(envId, this.envData)
+    //           : of(null);
+
+    //       const secretsData$ =
+    //         this.secretData && Object.keys(this.secretData.data || {}).length
+    //           ? this.deploymentsService.createSecretsdata(
+    //             envId,
+    //             this.secretData
+    //           )
+    //           : of(null);
+
+    //       const configFile$ =
+    //         filePathControl && fileName
+    //           ? this.deploymentsService.uploadConfigFile(envId, formData)
+    //           : of(null);
+
+    //       return forkJoin([configData$, secretsData$, configFile$]);
+    //     })
+    //   )
+    //   .subscribe({
+    //     next: ([res2, res3, res4]) => {
+    //       this.router.navigate(['/deployment']);
+    //     },
+    //     error: (err) => {
+    //       if (err instanceof Error) {
+    //         console.error('Error message:', err.message);
+    //         console.error('Stack trace:', err.stack);
+    //       } else {
+    //         console.error('Error:', JSON.stringify(err, null, 2));
+    //       }
+    //       this.toaster.error('Error during deployment process');
+    //     },
+    //   });
   }
   isError(controlName: string, errorType: string): boolean {
     const control = this.stepOneForm.controls[controlName];

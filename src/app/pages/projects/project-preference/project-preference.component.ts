@@ -124,8 +124,8 @@ export class ProjectPreferenceComponent implements OnInit, OnDestroy {
     });
     this.projectService.getProjectDetailsById(this.currentProjectId).subscribe((res: any) => {
       if (res.status === "Success") {
-        // this.updateIntegrationStatus('github', res.data.github,);
-        // this.updateIntegrationStatus('gitlab', res.data.gitlab);
+        this.updateIntegrationStatus('github', res.data.github);
+        this.updateIntegrationStatus('gitlab', res.data.gitlab);
         // this.checkIntegrationStatus('github');
         // this.checkIntegrationStatus('gitlab');
         this.projectDetails = res.data;

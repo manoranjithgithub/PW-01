@@ -104,13 +104,13 @@ export class DeploymentsService {
   }
 
   disconnectProfile(projectID: string, provider: string) {
-    return this.http.delete(`${this.projectsBaseUrl}/integrations/vcs?provider=${provider}&projectId=${projectID}`)
+    return this.http.delete(`${this.projectsBaseUrl}/integrations/vcs?projectId=${projectID}&provider=${provider}`)
       .pipe(
         catchError(this.handleError.bind(this))
       );
   }
   getIntegrationStatus(projectID: string, provider: string) {
-    return this.http.get(`${this.projectsBaseUrl}/integrations/vcs?projectId=${projectID}&provider=${provider}&vcsUserId=${localStorage.getItem('userId')}`)
+    return this.http.get(`${this.projectsBaseUrl}/integrations/vcs?projectId=${projectID}&provider=${provider}`)
       .pipe(
         catchError(this.handleError.bind(this))
       );

@@ -1,0 +1,186 @@
+{
+    "status": "Success",
+    "message": "Instance types fetched successfully",
+    "data": {
+        "femto.m": {
+            "cpu": "15m",
+            "memory": "128Mi",
+            "storage": "2Gi",
+            "price": "$0.00141",
+            "description": "",
+            "createdBy": "admin",
+            "createdAt": "2025-09-16T07:12:19.509Z",
+            "updatedBy": "admin"
+        },
+        "pico.m": {
+            "cpu": "30m",
+            "memory": "256Mi",
+            "storage": "2Gi",
+            "price": "$0.00209",
+            "description": "",
+            "createdBy": "admin",
+            "createdAt": "2025-09-16T07:12:19.515Z",
+            "updatedBy": "admin"
+        },
+        "nano.m": {
+            "cpu": "60m",
+            "memory": "512Mi",
+            "storage": "2Gi",
+            "price": "$0.00419",
+            "description": "",
+            "createdBy": "admin",
+            "createdAt": "2025-09-16T07:12:19.515Z",
+            "updatedBy": "admin"
+        },
+        "micro.m": {
+            "cpu": "125m",
+            "memory": "1Gi",
+            "storage": "2Gi",
+            "price": "$0.00838",
+            "description": "",
+            "createdBy": "admin",
+            "createdAt": "2025-09-16T07:12:19.516Z",
+            "updatedBy": "admin"
+        },
+        "small.m": {
+            "cpu": "250m",
+            "memory": "2Gi",
+            "storage": "2Gi",
+            "price": "$0.01675",
+            "description": "",
+            "createdBy": "admin",
+            "createdAt": "2025-09-16T07:12:19.519Z",
+            "updatedBy": "admin"
+        },
+        "medium.m": {
+            "cpu": "500m",
+            "memory": "4Gi",
+            "storage": "2Gi",
+            "price": "$0.02513",
+            "description": "",
+            "createdBy": "admin",
+            "createdAt": "2025-09-16T07:12:19.524Z",
+            "updatedBy": "admin"
+        },
+        "large.m": {
+            "cpu": "1",
+            "memory": "8Gi",
+            "storage": "2Gi",
+            "price": "$0.05026",
+            "description": "",
+            "createdBy": "admin",
+            "createdAt": "2025-09-16T07:12:19.524Z",
+            "updatedBy": "admin"
+        },
+        "xlarge.m": {
+            "cpu": "2",
+            "memory": "16Gi",
+            "storage": "2Gi",
+            "price": "$0.10051",
+            "description": "",
+            "createdBy": "admin",
+            "createdAt": "2025-09-16T07:12:19.534Z",
+            "updatedBy": "admin"
+        },
+        "2xlarge.m": {
+            "cpu": "4",
+            "memory": "32Gi",
+            "storage": "2Gi",
+            "price": "$0.18944",
+            "description": "",
+            "createdBy": "admin",
+            "createdAt": "2025-09-16T07:12:19.534Z",
+            "updatedBy": "admin"
+        },
+        "femto.c": {
+            "cpu": "60m",
+            "memory": "128Mi",
+            "storage": "2Gi",
+            "price": "$0.00274",
+            "description": "",
+            "createdBy": "admin",
+            "createdAt": "2025-09-16T07:12:19.535Z",
+            "updatedBy": "admin"
+        },
+        "pico.c": {
+            "cpu": "125m",
+            "memory": "256Mi",
+            "storage": "2Gi",
+            "price": "$0.00548",
+            "description": "",
+            "createdBy": "admin",
+            "createdAt": "2025-09-16T07:12:19.535Z",
+            "updatedBy": "admin"
+        },
+        "nano.c": {
+            "cpu": "250m",
+            "memory": "512Mi",
+            "storage": "2Gi",
+            "price": "$0.01095",
+            "description": "",
+            "createdBy": "admin",
+            "createdAt": "2025-09-16T07:12:19.536Z",
+            "updatedBy": "admin"
+        },
+        "micro.c": {
+            "cpu": "500m",
+            "memory": "1Gi",
+            "storage": "2Gi",
+            "price": "$0.02191",
+            "description": "",
+            "createdBy": "admin",
+            "createdAt": "2025-09-16T07:12:19.536Z",
+            "updatedBy": "admin"
+        },
+        "small.c": {
+            "cpu": "1",
+            "memory": "2Gi",
+            "storage": "2Gi",
+            "price": "$0.03286",
+            "description": "",
+            "createdBy": "admin",
+            "createdAt": "2025-09-16T07:12:19.536Z",
+            "updatedBy": "admin"
+        },
+        "medium.c": {
+            "cpu": "2",
+            "memory": "4Gi",
+            "storage": "2Gi",
+            "price": "$0.06573",
+            "description": "",
+            "createdBy": "admin",
+            "createdAt": "2025-09-16T07:12:19.536Z",
+            "updatedBy": "admin"
+        },
+        "large.c": {
+            "cpu": "4",
+            "memory": "8Gi",
+            "storage": "2Gi",
+            "price": "$0.12388",
+            "description": "",
+            "createdBy": "admin",
+            "createdAt": "2025-09-16T07:12:19.536Z",
+            "updatedBy": "admin"
+        },
+        "xlarge.c": {
+            "cpu": "8",
+            "memory": "16Gi",
+            "storage": "2Gi",
+            "price": "$0.24777",
+            "description": "",
+            "createdBy": "admin",
+            "createdAt": "2025-09-16T07:12:19.537Z",
+            "updatedBy": "admin"
+        },
+        "2xlarge.c": {
+            "cpu": "16",
+            "memory": "32Gi",
+            "storage": "2Gi",
+            "price": "$0.49553",
+            "description": "",
+            "createdBy": "admin",
+            "createdAt": "2025-09-16T07:12:19.537Z",
+            "updatedBy": "admin"
+        }
+    }
+}
