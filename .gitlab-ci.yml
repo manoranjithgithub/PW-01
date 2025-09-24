@@ -54,7 +54,7 @@ image-release:
     - docker build -t registry.dilligentech.com/dt/paas/nimbuz-portal-fe:$(jq .version package.json -r) --build-arg ENV=prod .
     - docker push registry.dilligentech.com/dt/paas/nimbuz-portal-fe:$(jq .version package.json -r)
   only:
-    - main
+    - master
 
 deploy:
   stage: deploy
