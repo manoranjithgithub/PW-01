@@ -36,7 +36,7 @@ export class AccountComponent implements OnInit {
       name: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       userName: [{ value: '', disabled: true }, Validators.required],
-      avatar: ['', Validators.required],
+      // avatar: ['', Validators.required],
     });
 
     this.resetPasswordForm = this.fb.group({
@@ -67,17 +67,21 @@ export class AccountComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.initializeForm();
     this.authService.processDecodedToken(localStorage.getItem('accessToken') || '');
     this.userData = this.sharedService.getUser();
-    this.http.getAccountInfo().subscribe((res: any) => {
-      this.accountData = res.data;
-      console.log('AccountInfoData', this.accountData);
-      if (this.accountData) {
-        this.accountForm.patchValue(this.accountData);
-        this.avatarPreview = this.accountData.avatar;
-      }
-    })
-    this.initializeForm();
+    this.accountData = localStorage.getItem('profileSettings') ? JSON.parse(localStorage.getItem('profileSettings') || '{}') : null;
+    this.accountForm.patchValue(this.accountData);
+    this.accountForm.disable()
+    // this.http.getAccountInfo().subscribe((res: any) => {
+    //   this.accountData = res.data;
+    //   console.log('AccountInfoData', this.accountData);
+    //   if (this.accountData) {
+    //     this.accountForm.patchValue(this.accountData);
+    //     this.avatarPreview = this.accountData.avatar;
+    //   }
+    // })
+
   }
 
   isInvalid(controlName: string): boolean {

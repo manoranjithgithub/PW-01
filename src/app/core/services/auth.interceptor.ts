@@ -38,6 +38,9 @@ export class AuthInterceptor implements HttpInterceptor {
     if (!skipLoader) {
       this.loaderService.show();
     }
+    if (req.url.includes('/user-uploads')) {
+      return next.handle(req);
+    }
 
     const token = this.authService.getAccessToken();
     let request = req;

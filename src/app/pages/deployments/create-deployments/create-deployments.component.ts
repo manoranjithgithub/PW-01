@@ -550,80 +550,59 @@ export class CreateDeploymentsComponent
 
   }
   submitChanges() {
-    const filePathControl = this.fileUploadForm.get('filePath')?.value;
-    const fileInputControl = this.fileUploadForm.get('fileInput')?.value;
-    const fileName = fileInputControl
-      ? fileInputControl.split('\\').pop()
-      : null;
-    const formData = new FormData();
-    if (filePathControl && fileName && this.selectedConfigFile) {
-      formData.append('file', this.selectedConfigFile, fileName);
-      formData.append('configFilePath', filePathControl);
-      formData.append('name', this.stepOneForm.value.name);
-    }
-    const ephemeralStorage = this.stepOneForm.value.ephemeralStorage
-      ? `${this.stepOneForm.value.ephemeralStorage}Gi`
-      : null;
+    // const filePathControl = this.fileUploadForm.get('filePath')?.value;
+    // const fileInputControl = this.fileUploadForm.get('fileInput')?.value;
+    // const fileName = fileInputControl
+    //   ? fileInputControl.split('\\').pop()
+    //   : null;
+    // const formData = new FormData();
+    // if (filePathControl && fileName && this.selectedConfigFile) {
+    //   formData.append('file', this.selectedConfigFile, fileName);
+    //   formData.append('configFilePath', filePathControl);
+    //   formData.append('name', this.stepOneForm.value.name);
+    // }
+    // const ephemeralStorage = this.stepOneForm.value.ephemeralStorage
+    //   ? `${this.stepOneForm.value.ephemeralStorage}Gi`
+    //   : null;
 
-    const req = {
-      environmentId: JSON.parse(localStorage.getItem('environment') || '{}').id,
-      name: this.stepOneForm.getRawValue().name,
-      sourceCode: {
-        type: this.selectedVCS == 'zip' ? 'zip' : 'VCS',
-        gitUrl: this.selectedVCS == 'zip' ? null : this.selectedRepoDetails.repoUrl,
-        s3FileKey: this.selectedVCS == 'zip' ? this.stepOneForm.getRawValue().zipFilename : null,
-      },
-      application: {
-        replicas: this.stepOneForm.value.replicas || 0,
-        instanceType: this.stepOneForm.value.instanceType,
-        installCommand: this.stepOneForm.value.installCommand,
-        buildCommand: this.stepOneForm.value.buildCommand,
-        startCommand: this.stepOneForm.value.startCommand,
-        ephemeralStorage: ephemeralStorage,
-        storage: this.stepOneForm.value.storage
-          ? `${this.stepOneForm.value.storage}Gi`
-          : null,
-      },
-      network: {
-        port:
-          this.stepOneForm.value.port == ''
-            ? null
-            : Number(this.stepOneForm.value.port),
-        healthEndpoint: this.stepOneForm.value.healthEndpoint || null,
-        isCustomDns: false,
-        appIngressDomain: null,
-        customDomain: null,
+    // const req = {
+    //   environmentId: JSON.parse(localStorage.getItem('environment') || '{}').id,
+    //   name: this.stepOneForm.getRawValue().name,
+    //   sourceCode: {
+    //     type: this.selectedVCS == 'zip' ? 'zip' : 'VCS',
+    //     gitUrl: this.selectedVCS == 'zip' ? null : this.selectedRepoDetails.repoUrl,
+    //     s3FileKey: this.selectedVCS == 'zip' ? this.stepOneForm.getRawValue().zipFilename : null,
+    //   },
+    //   application: {
+    //     replicas: this.stepOneForm.value.replicas || 0,
+    //     instanceType: this.stepOneForm.value.instanceType,
+    //     installCommand: this.stepOneForm.value.installCommand,
+    //     buildCommand: this.stepOneForm.value.buildCommand,
+    //     startCommand: this.stepOneForm.value.startCommand,
+    //     ephemeralStorage: ephemeralStorage,
+    //     storage: this.stepOneForm.value.storage
+    //       ? `${this.stepOneForm.value.storage}Gi`
+    //       : null,
+    //   },
+    //   network: {
+    //     port:
+    //       this.stepOneForm.value.port == ''
+    //         ? null
+    //         : Number(this.stepOneForm.value.port),
+    //     healthEndpoint: this.stepOneForm.value.healthEndpoint || null,
+    //     isCustomDns: false,
+    //     appIngressDomain: null,
+    //     customDomain: null,
 
-      },
-      config: {
-        name: fileName ? fileName?.replace(/\.[^/.]+$/, '') : null,
-        path: filePathControl ? filePathControl : null,
-        data: null,
-      }
-    };
-    const payload = this.cleanPayload(req);
-    // const envId = JSON.parse(this.shared.getCookie('environment')).id;
-    const envId = JSON.parse(localStorage.getItem('environment') || '{}').id || '';
-    this.deploymentsService.getS3Details().subscribe((res: any) => {
-      if (res) {
-        const s3Data = res.data;
-        this.loading = true;
-        this.deploymentsService.uploadZipFile(s3Data.uploadUrl, this.selectedFile, s3Data.contentType).subscribe(res => {
-          console.log(res)
-        })
-        // if (this.fileFormData) {
-        //   this.fileFormData.append('bucketName', s3Data.bucketName);
-        //   this.fileFormData.append('region', s3Data.region);
-        //   this.fileFormData.append('accessKey', s3Data.accessKey);
-        //   this.fileFormData.append('secretKey', s3Data.secretKey);
-        //   this.fileFormData.append('appName', this.stepOneForm.get('name')?.value);
-        //   this.loading = true;
-        //   this.deploymentsService.uploadZipFile(s3Data.uploadUrl, this.selectedFile).subscribe(res => {
-        //     console.log(res)
-        //   })
-        // }
-      }
-    });
+    //   },
+    //   config: {
+    //     name: fileName ? fileName?.replace(/\.[^/.]+$/, '') : null,
+    //     path: filePathControl ? filePathControl : null,
+    //     data: null,
+    //   }
+    // };
+    // const payload = this.cleanPayload(req);
+    // const envId = JSON.parse(localStorage.getItem('environment') || '{}').id || '';
 
     // const zipUpload$ = this.fileFormData
     //   ? this.deploymentsService
@@ -678,6 +657,26 @@ export class CreateDeploymentsComponent
     //       this.toaster.error('Error during deployment process');
     //     },
     //   });
+    this.deploymentsService.getS3Details().subscribe((res: any) => {
+      if (res) {
+        const s3Data = res.data;
+        this.loading = true;
+        this.deploymentsService.uploadFileToS3(s3Data.uploadUrl, this.selectedFile, s3Data.contentType).subscribe(res => {
+          console.log(res)
+        })
+        // if (this.fileFormData) {
+        //   this.fileFormData.append('bucketName', s3Data.bucketName);
+        //   this.fileFormData.append('region', s3Data.region);
+        //   this.fileFormData.append('accessKey', s3Data.accessKey);
+        //   this.fileFormData.append('secretKey', s3Data.secretKey);
+        //   this.fileFormData.append('appName', this.stepOneForm.get('name')?.value);
+        //   this.loading = true;
+        //   this.deploymentsService.uploadZipFile(s3Data.uploadUrl, this.selectedFile).subscribe(res => {
+        //     console.log(res)
+        //   })
+        // }
+      }
+    });
   }
   isError(controlName: string, errorType: string): boolean {
     const control = this.stepOneForm.controls[controlName];
