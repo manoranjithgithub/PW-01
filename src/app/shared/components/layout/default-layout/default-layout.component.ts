@@ -229,7 +229,8 @@ export class DefaultLayoutComponent implements OnInit {
         }
       }
     });
-    this.sharedService.user$.subscribe((user: any) => {
+    this.sharedService.user$.subscribe((userData: any) => {
+      const user = localStorage.getItem('profileSettings') ? JSON.parse(localStorage.getItem('profileSettings') || '{}') : null;
       this.currentUser = user?.owner
       const baseItems = [...navItems];
       if (user?.owner !== 'nimbuz') {
