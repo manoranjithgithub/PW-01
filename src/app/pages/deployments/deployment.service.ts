@@ -77,8 +77,8 @@ export class DeploymentsService {
       );
   }
 
-  getDeployments() {
-    return this.http.get(`${this.deploymentManagement}/deployments`)
+  getDeployments(envId: string) {
+    return this.http.get(`${this.deploymentManagement}/deployments?environmentId=${envId}`)
       .pipe(
         catchError(this.handleError.bind(this))
       );

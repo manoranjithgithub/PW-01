@@ -92,7 +92,7 @@ export class ToolsService {
     }
 
     getInstanceTypes() {
-    return this.http.get(`${this.deploymentUrl}/instanceTypes`)
+    return this.http.get(`${this.deploymentUrl}/instance-type`)
       .pipe(
         catchError(this.handleError.bind(this))
       );

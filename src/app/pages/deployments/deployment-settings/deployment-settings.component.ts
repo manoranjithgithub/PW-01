@@ -684,7 +684,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
     const environment = localStorage.getItem('environment');
     const envId = environment ? JSON.parse(environment).id : null;
     if (envId) {
-      this.deploymentService.getDeployments().subscribe((res: any) => {
+      this.deploymentService.getDeployments(envId).subscribe((res: any) => {
         if (res.status === "Success") {
           this.serviceList = res.data;
         }
