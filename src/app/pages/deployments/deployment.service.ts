@@ -25,7 +25,7 @@ export class DeploymentsService {
   }
 
   getInstanceTypes() {
-    return this.http.get(`${this.deploymentManagement}/instanceTypes`)
+    return this.http.get('../assets/data/instance-type.mock.json')
       .pipe(
         catchError(this.handleError.bind(this))
       );
@@ -126,7 +126,7 @@ export class DeploymentsService {
   }
 
   createDeployement(req: any) {
-    return this.http.post(`${this.deploymentManagement}/deployments/`, req)
+    return this.http.post(`${this.deploymentManagement}/deployments`, req)
       .pipe(
         catchError(this.handleError.bind(this))
       );
@@ -319,7 +319,7 @@ export class DeploymentsService {
         catchError(this.handleError.bind(this))
       );
   }
-  uploadZipFile(url: string, file: any, contentType: string) {
+  uploadFileToS3(url: string, file: any, contentType: string) {
     return this.http.put(url, file, {
       headers: { 'Content-Type': contentType }
     }).pipe(
