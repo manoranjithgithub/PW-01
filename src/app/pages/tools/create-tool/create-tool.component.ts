@@ -72,7 +72,8 @@ export class CreateToolComponent implements OnInit, OnDestroy {
       this.route.navigate(['/tools']);
     });
     this.http.getAvailableToolsList().subscribe((res: any) => {
-      this.imgList = res.data
+      console.log('available tools', res);
+      this.imgList = [res.data]
       // this.selectedTool = this.imgList[0].name;
       // this.onImageClick(this.imgList[0]);
     })

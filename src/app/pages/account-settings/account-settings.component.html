@@ -27,7 +27,7 @@
           <input id="name" formControlName="userName" class="form-control" />
         </div>
 
-        <div class="col-md-6">
+        <!-- <div class="col-md-6">
           <label for="avatar" class="form-label">Avatar</label>
           <div class="d-flex align-items-center gap-2">
             <input id="avatar" formControlName="avatar" class="form-control w-100" (input)="updateAvatarPreview()" />
@@ -35,12 +35,12 @@
               <img *ngIf="avatarPreview" [src]="avatarPreview" alt="Avatar Preview" />
             </div>
           </div>
-        </div>
+        </div> -->
       </div>
 
-      <div class="text-end">
+      <!-- <div class="text-end">
         <button type="submit" class="btn button-format-solid" (click)="onSubmit()">Update Info</button>
-      </div>
+      </div> -->
     </form>
   </c-card>
   <c-card class="p-4 my-3">
@@ -48,7 +48,7 @@
       <div class="mb-2"><b>Reset Password</b></div>
       <div class="row my-3">
         <div class="col-md-4">
-          <label for="oldPassword" class="form-label">Old Password</label>
+          <label for="oldPassword" class="form-label">Current Password</label>
           <div class="input-group">
             <input id="oldPassword" [type]="showOldPassword ? 'text' : 'password'" formControlName="oldPassword"
               class="form-control" />

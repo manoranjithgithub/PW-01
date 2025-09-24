@@ -124,13 +124,6 @@ export class ViewEnvironmentComponent implements OnInit, OnDestroy {
       this.region = region;
       this.envId = envId;
       this.projectId = projectId;
-      this.project.getEnvironmentById(this.projectId, this.envId).subscribe((res: any) => {
-        if (res.status === 'Success') {
-          // this.envName = res.data.name;
-          this.layoutActionService.setExtraTitle(res.data.name);
-        }
-      }
-      );
 
       this.environmentForm = this.fb.group({
         project: [{ value: this.projectName, disabled: true }],
@@ -158,59 +151,58 @@ export class ViewEnvironmentComponent implements OnInit, OnDestroy {
     });
 
     this.resourceQuotaForm = this.fb.group({
-      cpu: this.fb.group({
-        current_cpu: [{ value: '', disabled: true }],
-        min_cpu: [''],
-        max_cpu: [''],
-        unit: ['']
-      }),
-      ram: this.fb.group({
-        current_ram: [{ value: '', disabled: true }],
-        min_ram: [''],
-        max_ram: [''],
-        unit: ['']
-      }),
-      storage: this.fb.group({
-        current_storage: [{ value: '', disabled: true }],
-        min_storage: [''],
-        max_storage: [''],
-        unit: ['']
-      })
+      cpuMaxPlatformLimit: [''],
+      cpuMaxUserLimit: [''],
+      ephemeralStorageMaxPlatformLimit: [''],
+      ephemeralStorageMaxUserLimit: [''],
+      memoryMaxPlatformLimit: [''],
+      memoryMaxUserLimit: [''],
+      pvcStorageMaxPlatformLimit: [''],
+      pvcStorageMaxUserLimit: [''],
     });
 
     const now = new Date();
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(now.getDate() - 7);
 
-    const req = {
-      fromTimestamp: new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1, 0, 0, 0, 0)).toISOString(),
-      toTimestamp: new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0, 23, 59, 59, 999)).toISOString(),
-      userId: localStorage.getItem('userId')
-    };
-    if (req) {
-      this.project.getUsageCost(req).subscribe((res: any) => {
-        this.currentUsageData = (res.data?.usage || []).map((item: any) => {
-          const hours = parseFloat(item.usageHours) || 0;
-          const cost = parseFloat(item.totalCost) || 0;
+    // const req = {
+    //   fromTimestamp: new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1, 0, 0, 0, 0)).toISOString(),
+    //   toTimestamp: new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0, 23, 59, 59, 999)).toISOString(),
+    //   userId: localStorage.getItem('userId')
+    // };
+    // if (req) {
+    //   this.project.getUsageCost(req).subscribe((res: any) => {
+    //     this.currentUsageData = (res.data?.usage || []).map((item: any) => {
+    //       const hours = parseFloat(item.usageHours) || 0;
+    //       const cost = parseFloat(item.totalCost) || 0;
 
-          return {
-            ...item,
-            hoursFormatted: `${hours.toFixed(2)} hours`,
-            costFormatted: `$${cost.toFixed(2)}`
-          };
-        });
-        this.estimatedUsageData = (res.data?.estimatedUsage || []).map((item: any) => {
-          const hours = parseFloat(item.usageHours) || 0;
-          const cost = parseFloat(item.estimatedCost) || 0;
+    //       return {
+    //         ...item,
+    //         hoursFormatted: `${hours.toFixed(2)} hours`,
+    //         costFormatted: `$${cost.toFixed(2)}`
+    //       };
+    //     });
+    //     this.estimatedUsageData = (res.data?.estimatedUsage || []).map((item: any) => {
+    //       const hours = parseFloat(item.usageHours) || 0;
+    //       const cost = parseFloat(item.estimatedCost) || 0;
 
-          return {
-            ...item,
-            hoursFormatted: `${hours.toFixed(2)} hours`,
-            costFormatted: `$${cost.toFixed(2)}`
-          };
-        });
-      })
-    }
+    //       return {
+    //         ...item,
+    //         hoursFormatted: `${hours.toFixed(2)} hours`,
+    //         costFormatted: `$${cost.toFixed(2)}`
+    //       };
+    //     });
+    //   })
+    // }
+    this.project.getEnvironmentById(this.projectId, this.envId).subscribe((res: any) => {
+      if (res.status === 'Success') {
+        // this.envName = res.data.name;
+        this.layoutActionService.setExtraTitle(res.data.name);
+        this.resourceQuotaForm.patchValue(res.data);
+        this.resourceQuotaForm.disable();
+        // this.getPlanLimits(res.data);
+      }
+    });
 
     this.layoutActionService.actionClick$
       .pipe(takeUntil(this.destroy$))
@@ -218,7 +210,7 @@ export class ViewEnvironmentComponent implements OnInit, OnDestroy {
         this.onLayoutButtonClick();
       });
 
-    this.getPlanLimits();
+    // this.getPlanLimits();
   }
 
   cancel() {
@@ -230,27 +222,36 @@ export class ViewEnvironmentComponent implements OnInit, OnDestroy {
   }
 
   saveEnvChanges() {
-    if (this.envName !== this.environmentForm.get('name')?.value) {
-      this.envName = this.environmentForm.get('name')?.value || '';
-      const reqBody = {
-        name: this.envName
-      };
-      console.log('Updating environment with body:');
-      this.project.updateEnvironment(this.projectId, this.envId, reqBody).subscribe((res: any) => {
-        if (res.success) {
-          this.toaster.success('Updated Successfully');
-        } else {
-          this.toaster.success(res.message);
-          this.layoutActionService.setExtraTitle(res.data.name);
-        }
-      });
-    }
+    this.envName = this.environmentForm.get('name')?.value || '';
+    const reqBody = {
+      name: this.envName,
+      id: this.envId,
+      projectId: this.projectId,
+      cpuMaxUserLimit: this.resourceQuotaForm.value.cpuMaxUserLimit,
+      memoryMaxUserLimit: this.resourceQuotaForm.value.memoryMaxUserLimit,
+      ephemeralStorageMaxUserLimit: this.resourceQuotaForm.value.ephemeralStorageMaxUserLimit,
+      pvcStorageMaxUserLimit: this.resourceQuotaForm.value.pvcStorageMaxUserLimit
+    };
+    this.project.updateEnvironment(reqBody).subscribe((res: any) => {
+      if (res.success) {
+        this.toaster.success('Updated Successfully');
+      } else {
+        this.toaster.success(res.message);
+        this.layoutActionService.setExtraTitle(res.data.name);
+      }
+    });
     this.isGeneralEditMode = false;
 
   }
 
   toggleGeneralEditMode() {
     this.isGeneralEditMode = !this.isGeneralEditMode;
+
+    if (this.isGeneralEditMode) {
+      this.resourceQuotaForm.enable();
+    } else {
+      this.resourceQuotaForm.disable();
+    }
   }
 
   toggleAddUserForm() {
@@ -316,41 +317,20 @@ export class ViewEnvironmentComponent implements OnInit, OnDestroy {
       });
   }
 
-  getPlanLimits() {
-    const plan = 'lite';
-    this.project.getPlanLimits(plan).subscribe(
-      (res: any) => {
-        const data = res.data;
-
-        const cpu = data.find((d: any) => d.resource_type === 'CPU');
-        const ram = data.find((d: any) => d.resource_type === 'RAM');
-        const ephemeralStorage = data.find((d: any) => d.resource_type === 'ephemeral_storage');
-
-        if (cpu) {
-          this.resourceQuotaForm.get('cpu.current_cpu')?.setValue(cpu.default_limit);
-          this.resourceQuotaForm.get('cpu.min_cpu')?.setValue(0);
-          this.resourceQuotaForm.get('cpu.max_cpu')?.setValue(cpu.max_limit);
-          this.resourceQuotaForm.get('cpu.unit')?.setValue(cpu.unit);
-        }
-
-        if (ram) {
-          this.resourceQuotaForm.get('ram.current_ram')?.setValue(ram.default_limit);
-          this.resourceQuotaForm.get('ram.min_ram')?.setValue(0);
-          this.resourceQuotaForm.get('ram.max_ram')?.setValue(ram.max_limit);
-          this.resourceQuotaForm.get('ram.unit')?.setValue(ram.unit);
-        }
-
-        if (ephemeralStorage) {
-          this.resourceQuotaForm.get('storage.current_storage')?.patchValue(ephemeralStorage.default_limit);
-          this.resourceQuotaForm.get('storage.min_storage')?.patchValue(0);
-          this.resourceQuotaForm.get('storage.max_storage')?.patchValue(ephemeralStorage.max_limit);
-          this.resourceQuotaForm.get('storage.unit')?.setValue(ephemeralStorage.unit);
-        }
-      },
-      error => {
-        console.error('Error:', error);
-      });
-  }
+  // getPlanLimits(data: any) {
+  //   this.resourceQuotaForm.get('cpu.current_cpu')?.setValue(cpu.default_limit);
+  //     this.resourceQuotaForm.get('cpu.min_cpu')?.setValue(0);
+  //     this.resourceQuotaForm.get('cpu.max_cpu')?.setValue(data.cpuMaxPlatformLimit);
+  //     this.resourceQuotaForm.get('cpu.unit')?.setValue(cpu.unit);
+  //     this.resourceQuotaForm.get('ram.current_ram')?.setValue(ram.default_limit);
+  //     this.resourceQuotaForm.get('ram.min_ram')?.setValue(0);
+  //     this.resourceQuotaForm.get('ram.max_ram')?.setValue(ram.max_limit);
+  //     this.resourceQuotaForm.get('ram.unit')?.setValue(ram.unit);
+  //     this.resourceQuotaForm.get('storage.current_storage')?.patchValue(ephemeralStorage.default_limit);
+  //     this.resourceQuotaForm.get('storage.min_storage')?.patchValue(0);
+  //     this.resourceQuotaForm.get('storage.max_storage')?.patchValue(data.ephemeralStorageMaxPlatformLimit);
+  //     this.resourceQuotaForm.get('storage.unit')?.setValue(ephemeralStorage.unit);
+  // }
 
   getUsagePercent(item: any): number {
     return Math.min((item.current_usage / item.max_limit) * 100, 100);
@@ -358,9 +338,9 @@ export class ViewEnvironmentComponent implements OnInit, OnDestroy {
 
   getBarColor(item: any): string {
     const percent = this.getUsagePercent(item);
-    if (percent < 60) return '#198754'; 
+    if (percent < 60) return '#198754';
     if (percent < 85) return '#ffc107';
-    return '#dc3545';              
+    return '#dc3545';
   }
 
   ngOnDestroy(): void {

@@ -25,7 +25,7 @@ export class DeploymentsService {
   }
 
   getInstanceTypes() {
-    return this.http.get(`${this.deploymentManagement}/instanceTypes`)
+    return this.http.get('../assets/data/instance-type.mock.json')
       .pipe(
         catchError(this.handleError.bind(this))
       );
@@ -77,8 +77,8 @@ export class DeploymentsService {
       );
   }
 
-  getDeployments() {
-    return this.http.get(`${this.deploymentManagement}/deployments`)
+  getDeployments(envId: string) {
+    return this.http.get(`${this.deploymentManagement}/deployments?environmentId=${envId}`)
       .pipe(
         catchError(this.handleError.bind(this))
       );
@@ -126,7 +126,7 @@ export class DeploymentsService {
   }
 
   createDeployement(req: any) {
-    return this.http.post(`${this.deploymentManagement}/deployments/`, req)
+    return this.http.post(`${this.deploymentManagement}/deployments`, req)
       .pipe(
         catchError(this.handleError.bind(this))
       );
@@ -299,7 +299,7 @@ export class DeploymentsService {
       );
   }
 
-  getAvailableBranches(projectID: string, provider: string, repoId:string) {
+  getAvailableBranches(projectID: string, provider: string, repoId: string) {
     let url = `${this.projectsBaseUrl}/integrations/vcs/resources?provider=${provider}&projectId=${projectID}&type=branches`;
     if (provider === 'gitlab') {
       url += `&repoId=${repoId}`;
@@ -308,6 +308,21 @@ export class DeploymentsService {
       url += `&repoName=${repoId}`;
     }
     return this.http.get(url).pipe(
+      catchError(this.handleError.bind(this))
+    );
+  }
+
+
+  getS3Details() {
+    return this.http.get(`${this.deploymentManagement}/artificat?fileExtension=zip`)
+      .pipe(
+        catchError(this.handleError.bind(this))
+      );
+  }
+  uploadFileToS3(url: string, file: any, contentType: string) {
+    return this.http.put(url, file, {
+      headers: { 'Content-Type': contentType }
+    }).pipe(
       catchError(this.handleError.bind(this))
     );
   }

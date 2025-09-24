@@ -570,7 +570,7 @@ export class CreateDeploymentsComponent
       name: this.stepOneForm.getRawValue().name,
       sourceCode: {
         type: this.selectedVCS == 'zip' ? 'zip' : 'VCS',
-        gitUrl: this.selectedVCS == 'zip' ? null : this.selectedRepoDetails.repoUrl,
+        gitUrl: 'https://github.com/eMahtab/node-express-hello-world',
         s3FileKey: this.selectedVCS == 'zip' ? this.stepOneForm.getRawValue().zipFilename : null,
       },
       application: {
@@ -602,7 +602,6 @@ export class CreateDeploymentsComponent
       }
     };
     const payload = this.cleanPayload(req);
-    // const envId = JSON.parse(this.shared.getCookie('environment')).id;
     const envId = JSON.parse(localStorage.getItem('environment') || '{}').id || '';
 
     const zipUpload$ = this.fileFormData

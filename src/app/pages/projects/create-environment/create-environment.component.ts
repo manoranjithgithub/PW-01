@@ -42,10 +42,10 @@ export class CreateEnvironmentComponent implements OnInit {
     private fb: FormBuilder, private project: ProjectsService, private shared: SharedService,
     private toaster: ToastrService, private router: Router
   ) {
-   // this.tableTheme = this.shared.getCookie('theme');
-   this.tableTheme = localStorage.getItem('theme') || 'ag-theme-alpine';
+    // this.tableTheme = this.shared.getCookie('theme');
+    this.tableTheme = localStorage.getItem('theme') || 'ag-theme-alpine';
     this.isOpen = true;
-   // const storedValue = this.shared.getCookie('project');
+    // const storedValue = this.shared.getCookie('project');
     const storedValue = localStorage.getItem('project');
     if (storedValue) {
       this.projectName = JSON.parse(storedValue).name;
@@ -61,7 +61,7 @@ export class CreateEnvironmentComponent implements OnInit {
 
     this.environmentForm = this.fb.group({
       project: [this.projectName],
-      name: ['default', [this.shared.isValidName(),Validators.maxLength(40), Validators.required]],
+      name: ['default', [this.shared.isValidName(), Validators.maxLength(40), Validators.required]],
       region: [this.regionOptions[0].name]
     })
     this.project.getAllProjects().subscribe((res: any) => {
@@ -71,26 +71,16 @@ export class CreateEnvironmentComponent implements OnInit {
       }
     })
     this.resourceQuotaForm = this.fb.group({
-      cpu: this.fb.group({
-        current_cpu: [{ value: '', disabled: true }],
-        min_cpu: [''],
-        max_cpu: [''],
-        unit: ['']
-      }),
-      ram: this.fb.group({
-        current_ram: [{ value: '', disabled: true }],
-        min_ram: [''],
-        max_ram: [''],
-        unit: ['']
-      }),
-      storage: this.fb.group({
-        current_storage: [{ value: '', disabled: true }],
-        min_storage: [''],
-        max_storage: [''],
-        unit: ['']
-      })
+      cpuMaxPlatformLimit: ['10'],
+      cpuMaxUserLimit: [''],
+      ephemeralStorageMaxPlatformLimit: ['50'],
+      ephemeralStorageMaxUserLimit: [''],
+      memoryMaxPlatformLimit: ['20'],
+      memoryMaxUserLimit: [''],
+      pvcStorageMaxPlatformLimit: ['100'],
+      pvcStorageMaxUserLimit: [''],
     });
-    this.getPlanLimits();
+    // this.getPlanLimits();
   }
   createEnvironment() {
     if (this.environmentForm.valid) {
@@ -101,20 +91,21 @@ export class CreateEnvironmentComponent implements OnInit {
         this.environmentForm.value.name = 'default';
       const req = {
         name: this.environmentForm.value.name,
-        region: this.environmentForm.value.region
+        region: this.environmentForm.value.region,
+        projectId: this.environmentForm.value.project
       }
-      this.project.createEnvironment(this.environmentForm.get('project')?.value, req).subscribe((res: any) => {
+      this.project.createEnvironment(req).subscribe((res: any) => {
         if (res.status) {
           this.toaster.success(res.message);
           this.project.getEnvironmentsByProject(this.projectId).subscribe((envRes: any) => {
             this.project.getAllProjects().subscribe((res: any) => {
-              const project = res.data.find((item:any) => item.id === this.environmentForm.get('project')?.value);
+              const project = res.data.find((item: any) => item.id === this.environmentForm.get('project')?.value);
               this.shared.emitEnvDDChange(envRes.data);
               this.shared.emitProjectDDChange(project);
-             // this.shared.setCookie('project', JSON.stringify(project), 10);
+              // this.shared.setCookie('project', JSON.stringify(project), 10);
               localStorage.setItem('project', JSON.stringify(project));
               this.shared.emitProjectValueChange(project);
-             // this.shared.setCookie('environment', JSON.stringify(res?.data), 10);
+              // this.shared.setCookie('environment', JSON.stringify(res?.data), 10);
               localStorage.setItem('environment', JSON.stringify(res?.data));
               this.shared.emitEnvValueChange(res?.data);
               this.router.navigate(['/projects']);
@@ -147,21 +138,21 @@ export class CreateEnvironmentComponent implements OnInit {
         const cpu = data.find((d: any) => d.resource_type === 'CPU');
         const ram = data.find((d: any) => d.resource_type === 'RAM');
         const ephemeralStorage = data.find((d: any) => d.resource_type === 'ephemeral_storage');
-      
+
         if (cpu) {
           this.resourceQuotaForm.get('cpu.current_cpu')?.setValue(cpu.default_limit);
           this.resourceQuotaForm.get('cpu.min_cpu')?.setValue(0);
           this.resourceQuotaForm.get('cpu.max_cpu')?.setValue(cpu.max_limit);
           this.resourceQuotaForm.get('cpu.unit')?.setValue(cpu.unit);
         }
-      
+
         if (ram) {
           this.resourceQuotaForm.get('ram.current_ram')?.setValue(ram.default_limit);
           this.resourceQuotaForm.get('ram.min_ram')?.setValue(0);
           this.resourceQuotaForm.get('ram.max_ram')?.setValue(ram.max_limit);
           this.resourceQuotaForm.get('ram.unit')?.setValue(ram.unit);
         }
-      
+
         if (ephemeralStorage) {
           this.resourceQuotaForm.get('storage.current_storage')?.patchValue(ephemeralStorage.default_limit);
           this.resourceQuotaForm.get('storage.min_storage')?.patchValue(0);

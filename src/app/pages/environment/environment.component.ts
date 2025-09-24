@@ -66,9 +66,10 @@ export class EnvironmentComponent implements OnInit {
         this.environmentForm.value.name = 'default';
       const req={
         name:this.environmentForm.value.name,
-        region:this.environmentForm.value.region
+        region:this.environmentForm.value.region,
+        projectId:this.projectId
       }
-      this.project.createEnvironment(this.projectId, req).subscribe((res: any) => {
+      this.project.createEnvironment(req).subscribe((res: any) => {
         if (res.status === 'success') {
           this.toaster.success(res.message);
           this.project.getEnvironmentsByProject(this.projectId).subscribe((envRes: any) => {
