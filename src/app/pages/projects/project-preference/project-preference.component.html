@@ -162,7 +162,7 @@
             <thead>
               <tr>
                 <th>Name</th>
-                <th *ngIf="!isBusiness">Resource Limit</th>
+                <!-- <th *ngIf="!isBusiness">Resource Limit</th> -->
                 <th>Region</th>
                 <th style="width: 100px;"></th>
               </tr>
@@ -170,7 +170,7 @@
             <tbody>
               <tr *ngFor="let env of environments; let i = index">
                 <td>{{ env.name }}</td>
-                <td [innerHTML]="env.resourceLimit" *ngIf="!isBusiness"></td>
+                <!-- <td [innerHTML]="env.resourceLimit" *ngIf="!isBusiness"></td> -->
                 <td>{{ env.region }}</td>
                 <td class="text-end position-relative">
                   <div class="custom-dropdown d-inline-block" (click)="toggleDropdown(env, $event)">

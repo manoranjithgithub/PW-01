@@ -274,55 +274,55 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
   }
 
   getResourceAllocationStatus(deploymentId: string): void {
-    this.deploymentService.getDeploymentResourceAllocation(deploymentId).subscribe((res: any) => {
-      if (res.status === "Success") {
-        this.resourceAllocationDetails = res.data;
-        if (this.resourceAllocationDetails) {
-          if (this.resourceAllocationDetails.deployment_state === 'overprovisioned') {
-            this.overprovisioned = true;
-            this.underprovisioned = false;
-          }
-          else if (this.resourceAllocationDetails.deployment_state === 'underprovisioned') {
-            this.overprovisioned = false;
-            this.underprovisioned = true;
-          }
-          else {
-            this.overprovisioned = false;
-            this.underprovisioned = false;
-          }
-        }
-      } else {
-        this.toaster.error(res.message);
-      }
-    });
+    // this.deploymentService.getDeploymentResourceAllocation(deploymentId).subscribe((res: any) => {
+    //   if (res.status === "Success") {
+    //     this.resourceAllocationDetails = res.data;
+    //     if (this.resourceAllocationDetails) {
+    //       if (this.resourceAllocationDetails.deployment_state === 'overprovisioned') {
+    //         this.overprovisioned = true;
+    //         this.underprovisioned = false;
+    //       }
+    //       else if (this.resourceAllocationDetails.deployment_state === 'underprovisioned') {
+    //         this.overprovisioned = false;
+    //         this.underprovisioned = true;
+    //       }
+    //       else {
+    //         this.overprovisioned = false;
+    //         this.underprovisioned = false;
+    //       }
+    //     }
+    //   } else {
+    //     this.toaster.error(res.message);
+    //   }
+    // });
   }
 
   getDeploymentById(): void {
     // const regionCookie = this.sharedService.getCookie('region');
     const regionCookie = localStorage.getItem('region');
     this.deploymentService.getDeploymentById(this.deploymentdetails?.id).subscribe((res: any) => {
-      if (res.status === "Success") {
+      if (res.status.toLowerCase() === "success") {
         // this.ingressDomain = res.data?.app_ingress_domain;
         // this.showCustomDnsHost = !!res.data.is_custom_dns;
         //General settings
-        this.generalSettingsForm.setValue({
+        this.generalSettingsForm.patchValue({
           name: res.data.name,
-          instanceType: res.data.instance_type,
+          instanceType: res.data.application?.instanceType,
           region: regionCookie,
-          replicas: res.data.replicas,
-          ephemeralStorage: res.data.ephemeral_storage ? res.data.ephemeral_storage.replace(/Gi$/, '') : null,
-          storage: res.data.storage,
-          healthEndpoint: res.data.health_endpoint,
-          port: res.data.port,
-          buildCommand: res.data.build_command,
-          startCommand: res.data.start_command,
-          installCommand: res.data.install_command
+          replicas: res.data.application?.replicas,
+          ephemeralStorage: res.data.application?.ephemeralStorage ? res.data.application?.ephemeralStorage.replace(/Gi$/, '') : null,
+          storage: res.data.application?.storage,
+          healthEndpoint: res.data.network?.healthEndpoint,
+          port: res.data.network?.port,
+          buildCommand: res.data.application?.buildCommand,
+          startCommand: res.data.application?.startCommand,
+          installCommand: res.data.application?.installCommand
         });
 
-        this.originalCommands.buildCommand = res.data.build_command;
-        this.originalCommands.installCommand = res.data.install_command;
-        this.originalCommands.startCommand = res.data.start_command;
-        this.originalCommands.zip_file_name = res.data.zip_file_name;
+        this.originalCommands.buildCommand = res.data.application?.buildCommand;
+        this.originalCommands.installCommand = res.data.application?.installCommand;
+        this.originalCommands.startCommand = res.data.application?.startCommand;
+        // this.originalCommands.zip_file_name = res.data.zip_file_name;
 
         const initialValues = this.generalSettingsForm.value;
 
@@ -330,13 +330,13 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
           this.isGeneralSettingsChanged = JSON.stringify(currentValues) !== JSON.stringify(initialValues);
         });
         //Source
-        this.sourceSettingsForm.setValue({
-          type: res.data.type.toLowerCase(),
-          provider: res.data.provider,
-          repoUrl: res.data.repo_url,
-          branchName: res.data.branch_name,
-          fileName: res.data.zip_file_name,
-          fileInput: ''
+        this.sourceSettingsForm.patchValue({
+          type: res.data.sourceCode?.type.toLowerCase(),
+          // provider: res.data.provider,
+          // repoUrl: res.data.repo_url,
+          // branchName: res.data.branch_name,
+          // fileName: res.data.zip_file_name,
+          // fileInput: ''
         });
         if (this.sourceSettingsForm.get('type')?.value?.toLowerCase() === "vcs") {
           this.zipUpload = false;
