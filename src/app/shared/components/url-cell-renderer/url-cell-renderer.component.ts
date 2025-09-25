@@ -15,6 +15,7 @@ export class UrlCellRendererComponent {
   public endpointStatus: boolean = false;
 
   agInit(params: any): void {
+    console.log('params--', params);
     const data = params.data;
     this.endpointStatus = data.endpointStatus == 'accessible' ? true : false ;
     this.publicUrl = data?.is_custom_dns

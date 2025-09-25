@@ -89,6 +89,7 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   selectedRelease: any;
   selectedReleaseDetails: any;
+  deploymentId: string = '';
 
   constructor(private deploymentService: DeploymentsService, private sharedService: SharedService,
     private toaster: ToastrService, private ac: ActivatedRoute,
@@ -106,6 +107,7 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
     this.ac.queryParams.pipe(takeUntil(this.destroy$),
       switchMap(params => {
         const depolyementId = params['id'];
+        this.deploymentId = depolyementId;
         return this.deploymentService.getDeploymentById(depolyementId);
       })
     )
@@ -248,8 +250,7 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
   }
 
   getReleasesByDeploymentId(): void {
-    if (this.deploymentdetails?.id) {
-      this.deploymentService.getReleasesByDeploymentId(this.deploymentdetails?.id).subscribe((res: any) => {
+    this.deploymentService.getReleasesByDeploymentId(this.deploymentId).subscribe((res: any) => {
         [this.active, ...this.history] = res.data;
         const status = this.currentStatus;
         const isBuilding = status === "Initiated" || status === "Building";
@@ -332,7 +333,6 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
               : (deployDuration ? `Duration: ${deployDuration}` : "")
         });
       });
-    }
     //  time: this.getDuration(this.active.created_at, this.active.updated_at),
   }
   hasFailedStatus(): boolean {

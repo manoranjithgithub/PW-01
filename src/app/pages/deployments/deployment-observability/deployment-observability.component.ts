@@ -116,6 +116,9 @@ export class DeploymentObservabilityComponent implements OnInit {
       page: this.currentPage,
       limit: this.pageSize,
       timeRange: duration,
+      keyword: "",
+      fromTimestamp: "",
+      toTimestamp: ""
     };
 
     this.deploymentService.getSelectedDeploymentLogs(req).subscribe(
@@ -177,7 +180,7 @@ export class DeploymentObservabilityComponent implements OnInit {
       keyword: keyword,
       fromTimestamp: fromTimestamp,
     };
-    
+
     this.deploymentService.getSelectedDeploymentLogs(req).subscribe(
       (response: any) => {
         if (response.status.toLowerCase() === 'success') {

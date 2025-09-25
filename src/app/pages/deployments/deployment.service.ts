@@ -120,7 +120,7 @@ export class DeploymentsService {
   }
 
   getReleasesByDeploymentId(deploymentId: string) {
-    return this.http.get(`${this.deploymentManagement}/releases/${deploymentId}`)
+    return this.http.get(`${this.deploymentManagement}/deployments/${deploymentId}/releases`)
   }
 
   createDeployement(req: any) {

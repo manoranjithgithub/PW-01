@@ -22,7 +22,7 @@ export class ToolsService {
     }
 
     getFormDetailsByTool(id: any) {
-        return this.http.get(`${this.deploymentUrl}/tools/${id}`)
+        return this.http.get(`${this.deploymentUrl}/tools/supported/${id}`)
             .pipe(
                 catchError(this.handleError)
             );
