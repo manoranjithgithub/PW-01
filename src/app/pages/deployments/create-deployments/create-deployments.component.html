@@ -134,8 +134,11 @@
                 </div>
               </div>
               <div class="col-md-4">
-                <label class="form-label">Port</label>
+                <label class="form-label">Port <span class="required text-danger">*</span></label>
                 <input type="text" class="form-control" formControlName="port">
+                <div class="text-danger my-1" *ngIf="isError('port', 'required')">
+                  This field is required.
+                </div>
                 <div class="text-danger my-1" *ngIf="isError('port', 'maxlength')">
                   Port can have at most 5 digits.
                 </div>
@@ -241,7 +244,7 @@
             <div class="d-flex align-items-center gap-2">
               <div class="w-100">
                 <input type="file" id="fileInput" formControlName="fileInput" class="form-control"
-                  accept=".json,.yml,.yaml" (change)="onFileSelect($event, 'config')" />
+                  accept=".json,.yml,.yaml" (change)="onFileSelected($event)" />
               </div>
               <i class="bi bi-x-circle-fill fs-4 text-dark cursor-pointer" (click)="clearFile()"
                 title="Clear Selected File"></i>
@@ -259,6 +262,9 @@
             </div>
             <div *ngIf="fileUploadForm.get('fileInput')?.hasError('required')" class="text-danger my-2">
               File is required.
+            </div>
+            <div *ngIf="invalidFileFormat" class="text-danger my-2">
+             Invalid file format. Please upload a valid JSON or YAML file
             </div>
           </div>
           <div class="my-2">

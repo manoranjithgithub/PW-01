@@ -324,8 +324,7 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
   gotoAction(params: any) {
     console.log(params)
     // this.sidebarService.hideSidebar();
-    console.log('Navigating to deployment details with ID:', params.id);
-    this.router.navigate(['/deployment/deployment-details'], { queryParams: { id: params._id } })
+    this.router.navigate(['/deployment/deployment-details'], { queryParams: { id: params.id } })
     // this.openDetailsModal(params);
   }
 
