@@ -73,13 +73,13 @@ export class CreateToolComponent implements OnInit, OnDestroy {
     });
     this.http.getAvailableToolsList().subscribe((res: any) => {
       console.log('available tools', res);
-      this.imgList = [res.data]
+      this.imgList = Object.values(res.data);
       // this.selectedTool = this.imgList[0].name;
       // this.onImageClick(this.imgList[0]);
     })
-    const availableTools = JSON.parse(localStorage.getItem('availableTools') || '[]');
+    const availableTools = JSON.parse(localStorage.getItem('availableTools') || '{}');
     if (availableTools) {
-      this.toolNames = availableTools.map((item: any) => item.name);
+       this.toolNames = Object.values(availableTools.data).map((item: any) => item.name);
     }
     this.http.getInstanceTypes().subscribe((res: any) => {
       this.resources = Object.entries(res.data).map(([key, value]) => ({
