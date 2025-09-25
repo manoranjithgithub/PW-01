@@ -91,7 +91,7 @@ export class DeploymentsService {
       );
   }
   deleteTools(env: string, name: string) {
-    return this.http.delete(`${this.deploymentManagement}/tools/${env}/deleteTool/${name}`)
+    return this.http.delete(`${this.deploymentManagement}/tools`, { body: { environmentId: env, name } })
       .pipe(
         catchError(this.handleError.bind(this))
       );

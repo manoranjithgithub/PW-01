@@ -49,6 +49,7 @@ import { ReviewScreenComponent } from '../../review-screen/review-screen.compone
 import { TooltipDirective } from '@coreui/angular';
 import { environment } from '../../../../environments/environment';
 // import { environment } from 'src/environments/environment';
+import * as yaml from 'js-yaml';
 @Component({
   selector: 'app-create-deployments',
   standalone: true,
@@ -165,6 +166,8 @@ export class CreateDeploymentsComponent
   commandValidation: string = 'Please provide the command which application you are deploying';
   deploymentNames: any = [];
   fromReview: boolean = false;
+  parsedConfigData: any
+  invalidFileFormat: boolean = false;
 
   constructor(
     private _fb: FormBuilder,
@@ -190,7 +193,7 @@ export class CreateDeploymentsComponent
           Validators.maxLength(50),
         ],
       ],
-      replicas: ['', [Validators.pattern('^[0-9]+$')]],
+      replicas: ['1', [Validators.pattern('^[0-9]+$')]],
       instanceType: ['', Validators.required],
       buildCommand: [null, Validators.maxLength(60)],
       startCommand: [null, Validators.maxLength(60)],
@@ -199,7 +202,7 @@ export class CreateDeploymentsComponent
       storage: [null, Validators.pattern('^[0-9]+$')],
       healthEndpoint: [null, Validators.maxLength(250)],
       zipFilename: [{ value: null, disabled: true }],
-      port: ['', [Validators.maxLength(5), Validators.pattern('^[0-9]+$')]],
+      port: ['', [Validators.required, Validators.maxLength(5), Validators.pattern('^[0-9]+$')]],
     });
     this.repoListForm = this._fb.group({
       selectedRepo: ['', Validators.required],
@@ -621,7 +624,7 @@ export class CreateDeploymentsComponent
           return of(null);
         })
       )
-      .subscribe((results:any) => {
+      .subscribe((results: any) => {
         // Success message
         console.log('Deployment and related data created successfully', results);
         this.toaster.success('Deployment successfully');
@@ -983,9 +986,9 @@ export class CreateDeploymentsComponent
       environmentId: JSON.parse(localStorage.getItem('environment') || '{}').id,
       name: this.stepOneForm.getRawValue().name,
       sourceCode: {
-        type: this.selectedVCS === 'zip' ? 'zip' : 'VCS',
+        type: this.selectedVCS === 'zip' ? 'file' : 'VCS',
         gitUrl: this.buildGitUrl(),
-        s3FileKey: null, // will be set after S3 upload
+        s3FileKey: null,
       },
       application: {
         replicas: this.stepOneForm.value.replicas || 0,
@@ -1008,8 +1011,53 @@ export class CreateDeploymentsComponent
       config: {
         name: fileName ? fileName.replace(/\.[^/.]+$/, '') : null,
         path: filePath || null,
-        data: null,
+        data: this.parsedConfigData || null,
       },
     };
+  }
+  onFileSelected(event: Event) {
+    this.invalidFileFormat = false;
+    const fileInput = this.fileUploadForm.get('fileInput');
+    const filePath = this.fileUploadForm.get('filePath');
+    const input = event.target as HTMLInputElement;
+
+    if (!input.files?.length) return;
+
+    const file = input.files[0];
+    const fileReader = new FileReader();
+
+    fileReader.onload = () => {
+      try {
+        let parsedData: any;
+        const fileContent = fileReader.result as string;
+
+        if (file.name.endsWith('.json')) {
+          parsedData = JSON.parse(fileContent);
+        } else if (file.name.endsWith('.yml') || file.name.endsWith('.yaml')) {
+          parsedData = yaml.load(fileContent);
+        } else {
+          this.applyFileValidators(fileInput, filePath);
+          return;
+        }
+
+        this.parsedConfigData = JSON.stringify(parsedData);
+        filePath?.setValidators([Validators.required]);
+        filePath?.updateValueAndValidity();
+      } catch (err) {
+        this.parsedConfigData = null;
+        this.applyFileValidators(fileInput, filePath);
+        this.invalidFileFormat = true;
+      }
+    };
+
+    fileReader.readAsText(file);
+  }
+
+  private applyFileValidators(fileInput: AbstractControl | null, filePath: AbstractControl | null) {
+    const allowedExtensions = ['json', 'yml', 'yaml'];
+    fileInput?.setValidators([Validators.required, this.fileValidator(allowedExtensions)]);
+    fileInput?.updateValueAndValidity();
+    filePath?.setValidators([Validators.required]);
+    filePath?.updateValueAndValidity();
   }
 }

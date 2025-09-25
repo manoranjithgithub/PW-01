@@ -209,7 +209,8 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
 
           }
           if (this.additionalParam === "tools") {
-            this.http.deleteTools(this.envId, this.toolName).subscribe((res: any) => {
+            const envId = localStorage.getItem('environment') ? JSON.parse(localStorage.getItem('environment') || '{}').id : '';
+            this.http.deleteTools(envId, this.toolName).subscribe((res: any) => {
               if (res.status) {
                 this.toaster.success('Deleted Successfully');
                 window.location.reload();

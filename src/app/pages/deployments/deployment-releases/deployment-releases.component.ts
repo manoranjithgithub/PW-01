@@ -89,6 +89,7 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   selectedRelease: any;
   selectedReleaseDetails: any;
+  deploymentId: string = '';
 
   constructor(private deploymentService: DeploymentsService, private sharedService: SharedService,
     private toaster: ToastrService, private ac: ActivatedRoute,
@@ -106,6 +107,7 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
     this.ac.queryParams.pipe(takeUntil(this.destroy$),
       switchMap(params => {
         const depolyementId = params['id'];
+        this.deploymentId = depolyementId;
         return this.deploymentService.getDeploymentById(depolyementId);
       })
     )
@@ -248,10 +250,10 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
   }
 
   getReleasesByDeploymentId(): void {
-    if (this.deploymentdetails?.id) {
-      this.deploymentService.getReleasesByDeploymentId(this.deploymentdetails?.id).subscribe((res: any) => {
-        [this.active, ...this.history] = res.data;
-        const status = this.currentStatus;
+    this.deploymentService.getReleasesByDeploymentId(this.deploymentId).subscribe((res: any) => {
+      [this.active, ...this.history] = res.data?.releases || [];
+      this.deploymentService.getReleaseDataById(this.active.id).pipe(take(1)).subscribe((response: any) => {
+        const status = response.data?.status;
         const isBuilding = status === "Initiated" || status === "Building";
         const isBuildFailed = ["Build Failed", "Build Timeout"].includes(status);
         const isDeploying = status === "Deploying";
@@ -271,15 +273,15 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
           {
             title: "Initiated",
             status: "success",
-            time: this.active.created_at,
+            time: this.active.createdAt,
             message: ""
           }
         ];
 
         // Conditionally add build step if not paused
         if (!isPaused) {
-          const buildTime = new Date(this.active.updated_at).toLocaleString();
-          const initiatedTime = new Date(this.active.created_at).toLocaleString() ;
+          const buildTime = new Date(this.active.updatedAt).toLocaleString();
+          const initiatedTime = new Date(this.active.createdAt).toLocaleString();
           const buildDuration = this.getDuration(initiatedTime, buildTime);
           this.steps.push({
             title: isBuilding
@@ -295,9 +297,9 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
           });
         }
 
-        const deployTime = this.active.updated_at;
-        const buildTime = this.active.updated_at;
-        const initiatedTime = this.active.created_at;
+        const deployTime = this.active.updatedAt;
+        const buildTime = this.active.updatedAt;
+        const initiatedTime = this.active.createdAt;
 
         const deployDuration = (isPaused || isBuilding || isBuildFailed)
           ? ""
@@ -331,8 +333,9 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
               ? "Deployment is currently paused."
               : (deployDuration ? `Duration: ${deployDuration}` : "")
         });
-      });
-    }
+      }
+    );
+    });
     //  time: this.getDuration(this.active.created_at, this.active.updated_at),
   }
   hasFailedStatus(): boolean {

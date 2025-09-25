@@ -62,7 +62,7 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
         return [];
       }))
       .subscribe((data: any) => {
-        if (data.status === 'Success') {
+        if (data.status.toLowerCase() === 'success') {
           this.deploymentService.getReleasesByDeploymentId(this.deploymentId).subscribe((res: any) => {
             this.appName = data.data.name;
             console.log( data.data)

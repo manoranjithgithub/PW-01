@@ -197,7 +197,7 @@ export class CreateToolComponent implements OnInit, OnDestroy {
     if (fieldKey === 'name') {
       const nameValue = this.form.get('name')?.value;
       // const nameExists = this.toolNames.some((name: any) => name === nameValue);
-      this.getToolNameValidation(nameValue);
+      // this.getToolNameValidation(nameValue);
     }
   }
 

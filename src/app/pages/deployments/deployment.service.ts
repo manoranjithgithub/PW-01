@@ -90,6 +90,12 @@ export class DeploymentsService {
         catchError(this.handleError.bind(this))
       );
   }
+  getReleaseDataById(releaseId: string) {
+    return this.http.get(`${this.deploymentManagement}/releases/${releaseId}`)
+      .pipe(
+        catchError(this.handleError.bind(this))
+      );
+  }
 
   getUserRepos(projectID: string) {
     return this.http.get(`${this.deploymentManagement}/github/${projectID}/repos`)
@@ -120,7 +126,7 @@ export class DeploymentsService {
   }
 
   getReleasesByDeploymentId(deploymentId: string) {
-    return this.http.get(`${this.deploymentManagement}/releases/${deploymentId}`)
+    return this.http.get(`${this.deploymentManagement}/deployments/${deploymentId}/releases`)
   }
 
   createDeployement(req: any) {

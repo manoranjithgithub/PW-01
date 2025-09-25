@@ -113,7 +113,7 @@ export class ToolsComponent implements OnInit, OnDestroy {
     // },
     {
       headerName: 'Host',
-      field: 'host',
+      field: 'publicHost',
       cellStyle: {
         'white-space': 'nowrap',
         'overflow': 'hidden !important',
@@ -182,7 +182,7 @@ export class ToolsComponent implements OnInit, OnDestroy {
     },
     {
       headerName: 'Port',
-      field: 'ports',
+      field: 'publicPort',
       sortable: true,
       filter: true,
       flex: 1,
@@ -214,7 +214,6 @@ export class ToolsComponent implements OnInit, OnDestroy {
 
   getAvailableTools(value: any): void {
     if (value) {
-      console.log('value', value)
       this.http.getToolsList(value).subscribe((res: any) => {
         if (res.status) {
           this.rowData = res.data;
