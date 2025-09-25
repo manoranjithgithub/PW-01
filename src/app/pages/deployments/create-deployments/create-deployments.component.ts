@@ -227,9 +227,9 @@ export class CreateDeploymentsComponent
     //   complete: () => console.log('WebSocket connection closed')
     // });
 
-    this.deploymentsService.getDefualtConfigInfo().subscribe((res: any) => {
-      this.stepOneForm.get('replicas')?.setValue(res.data?.replicas);
-    });
+    // this.deploymentsService.getDefualtConfigInfo().subscribe((res: any) => {
+    //   this.stepOneForm.get('replicas')?.setValue(res.data?.replicas);
+    // });
 
     this.stepOneForm
       .get('instanceType')
@@ -556,22 +556,12 @@ export class CreateDeploymentsComponent
   }
   submitChanges() {
     this.loading = true;
-
-    const envId = JSON.parse(localStorage.getItem('environment') || '{}').id || '';
     const filePath = this.fileUploadForm.get('filePath')?.value;
     const fileInput = this.fileUploadForm.get('fileInput')?.value;
     const fileName = fileInput ? fileInput.split('\\').pop() : null;
 
-    // Prepare FormData if config file exists
-    const formData = filePath && fileName && this.selectedConfigFile
-      ? this.buildFormData(filePath, fileName)
-      : null;
-
-    // Build initial request payload (s3FileKey will be updated after S3 upload)
     const req = this.buildRequest(fileName, filePath);
     const payload = this.cleanPayload(req);
-
-    // Observable for S3 upload if fileFormData exists
     let upload$: any = of(null);
 
     if (this.fileFormData) {
@@ -579,11 +569,8 @@ export class CreateDeploymentsComponent
         concatMap((res: any) => {
           if (!res?.data) throw new Error('Failed to get S3 details');
           const s3Data = res.data;
-
-          // Upload file to S3
           return this.deploymentsService.uploadFileToS3(s3Data.uploadUrl, this.selectedFile, s3Data.contentType).pipe(
             tap(() => {
-              // Update s3FileKey from API response
               req.sourceCode.s3FileKey = s3Data.s3Key;
             })
           );
@@ -593,31 +580,10 @@ export class CreateDeploymentsComponent
 
     upload$
       .pipe(
-        // Step 1: Create Deployment
         concatMap(() => this.deploymentsService.createDeployement(payload)),
-
-        // Step 2: Create Config, Secrets, Config File
-        concatMap(() => {
-          const config$ = this.envData?.data && Object.keys(this.envData.data).length
-            ? this.deploymentsService.createConfigdata(envId, this.envData)
-            : of(null);
-
-          const secrets$ = this.secretData?.data && Object.keys(this.secretData.data).length
-            ? this.deploymentsService.createSecretsdata(envId, this.secretData)
-            : of(null);
-
-          const configFile$ = formData
-            ? this.deploymentsService.uploadConfigFile(envId, formData)
-            : of(null);
-
-          // Run all in parallel
-          return forkJoin([config$, secrets$, configFile$]);
-        }),
-
         finalize(() => {
           this.loading = false;
         }),
-
         catchError((err) => {
           console.error('Deployment Error:', err);
           this.toaster.error('Error during deployment process');
@@ -625,8 +591,6 @@ export class CreateDeploymentsComponent
         })
       )
       .subscribe((results: any) => {
-        // Success message
-        console.log('Deployment and related data created successfully', results);
         this.toaster.success('Deployment successfully');
         this.router.navigate(['/deployment']);
       });
@@ -968,15 +932,7 @@ export class CreateDeploymentsComponent
     }
     return '';
   }
-  private buildFormData(filePath: string, fileName: string): FormData {
-    const formData = new FormData();
-    if (this.selectedConfigFile) {
-      formData.append('file', this.selectedConfigFile, fileName);
-    }
-    formData.append('configFilePath', filePath);
-    formData.append('name', this.stepOneForm.value.name);
-    return formData;
-  }
+
   private buildRequest(fileName: string | null, filePath: string | null): any {
     const ephemeralStorage = this.stepOneForm.value.ephemeralStorage
       ? `${this.stepOneForm.value.ephemeralStorage}Gi`
@@ -1013,51 +969,28 @@ export class CreateDeploymentsComponent
         path: filePath || null,
         data: this.parsedConfigData || null,
       },
+      secret: this.secretData.data || null,
+      environment: this.envData?.data || null
     };
   }
   onFileSelected(event: Event) {
-    this.invalidFileFormat = false;
-    const fileInput = this.fileUploadForm.get('fileInput');
     const filePath = this.fileUploadForm.get('filePath');
     const input = event.target as HTMLInputElement;
-
     if (!input.files?.length) return;
 
     const file = input.files[0];
     const fileReader = new FileReader();
 
     fileReader.onload = () => {
-      try {
-        let parsedData: any;
-        const fileContent = fileReader.result as string;
+      const base64String = fileReader.result as string;
 
-        if (file.name.endsWith('.json')) {
-          parsedData = JSON.parse(fileContent);
-        } else if (file.name.endsWith('.yml') || file.name.endsWith('.yaml')) {
-          parsedData = yaml.load(fileContent);
-        } else {
-          this.applyFileValidators(fileInput, filePath);
-          return;
-        }
+      const pureBase64 = base64String.split(',')[1];
+      this.parsedConfigData = pureBase64;
 
-        this.parsedConfigData = JSON.stringify(parsedData);
-        filePath?.setValidators([Validators.required]);
-        filePath?.updateValueAndValidity();
-      } catch (err) {
-        this.parsedConfigData = null;
-        this.applyFileValidators(fileInput, filePath);
-        this.invalidFileFormat = true;
-      }
     };
-
-    fileReader.readAsText(file);
-  }
-
-  private applyFileValidators(fileInput: AbstractControl | null, filePath: AbstractControl | null) {
-    const allowedExtensions = ['json', 'yml', 'yaml'];
-    fileInput?.setValidators([Validators.required, this.fileValidator(allowedExtensions)]);
-    fileInput?.updateValueAndValidity();
     filePath?.setValidators([Validators.required]);
     filePath?.updateValueAndValidity();
+
+    fileReader.readAsDataURL(file);
   }
 }

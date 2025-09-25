@@ -22,6 +22,7 @@ import { ConfirmationModalComponent } from '../../../shared/components/modal/con
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { NgbPopoverModule } from '@ng-bootstrap/ng-bootstrap';
+import { env } from 'process';
 @Component({
   selector: 'app-deployment-settings',
   standalone: true,
@@ -501,7 +502,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
 
     const ephemeralStorage = formValue.ephemeralStorage ? `${formValue.ephemeralStorage}Gi` : null;
     const req = {
-      name: formValue.name,
+      name: 'sample-website-1',
       environmentId: JSON.parse(localStorage.getItem('environment') || '{}').id,
       sourceCode: {
         type: sourceFormValue.type,
@@ -529,10 +530,12 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
         path: this.deploymentdetails?.config?.path || null,
         name: this.deploymentdetails?.config?.filename || null,
         data: this.deploymentdetails?.config?.data || null
-      }
+      },
+      secret: this.deploymentdetails?.secret || {},
+      environment: this.deploymentdetails?.environment || {},
     }
     this.deploymentService.updateDeployment(this.deploymentdetails?.id, req).subscribe((res: any) => {
-      if (res.status === "Success") {
+      if (res.status.toLowerCase() === "success") {
         this.toaster.success(res.message);
         this.originalCommands.buildCommand = res.data.build_command;
         this.originalCommands.installCommand = res.data.install_command;

@@ -53,9 +53,9 @@ export const navItems: INavData[] = [
   //   url: '/review-screen',
   //   iconComponent: { name: 'cil-star' },
   // }
-  {
-    name: 'Invoice',
-    url: '/invoice-list',
-    icon: 'bi bi-receipt'
-  },
+  // {
+  //   name: 'Invoice',
+  //   url: '/invoice-list',
+  //   icon: 'bi bi-receipt'
+  // },
 ]

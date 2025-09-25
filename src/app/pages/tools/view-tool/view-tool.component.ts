@@ -80,25 +80,25 @@ export class ViewToolComponent implements OnInit, OnDestroy {
 
   getToolsResourceAllocation() {
     // const deploymentId = `${this.toolName}_${this.env}`;
-    this.http.getToolsResourceAllocation(this.toolName, this.env).subscribe((res: any) => {
-      if (res.status === "Success") {
-        this.resourceAllocationDetails = res.data;
-        if (this.resourceAllocationDetails) {
-          if (this.resourceAllocationDetails.deployment_state === 'overprovisioned') {
-            this.overprovisioned = true;
-            this.underprovisioned = false;
-          }
-          else if (this.resourceAllocationDetails.deployment_state === 'underprovisioned') {
-            this.overprovisioned = false;
-            this.underprovisioned = true;
-          }
-          else {
-            this.overprovisioned = false;
-            this.underprovisioned = false;
-          }
-        }
-      }
-    });
+    // this.http.getToolsResourceAllocation(this.toolName, this.env).subscribe((res: any) => {
+    //   if (res.status === "Success") {
+    //     this.resourceAllocationDetails = res.data;
+    //     if (this.resourceAllocationDetails) {
+    //       if (this.resourceAllocationDetails.deployment_state === 'overprovisioned') {
+    //         this.overprovisioned = true;
+    //         this.underprovisioned = false;
+    //       }
+    //       else if (this.resourceAllocationDetails.deployment_state === 'underprovisioned') {
+    //         this.overprovisioned = false;
+    //         this.underprovisioned = true;
+    //       }
+    //       else {
+    //         this.overprovisioned = false;
+    //         this.underprovisioned = false;
+    //       }
+    //     }
+    //   }
+    // });
   }
 
   createForm(fields: { [key: string]: FormField }): void {
@@ -116,7 +116,7 @@ export class ViewToolComponent implements OnInit, OnDestroy {
         const control = new FormControl({ value: initialValue, disabled: true });
         group[field.key] = control;
         group[field.key] = control;
-        console.log(field.label, initialValue)
+        // console.log(field.label, initialValue)
         if(field.label === 'Instance Type') {
         this.selectedResource = this.resources.find(resource => resource.name === initialValue) || { cpu: '', memory: '', price: 0 };
         }
