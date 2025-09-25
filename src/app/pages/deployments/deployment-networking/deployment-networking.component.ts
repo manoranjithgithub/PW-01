@@ -29,120 +29,120 @@ import { MatIconModule } from '@angular/material/icon';
     FormCheckComponent,
     AlertComponent,
     TooltipDirective,
-    ConfirmationModalComponent,CommonModule,
+    ConfirmationModalComponent, CommonModule,
     FormsModule, ModalComponent, ReactiveFormsModule, MatIconModule, NgbPopoverModule],
   templateUrl: './deployment-networking.component.html',
   styleUrl: './deployment-networking.component.scss',
   providers: [DeploymentsService],
   encapsulation: ViewEncapsulation.None
 })
-export class DeploymentNetworkingComponent implements OnInit{
+export class DeploymentNetworkingComponent implements OnInit {
 
   @Output() closeModalEvent = new EventEmitter<void>();
-    @Input() currentStatus: string = '';
-    networkSettingsForm !: FormGroup;
-    isGenerateDomain: boolean = false;
-    isCustomDomain: boolean = false;
-    showAuthenticationData: any;
-    endpointStatus:string= '';
-    ingressDomain: string = '';
-    hide = true;
-    customDnsHost = new FormControl;
-    isHostDisabled = true;
-    showAuthentication = false;
-    deploymentId: string = '';
-    showCustomDnsHost: boolean = false;
-    deploymentdetails: any;
+  @Input() currentStatus: string = '';
+  networkSettingsForm !: FormGroup;
+  isGenerateDomain: boolean = false;
+  isCustomDomain: boolean = false;
+  showAuthenticationData: any;
+  endpointStatus: string = '';
+  ingressDomain: string = '';
+  hide = true;
+  customDnsHost = new FormControl;
+  isHostDisabled = true;
+  showAuthentication = false;
+  deploymentId: string = '';
+  showCustomDnsHost: boolean = false;
+  deploymentdetails: any;
 
-    @ViewChild('confirmationModel') private confirmationModel!: ModalComponent;
-    
-      public confirmationConfig: any = {
-        modalTitle: '',
-        width: '500px',
-        hideDismissButton: () => true,
-        hideCloseButton: () => true,
-      };
+  @ViewChild('confirmationModel') private confirmationModel!: ModalComponent;
 
-     constructor(private fb: FormBuilder, private deploymentService: DeploymentsService,
-        private toaster: ToastrService, private modalService: NgbModal, private ac: ActivatedRoute
-      ) { }
-    
-    ngOnInit(): void {
+  public confirmationConfig: any = {
+    modalTitle: '',
+    width: '500px',
+    hideDismissButton: () => true,
+    hideCloseButton: () => true,
+  };
 
-      this.networkSettingsForm = this.fb.group({
-        service: [''],
-        host: [''],
-        showAuthentication: [false],
-        authentication: this.fb.group({
-          username: [''],
-          password: ['']
-        }),
-        customDns: [false],
-        customDnsHost: ['']
-      });
+  constructor(private fb: FormBuilder, private deploymentService: DeploymentsService,
+    private toaster: ToastrService, private modalService: NgbModal, private ac: ActivatedRoute
+  ) { }
 
-      this.ac.queryParams.subscribe(params => {
-        const depolyementId = params['id'];
-        this.deploymentId = depolyementId;
-        this.deploymentService.getDeploymentById(depolyementId).subscribe((res: any) => {
-          this.deploymentdetails = res.data;
-          this.networkSettingsForm.get('service')?.setValue(this.deploymentdetails?.name)
-          this.getDeploymentById();
-        })
-      });
+  ngOnInit(): void {
 
-      const environment = localStorage.getItem('environment');
-      const envId = environment ? JSON.parse(environment).id : null;
-
-      this.networkSettingsForm.get('service')?.valueChanges.subscribe(value => {
-        let envType = '';
-        const region = localStorage.getItem('region') || 'ap-south-1a';
-        
-        if (environment) {
-          const envObj = JSON.parse(environment);
-          envType = envObj?.type || '';
-        }
-        const domainSuffix = envType === 'prod'
-          ? `${envId}.${region}.lb.nimbuz.tech`
-          : `${envId}.dev.${region}.lb.nimbuz.tech`;
-        this.networkSettingsForm.get('host')?.setValue(`${value}-${domainSuffix}`);
-      });
-      this.customDnsHost?.valueChanges.subscribe(value => {
-        this.networkSettingsForm.get('customDnsHost')?.setValue(value)
-      })
-
-    this.deploymentService.getAuthenticatedresponse(envId, this.deploymentId).subscribe((res: any) => {
-      this.showAuthenticationData = res.data;
-      this.endpointStatus = res.data?.status;
-      const customDomain = res.data.customDomain || '';
-      const authentication = this.showAuthenticationData?.authentication || null;
-
-      if (customDomain) { this.isHostDisabled = true; }
-      this.customDnsHost.setValue(customDomain);
-
-      if (authentication) {
-        this.networkSettingsForm.get('showAuthentication')?.setValue(true);
-      }
-
-      const authGroup = this.networkSettingsForm.get('authentication') as FormGroup;
-      if (authGroup && authentication.username && authentication.password) {
-        authGroup.patchValue({
-          username: authentication.username,
-          password: authentication.password
-        });
-      }
+    this.networkSettingsForm = this.fb.group({
+      service: [''],
+      host: [''],
+      showAuthentication: [false],
+      authentication: this.fb.group({
+        username: [''],
+        password: ['']
+      }),
+      customDns: [false],
+      customDnsHost: ['']
     });
+
+    this.ac.queryParams.subscribe(params => {
+      const depolyementId = params['id'];
+      this.deploymentId = depolyementId;
+      this.deploymentService.getDeploymentById(depolyementId).subscribe((res: any) => {
+        this.deploymentdetails = res.data;
+        this.networkSettingsForm.get('service')?.setValue(this.deploymentdetails?.name)
+        this.getDeploymentById();
+      })
+    });
+
+    const environment = localStorage.getItem('environment');
+    const envId = environment ? JSON.parse(environment).id : null;
+
+    this.networkSettingsForm.get('service')?.valueChanges.subscribe(value => {
+      let envType = '';
+      const region = localStorage.getItem('region') || 'ap-south-1a';
+
+      if (environment) {
+        const envObj = JSON.parse(environment);
+        envType = envObj?.type || '';
+      }
+      const domainSuffix = envType === 'prod'
+        ? `${envId}.${region}.lb.nimbuz.tech`
+        : `${envId}.dev.${region}.lb.nimbuz.tech`;
+      this.networkSettingsForm.get('host')?.setValue(`${value}-${domainSuffix}`);
+    });
+    this.customDnsHost?.valueChanges.subscribe(value => {
+      this.networkSettingsForm.get('customDnsHost')?.setValue(value)
+    })
+
+    // this.deploymentService.getAuthenticatedresponse(envId, this.deploymentId).subscribe((res: any) => {
+    //   this.showAuthenticationData = res.data;
+    //   this.endpointStatus = res.data?.status;
+    //   const customDomain = res.data.customDomain || '';
+    //   const authentication = this.showAuthenticationData?.authentication || null;
+
+    //   if (customDomain) { this.isHostDisabled = true; }
+    //   this.customDnsHost.setValue(customDomain);
+
+    //   if (authentication) {
+    //     this.networkSettingsForm.get('showAuthentication')?.setValue(true);
+    //   }
+
+    //   const authGroup = this.networkSettingsForm.get('authentication') as FormGroup;
+    //   if (authGroup && authentication.username && authentication.password) {
+    //     authGroup.patchValue({
+    //       username: authentication.username,
+    //       password: authentication.password
+    //     });
+    //   }
+    // });
 
   }
 
   getDeploymentById(): void {
     this.deploymentService.getDeploymentById(this.deploymentdetails?.id).subscribe((res: any) => {
-      if (res.status === "Success") {
-        this.ingressDomain = res.data?.app_ingress_domain;
-        this.showCustomDnsHost = !!res.data.is_custom_dns;
-       
-        this.networkSettingsForm.get('customDns')?.setValue(!!res.data.is_custom_dns)
-        this.customDnsHost?.setValue(res.data.custom_domain);
+      if (res.status.toLowerCase() === "success") {
+        this.ingressDomain = res.data?.network?.appIngressDomain;
+        this.showCustomDnsHost = !!res.data.network?.customDomain;
+
+        this.networkSettingsForm.get('customDns')?.setValue(!!res.data.network?.customDomain)
+        this.customDnsHost?.setValue(res.data.network?.customDomain);
       }
     });
   }
@@ -191,7 +191,7 @@ export class DeploymentNetworkingComponent implements OnInit{
     })
   }
 
-  deleteEndpoint(){
+  deleteEndpoint() {
     const modalRef = this.modalService.open(ConfirmationModalComponent);
     modalRef.componentInstance.selectedItem = 'Endpoint';
     modalRef.componentInstance.message = 'Are you sure you want to delete this endpoint?';
@@ -204,7 +204,7 @@ export class DeploymentNetworkingComponent implements OnInit{
           this.deploymentService.deleteEndpoint(envId, this.deploymentdetails?.name).subscribe((res: any) => {
             if (res.status === "Success") {
               this.toaster.success(res.message);
-              this.ingressDomain ='';
+              this.ingressDomain = '';
             }
           });
         } else {
@@ -216,30 +216,30 @@ export class DeploymentNetworkingComponent implements OnInit{
   fetchCustomDnsHost() {
     const environment = localStorage.getItem('environment');
     const envId = environment ? JSON.parse(environment).id : null;
-    this.deploymentService.getAuthenticatedresponse(envId, this.deploymentId).subscribe((res: any) => {
-      this.showAuthenticationData = res.data;
-      this.endpointStatus = res.data?.status;
-      const customDomain = res.data.customDomain || '';
-      const authentication = this.showAuthenticationData?.authentication || null;
+    // this.deploymentService.getAuthenticatedresponse(envId, this.deploymentId).subscribe((res: any) => {
+    //   this.showAuthenticationData = res.data;
+    //   this.endpointStatus = res.data?.status;
+    //   const customDomain = res.data.customDomain || '';
+    //   const authentication = this.showAuthenticationData?.authentication || null;
 
-      if (customDomain) { this.isHostDisabled = true; }
-      this.customDnsHost.setValue(customDomain);
+    //   if (customDomain) { this.isHostDisabled = true; }
+    //   this.customDnsHost.setValue(customDomain);
 
-      if (authentication) {
-        this.networkSettingsForm.get('showAuthentication')?.setValue(true);
-      }
+    //   if (authentication) {
+    //     this.networkSettingsForm.get('showAuthentication')?.setValue(true);
+    //   }
 
-      const authGroup = this.networkSettingsForm.get('authentication') as FormGroup;
-      if (authGroup && authentication.username && authentication.password) {
-        authGroup.patchValue({
-          username: authentication.username,
-          password: authentication.password
-        });
-      }
-    });
+    //   const authGroup = this.networkSettingsForm.get('authentication') as FormGroup;
+    //   if (authGroup && authentication.username && authentication.password) {
+    //     authGroup.patchValue({
+    //       username: authentication.username,
+    //       password: authentication.password
+    //     });
+    //   }
+    // });
   }
 
-  
+
   shouldEnableButtons(): boolean {
     const auth = this.networkSettingsForm.get('showAuthentication')?.value;
     const dns = this.networkSettingsForm.get('customDns')?.value;

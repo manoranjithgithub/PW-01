@@ -217,7 +217,7 @@ export class ToolsComponent implements OnInit, OnDestroy {
       this.http.getToolsList(value).subscribe((res: any) => {
         if (res.status) {
           this.rowData = res.data;
-          // localStorage.setItem('availableTools', JSON.stringify(res.data));
+          localStorage.setItem('availableTools', JSON.stringify(res.data));
         }
       }, error => {
         this.rowData = [];

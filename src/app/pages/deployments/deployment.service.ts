@@ -243,8 +243,8 @@ export class DeploymentsService {
       );
   }
 
-  createEndpoint(env: string, req: any) {
-    return this.http.post(`${this.deploymentManagement}/${env}/endpoint`, req)
+  createEndpoint(environmentId: string, req: any) {
+    return this.http.post(`${this.deploymentManagement}/endpoints`, { environmentId, ...req })
       .pipe(
         catchError(this.handleError.bind(this))
       );
@@ -328,7 +328,7 @@ export class DeploymentsService {
       headers: { 'Content-Type': contentType },
       observe: 'response'
     }).pipe(
-       map(response => response.status === 200 || response.status === 204),
+      map(response => response.status === 200 || response.status === 204),
       catchError(this.handleError.bind(this))
     );
   }

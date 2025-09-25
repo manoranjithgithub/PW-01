@@ -78,8 +78,8 @@ export class CreateToolComponent implements OnInit, OnDestroy {
       // this.onImageClick(this.imgList[0]);
     })
     const availableTools = JSON.parse(localStorage.getItem('availableTools') || '{}');
-    if (availableTools) {
-       this.toolNames = Object.values(availableTools.data).map((item: any) => item.name);
+    if (availableTools.length > 0) {
+      this.toolNames = Object.values(availableTools.data).map((item: any) => item.name);
     }
     this.http.getInstanceTypes().subscribe((res: any) => {
       this.resources = Object.entries(res.data).map(([key, value]) => ({
@@ -180,7 +180,7 @@ export class CreateToolComponent implements OnInit, OnDestroy {
         if (field.type === 'password') {
           this.hide[field.key] = true;
         }
-        if(field.label === 'Instance Type') {
+        if (field.label === 'Instance Type') {
           console.log(field.options[0]);
           field.default_value = field.options[0];
           this.selectedResource = this.resources.find(resource => resource.name === field.options[0]) || { cpu: '', memory: '', price: 0 };

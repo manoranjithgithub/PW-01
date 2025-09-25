@@ -188,14 +188,13 @@ export class ProjectsComponent implements OnInit, OnDestroy {
       this.loadResourceUsageFromCookie();
 
     } else if (env?.id) {
-      this.getResourceUsage(env?.id);
+      // this.getResourceUsage(env?.id);
       this.loadResourceUsageFromCookie();
     }
   }
 
   filterEnvironments() {
     const copiedList = [...(this.environmentList ?? [])];
-    console.log(this.environmentList)
     // this.environmentsList = copiedList.filter((env: any) => env.project_id === this.selectedProjectId && env.region === this.selectedRegion);
     const envCookie = this.safeParseJSON(localStorage.getItem('environment'));
     //const envCookie = this.safeParseJSON(this.sharedService.getCookie('environment'));

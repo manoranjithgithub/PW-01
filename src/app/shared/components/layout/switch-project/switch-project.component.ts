@@ -137,40 +137,44 @@ export class SwitchProjectComponent implements OnInit {
     }
     const savedEnvironmentStr = JSON.parse(savedEnvironment);
 
-    if (this.projectId !== savedEnvironmentStr.project_id) {
+    if (this.projectId !== savedEnvironmentStr.projectId) {
       this.selectedEnvironment = '';
       this.listOfenvironments = [];
       this.selectedEnvironmentObj = '';
       return;
     }
-    this.projectService.getEnvironmentsByProject(this.projectId).subscribe((res: any) => {
-      const envs = res?.data || [];
-      this.listOfenvironments = envs;
+    // this.projectService.getEnvironmentsByProject(this.projectId).subscribe((res: any) => {
+    //   const envs = res?.data || [];
+    //   this.listOfenvironments = envs;
 
-      const environmentFromCookie = envs.find((env: any) => env.name === JSON.parse(savedEnvironment || '{}')?.name);
-      this.getSelectedEnv(environmentFromCookie || envs[0]);
-    }, () => {
-      this.selectedEnvironment = '';
-      this.listOfenvironments = [];
-    });
+    //   const environmentFromCookie = envs.find((env: any) => env.name === JSON.parse(savedEnvironment || '{}')?.name);
+    //   this.getSelectedEnv(environmentFromCookie || envs[0]);
+    // }, () => {
+    //   this.selectedEnvironment = '';
+    //   this.listOfenvironments = [];
+    // });
   }
 
-  private getRegionsAndEnvironment(): void { 
+  private getRegionsAndEnvironment(): void {
     if (!this.projectId) return;
-  
+
     const savedRegion = localStorage.getItem('region');
-  
+
     this.projectService.getProjectDetailsById(this.projectId).subscribe((res: any) => {
       const data = res?.data;
       const environments = data?.environments || [];
-  
+
       // Group environments by region
       const groupedByRegion = this.groupEnvironmentsByRegion(environments);
-  
-      this.listOfRegions = Object.keys(groupedByRegion).map(regionName => ({
-        name: regionName,
-        environments: groupedByRegion[regionName]
-      }));
+      this.listOfRegions = [{
+        name: 'ap-south-1',
+        environments: groupedByRegion['ap-south-1']
+      }];
+
+      // this.listOfRegions = Object.keys(groupedByRegion).map(regionName => ({
+      //   name: 'ap-south-1',
+      //   environments: groupedByRegion[regionName]
+      // }));
 
       const regionFromCookie = this.listOfRegions.find((r: any) => r.name === savedRegion);
       this.getSelectedRegion(regionFromCookie || this.listOfRegions[0]);
@@ -187,7 +191,7 @@ export class SwitchProjectComponent implements OnInit {
       return acc;
     }, {} as Record<string, any[]>);
   }
-  
+
   private clearEnvAndRegion(): void {
     this.selectedRegion = '';
     this.listOfRegions = [];
@@ -207,12 +211,15 @@ export class SwitchProjectComponent implements OnInit {
     if (!region) return;
     this.selectedRegion = region.name;
     this.form.get('region')?.setValue(region, { emitEvent: false });
-    this.listOfenvironments = region.environments || [];
+    this.projectService.getAllEnvironmentsByProject(this.projectId ).subscribe((res: any) => {
+      this.listOfenvironments =  res?.data || [];
+    });
+    
     // const savedEnv = this.sharedService.getCookie('environment');
     const savedEnv = localStorage.getItem('environment');
     const parsedEnv = savedEnv ? JSON.parse(savedEnv) : null;
-    const envFromCookie = region.environments.find((env: any) => env.name === parsedEnv?.name);
-    this.getSelectedEnv(envFromCookie || region.environments?.[0]);
+    // const envFromCookie = region.environments.find((env: any) => env.name === parsedEnv?.name);
+    this.getSelectedEnv(parsedEnv);
   }
 
   getSelectedEnv(env: any): void {
@@ -253,15 +260,15 @@ export class SwitchProjectComponent implements OnInit {
     localStorage.setItem('environment', JSON.stringify(this.selectedEnvironmentObj));
     this.sharedService.emitEnvValueChange(this.selectedEnvironmentObj);
     const projectId = this.form.value.project?.id;
-      if (projectId) {
-        this.projectService.getProjectDetailsById(projectId).subscribe((res: any) => {
-          const vcsProfileInfo = {
-            github: res.data.github,
-            gitlab: res.data.gitlab
-          }
-          localStorage.setItem('vcsProfileInfo', JSON.stringify(vcsProfileInfo));
-        });
-      }
+    if (projectId) {
+      this.projectService.getProjectDetailsById(projectId).subscribe((res: any) => {
+        const vcsProfileInfo = {
+          github: res.data.github,
+          gitlab: res.data.gitlab
+        }
+        localStorage.setItem('vcsProfileInfo', JSON.stringify(vcsProfileInfo));
+      });
+    }
     this.closeModal();
   }
 

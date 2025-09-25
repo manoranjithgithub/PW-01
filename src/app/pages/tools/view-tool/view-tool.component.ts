@@ -116,7 +116,7 @@ export class ViewToolComponent implements OnInit, OnDestroy {
         const control = new FormControl({ value: initialValue, disabled: true });
         group[field.key] = control;
         group[field.key] = control;
-        console.log(field.label, initialValue)
+        // console.log(field.label, initialValue)
         if(field.label === 'Instance Type') {
         this.selectedResource = this.resources.find(resource => resource.name === initialValue) || { cpu: '', memory: '', price: 0 };
         }

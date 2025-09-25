@@ -139,7 +139,6 @@ export class EditToolComponent implements OnInit, OnDestroy {
     for (const key in fields) {
       if (fields.hasOwnProperty(key)) {
         const field = fields[key];
-        console.log('field', field)
         const validators = [Validators.required];
         if (
           field.key === 'name'

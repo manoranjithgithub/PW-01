@@ -263,7 +263,6 @@ export class DefaultLayoutComponent implements OnInit {
 
   initApp(): void {
     this.projectService.getAllProjects().subscribe((res: any) => {
-      console.log(res)
       if (res.status.toLowerCase() === 'success' && res.data && res.data.length > 0) {
         this.showSwitchProject = true
       }
