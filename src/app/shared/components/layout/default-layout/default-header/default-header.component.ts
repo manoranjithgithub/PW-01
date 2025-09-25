@@ -130,7 +130,7 @@ export class DefaultHeaderComponent extends HeaderComponent implements OnInit, O
   getSelectedRegion(region: any) {
     if (region) {
      // this.sharedService.setCookie('region', JSON.stringify(region), 10);
-      localStorage.setItem('region', JSON.stringify(region));
+      localStorage.setItem('region', JSON.stringify('ap-south-1'));
       this.selectedRegion = region?.name;
       this.selectedEnvironment = region.environments[0]?.name;
       this.listOfenvironments = region.environments;

@@ -135,15 +135,15 @@ export class ProjectsComponent implements OnInit, OnDestroy {
 
   extractRegions(data: any[]) {
     const regions = new Set<string>();
-    data.forEach(project => {
-      project.environments?.forEach((env: any) => {
-        if (env?.region) {
-          regions.add(env?.region);
-        }
-      });
-    });
+    // data.forEach(project => {
+    //   project.environments?.forEach((env: any) => {
+    //     if (env?.region) {
+    //       regions.add(env?.region);
+    //     }
+    //   });
+    // });
 
-    this.regionList = Array.from(regions);
+    this.regionList = ['ap-south-1'];
 
     //const regionFromCookie = this.sharedService.getCookie('region');
     const regionFromCookie = localStorage.getItem('region');

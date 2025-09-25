@@ -100,7 +100,7 @@
               <div class="form-group mb-3 form-check" *ngIf="!isPasswordReset">
                 <input type="checkbox" class="form-check-input" id="terms" formControlName="terms" />
                 <label class="form-check-label" for="terms">
-                  I agree to the <a href="#" target="_blank" class="form-check-label">Terms of Use</a>
+                  I agree to the <a href="https://nimbuz.cloud/terms-of-use.html" target="_blank" class="form-check-label">Terms of Use</a>
                 </label>
                 <div
                   *ngIf="registrationForm.get('terms')?.invalid && (submitted || registrationForm.get('terms')?.touched)"

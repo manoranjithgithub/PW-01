@@ -10,6 +10,7 @@ import { DeploymentsService } from '../deployment.service';
 import { SharedService } from '../../../shared/services/shared.service';
 import { ActivatedRoute } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
+import * as yaml from 'js-yaml';
 
 @Component({
   selector: 'app-deployment-config-maps',
@@ -29,6 +30,7 @@ export class DeploymentConfigMapsComponent implements OnInit {
 
   fileName: string | null = null;
   freezeAddNewData: boolean = false;
+  parsedConfigData: any;
 
   constructor(private fb: FormBuilder, private sharedService: SharedService,
     private deploymentsService: DeploymentsService, private ac: ActivatedRoute, private toaster: ToastrService
@@ -52,35 +54,33 @@ export class DeploymentConfigMapsComponent implements OnInit {
       if (depolyementId) {
         this.deploymentsService.getDeploymentById(depolyementId).subscribe((res: any) => {
           this.deploymentdetails = res.data;
-          this.fileUploadForm.get('filePath')?.setValue(this.deploymentdetails?.config_file_path)
-          this.fileUploadForm.get('fileName')?.setValue(this.deploymentdetails?.config_file_name)
+          this.fileUploadForm.get('filePath')?.setValue(this.deploymentdetails?.config?.path)
+          this.fileUploadForm.get('fileName')?.setValue(this.deploymentdetails?.config?.name)
         })
       }
     });
   }
 
   onFileSelect(event: Event): void {
-    const fileInput = this.fileUploadForm.get('fileInput');
+
     const filePath = this.fileUploadForm.get('filePath');
-    const allowedExtensions = ['json', 'yml', 'yaml'];
-    fileInput?.setValidators([Validators.required, this.fileValidator(allowedExtensions)]);
-    fileInput?.updateValueAndValidity();
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) return;
+
+    const file = input.files[0];
+    const fileReader = new FileReader();
+
+    fileReader.onload = () => {
+      const base64String = fileReader.result as string;
+
+      const pureBase64 = base64String.split(',')[1];
+      this.parsedConfigData = pureBase64;
+
+    };
     filePath?.setValidators([Validators.required]);
     filePath?.updateValueAndValidity();
 
-    const inputElement = event.target as HTMLInputElement;
-    const file = inputElement.files?.[0];
-
-    if (!file) return;
-    this.selectedFile = file;
-    if (file.size > 100_000_000) {
-      this.toaster.error('File size too large.');
-      // this.fileError = 'File size large';
-      return;
-    }
-    this.fileName = file.name;
-    this.fileUploadForm.get('fileName')?.setValue(file.name);
-    // this.fileError = '';
+    fileReader.readAsDataURL(file);
   }
 
   updateConfigFile() {

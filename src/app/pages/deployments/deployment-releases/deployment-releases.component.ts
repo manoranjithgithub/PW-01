@@ -90,6 +90,7 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
   selectedRelease: any;
   selectedReleaseDetails: any;
   deploymentId: string = '';
+  releaseData: any;
 
   constructor(private deploymentService: DeploymentsService, private sharedService: SharedService,
     private toaster: ToastrService, private ac: ActivatedRoute,
@@ -178,9 +179,15 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
 
   redeployDeployment(): void {
     const req = {
-      //stageToExecute: "Redeploy",
-      stageToExecute: "BuildDeploy",
-    }
+      environmentId: JSON.parse(localStorage.getItem('environment') || '{}').id,
+      name: this.deploymentdetails?.name,
+      application: this.deploymentdetails?.application,
+      sourceCode: this.deploymentdetails?.sourceCode,
+      network: this.deploymentdetails?.network,
+      config: this.deploymentdetails?.config,
+      secret: this.deploymentdetails?.secret,
+      environment: this.deploymentdetails?.environment,
+    };
     const modalRef = this.modalService.open(DeployConfirmationComponent);
     modalRef.componentInstance.message = 'Are you sure you want to redeploy this deployment?';
 
@@ -188,7 +195,7 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
       (result) => {
         if (result) {
           this.deploymentService.updateDeployment(this.deploymentdetails?.id, req).subscribe((res: any) => {
-            if (res.status === "Success") {
+            if (res.status.toLowerCase() === "success") {
               this.toaster.success(res.message);
 
             }
@@ -202,10 +209,17 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
   }
 
   pauseDeployment(): void {
+    this.deploymentdetails.application.replicas = '0';
     const req = {
-      replicas: 0,
-      stageToExecute: "Deploy",
-    }
+      environmentId: JSON.parse(localStorage.getItem('environment') || '{}').id,
+      name: this.deploymentdetails?.name,
+      application: this.deploymentdetails?.application,
+      sourceCode: this.deploymentdetails?.sourceCode,
+      network: this.deploymentdetails?.network,
+      config: this.deploymentdetails?.config,
+      secret: this.deploymentdetails?.secret,
+      environment: this.deploymentdetails?.environment,
+    };
     const modalRef = this.modalService.open(DeployConfirmationComponent);
     modalRef.componentInstance.message = 'Are you sure you want to pause this deployment?';
 
@@ -213,7 +227,7 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
       (result) => {
         if (result) {
           this.deploymentService.updateDeployment(this.deploymentdetails?.id, req).subscribe((res: any) => {
-            if (res.status === "Success") {
+            if (res.status.toLowerCase() === "success") {
               this.toaster.success(res.message);
             }
           },
@@ -227,9 +241,17 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
   }
 
   resumeDeployment(): void {
+    this.deploymentdetails.application.replicas = '1';
     const req = {
-      stageToExecute: "Resume",
-    }
+      environmentId: JSON.parse(localStorage.getItem('environment') || '{}').id,
+      name: this.deploymentdetails?.name,
+      application: this.deploymentdetails?.application,
+      sourceCode: this.deploymentdetails?.sourceCode,
+      network: this.deploymentdetails?.network,
+      config: this.deploymentdetails?.config,
+      secret: this.deploymentdetails?.secret,
+      environment: this.deploymentdetails?.environment,
+    };
     const modalRef = this.modalService.open(DeployConfirmationComponent);
     modalRef.componentInstance.message = 'Are you sure you want to resume this deployment?';
 
@@ -237,7 +259,7 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
       (result) => {
         if (result) {
           this.deploymentService.updateDeployment(this.deploymentdetails?.id, req).subscribe((res: any) => {
-            if (res.status === "Success") {
+            if (res.status.toLowerCase() === "success") {
               this.toaster.success(res.message);
             }
           },
@@ -254,20 +276,25 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
       [this.active, ...this.history] = res.data?.releases || [];
       this.deploymentService.getReleaseDataById(this.active.id).pipe(take(1)).subscribe((response: any) => {
         const status = response.data?.status;
+        this.releaseData = response.data;
+
         const isBuilding = status === "Initiated" || status === "Building";
-        const isBuildFailed = ["Build Failed", "Build Timeout"].includes(status);
+        const isPending = status === "Pending";
+        const isBuildFailed = ["Build Failed", "Build Timeout", "Failed"].includes(status);
         const isDeploying = status === "Deploying";
         const isDeployFailed = ["Deploy Failed", "Deploy Timeout", "Create Job Failed"].includes(status);
         const isPaused = status === "Paused";
 
-        const buildStatus = isBuildFailed ? "failed" : "success";
+        const buildStatus = isPending ? "pending" : (isBuildFailed ? "failed" : "success");
         const deployStatus = isPaused
           ? "paused"
-          : isDeployFailed
-            ? "failed"
-            : isBuildFailed || isBuilding
-              ? "pending"
-              : "success";
+          : isPending
+            ? "pending"
+            : isDeployFailed
+              ? "failed"
+              : isBuildFailed || isBuilding
+                ? "pending"
+                : "success";
 
         this.steps = [
           {
@@ -283,17 +310,25 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
           const buildTime = new Date(this.active.updatedAt).toLocaleString();
           const initiatedTime = new Date(this.active.createdAt).toLocaleString();
           const buildDuration = this.getDuration(initiatedTime, buildTime);
+
           this.steps.push({
-            title: isBuilding
-              ? "Building..."
-              : buildStatus === "success"
-                ? "Build : Passed"
-                : "Build › Build image",
-            status: isBuilding ? "in-process" : buildStatus,
-            time: isBuilding ? "" : buildTime,
-            message: isBuildFailed
-              ? "Failed to build an image. Please check the build logs for more details."
-              : `Duration: ${buildDuration}`
+            title: isPending
+              ? "Build : Pending"
+              : isBuilding
+                ? "Building..."
+                : buildStatus === "success"
+                  ? "Build : Passed"
+                  : "Build › Build image",
+
+            status: isPending ? "pending" : (isBuilding ? "in-process" : buildStatus),
+
+            time: (isPending || isBuilding) ? "" : buildTime,
+
+            message: isPending
+              ? "Build is waiting to be scheduled."
+              : isBuildFailed
+                ? "Failed to build an image. Please check the build logs for more details."
+                : `Duration: ${buildDuration}`
           });
         }
 
@@ -301,40 +336,46 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
         const buildTime = this.active.updatedAt;
         const initiatedTime = this.active.createdAt;
 
-        const deployDuration = (isPaused || isBuilding || isBuildFailed)
+        const deployDuration = (isPaused || isBuilding || isBuildFailed || isPending)
           ? ""
           : this.getDuration(buildTime, deployTime);
 
         // Always add deploy step
         this.steps.push({
-          title: isDeploying
-            ? "Deploying..."
-            : deployStatus === "success"
-              ? "Deploy : Passed"
-              : deployStatus === "paused"
-                ? "Deploy:Paused"
-                : deployStatus === "failed"
-                  ? "Deploy : Failed"
-                  : "Deploy",
+          title: isPending
+            ? "Deploy : Pending"
+            : isDeploying
+              ? "Deploying..."
+              : deployStatus === "success"
+                ? "Deploy : Passed"
+                : deployStatus === "paused"
+                  ? "Deploy: Paused"
+                  : deployStatus === "failed"
+                    ? "Deploy : Failed"
+                    : "Deploy",
 
-          status: isDeploying
-            ? "in-process"
-            : isPaused
-              ? "paused"
-              : isBuilding || isBuildFailed
-                ? "pending"
-                : deployStatus,
+          status: isPending
+            ? "pending"
+            : isDeploying
+              ? "in-process"
+              : isPaused
+                ? "paused"
+                : isBuilding || isBuildFailed
+                  ? "pending"
+                  : deployStatus,
 
-          time: isBuilding || isBuildFailed || isPaused ? "" : deployTime,
+          time: (isBuilding || isBuildFailed || isPaused || isPending) ? "" : deployTime,
 
-          message: isDeployFailed
-            ? `Duration: ${deployDuration}` + "<br><br>" + "Failed to Deploy. Please check the build logs for more details."
-            : isPaused
-              ? "Deployment is currently paused."
-              : (deployDuration ? `Duration: ${deployDuration}` : "")
+          message: isPending
+            ? "Deployment is waiting to be scheduled."
+            : isDeployFailed
+              ? `Duration: ${deployDuration}` + "<br><br>" + "Failed to Deploy. Please check the build logs for more details."
+              : isPaused
+                ? "Deployment is currently paused."
+                : (deployDuration ? `Duration: ${deployDuration}` : "")
         });
-      }
-    );
+      });
+
     });
     //  time: this.getDuration(this.active.created_at, this.active.updated_at),
   }

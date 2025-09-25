@@ -163,7 +163,7 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
     },
     {
       headerName: 'Last Release Status',
-      field: 'status',
+      field: 'releaseStatus',
       // field: 'releaseStatus',
       sortable: true,
       filter: false,

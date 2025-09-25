@@ -1013,51 +1013,28 @@ export class CreateDeploymentsComponent
         path: filePath || null,
         data: this.parsedConfigData || null,
       },
+      secret: this.secretData.data || null,
+      environment: this.envData?.data || null
     };
   }
   onFileSelected(event: Event) {
-    this.invalidFileFormat = false;
-    const fileInput = this.fileUploadForm.get('fileInput');
     const filePath = this.fileUploadForm.get('filePath');
     const input = event.target as HTMLInputElement;
-
     if (!input.files?.length) return;
 
     const file = input.files[0];
     const fileReader = new FileReader();
 
     fileReader.onload = () => {
-      try {
-        let parsedData: any;
-        const fileContent = fileReader.result as string;
+      const base64String = fileReader.result as string;
 
-        if (file.name.endsWith('.json')) {
-          parsedData = JSON.parse(fileContent);
-        } else if (file.name.endsWith('.yml') || file.name.endsWith('.yaml')) {
-          parsedData = yaml.load(fileContent);
-        } else {
-          this.applyFileValidators(fileInput, filePath);
-          return;
-        }
+      const pureBase64 = base64String.split(',')[1];
+      this.parsedConfigData = pureBase64;
 
-        this.parsedConfigData = JSON.stringify(parsedData);
-        filePath?.setValidators([Validators.required]);
-        filePath?.updateValueAndValidity();
-      } catch (err) {
-        this.parsedConfigData = null;
-        this.applyFileValidators(fileInput, filePath);
-        this.invalidFileFormat = true;
-      }
     };
-
-    fileReader.readAsText(file);
-  }
-
-  private applyFileValidators(fileInput: AbstractControl | null, filePath: AbstractControl | null) {
-    const allowedExtensions = ['json', 'yml', 'yaml'];
-    fileInput?.setValidators([Validators.required, this.fileValidator(allowedExtensions)]);
-    fileInput?.updateValueAndValidity();
     filePath?.setValidators([Validators.required]);
     filePath?.updateValueAndValidity();
+
+    fileReader.readAsDataURL(file);
   }
 }
