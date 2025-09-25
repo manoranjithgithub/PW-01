@@ -347,7 +347,7 @@ export class ProjectPreferenceComponent implements OnInit, OnDestroy {
     return envData.map((env: any) => ({
       id: env.id,
       name: env.name,
-      resourceLimit: `<span class="limits">CPU :</span>  ${cpuResource?.max_limit} (${cpuResource?.unit})  <span class="limits">Memory :</span> ${ramResource?.max_limit} (${ramResource?.unit.toUpperCase()})  <span class="limits">Storage :</span> ${ephemeralResource?.max_limit} (${ephemeralResource?.unit.toUpperCase()})`,
+      resourceLimit: `<span class="limits">CPU :</span>  ${env?.cpuMaxPlatformLimit} (${cpuResource?.unit})  <span class="limits">Memory :</span> ${env?.memoryMaxPlatformLimit} (${ramResource?.unit.toUpperCase()})  <span class="limits">Storage :</span> ${env?.ephemeralStorageMaxPlatformLimit} (${ephemeralResource?.unit.toUpperCase()})`,
       region: env.region,
     }));
   }
