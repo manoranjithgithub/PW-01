@@ -24,9 +24,9 @@ export const environment = {
     tokenUrl: 'https://gitlab.com/oauth/token',
   },
 
-  apiUrl: 'https://api.nimbuz.tech/core/v1/environments',
+  apiUrl: 'https://api.dev.nimbuz.tech/core/v1/environments',
   legacyUrl: 'https://api.dev.nimbuz.tech/core/v1',
-  loginUrl: 'https://api.nimbuz.tech',
+  loginUrl: 'https://api.dev.nimbuz.tech',
   projectsApiUrl: 'https://api.dev.nimbuz.tech/project/v1/projects',
   projectsBaseUrl: 'https://api.dev.nimbuz.tech/project/v1',
   jobExecutorBaseUrl: 'https://api.dev.nimbuz.tech/job-executor/v1',
