@@ -140,11 +140,11 @@ export class DefaultLayoutComponent implements OnInit {
           const urlWithoutParams = event.url.split('?')[0];
           const isAllowed = allowedRoutes.some(route => urlWithoutParams.startsWith(route));
 
-          // if ((isProjectMissing || isEnvironmentMissing) && !isAllowed) {
-          //   this.toastr.warning('Please select a project and environment before continuing.');
-          //   this.router.navigateByUrl('/projects', { replaceUrl: true });
-          //   return;
-          // }
+          if ((isProjectMissing || isEnvironmentMissing) && !isAllowed) {
+            this.toastr.warning('Please select a project and environment before continuing.');
+            this.router.navigateByUrl('/projects', { replaceUrl: true });
+            return;
+          }
         }
 
         if (event instanceof NavigationEnd) {
