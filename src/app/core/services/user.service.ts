@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export interface LoginData {
     username: string;
@@ -26,7 +27,7 @@ export interface ResetPasswordData {
     providedIn: 'root'
 })
 export class UserService {
-    private apiUrl = 'https://api.dev.nimbuz.tech/user/v1/user';
+    private apiUrl = environment.loginUrl;
 
     constructor(private http: HttpClient) { }
 
