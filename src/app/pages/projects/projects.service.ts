@@ -33,7 +33,7 @@ export class ProjectsService {
   }
 
   getEnvironmentsByProject(projectId: string) {
-    return this.http.get(`${this.apiUrl}/${projectId}/environments`)
+    return this.http.get(`${this.projectsApiUrl}/environments?projectId=${projectId}`)
       .pipe(
         catchError(this.handleError.bind(this))
       );
@@ -81,8 +81,8 @@ export class ProjectsService {
       );
   }
 
-  deleteEnvironment(projectId: string, envId: string) {
-    return this.http.delete(`${this.apiUrl}/${projectId}/environments/${envId}`)
+  deleteEnvironment(projectId: string, id: string) {
+    return this.http.delete(`${this.projectsApiUrl}/environments/${id}`)
       .pipe(
         catchError(this.handleError.bind(this))
       );

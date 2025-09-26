@@ -316,7 +316,7 @@ export class ProjectPreferenceComponent implements OnInit, OnDestroy {
       (result) => {
         if (result) {
           this.projectService.deleteEnvironment(this.currentProjectId, env.id).subscribe((res: any) => {
-            if (res.status === 'Success') {
+            if (res.status.toLowerCase() === 'success') {
               this.toastr.success(res.message);
               this.projectService.getEnvironmentsByProject(this.currentProjectId).subscribe((envRes: any) => {
                 this.shared.emitEnvDDChange(envRes.data);
