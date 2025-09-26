@@ -133,7 +133,7 @@ storageUsageData = [
       });
   });
   
-  this.getPodsByDeploymentId(this.deploymentId);
+  // this.getPodsByDeploymentId(this.deploymentId);
 }
 
 computeMaxLimits(): void {

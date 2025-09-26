@@ -121,7 +121,7 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
     // { headerName: 'Id', field: 'id', sortable: true, filter: false, flex: 1, width: 200 },
     {
       headerName: 'Date',
-      field: 'created_at',
+      field: 'createdAt',
       sortable: true,
       filter: false,
       flex: 1,
@@ -163,8 +163,8 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
     },
     {
       headerName: 'Last Release Status',
-      //field: 'availableReplicas',
       field: 'releaseStatus',
+      // field: 'releaseStatus',
       sortable: true,
       filter: false,
       flex: 1,
@@ -255,7 +255,7 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
   getDeployment(env: any): void {
     if (env) {
       this.deploymentsService.getDeployments(env.id).subscribe((res: any) => {
-        if (res.status === "Success") {
+        if (res.status.toLowerCase() === "success") {
           this.tableData = res.data;
           // const deploymentNames = res.dat.map(item => item.name);
           localStorage.setItem('availableDeplyements', JSON.stringify(res.data));

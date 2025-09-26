@@ -34,7 +34,9 @@ import { SelectedRepoDetails } from '../../../core/models/deployment.model';
 import { WebsocketService } from '../../../core/services/websocket.service';
 import {
   catchError,
+  concatMap,
   debounceTime,
+  finalize,
   forkJoin,
   of,
   Subscription,
@@ -47,6 +49,7 @@ import { ReviewScreenComponent } from '../../review-screen/review-screen.compone
 import { TooltipDirective } from '@coreui/angular';
 import { environment } from '../../../../environments/environment';
 // import { environment } from 'src/environments/environment';
+import * as yaml from 'js-yaml';
 @Component({
   selector: 'app-create-deployments',
   standalone: true,
@@ -163,6 +166,8 @@ export class CreateDeploymentsComponent
   commandValidation: string = 'Please provide the command which application you are deploying';
   deploymentNames: any = [];
   fromReview: boolean = false;
+  parsedConfigData: any
+  invalidFileFormat: boolean = false;
 
   constructor(
     private _fb: FormBuilder,
@@ -188,7 +193,7 @@ export class CreateDeploymentsComponent
           Validators.maxLength(50),
         ],
       ],
-      replicas: ['', [Validators.pattern('^[0-9]+$')]],
+      replicas: ['1', [Validators.pattern('^[0-9]+$')]],
       instanceType: ['', Validators.required],
       buildCommand: [null, Validators.maxLength(60)],
       startCommand: [null, Validators.maxLength(60)],
@@ -197,7 +202,7 @@ export class CreateDeploymentsComponent
       storage: [null, Validators.pattern('^[0-9]+$')],
       healthEndpoint: [null, Validators.maxLength(250)],
       zipFilename: [{ value: null, disabled: true }],
-      port: ['', [Validators.maxLength(5), Validators.pattern('^[0-9]+$')]],
+      port: ['', [Validators.required, Validators.maxLength(5), Validators.pattern('^[0-9]+$')]],
     });
     this.repoListForm = this._fb.group({
       selectedRepo: ['', Validators.required],
@@ -222,9 +227,9 @@ export class CreateDeploymentsComponent
     //   complete: () => console.log('WebSocket connection closed')
     // });
 
-    this.deploymentsService.getDefualtConfigInfo().subscribe((res: any) => {
-      this.stepOneForm.get('replicas')?.setValue(res.data?.replicas);
-    });
+    // this.deploymentsService.getDefualtConfigInfo().subscribe((res: any) => {
+    //   this.stepOneForm.get('replicas')?.setValue(res.data?.replicas);
+    // });
 
     this.stepOneForm
       .get('instanceType')
@@ -550,112 +555,44 @@ export class CreateDeploymentsComponent
 
   }
   submitChanges() {
-    const filePathControl = this.fileUploadForm.get('filePath')?.value;
-    const fileInputControl = this.fileUploadForm.get('fileInput')?.value;
-    const fileName = fileInputControl
-      ? fileInputControl.split('\\').pop()
-      : null;
-    const formData = new FormData();
-    if (filePathControl && fileName && this.selectedConfigFile) {
-      formData.append('file', this.selectedConfigFile, fileName);
-      formData.append('configFilePath', filePathControl);
-      formData.append('name', this.stepOneForm.value.name);
-    }
-    const ephemeralStorage = this.stepOneForm.value.ephemeralStorage
-      ? `${this.stepOneForm.value.ephemeralStorage}Gi`
-      : null;
+    this.loading = true;
+    const filePath = this.fileUploadForm.get('filePath')?.value;
+    const fileInput = this.fileUploadForm.get('fileInput')?.value;
+    const fileName = fileInput ? fileInput.split('\\').pop() : null;
 
-    const req = {
-      environmentId: JSON.parse(localStorage.getItem('environment') || '{}').id,
-      name: this.stepOneForm.getRawValue().name,
-      sourceCode: {
-        type: this.selectedVCS == 'zip' ? 'zip' : 'VCS',
-        gitUrl: 'https://github.com/eMahtab/node-express-hello-world',
-        s3FileKey: this.selectedVCS == 'zip' ? this.stepOneForm.getRawValue().zipFilename : null,
-      },
-      application: {
-        replicas: this.stepOneForm.value.replicas || 0,
-        instanceType: this.stepOneForm.value.instanceType,
-        installCommand: this.stepOneForm.value.installCommand,
-        buildCommand: this.stepOneForm.value.buildCommand,
-        startCommand: this.stepOneForm.value.startCommand,
-        ephemeralStorage: ephemeralStorage,
-        storage: this.stepOneForm.value.storage
-          ? `${this.stepOneForm.value.storage}Gi`
-          : null,
-      },
-      network: {
-        port:
-          this.stepOneForm.value.port == ''
-            ? null
-            : Number(this.stepOneForm.value.port),
-        healthEndpoint: this.stepOneForm.value.healthEndpoint || null,
-        isCustomDns: false,
-        appIngressDomain: null,
-        customDomain: null,
-
-      },
-      config: {
-        name: fileName ? fileName?.replace(/\.[^/.]+$/, '') : null,
-        path: filePathControl ? filePathControl : null,
-        data: null,
-      }
-    };
+    const req = this.buildRequest(fileName, filePath);
     const payload = this.cleanPayload(req);
-    const envId = JSON.parse(localStorage.getItem('environment') || '{}').id || '';
+    let upload$: any = of(null);
 
-    const zipUpload$ = this.fileFormData
-      ? this.deploymentsService
-        .uploadZipDeployment(envId, this.fileFormData)
-        .pipe(
-          tap((res: any) => {
-            if (res.status === 'Success') {
-              this.toaster.success('Deployment created successfully');
-            } else {
-              throw new Error('Zip upload failed');
-            }
-          })
-        )
-      : of(null);
+    if (this.fileFormData) {
+      upload$ = this.deploymentsService.getS3Details().pipe(
+        concatMap((res: any) => {
+          if (!res?.data) throw new Error('Failed to get S3 details');
+          const s3Data = res.data;
+          return this.deploymentsService.uploadFileToS3(s3Data.uploadUrl, this.selectedFile, s3Data.contentType).pipe(
+            tap(() => {
+              req.sourceCode.s3FileKey = s3Data.s3Key;
+            })
+          );
+        })
+      );
+    }
 
-    zipUpload$
+    upload$
       .pipe(
-        switchMap(() => this.deploymentsService.createDeployement(payload)),
-        switchMap(() => {
-          const configData$ =
-            this.envData && Object.keys(this.envData.data || {}).length
-              ? this.deploymentsService.createConfigdata(envId, this.envData)
-              : of(null);
-
-          const secretsData$ =
-            this.secretData && Object.keys(this.secretData.data || {}).length
-              ? this.deploymentsService.createSecretsdata(
-                envId,
-                this.secretData
-              )
-              : of(null);
-
-          const configFile$ =
-            filePathControl && fileName
-              ? this.deploymentsService.uploadConfigFile(envId, formData)
-              : of(null);
-
-          return forkJoin([configData$, secretsData$, configFile$]);
+        concatMap(() => this.deploymentsService.createDeployement(payload)),
+        finalize(() => {
+          this.loading = false;
+        }),
+        catchError((err) => {
+          console.error('Deployment Error:', err);
+          this.toaster.error('Error during deployment process');
+          return of(null);
         })
       )
-      .subscribe({
-        next: ([res2, res3, res4]) => {
-          this.router.navigate(['/deployment']);
-        },
-        error: (err) => {
-          if (err instanceof Error) {
-            console.error('Error message:', err.message);
-            console.error('Stack trace:', err.stack);
-          } else {
-            console.error('Error:', JSON.stringify(err, null, 2));
-          }
-          this.toaster.error('Error during deployment process');
-        },
+      .subscribe((results: any) => {
+        this.toaster.success('Deployment successfully');
+        this.router.navigate(['/deployment']);
       });
   }
   isError(controlName: string, errorType: string): boolean {
@@ -982,5 +919,78 @@ export class CreateDeploymentsComponent
     }
     fileInput?.clearValidators();
     fileInput?.updateValueAndValidity();
+  }
+  private buildGitUrl(): string {
+    const repo = this.selectedRepoDetails?.repoUrl;
+    const branch = this.selectedRepoDetails?.branchName;
+
+    if (this.selectedVCS === 'github') {
+      return `https://token@github.com/${repo}.git -b ${branch}`;
+    }
+    if (this.selectedVCS === 'gitlab') {
+      return `https://${repo}:token@gitlab.com/${repo}.git -b ${branch}`;
+    }
+    return '';
+  }
+
+  private buildRequest(fileName: string | null, filePath: string | null): any {
+    const ephemeralStorage = this.stepOneForm.value.ephemeralStorage
+      ? `${this.stepOneForm.value.ephemeralStorage}Gi`
+      : null;
+
+    return {
+      environmentId: JSON.parse(localStorage.getItem('environment') || '{}').id,
+      name: this.stepOneForm.getRawValue().name,
+      sourceCode: {
+        type: this.selectedVCS === 'zip' ? 'file' : 'VCS',
+        gitUrl: this.buildGitUrl(),
+        s3FileKey: null,
+      },
+      application: {
+        replicas: this.stepOneForm.value.replicas || 0,
+        instanceType: this.stepOneForm.value.instanceType,
+        installCommand: this.stepOneForm.value.installCommand,
+        buildCommand: this.stepOneForm.value.buildCommand,
+        startCommand: this.stepOneForm.value.startCommand,
+        ephemeralStorage,
+        storage: this.stepOneForm.value.storage
+          ? `${this.stepOneForm.value.storage}Gi`
+          : null,
+      },
+      network: {
+        port: this.stepOneForm.value.port ? Number(this.stepOneForm.value.port) : null,
+        healthEndpoint: this.stepOneForm.value.healthEndpoint || null,
+        isCustomDns: false,
+        appIngressDomain: null,
+        customDomain: null,
+      },
+      config: {
+        name: fileName ? fileName.replace(/\.[^/.]+$/, '') : null,
+        path: filePath || null,
+        data: this.parsedConfigData || null,
+      },
+      secret: this.secretData.data || null,
+      environment: this.envData?.data || null
+    };
+  }
+  onFileSelected(event: Event) {
+    const filePath = this.fileUploadForm.get('filePath');
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) return;
+
+    const file = input.files[0];
+    const fileReader = new FileReader();
+
+    fileReader.onload = () => {
+      const base64String = fileReader.result as string;
+
+      const pureBase64 = base64String.split(',')[1];
+      this.parsedConfigData = pureBase64;
+
+    };
+    filePath?.setValidators([Validators.required]);
+    filePath?.updateValueAndValidity();
+
+    fileReader.readAsDataURL(file);
   }
 }

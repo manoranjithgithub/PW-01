@@ -37,6 +37,6 @@ export const environment = {
   wss: 'wss://api.nimbuz.tech/deployment',
   pricingManagement: 'https://api.nimbuz.tech/pricing-engine',
   userManagement: 'https://api.nimbuz.tech/user/v1/business/organisation',
-  logServiceUrl: 'https://api.nimbuz.tech/nimbuz-logs-be',
+  logServiceUrl: 'https://api.nimbuz.tech/logs',
   domain: 'nimbuz.tech'
 };

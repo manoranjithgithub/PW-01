@@ -73,13 +73,13 @@ export class CreateToolComponent implements OnInit, OnDestroy {
     });
     this.http.getAvailableToolsList().subscribe((res: any) => {
       console.log('available tools', res);
-      this.imgList = [res.data]
+      this.imgList = Object.values(res.data);
       // this.selectedTool = this.imgList[0].name;
       // this.onImageClick(this.imgList[0]);
     })
-    const availableTools = JSON.parse(localStorage.getItem('availableTools') || '[]');
-    if (availableTools) {
-      this.toolNames = availableTools.map((item: any) => item.name);
+    const availableTools = JSON.parse(localStorage.getItem('availableTools') || '{}');
+    if (availableTools.length > 0) {
+      this.toolNames = Object.values(availableTools.data).map((item: any) => item.name);
     }
     this.http.getInstanceTypes().subscribe((res: any) => {
       this.resources = Object.entries(res.data).map(([key, value]) => ({
@@ -180,7 +180,7 @@ export class CreateToolComponent implements OnInit, OnDestroy {
         if (field.type === 'password') {
           this.hide[field.key] = true;
         }
-        if(field.label === 'Instance Type') {
+        if (field.label === 'Instance Type') {
           console.log(field.options[0]);
           field.default_value = field.options[0];
           this.selectedResource = this.resources.find(resource => resource.name === field.options[0]) || { cpu: '', memory: '', price: 0 };
@@ -197,7 +197,7 @@ export class CreateToolComponent implements OnInit, OnDestroy {
     if (fieldKey === 'name') {
       const nameValue = this.form.get('name')?.value;
       // const nameExists = this.toolNames.some((name: any) => name === nameValue);
-      this.getToolNameValidation(nameValue);
+      // this.getToolNameValidation(nameValue);
     }
   }
 

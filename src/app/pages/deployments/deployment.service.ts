@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 import { ToastrService } from 'ngx-toastr';
 import { environment } from '../../../environments/environment';
 
@@ -90,6 +90,12 @@ export class DeploymentsService {
         catchError(this.handleError.bind(this))
       );
   }
+  getReleaseDataById(releaseId: string) {
+    return this.http.get(`${this.deploymentManagement}/releases/${releaseId}`)
+      .pipe(
+        catchError(this.handleError.bind(this))
+      );
+  }
 
   getUserRepos(projectID: string) {
     return this.http.get(`${this.deploymentManagement}/github/${projectID}/repos`)
@@ -120,9 +126,7 @@ export class DeploymentsService {
   }
 
   getReleasesByDeploymentId(deploymentId: string) {
-    const params = new HttpParams()
-      .set('deploymentId', deploymentId);
-    return this.http.get(`${this.deploymentManagement}/releases`, { params })
+    return this.http.get(`${this.deploymentManagement}/deployments/${deploymentId}/releases`)
   }
 
   createDeployement(req: any) {
@@ -140,7 +144,7 @@ export class DeploymentsService {
   }
 
   deleteDeployment(deploymentId: string) {
-    return this.http.delete(`${this.deploymentManagement}/deployment/${deploymentId}`)
+    return this.http.delete(`${this.deploymentManagement}/deployments/${deploymentId}`)
       .pipe(
         catchError(this.handleError.bind(this))
       );
@@ -239,8 +243,8 @@ export class DeploymentsService {
       );
   }
 
-  createEndpoint(env: string, req: any) {
-    return this.http.post(`${this.deploymentManagement}/${env}/endpoint`, req)
+  createEndpoint(environmentId: string, req: any) {
+    return this.http.post(`${this.deploymentManagement}/endpoints`, { environmentId, ...req })
       .pipe(
         catchError(this.handleError.bind(this))
       );
@@ -268,7 +272,7 @@ export class DeploymentsService {
   }
 
   getAuthenticatedresponse(env: string, deploymentId: string) {
-    return this.http.get(`${this.deploymentManagement}/${env}/endpoint/${deploymentId}`)
+    return this.http.get(`${this.deploymentManagement}/endpoints/${deploymentId}`)
       .pipe(
         catchError(this.handleError.bind(this))
       );
@@ -321,8 +325,10 @@ export class DeploymentsService {
   }
   uploadFileToS3(url: string, file: any, contentType: string) {
     return this.http.put(url, file, {
-      headers: { 'Content-Type': contentType }
+      headers: { 'Content-Type': contentType },
+      observe: 'response'
     }).pipe(
+      map(response => response.status === 200 || response.status === 204),
       catchError(this.handleError.bind(this))
     );
   }

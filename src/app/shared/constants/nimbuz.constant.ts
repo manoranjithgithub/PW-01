@@ -6,7 +6,7 @@ export interface DeploymentType {
   export const DEPLOYMENT_TYPES: DeploymentType[] = [
     { id: 1, name: 'vcs' },
    // { id: 2, name: 'gitHub' },
-    { id: 2, name: 'zip' },
+    { id: 2, name: 'file' },
   ];
 
   export const REGION_OPTIONS = [

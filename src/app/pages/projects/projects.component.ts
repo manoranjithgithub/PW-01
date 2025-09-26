@@ -135,15 +135,15 @@ export class ProjectsComponent implements OnInit, OnDestroy {
 
   extractRegions(data: any[]) {
     const regions = new Set<string>();
-    data.forEach(project => {
-      project.environments?.forEach((env: any) => {
-        if (env?.region) {
-          regions.add(env?.region);
-        }
-      });
-    });
+    // data.forEach(project => {
+    //   project.environments?.forEach((env: any) => {
+    //     if (env?.region) {
+    //       regions.add(env?.region);
+    //     }
+    //   });
+    // });
 
-    this.regionList = Array.from(regions);
+    this.regionList = ['ap-south-1'];
 
     //const regionFromCookie = this.sharedService.getCookie('region');
     const regionFromCookie = localStorage.getItem('region');
@@ -188,14 +188,13 @@ export class ProjectsComponent implements OnInit, OnDestroy {
       this.loadResourceUsageFromCookie();
 
     } else if (env?.id) {
-      this.getResourceUsage(env?.id);
+      // this.getResourceUsage(env?.id);
       this.loadResourceUsageFromCookie();
     }
   }
 
   filterEnvironments() {
     const copiedList = [...(this.environmentList ?? [])];
-    console.log(this.environmentList)
     // this.environmentsList = copiedList.filter((env: any) => env.project_id === this.selectedProjectId && env.region === this.selectedRegion);
     const envCookie = this.safeParseJSON(localStorage.getItem('environment'));
     //const envCookie = this.safeParseJSON(this.sharedService.getCookie('environment'));

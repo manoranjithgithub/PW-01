@@ -123,37 +123,37 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     const environment = localStorage.getItem('environment');
     if (environment) {
       const envID = JSON.parse(environment).id;
-      this.http.getDeploymentStatus(envID).subscribe((res: any) => {
-        if (res.status.toLowerCase() === 'success') {
-          this.cards[2].value = `${res.data.toalActiveWorkloads} / ${res.data.totalPausedWorkloads}`;
-          this.cards[3].value = `${res.data.totalFailedWorkloads} / ${res.data.totalPendingWorkloads}`;
-        }
-      });
+      // this.http.getDeploymentStatus(envID).subscribe((res: any) => {
+      //   if (res.status.toLowerCase() === 'success') {
+      //     this.cards[2].value = `${res.data.toalActiveWorkloads} / ${res.data.totalPausedWorkloads}`;
+      //     this.cards[3].value = `${res.data.totalFailedWorkloads} / ${res.data.totalPendingWorkloads}`;
+      //   }
+      // });
       this.currentEnvId = envID;
       this.getEndpointsList(envID)
 
     }
-    this.http.getDeploymentUtilization(this.currentEnvId).subscribe((res: any) => {
-      console.log(res);
-      this.utilizationData.forEach(item => {
-        switch (item.title) {
-          case 'CPU':
-            item.value = parseFloat(res.data.cpuPercentage);
-            item.rawValue = `${(res.data.totalCpuAvg * 1000).toFixed(2)}mCPU`;
-            break;
+    // this.http.getDeploymentUtilization(this.currentEnvId).subscribe((res: any) => {
+    //   console.log(res);
+    //   this.utilizationData.forEach(item => {
+    //     switch (item.title) {
+    //       case 'CPU':
+    //         item.value = parseFloat(res.data.cpuPercentage);
+    //         item.rawValue = `${(res.data.totalCpuAvg * 1000).toFixed(2)}mCPU`;
+    //         break;
 
-          case 'Memory':
-            item.value = parseFloat(res.data.ramPercentage);
-            item.rawValue = `${(res.data.totalRamAvg * 1000).toFixed(2)}Mi`;
-            break;
+    //       case 'Memory':
+    //         item.value = parseFloat(res.data.ramPercentage);
+    //         item.rawValue = `${(res.data.totalRamAvg * 1000).toFixed(2)}Mi`;
+    //         break;
 
-          case 'Storage':
-            item.value = 0;
-            item.rawValue = '0GB';
-            break;
-        }
-      });
-    });
+    //       case 'Storage':
+    //         item.value = 0;
+    //         item.rawValue = '0GB';
+    //         break;
+    //     }
+    //   });
+    // });
   }
 
   ngAfterViewInit(): void {
@@ -213,7 +213,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       (result) => {
         if (result) {
           this.http.deleteEndpoint(this.currentEnvId, data.name).subscribe((res: any) => {
-            if (res.status === 'Success') {
+            if (res.status.toLowerCase() === 'success') {
               this.getEndpointsList(this.currentEnvId);
               this.toastr.success(res.message);
             }

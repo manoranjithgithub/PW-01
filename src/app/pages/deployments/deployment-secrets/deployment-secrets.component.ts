@@ -281,12 +281,12 @@ export class DeploymentSecretsComponent implements OnInit {
   private handleSecretListLoading(): void {
     if (!this.deploymentdetails?.name) return;
 
-    if (this.storedEnvironment && this.canAddVariables) {
-      this.deploymentsService.getSecreteList(this.storedEnvironment.id, this.deploymentdetails.name).subscribe((res: any) => {
-        const envVariables = this.mapEnvVariables(res?.data?.data || {});
-        this.secretList = [...this.secretList, ...envVariables];
-      });
-    }
+    // if (this.storedEnvironment && this.canAddVariables) {
+    //   this.deploymentsService.getSecreteList(this.storedEnvironment.id, this.deploymentdetails.name).subscribe((res: any) => {
+    //     const envVariables = this.mapEnvVariables(res?.data?.data || {});
+    //     this.secretList = [...this.secretList, ...envVariables];
+    //   });
+    // }
 
     if (!this.canAddVariables && this.secretDataFromParent?.data) {
       const newVariables = this.mapEnvVariables(this.secretDataFromParent.data);

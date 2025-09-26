@@ -252,12 +252,12 @@ export class EnvironmentVariablesComponent implements OnInit {
 
   private loadEnvironmentVariables(): void {
     if (this.storedEnvironment && this.canAddVariables && this.deploymentdetails) {
-      this.deploymentsService
-        .getConfigList(this.storedEnvironment.id, this.deploymentdetails.name)
-        .subscribe((res: any) => {
-          const envVariables = this.mapEnvVariables(res?.data?.data || {});
-          this.envList = [...this.envList, ...envVariables];
-        });
+      // this.deploymentsService
+      //   .getConfigList(this.storedEnvironment.id, this.deploymentdetails.name)
+      //   .subscribe((res: any) => {
+      //     const envVariables = this.mapEnvVariables(res?.data?.data || {});
+      //     this.envList = [...this.envList, ...envVariables];
+      //   });
     }
 
     if (!this.canAddVariables && this.envDataFromParent?.data) {

@@ -56,14 +56,18 @@ export class DashboardsService {
       );
   }
   getEndpoints(envId: any) {
-    return this.http.get(`${this.deploymentManagement}/${envId}/endpoint`)
+    return this.http.get(`${this.deploymentManagement}/endpoints?environmentId=${envId}`)
       .pipe(
         catchError(this.handleError.bind(this))
       );
   }
 
   deleteEndpoint(env: string, name: string) {
-    return this.http.delete(`${this.deploymentManagement}/${env}/endpoint/${name}`)
+    return this.http.delete(`${this.deploymentManagement}/endpoints`,{body: {
+      name: name,
+      environmentId: env
+    }
+    })
       .pipe(
         catchError(this.handleError.bind(this))
       );

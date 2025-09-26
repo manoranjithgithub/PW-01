@@ -75,25 +75,25 @@ export class EditToolComponent implements OnInit, OnDestroy {
 
   getToolsResourceAllocation() {
     // const deploymentId = `${this.toolName}_${this.env}`;
-    this.http.getToolsResourceAllocation(this.paramsEdit, this.env).subscribe((res: any) => {
-      if (res.status === "Success") {
-        this.resourceAllocationDetails = res.data;
-        if (this.resourceAllocationDetails) {
-          if (this.resourceAllocationDetails.deployment_state === 'overprovisioned') {
-            this.overprovisioned = true;
-            this.underprovisioned = false;
-          }
-          else if (this.resourceAllocationDetails.deployment_state === 'underprovisioned') {
-            this.overprovisioned = false;
-            this.underprovisioned = true;
-          }
-          else {
-            this.overprovisioned = false;
-            this.underprovisioned = false;
-          }
-        }
-      }
-    });
+    // this.http.getToolsResourceAllocation(this.paramsEdit, this.env).subscribe((res: any) => {
+    //   if (res.status === "Success") {
+    //     this.resourceAllocationDetails = res.data;
+    //     if (this.resourceAllocationDetails) {
+    //       if (this.resourceAllocationDetails.deployment_state === 'overprovisioned') {
+    //         this.overprovisioned = true;
+    //         this.underprovisioned = false;
+    //       }
+    //       else if (this.resourceAllocationDetails.deployment_state === 'underprovisioned') {
+    //         this.overprovisioned = false;
+    //         this.underprovisioned = true;
+    //       }
+    //       else {
+    //         this.overprovisioned = false;
+    //         this.underprovisioned = false;
+    //       }
+    //     }
+    //   }
+    // });
   }
 
 
@@ -139,7 +139,6 @@ export class EditToolComponent implements OnInit, OnDestroy {
     for (const key in fields) {
       if (fields.hasOwnProperty(key)) {
         const field = fields[key];
-        console.log('field', field)
         const validators = [Validators.required];
         if (
           field.key === 'name'
