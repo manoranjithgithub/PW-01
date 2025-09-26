@@ -437,8 +437,8 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
     const environmentId = environmentStr ? JSON.parse(environmentStr).id : '';
     const req = {
       environmentId: environmentId,
-      logType: type,
-      name: type === 'build' ? this.selectedReleaseDetails.build_job_name : this.selectedReleaseDetails.deploy_job_name,
+      logType: 'job',
+      name: this.selectedReleaseDetails.jobName,
       page: this.currentPage,
       limit: this.pageSize,
     };

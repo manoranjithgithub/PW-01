@@ -272,7 +272,7 @@ export class DeploymentsService {
   }
 
   getAuthenticatedresponse(env: string, deploymentId: string) {
-    return this.http.get(`${this.deploymentManagement}/${env}/endpoint/${deploymentId}`)
+    return this.http.get(`${this.deploymentManagement}/endpoints/${deploymentId}`)
       .pipe(
         catchError(this.handleError.bind(this))
       );
