@@ -178,23 +178,23 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
   }
 
   redeployDeployment(): void {
-    const req = {
-      environmentId: JSON.parse(localStorage.getItem('environment') || '{}').id,
-      name: this.deploymentdetails?.name,
-      application: this.deploymentdetails?.application,
-      sourceCode: this.deploymentdetails?.sourceCode,
-      network: this.deploymentdetails?.network,
-      config: this.deploymentdetails?.config,
-      secret: this.deploymentdetails?.secret,
-      environment: this.deploymentdetails?.environment,
-    };
+    // const req = {
+    //   environmentId: JSON.parse(localStorage.getItem('environment') || '{}').id,
+    //   name: this.deploymentdetails?.name,
+    //   application: this.deploymentdetails?.application,
+    //   sourceCode: this.deploymentdetails?.sourceCode,
+    //   network: this.deploymentdetails?.network,
+    //   config: this.deploymentdetails?.config,
+    //   secret: this.deploymentdetails?.secret,
+    //   environment: this.deploymentdetails?.environment,
+    // };
     const modalRef = this.modalService.open(DeployConfirmationComponent);
     modalRef.componentInstance.message = 'Are you sure you want to redeploy this deployment?';
 
     modalRef.result.then(
       (result) => {
         if (result) {
-          this.deploymentService.updateDeployment(this.deploymentdetails?.id, req).subscribe((res: any) => {
+          this.deploymentService.updateDeployment(this.deploymentdetails?.id, {}).subscribe((res: any) => {
             if (res.status.toLowerCase() === "success") {
               this.toaster.success(res.message);
 
@@ -209,16 +209,10 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
   }
 
   pauseDeployment(): void {
-    this.deploymentdetails.application.replicas = '0';
     const req = {
-      environmentId: JSON.parse(localStorage.getItem('environment') || '{}').id,
-      name: this.deploymentdetails?.name,
-      application: this.deploymentdetails?.application,
-      sourceCode: this.deploymentdetails?.sourceCode,
-      network: this.deploymentdetails?.network,
-      config: this.deploymentdetails?.config,
-      secret: this.deploymentdetails?.secret,
-      environment: this.deploymentdetails?.environment,
+      application: {
+        replicas: '0'
+      },
     };
     const modalRef = this.modalService.open(DeployConfirmationComponent);
     modalRef.componentInstance.message = 'Are you sure you want to pause this deployment?';
