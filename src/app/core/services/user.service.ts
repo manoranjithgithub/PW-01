@@ -32,14 +32,14 @@ export class UserService {
     constructor(private http: HttpClient) { }
 
     register(data: RegistrationData): Observable<any> {
-        return this.http.post<any>(`${this.apiUrl}/register`, data);
+        return this.http.post<any>(`${this.apiUrl}/user/v1/user/register`, data);
     }
 
     login(data: LoginData): Observable<any> {
-        return this.http.post<any>(`${this.apiUrl}/login`, data);
+        return this.http.post<any>(`${this.apiUrl}/user/v1/user/login`, data);
     }
     forgotPassword(data: LoginData): Observable<any> {
-        return this.http.post<any>(`${this.apiUrl}/forgot-password`, data);
+        return this.http.post<any>(`${this.apiUrl}/user/v1/user/forgot-password`, data);
     }
     resetPassword(req: ResetPasswordData): Observable<any> {
         const accessToken = localStorage.getItem('accessToken');
@@ -47,6 +47,6 @@ export class UserService {
         if (accessToken) {
             headers['Authorization'] = `Bearer ${accessToken}`;
         }
-        return this.http.post<any>(`${this.apiUrl}/reset-password`, req, { headers });
+        return this.http.post<any>(`${this.apiUrl}/user/v1/user/reset-password`, req, { headers });
     }
 }
