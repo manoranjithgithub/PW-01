@@ -316,7 +316,7 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
 
             status: isPending ? "pending" : (isBuilding ? "in-process" : buildStatus),
 
-            time: (isPending || isBuilding) ? "" : buildTime,
+            time: (isPending || isBuilding) ? initiatedTime : buildTime,
 
             message: isPending
               ? "Build is waiting to be scheduled."
@@ -391,6 +391,7 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
       'Deploy Timeout': 'warning',
       'Pending': 'warning',
       'Create Job Failed': 'danger',
+      'Success': 'success',
     };
     return map[status] || 'Pending';
   }
@@ -410,6 +411,7 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
       'Running': 'bi-arrow-repeat',
       'Pending': 'bi-clock',
       'Create Job Failed': 'bi-x-circle-fill',
+      'Success': 'bi-check-circle-fill',
     };
     return map[status] || '';
   }
