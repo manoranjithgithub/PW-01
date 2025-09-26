@@ -565,7 +565,7 @@ export class CreateDeploymentsComponent
     let upload$: any = of(null);
 
     if (this.fileFormData) {
-      upload$ = this.deploymentsService.getS3Details().pipe(
+      upload$ = this.deploymentsService.getS3Details(this.fileExtension).pipe(
         concatMap((res: any) => {
           if (!res?.data) throw new Error('Failed to get S3 details');
           const s3Data = res.data;

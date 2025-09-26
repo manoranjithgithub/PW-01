@@ -317,8 +317,8 @@ export class DeploymentsService {
   }
 
 
-  getS3Details() {
-    return this.http.get(`${this.deploymentManagement}/artificat?fileExtension=zip`)
+  getS3Details(fileExtension: string) {
+    return this.http.get(`${this.deploymentManagement}/artificat?fileExtension=${fileExtension}`)
       .pipe(
         catchError(this.handleError.bind(this))
       );

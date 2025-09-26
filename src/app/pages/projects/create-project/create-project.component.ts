@@ -51,7 +51,8 @@ export class CreateProjectComponent implements OnInit {
 
   ngOnInit(): void {
     this.shared.user$.subscribe((user: any) => {
-      this.orgName = user.owner;
+      const userData = localStorage.getItem('profileSettings') ? JSON.parse(localStorage.getItem('profileSettings') || '{}') : null;
+      this.orgName = userData.owner;
     });
 
    // const envCookie = this.shared.getCookie('environment');
@@ -88,7 +89,7 @@ export class CreateProjectComponent implements OnInit {
       })
     });
 
-    this.getPlanLimits();
+    // this.getPlanLimits();
 
   }
 
@@ -113,12 +114,10 @@ export class CreateProjectComponent implements OnInit {
         this.toastr.success(res.message);
         this.project.getAllProjects().subscribe((projectRes: any) => {
           this.shared.emitProjectDDChange(projectRes.data);
-         // this.shared.setCookie('project', JSON.stringify(projectRes.data[0]), 10);
           localStorage.setItem('project', JSON.stringify(projectRes.data[0]));
-          this.shared.emitProjectValueChange(projectRes.data[0]);
-         // this.shared.setCookie('environment', JSON.stringify(projectRes.data[0]?.environments[0]), 10);
-          localStorage.setItem('environment', JSON.stringify(projectRes.data[0]?.environments[0]));
-          this.shared.emitProjectValueChange(projectRes.data[0]?.environments[0]);
+          this.shared.emitProjectValueChange(res.data?.environment);
+          localStorage.setItem('environment', JSON.stringify(res.data?.environment));
+          this.shared.emitProjectValueChange(res.data?.environment);
           this.route.navigate(['/projects']);
         });
       }
