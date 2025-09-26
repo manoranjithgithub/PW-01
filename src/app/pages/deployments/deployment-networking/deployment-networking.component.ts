@@ -111,27 +111,27 @@ export class DeploymentNetworkingComponent implements OnInit {
       this.networkSettingsForm.get('customDnsHost')?.setValue(value)
     })
 
-    // this.deploymentService.getAuthenticatedresponse(envId, this.deploymentId).subscribe((res: any) => {
-    //   this.showAuthenticationData = res.data;
-    //   this.endpointStatus = res.data?.status;
-    //   const customDomain = res.data.customDomain || '';
-    //   const authentication = this.showAuthenticationData?.authentication || null;
+    this.deploymentService.getAuthenticatedresponse(envId, this.deploymentId).subscribe((res: any) => {
+      this.showAuthenticationData = res.data;
+      this.endpointStatus = res.data?.status;
+      const customDomain = res.data.customDomain || '';
+      const authentication = this.showAuthenticationData?.authentication || null;
 
-    //   if (customDomain) { this.isHostDisabled = true; }
-    //   this.customDnsHost.setValue(customDomain);
+      if (customDomain) { this.isHostDisabled = true; }
+      this.customDnsHost.setValue(customDomain);
 
-    //   if (authentication) {
-    //     this.networkSettingsForm.get('showAuthentication')?.setValue(true);
-    //   }
+      if (authentication) {
+        this.networkSettingsForm.get('showAuthentication')?.setValue(true);
+      }
 
-    //   const authGroup = this.networkSettingsForm.get('authentication') as FormGroup;
-    //   if (authGroup && authentication.username && authentication.password) {
-    //     authGroup.patchValue({
-    //       username: authentication.username,
-    //       password: authentication.password
-    //     });
-    //   }
-    // });
+      const authGroup = this.networkSettingsForm.get('authentication') as FormGroup;
+      if (authGroup && authentication.username && authentication.password) {
+        authGroup.patchValue({
+          username: authentication.username,
+          password: authentication.password
+        });
+      }
+    });
 
   }
 
@@ -216,27 +216,27 @@ export class DeploymentNetworkingComponent implements OnInit {
   fetchCustomDnsHost() {
     const environment = localStorage.getItem('environment');
     const envId = environment ? JSON.parse(environment).id : null;
-    // this.deploymentService.getAuthenticatedresponse(envId, this.deploymentId).subscribe((res: any) => {
-    //   this.showAuthenticationData = res.data;
-    //   this.endpointStatus = res.data?.status;
-    //   const customDomain = res.data.customDomain || '';
-    //   const authentication = this.showAuthenticationData?.authentication || null;
+    this.deploymentService.getAuthenticatedresponse(envId, this.deploymentId).subscribe((res: any) => {
+      this.showAuthenticationData = res.data;
+      this.endpointStatus = res.data?.status;
+      const customDomain = res.data.customDomain || '';
+      const authentication = this.showAuthenticationData?.authentication || null;
 
-    //   if (customDomain) { this.isHostDisabled = true; }
-    //   this.customDnsHost.setValue(customDomain);
+      if (customDomain) { this.isHostDisabled = true; }
+      this.customDnsHost.setValue(customDomain);
 
-    //   if (authentication) {
-    //     this.networkSettingsForm.get('showAuthentication')?.setValue(true);
-    //   }
+      if (authentication) {
+        this.networkSettingsForm.get('showAuthentication')?.setValue(true);
+      }
 
-    //   const authGroup = this.networkSettingsForm.get('authentication') as FormGroup;
-    //   if (authGroup && authentication.username && authentication.password) {
-    //     authGroup.patchValue({
-    //       username: authentication.username,
-    //       password: authentication.password
-    //     });
-    //   }
-    // });
+      const authGroup = this.networkSettingsForm.get('authentication') as FormGroup;
+      if (authGroup && authentication.username && authentication.password) {
+        authGroup.patchValue({
+          username: authentication.username,
+          password: authentication.password
+        });
+      }
+    });
   }
 
 
