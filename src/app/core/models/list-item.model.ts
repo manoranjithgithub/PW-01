@@ -39,6 +39,7 @@ export interface FormField {
   options?:any
   validation:any,
   placeholder?: string;
+  update?: boolean;
 }
 
 export interface DeploymentOptions {

@@ -13,7 +13,6 @@ import { Subscription } from 'rxjs';
 import { LoaderComponent } from '../../../shared/components/loader/loader.component';
 import { ToolsService } from '../tools.service';
 import { ModalComponent } from '../../../shared/components/model/model.component';
-import { placements } from '@popperjs/core';
 
 @Component({
   selector: 'app-edit-tool',
@@ -178,6 +177,7 @@ export class EditToolComponent implements OnInit, OnDestroy {
         default_value: '',
         value: this.toolDetails.name,
         placeholder: '',
+        update:this.viewdata.update || false
       },
       ...schema
     };
@@ -193,6 +193,7 @@ export class EditToolComponent implements OnInit, OnDestroy {
 
       const schema = this.toolDetails.data.schema;
       const modifiedSchema = this.addNameViewField(schema);
+      console.log('Modified schema with name field:', modifiedSchema);
       this.createForm(modifiedSchema);
 
       const keysToClean = [
@@ -270,7 +271,8 @@ export class EditToolComponent implements OnInit, OnDestroy {
         children: {},
         depends_on: null,
         default_value: '',
-        value: this.toolDetails.data.name
+        value: this.toolDetails.data.name,
+        update: this.viewdata.update || false
       },
       ...schema
     };

@@ -181,7 +181,7 @@ export class DefaultLayoutComponent implements OnInit {
 
   ngOnInit(): void {
   this.savedTheme = localStorage.getItem('theme') || 'light';
-  console.log('Saved theme:', this.savedTheme);
+  // console.log('Saved theme:', this.savedTheme);
   this.colorMode.set(this.savedTheme);
     // if (this.router.url.includes('/projects') && window.location.href.includes('code')) {
     //   this.ac.queryParams.subscribe(params => {

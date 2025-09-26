@@ -97,7 +97,7 @@ export class DefaultHeaderComponent extends HeaderComponent implements OnInit, O
     //   this.userData = user;
     // });
     this.userData = localStorage.getItem('profileSettings') ? JSON.parse(localStorage.getItem('profileSettings') || '{}') : null;
-    console.log(this.userData)
+    // console.log(this.userData)
   }
 
   private getEnvironment() {

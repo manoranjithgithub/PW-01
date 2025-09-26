@@ -204,7 +204,7 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
     const storedProject = localStorage.getItem('project');
     if (storedEnvironment && storedEnvironment !== "undefined") {
       this.getDeployment(JSON.parse(storedEnvironment));
-      this.startPolling(JSON.parse(storedEnvironment));
+      // this.startPolling(JSON.parse(storedEnvironment));
     }
     //if (this.sharedService.getCookie('resourceUsage')) {
     if (localStorage.getItem('resourceUsage')) {
@@ -294,7 +294,8 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
       'Running': 'bi-check-circle-fill',
       'Pending': 'bi-clock',
       'Create Job Failed': 'bi-x-circle-fill',
-      'Stopped': 'bi-slash-circle-fill'
+      'Stopped': 'bi-slash-circle-fill',
+      'Success': 'bi-check-circle-fill'
     };
 
     const statusClassMap: Record<string, string> = {
@@ -313,7 +314,8 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
       'Running': 'primary',
       'Pending': 'warning',
       'Create Job Failed': 'danger',
-      'Stopped': 'danger'
+      'Stopped': 'danger',
+      'Success': 'success'
     };
 
     const icon = iconMap[status] || 'bi-question-circle-fill';
