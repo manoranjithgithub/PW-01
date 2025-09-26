@@ -65,7 +65,7 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
         if (data.status.toLowerCase() === 'success') {
           this.deploymentService.getReleasesByDeploymentId(this.deploymentId).subscribe((res: any) => {
             const data = res?.data?.releases[0];
-            this.appName = data.name;
+            this.appName = data?.deploymentId?.name;
             this.sharedService.setlastReleaseStatus(data.status);
             this.lastReleaseStatus = this.sharedService.getlastReleaseStatus() ?? '';
           });

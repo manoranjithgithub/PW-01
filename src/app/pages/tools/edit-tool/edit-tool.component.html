@@ -28,14 +28,14 @@
                     </label>
                 <ng-container [ngSwitch]="field.type">
                     <input class="form-control" *ngSwitchCase="'disabled'" [formControlName]="field.key"
-                        [id]="field.key" type="text" [value]="field.key" readonly>
+                        [id]="field.key" type="text" [value]="field.key" [readonly]="!field.update">
                     <input class="form-control" *ngSwitchCase="'text'" [formControlName]="field.key" [id]="field.key"
-                        type="text" placeholder="{{field.placeholder}}">
+                        type="text" placeholder="{{field.placeholder}}" [readonly]="!field.update">
 
                     <div class="input-group" *ngSwitchCase="'password'">
                         <input id="{{field.key}}" [formControlName]="field.key"
                             [type]="hide[field.key] ? 'password' : 'text'" class="form-control"
-                            autocomplete="new-password" />
+                            autocomplete="new-password" [readonly]="!field.update" />
 
                         <span class="input-group-addon">
                             <i class="positioning glyphicon bi"
@@ -46,7 +46,7 @@
                     </div>
 
                     <div class="position-relative" *ngSwitchCase="'select'">
-                        <select class="form-select" [formControlName]="field.key" [id]="field.key"  (change)="onFieldChange($event,field.label)">
+                        <select class="form-select" [formControlName]="field.key" [id]="field.key"  (change)="onFieldChange($event,field.label)" [disabled]="!field.update">
                             <option *ngFor="let option of field.options" [value]="option">{{ option }}</option>
                         </select>
                     </div>
