@@ -391,6 +391,7 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
       'Deploy Timeout': 'warning',
       'Pending': 'warning',
       'Create Job Failed': 'danger',
+      'Failed': 'danger',
       'Success': 'success',
     };
     return map[status] || 'Pending';
@@ -411,6 +412,7 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
       'Running': 'bi-arrow-repeat',
       'Pending': 'bi-clock',
       'Create Job Failed': 'bi-x-circle-fill',
+      'Failed': 'bi-x-circle-fill',
       'Success': 'bi-check-circle-fill',
     };
     return map[status] || '';

@@ -97,12 +97,12 @@ export class DefaultLayoutComponent implements OnInit {
   constructor(private authService: AuthService, private deployemntService: DeploymentsService,
     private router: Router, private titleService: Title, private ac: ActivatedRoute,
     private sharedService: SharedService, private sidebarService: SidebarService, private renderer: Renderer2,
-  private toastr: ToastrService, private projectService: ProjectsService,
+    private toastr: ToastrService, private projectService: ProjectsService,
     private layoutActionService: LayoutActionService
   ) {
 
     this.#colorModeService.localStorageItemName.set('coreui-free-angular-admin-template-theme-default');
-    
+
     this.router.events.pipe(
       filter((event): event is NavigationStart | NavigationEnd =>
         event instanceof NavigationStart || event instanceof NavigationEnd
@@ -180,9 +180,9 @@ export class DefaultLayoutComponent implements OnInit {
   }
 
   ngOnInit(): void {
-  this.savedTheme = localStorage.getItem('theme') || 'light';
-  // console.log('Saved theme:', this.savedTheme);
-  this.colorMode.set(this.savedTheme);
+    this.savedTheme = localStorage.getItem('theme') || 'light';
+    // console.log('Saved theme:', this.savedTheme);
+    this.colorMode.set(this.savedTheme);
     // if (this.router.url.includes('/projects') && window.location.href.includes('code')) {
     //   this.ac.queryParams.subscribe(params => {
     //     if (params['code']) {
@@ -202,7 +202,6 @@ export class DefaultLayoutComponent implements OnInit {
     //     this.authService.logout();
     //   }
     // }
-    this.initApp();
     // if (this.authService.isTokenReady()) {
     //   this.initApp();
     // } else {
@@ -251,22 +250,17 @@ export class DefaultLayoutComponent implements OnInit {
       this.titleService.setTitle('');
       this.pageTitle = '';
     }
+
+    const project = localStorage.getItem('project');
+    this.showSwitchProject = !!project && project !== 'undefined';
   }
   setTheme(event: Event) {
     const color = (event.target as HTMLInputElement).checked ? 'light' : 'dark';
     // this.sharedService.setCookie('theme', color, 10)\
     localStorage.setItem('theme', color);
     this.colorMode.set(color);
-  this.sharedService.emitValueChange(color);
+    this.sharedService.emitValueChange(color);
     this.#colorModeService.setStoredTheme('selectedTheme', color);
-  }
-
-  initApp(): void {
-    this.projectService.getAllProjects().subscribe((res: any) => {
-      if (res.status.toLowerCase() === 'success' && res.data && res.data.length > 0) {
-        this.showSwitchProject = true
-      }
-    })
   }
   onPageActionClick() {
     this.layoutActionService.triggerAction();

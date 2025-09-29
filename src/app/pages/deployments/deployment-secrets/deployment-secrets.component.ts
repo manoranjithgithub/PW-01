@@ -31,6 +31,7 @@ export class DeploymentSecretsComponent implements OnInit {
   showSecretForm: boolean = false;
   storedEnvironment: any;
   deploymentdetails: any;
+  deploymentId: string = '';
 
   secretList: any = [];
   @Input() deploymentData: any;
@@ -53,14 +54,14 @@ export class DeploymentSecretsComponent implements OnInit {
   editIndex: number | null = null;
   isEditSecret: boolean = false;
   @Input() currentStatus: string = '';
-  freezeAddNewData:boolean =false;
+  freezeAddNewData: boolean = false;
 
   constructor(private fb: FormBuilder, private deploymentsService: DeploymentsService,
     private sharedService: SharedService, private toaster: ToastrService, private modalService: NgbModal,
     private ac: ActivatedRoute
   ) {
-   // this.storedEnvironment = JSON.parse(this.sharedService.getCookie('environment'));
-   this.storedEnvironment = JSON.parse(localStorage.getItem('environment') || '{}');
+    // this.storedEnvironment = JSON.parse(this.sharedService.getCookie('environment'));
+    this.storedEnvironment = JSON.parse(localStorage.getItem('environment') || '{}');
   }
 
   ngOnInit() {
@@ -81,6 +82,7 @@ export class DeploymentSecretsComponent implements OnInit {
     // });
     this.ac.queryParams.subscribe(params => {
       const deploymentId = params['id'];
+      this.deploymentId = deploymentId;
 
       if (deploymentId) {
         this.isEditSecret = true;
@@ -173,32 +175,28 @@ export class DeploymentSecretsComponent implements OnInit {
   }
   addEnvVariables(data: any) {
     const req = {
+      environmentId: this.storedEnvironment?.id,
       name: this.deploymentdetails?.name,
-      stageToExecute: this.isEditSecret ? 'Deploy' : null,
-      data: data.reduce((acc: any, item: any) => {
+      environment: this.deploymentdetails?.environment || null,
+      application: this.deploymentdetails?.application,
+      sourceCode: this.deploymentdetails?.sourceCode,
+      network: this.deploymentdetails?.network,
+      config: this.deploymentdetails?.config,
+      secret: data.reduce((acc: any, item: any) => {
         acc[item.EnvVariable] = item.Value;
         return acc;
-      }, {} as { [key: string]: string })
-    }
-    if (!this.canAddVariables) {
-      this.secretDetails.emit(req);
-      return;
-    }
-    this.deploymentsService.createSecretsdata(this.storedEnvironment?.id, req).subscribe((res: any) => {
-      console.log(res);
-      if (res?.status == 'Success') {
-        this.toaster.success(res.message);
-        this.deploymentsService.getSecreteList(this.storedEnvironment?.id, this.deploymentdetails.name).subscribe((res: any) => {
-          console.log(res);
-          const envVariables = Object.entries(res.data.data).map(([key, value]) => ({
-            EnvVariable: key,
-            Value: value
-          }));
+      }, {} as { [key: string]: string }),
 
-          this.secretList = [...envVariables];
-        })
+    }
+    this.deploymentsService.updateDeployment(this.deploymentId, req).subscribe({
+      next: (res: any) => {
+        console.log(res);
+        // this.secretList = [...envVariables];
+      },
+      error: (err) => {
+        this.toaster.error(err);
       }
-    })
+    });
   }
   togglePassword(index: number): void {
     if (this.showPasswordSet.has(index)) {
@@ -253,27 +251,30 @@ export class DeploymentSecretsComponent implements OnInit {
         if (result) {
           this.secretList.splice(index, 1);
           this.editIndex = -1;
+
           const req = {
+            environmentId: this.storedEnvironment?.id,
             name: this.deploymentdetails?.name,
-            data: this.secretList.reduce((acc: any, item: any) => {
+            environment: this.secretList.reduce((acc: any, item: any) => {
               acc[item.EnvVariable] = item.Value;
               return acc;
-            }, {} as { [key: string]: string })
-          }
-          this.deploymentsService.createSecretsdata(this.storedEnvironment?.id, req).subscribe((res: any) => {
-            console.log(res);
-            if (res?.status == 'Success') {
-              this.toaster.success('Deleted successfully!');
-              this.deploymentsService.getSecreteList(this.storedEnvironment?.id, this.deploymentdetails.name).subscribe((res: any) => {
-                const envVariables = Object.entries(res.data.data).map(([key, value]) => ({
-                  EnvVariable: key,
-                  Value: value
-                }));
+            }, {} as { [key: string]: string }),
+            application: this.deploymentdetails?.application,
+            sourceCode: this.deploymentdetails?.sourceCode,
+            network: this.deploymentdetails?.network,
+            config: this.deploymentdetails?.config,
+            secret: this.deploymentdetails?.secret,
 
-                this.secretList = [...envVariables];
-              })
+          }
+          this.deploymentsService.createDeployement(req).subscribe({
+            next: (res: any) => {
+              console.log(res);
+              this.secretList = this.mapEnvVariables(res.data.environment || {});
+            },
+            error: (err) => {
+              this.toaster.error(err);
             }
-          })
+          });
         }
       });
   }

@@ -663,9 +663,9 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
       (result) => {
         if (result) {
           this.deploymentService.deleteDeployment(this.deploymentdetails?.id).subscribe((res: any) => {
-            if (res.status === "Success") {
+            if (res.status.toLowerCase() === "success") {
               this.toaster.success(res.message);
-              //this.route.navigate(['/deployment']);
+              // this.route.navigate(['/deployment']);
               window.location.href = '/deployment'
               this.onCloseClicked();
             }

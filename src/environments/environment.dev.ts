@@ -19,9 +19,7 @@ export const environment = {
 
   github: {
     clientId: 'Ov23lizhCMt2Ih4SgeyJ',
-    redirectUri: 'https://app.dev.nimbuz.tech/vcs/callback',
-    authUrl: 'https://gitlab.com/oauth/authorize',
-    tokenUrl: 'https://gitlab.com/oauth/token',
+    redirectUri: 'https://app.dev.nimbuz.tech/vcs/callback'
   },
 
   apiUrl: 'https://api.dev.nimbuz.tech/core/v1/environments',

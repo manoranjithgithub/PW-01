@@ -31,7 +31,6 @@ import { SharedService } from '../../../shared/services/shared.service';
 import { DeploymentsService } from '../deployment.service';
 import { ModalComponent } from '../../../shared/components/model/model.component';
 import { SelectedRepoDetails } from '../../../core/models/deployment.model';
-import { WebsocketService } from '../../../core/services/websocket.service';
 import {
   catchError,
   concatMap,
@@ -72,7 +71,7 @@ import * as yaml from 'js-yaml';
   templateUrl: './create-deployments.component.html',
   styleUrl: './create-deployments.component.scss',
   encapsulation: ViewEncapsulation.None,
-  providers: [DeploymentsService, WebsocketService],
+  providers: [DeploymentsService],
 })
 export class CreateDeploymentsComponent
   implements OnInit, AfterViewInit, OnDestroy {
@@ -175,9 +174,6 @@ export class CreateDeploymentsComponent
     private router: Router,
     private deploymentsService: DeploymentsService,
     private toaster: ToastrService,
-    private shared: SharedService,
-    private websocketService: WebsocketService,
-    private cdr: ChangeDetectorRef
   ) {
     this.stepOneForm = this._fb.group({
       type: ['', Validators.required],
@@ -188,7 +184,7 @@ export class CreateDeploymentsComponent
         [
           Validators.required,
           Validators.pattern(
-            /^(?!.*[.-]{2,})(?!.*[A-Z])(?!.*_)[a-z0-9]+([.-]?[a-z0-9]+)*$/
+            /^(?!.*--)(?!-)[a-z0-9]+(-[a-z0-9]+)*$/
           ),
           Validators.maxLength(50),
         ],
@@ -280,9 +276,9 @@ export class CreateDeploymentsComponent
           Validators.required,
           Validators.maxLength(40),
           this.isNameAvailable(true),
-          Validators.pattern(/^(?!.*[.-]{2,})(?!.*[A-Z])(?!.*_)[a-z0-9]+([.-]?[a-z0-9]+)*$/)
+          Validators.pattern(/^(?!.*--)(?!-)[a-z0-9]+(-[a-z0-9]+)*$/)
         ]);
-        this.fileFormData.set('appName', lowerCased);
+        this.fileFormData?.set('appName', lowerCased);
         this.stepOneForm.markAllAsTouched();
       })
     this.stepOneForm.get('branchName')?.valueChanges.pipe(debounceTime(300)).subscribe(value => {
