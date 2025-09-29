@@ -54,7 +54,6 @@ export class DeploymentObservabilityComponent implements OnInit {
         this.deploymentId = params['id'];
       }
     });
-
     const now = new Date();
     const fifteenMinutesAgo = new Date(now.getTime() - 15 * 60000); // 15 minutes in ms
 
