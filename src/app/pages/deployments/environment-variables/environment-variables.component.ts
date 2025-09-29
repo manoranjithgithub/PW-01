@@ -10,6 +10,7 @@ import { SharedService } from '../../../shared/services/shared.service';
 import { ConfirmationModalComponent } from '../../../shared/components/modal/confirmation-modal/confirmation-modal.component';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ActivatedRoute } from '@angular/router';
+import { subscribe } from 'diagnostics_channel';
 
 @Component({
   selector: 'app-environment-variables',
@@ -50,13 +51,14 @@ export class EnvironmentVariablesComponent implements OnInit {
   isEditEnv: boolean = false;
   @Input() currentStatus: string = '';
   freezeAddNewData: boolean = false;
+  deploymentId: string = '';
 
   constructor(private fb: FormBuilder, private deploymentsService: DeploymentsService,
     private sharedService: SharedService, private toaster: ToastrService, private modalService: NgbModal,
     private ac: ActivatedRoute
   ) {
-   // this.storedEnvironment = JSON.parse(this.sharedService.getCookie('environment'));
-   this.storedEnvironment = JSON.parse(localStorage.getItem('environment') || '{}');
+    // this.storedEnvironment = JSON.parse(this.sharedService.getCookie('environment'));
+    this.storedEnvironment = JSON.parse(localStorage.getItem('environment') || '{}');
   }
 
   ngOnInit() {
@@ -73,6 +75,7 @@ export class EnvironmentVariablesComponent implements OnInit {
     });
     this.ac.queryParams.subscribe(params => {
       const deploymentId = params['id'];
+      this.deploymentId = deploymentId;
 
       if (deploymentId) {
         this.isEditEnv = true;
@@ -169,8 +172,6 @@ export class EnvironmentVariablesComponent implements OnInit {
   }
   addEnvVariables(data: any) {
     this.updatedReq = {
-      name: this.deploymentdetails?.name,
-      stageToExecute: this.isEditEnv ? 'Deploy' : null,
       data: data.reduce((acc: any, item: any) => {
         acc[item.EnvVariable] = item.Value;
         return acc;
@@ -226,26 +227,43 @@ export class EnvironmentVariablesComponent implements OnInit {
           this.envList.splice(index, 1);
           this.editIndex = -1;
           const req = {
+            environmentId: this.storedEnvironment?.id,
             name: this.deploymentdetails?.name,
-            data: this.envList.reduce((acc: any, item: any) => {
+            environment: this.envList.reduce((acc: any, item: any) => {
               acc[item.EnvVariable] = item.Value;
               return acc;
-            }, {} as { [key: string]: string })
+            }, {} as { [key: string]: string }),
+            application: this.deploymentdetails?.application,
+            sourceCode: this.deploymentdetails?.sourceCode,
+            network: this.deploymentdetails?.network,
+            config: this.deploymentdetails?.config,
+            secret: this.deploymentdetails?.secret,
+
           }
-          this.deploymentsService.createConfigdata(this.storedEnvironment?.id, req).subscribe((res: any) => {
-            console.log(res);
-            if (res?.status == 'Success') {
-              this.toaster.success('Deleted successfully!');
-              this.deploymentsService.getConfigList(this.storedEnvironment?.id, this.deploymentdetails.name).subscribe((res: any) => {
-                console.log(res);
-                const envVariables = Object.entries(res.data.data).map(([key, value]) => ({
-                  EnvVariable: key,
-                  Value: value
-                }));
-                this.envList = [...envVariables];
-              })
+          this.deploymentsService.createDeployement(req).subscribe({
+            next: (res: any) => {
+              console.log(res);
+              this.envList = this.mapEnvVariables(res.data.environment || {});
+            },
+            error: (err) => {
+              this.toaster.error(err);
             }
-          })
+          });
+
+          // this.deploymentsService.createConfigdata(this.storedEnvironment?.id, req).subscribe((res: any) => {
+          //   console.log(res);
+          //   if (res?.status == 'Success') {
+          //     this.toaster.success('Deleted successfully!');
+          //     this.deploymentsService.getConfigList(this.storedEnvironment?.id, this.deploymentdetails.name).subscribe((res: any) => {
+          //       console.log(res);
+          //       const envVariables = Object.entries(res.data.data).map(([key, value]) => ({
+          //         EnvVariable: key,
+          //         Value: value
+          //       }));
+          //       this.envList = [...envVariables];
+          //     })
+          //   }
+          // })
         }
       });
   }
@@ -255,8 +273,8 @@ export class EnvironmentVariablesComponent implements OnInit {
       // this.deploymentsService
       //   .getConfigList(this.storedEnvironment.id, this.deploymentdetails.name)
       //   .subscribe((res: any) => {
-      //     const envVariables = this.mapEnvVariables(res?.data?.data || {});
-      //     this.envList = [...this.envList, ...envVariables];
+      const envVariables = this.mapEnvVariables(this.deploymentdetails.environment || {});
+      this.envList = [...this.envList, ...envVariables];
       //   });
     }
 
@@ -269,20 +287,38 @@ export class EnvironmentVariablesComponent implements OnInit {
     if (this.updatedReq && this.updatedReq.data && Object.keys(this.updatedReq.data).length === 0) {
       return
     }
-    this.deploymentsService.createConfigdata(this.storedEnvironment?.id, this.updatedReq).subscribe((res: any) => {
-      console.log(res);
-      if (res?.status == 'Success') {
-        this.toaster.success(res.message);
-        this.deploymentsService.getConfigList(this.storedEnvironment?.id, this.deploymentdetails.name).subscribe((res: any) => {
-          console.log(res);
-          const envVariables = Object.entries(res.data.data).map(([key, value]) => ({
-            EnvVariable: key,
-            Value: value
-          }));
-          this.envList = [...envVariables];
-        })
-        // this.envDetails.emit(true)
+    const req = {
+      environmentId: this.storedEnvironment?.id,
+      name: this.deploymentdetails?.name,
+      environment: this.updatedReq?.data || null,
+      application: this.deploymentdetails?.application,
+      sourceCode: this.deploymentdetails?.sourceCode,
+      network: this.deploymentdetails?.network,
+      config: this.deploymentdetails?.config,
+      secret: this.deploymentdetails?.secret,
+
+    }
+    this.deploymentsService.updateDeployment(this.deploymentId, req).subscribe({
+      next: (res: any) => {
+        console.log(res);
+      },
+      error: (err) => {
+        this.toaster.error(err);
       }
-    })
+    });
+    // this.deploymentsService.createConfigdata(this.storedEnvironment?.id, this.updatedReq).subscribe((res: any) => {
+    //   console.log(res);
+    //   if (res?.status == 'Success') {
+    //     this.toaster.success(res.message);
+    //     this.deploymentsService.getConfigList(this.storedEnvironment?.id, this.deploymentdetails.name).subscribe((res: any) => {
+    //       console.log(res);
+    //       const envVariables = Object.entries(res.data.data).map(([key, value]) => ({
+    //         EnvVariable: key,
+    //         Value: value
+    //       }));
+    //       this.envList = [...envVariables];
+    //     })
+    //   }
+    // })
   }
 }

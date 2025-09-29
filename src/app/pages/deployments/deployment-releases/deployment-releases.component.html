@@ -95,14 +95,14 @@
                     <div class="history-text">
                       <div class="job-title">
                         <a class="job-link">
-                          {{ deploymentdetails?.name }} <span class="updated-date">({{ item?.updated_at | date: 'MM/dd/yyyy, HH:mm a' }})</span>
+                          {{ deploymentdetails?.name }} <span class="updated-date">({{ item?.updatedAt | date: 'MM/dd/yyyy, HH:mm a' }})</span>
                         </a>
                       </div>
                       <div class="status-date">
                         <span>
                           {{ item?.status }}
                         </span>
-                        <span class="date">{{ item?.updated_at | relativeTime }}</span>
+                        <span class="date">{{ item?.updatedAt | relativeTime }}</span>
                       </div>
                     </div>
                   </div>

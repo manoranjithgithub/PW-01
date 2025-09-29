@@ -28,7 +28,6 @@ import { SidebarService } from '../../shared/services/sidebar.service';
 
 import { interval, switchMap } from 'rxjs';
 import { UrlCellRendererComponent } from '../../shared/components/url-cell-renderer/url-cell-renderer.component';
-import { WebsocketService } from '../../core/services/websocket.service';
 
 @Component({
   selector: 'app-deployments',
@@ -42,7 +41,7 @@ import { WebsocketService } from '../../core/services/websocket.service';
   ],
   templateUrl: './deployments.component.html',
   styleUrls: ['./deployments.component.scss'],
-  providers: [DeploymentsService, WebsocketService]
+  providers: [DeploymentsService]
 })
 export class DeploymentsComponent implements OnInit, OnDestroy {
 
@@ -193,10 +192,6 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
     private deploymentsService: DeploymentsService,
     private sharedService: SharedService,
     private router: Router,
-    private active: ActivatedRoute,
-    private toaster: ToastrService,
-    private sidebarService: SidebarService,
-    private websocketService: WebsocketService
   ) {
     // const storedEnvironment = this.sharedService.getCookie('environment');
     const storedEnvironment = localStorage.getItem('environment');

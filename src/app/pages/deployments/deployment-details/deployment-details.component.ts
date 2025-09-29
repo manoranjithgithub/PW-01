@@ -16,7 +16,6 @@ import { LayoutActionService } from '../../../shared/services/layout-action.serv
 import { Observable, Subject, Subscription, switchMap, takeUntil } from 'rxjs';
 import { DeploymentsService } from '../deployment.service';
 import { ToastrService } from 'ngx-toastr';
-import { WebsocketService } from '../../../core/services/websocket.service';
 import { SharedService } from '../../../shared/services/shared.service';
 
 
@@ -30,7 +29,7 @@ import { SharedService } from '../../../shared/services/shared.service';
     DeploymentReleasesComponent, DeploymentSettingsComponent,
     DeploymentSecretsComponent, DeploymentConfigMapsComponent, EnvironmentVariablesComponent,
     DeploymentMetricsComponent, DeploymentObservabilityComponent, DeploymentNetworkingComponent],
-  providers: [DeploymentsService, WebsocketService],
+  providers: [DeploymentsService],
   templateUrl: './deployment-details.component.html',
   styleUrl: './deployment-details.component.scss'
 })
@@ -48,7 +47,7 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
 
   constructor(private router: Router, private modalService: NgbModal, private sharedService: SharedService,
     private layoutActionService: LayoutActionService, private deploymentService: DeploymentsService, private location: Location,
-    private activateRoute: ActivatedRoute, private toastr: ToastrService, private websocketService: WebsocketService) { }
+    private activateRoute: ActivatedRoute, private toastr: ToastrService) { }
 
   ngOnInit(): void {
 
@@ -71,14 +70,14 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
           });
         }
         this.layoutActionService.setExtraTitle(`${data.data.name} (${data.data.status})`);
-        this.onNewMessage().subscribe((msg: any) => {
-          const res = JSON.parse(msg);
-          console.log(res)
-          if (res && res.deployment_id === this.deploymentId) {
-            this.sharedService.setlastReleaseStatus(res.status);
-            console.log(res.status)
-          }
-        })
+        // this.onNewMessage().subscribe((msg: any) => {
+        //   const res = JSON.parse(msg);
+        //   console.log(res)
+        //   if (res && res.deployment_id === this.deploymentId) {
+        //     this.sharedService.setlastReleaseStatus(res.status);
+        //     console.log(res.status)
+        //   }
+        // })
 
       });
     this.activateRoute.fragment.subscribe((fragment: string | null) => {
@@ -146,13 +145,13 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
         }
       });
   }
-  onNewMessage() {
-    return new Observable(observer => {
-      this.websocketService.messages.subscribe(msg => {
-        observer.next(msg);
-      });
-    });
-  }
+  // onNewMessage() {
+  //   return new Observable(observer => {
+  //     this.websocketService.messages.subscribe(msg => {
+  //       observer.next(msg);
+  //     });
+  //   });
+  // }
 
   ngOnDestroy(): void {
     this.destroy$.next();
