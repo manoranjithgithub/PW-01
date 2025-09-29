@@ -443,7 +443,7 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
     if (type && this.realeseId) {
       this.deploymentService.getSelectedDeploymentLogs(req).subscribe((res: any) => {
         if (res.status.toLowerCase() === 'success') {
-          this.deploymentLogs = res.logs.map((line: any) => {
+          this.deploymentLogs = res.data?.logs.map((line: any) => {
             const splitIndex = line.indexOf(' ');
             return {
               timestamp: line.slice(0, splitIndex),
