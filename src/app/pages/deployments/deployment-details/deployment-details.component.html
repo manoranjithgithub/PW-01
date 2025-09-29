@@ -70,7 +70,7 @@
 
     </c-tab-pane>
     <c-tab-pane class="p-3 preview" role="tabpanel">
-      <ng-container *ngIf="selectedTabIndex === 5">
+      <ng-container *ngIf="selectedTabIndex === 5 && appName">
         <app-deployment-observability (closeModalEvent)="closeModalEvent.emit()" [appName]="appName"></app-deployment-observability>
       </ng-container>
 
