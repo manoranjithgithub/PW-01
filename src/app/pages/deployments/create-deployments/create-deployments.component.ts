@@ -965,7 +965,7 @@ export class CreateDeploymentsComponent
         path: filePath || null,
         data: this.parsedConfigData || null,
       },
-      secret: this.secretData.data || null,
+      secret: this.secretData?.data || null,
       environment: this.envData?.data || null
     };
   }

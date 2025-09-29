@@ -188,15 +188,17 @@ export class DeploymentSecretsComponent implements OnInit {
       }, {} as { [key: string]: string }),
 
     }
-    this.deploymentsService.updateDeployment(this.deploymentId, req).subscribe({
-      next: (res: any) => {
-        console.log(res);
-        // this.secretList = [...envVariables];
-      },
-      error: (err) => {
-        this.toaster.error(err);
-      }
-    });
+    if (this.deploymentId) {
+      this.deploymentsService.updateDeployment(this.deploymentId, req).subscribe({
+        next: (res: any) => {
+          console.log(res);
+          // this.secretList = [...envVariables];
+        },
+        error: (err) => {
+          this.toaster.error(err);
+        }
+      });
+    }
   }
   togglePassword(index: number): void {
     if (this.showPasswordSet.has(index)) {
