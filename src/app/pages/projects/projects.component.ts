@@ -102,7 +102,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
 
 
     });
-    this.environmentList = this.getEnvironmentsByProjectId(this.selectedProjectId);
+    // this.environmentList = this.getEnvironmentsByProjectId(this.selectedProjectId);
     const url = window.location.pathname;
     this.location.replaceState(url);
   }
@@ -210,22 +210,14 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     }
   }
   getEnvironmentsByProjectId(projectId: string) {
-    if(projectId === '') return [];
+    if (projectId === '') return [];
     this.projectService.getAllEnvironmentsByProject(projectId).subscribe((res: any) => {
       this.environmentList = res?.data || [];
       this.filterEnvironments();
     });
     return this.environmentList;
-    // const project = this.projectList.find((p: any) => p.id === projectId);
-    // if (project) {
-    //   return project.environments;
-    // }
-    // return [];
   }
   updateCookies() {
-    // this.sharedService.setCookie('region', region, 10);
-    // this.sharedService.setCookie('environment', JSON.stringify(env), 10);
-    // this.sharedService.setCookie('project', JSON.stringify(project), 10);
     this.router.navigate(['/deployment'])
   }
 
