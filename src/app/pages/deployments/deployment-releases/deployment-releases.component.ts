@@ -450,7 +450,7 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
               message: line.slice(splitIndex + 1)
             };
           });
-          this.totalPages = res?.totalPages ?? 0;
+          this.totalPages = res.data?.totalPages ?? 0;
           // this.pagesArray = Array.from({ length: this.totalPages }, (_, i) => i + 1);
           // this.updatePaginatedLogs();
         } else {

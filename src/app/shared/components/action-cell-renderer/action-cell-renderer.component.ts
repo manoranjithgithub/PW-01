@@ -185,7 +185,7 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
           if (result) {
             this.http.updateDeployment(data?.id, req).subscribe((res: any) => {
               if (res.status.toLowerCase() === "success") {
-                this.toaster.success(res.message);
+                this.toaster.success('Successfully initiated');
               }
             },
               err => {
