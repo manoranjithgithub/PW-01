@@ -73,7 +73,7 @@ deploy:
 deploy-prod:
   stage: deploy
   image: ubuntu:latest
-  when: manual
+  # when: manual
   script:
     - apt update -y && apt install jq wget curl -y
     - wget https://get.helm.sh/helm-v3.15.0-linux-amd64.tar.gz
