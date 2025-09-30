@@ -39,8 +39,8 @@ export class DeploymentsService {
       );
   }
 
-  updateDeployment(env: string, name: string, req: any) {
-    return this.http.put(`${this.apiUrl}/${env}/deployments/${name}`, req)
+  updateDeployment(deploymentId: string, req: any) {
+    return this.http.put(`${this.deploymentManagement}/deployments/${deploymentId}`, req)
       .pipe(
         catchError(this.handleError.bind(this))
       );

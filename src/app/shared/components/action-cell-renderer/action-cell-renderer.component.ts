@@ -23,6 +23,7 @@ import {
   TabPaneComponent,
   TabsModule
 } from '@coreui/angular';
+import { DeployConfirmationComponent } from '../deploy-confirmation/deploy-confirmation.component';
 
 @Component({
   selector: 'app-action-cell-renderer',
@@ -68,7 +69,7 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
   paginatedLogs: { timestamp: string; message: string }[] = [];
   activeTabIndex: number = 0;
   isDropdownOpen = false;
-  
+
   @ViewChild('scaleDeploymentsModel') private scaleDeploymentsModel!: ModalComponent;
   @ViewChild('logsModal') private logsModal!: ModalComponent;
   @ViewChild('scrollContainer') scrollContainer!: ElementRef<HTMLDivElement>;
@@ -90,7 +91,8 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
   };
 
   constructor(private el: ElementRef, private renderer: Renderer2, private modalService: NgbModal,
-    private http: DeploymentsService, private route: Router, private toaster: ToastrService, private sharedService: SharedService,
+    private http: DeploymentsService, private route: Router, private toaster: ToastrService,
+    private sharedService: SharedService,
   ) {
     // const storedValue = this.sharedService.getCookie('environment');
     const storedValue = localStorage.getItem('environment');
@@ -125,16 +127,22 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
       case 'view':
         this.view(this.params.data);
         break;
-      case 'restart':
+      case 'redeploy':
         this.restart(this.params.data);
+        break;
+      case 'Pause':
+        this.pause(this.params.data, 'Pause');
+        break;
+      case 'Resume':
+         this.pause(this.params.data, 'Resume');
         break;
     }
   }
 
-   viewLogs(){
+  viewLogs() {
     //  this.showDeploymentView(this.params.data)
     const data = this.params.data;
-    this.route.navigate(['/deployment/deployment-details'], { queryParams: { id: data.id , tabIndex:5} });
+    this.route.navigate(['/deployment/deployment-details'], { queryParams: { id: data.id, tabIndex: 5 } });
   }
 
 
@@ -162,6 +170,32 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
       this.replicaCount = req.replicas;
     }
   }
+  pause(data: any, type: string) {
+    if (this.additionalParam === "deployment") {
+      const req = {
+        application: {
+          replicas: type === 'Pause' ? '0' : '1'
+        },
+      };
+      const modalRef = this.modalService.open(DeployConfirmationComponent);
+      modalRef.componentInstance.message = `Are you sure you want to ${type} this deployment?`;
+
+      modalRef.result.then(
+        (result) => {
+          if (result) {
+            this.http.updateDeployment(data?.id, req).subscribe((res: any) => {
+              if (res.status.toLowerCase() === "success") {
+                this.toaster.success(res.message);
+              }
+            },
+              err => {
+                this.toaster.error(`Error in ${type} deployment`);
+                console.error(err);
+              });
+          }
+        });
+    }
+  }
 
   scaleDeployment() {
     const data = {
@@ -169,12 +203,12 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
         replicas: this.replicaCount
       }
     }
-    this.http.updateDeployment(this.envId, this.params.data.name, data).subscribe((res: any) => {
-      if (res.success) {
-        this.toaster.success('Successfully scaled');
-        this.closeModal();
-      }
-    });
+    // this.http.updateDeployment(this.envId, this.params.data.name, data).subscribe((res: any) => {
+    //   if (res.success) {
+    //     this.toaster.success('Successfully scaled');
+    //     this.closeModal();
+    //   }
+    // });
   }
 
 
@@ -182,12 +216,30 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
     console.log(data)
     if (this.additionalParam === "deployment") {
       const req = this.params.data;
-      this.http.restartDeployment(this.envId, this.params.data.name, req).subscribe((res: any) => {
-        if (res.success) {
-          this.toaster.success('Successfully initiated');
-          console.log("Restarted at", res.data?.restartedAt);
-        }
-      });
+      // this.http.restartDeployment(this.envId, this.params.data.name, req).subscribe((res: any) => {
+      //   if (res.success) {
+      //     this.toaster.success('Successfully initiated');
+      //     console.log("Restarted at", res.data?.restartedAt);
+      //   }
+      // });
+      const modalRef = this.modalService.open(DeployConfirmationComponent);
+      modalRef.componentInstance.message = 'Are you sure you want to redeploy this deployment?';
+
+      modalRef.result.then(
+        (result) => {
+          if (result) {
+            this.http.updateDeployment(req.id, {}).subscribe((res: any) => {
+              if (res.status.toLowerCase() === "success") {
+                this.toaster.success(res.message);
+
+              }
+            },
+              err => {
+                this.toaster.error('Error redeploying deployment');
+                console.error(err);
+              });
+          }
+        });
     }
   }
 
@@ -255,11 +307,11 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
 
   viewLogsa(release: any) {
     this.realeseId = release.id
-    this.getLogData(0,'build');
+    this.getLogData(0, 'build');
     this.openModal();
   }
 
-  getLogData(index: number,type: string) {
+  getLogData(index: number, type: string) {
     this.activeTabIndex = index;
     console.log('getLogData', this.realeseId)
     if (type && this.realeseId) {
