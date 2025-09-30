@@ -61,11 +61,11 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
         return [];
       }))
       .subscribe((data: any) => {
+        this.appName = data?.data.name;
         if (data.status.toLowerCase() === 'success') {
           this.deploymentService.getReleasesByDeploymentId(this.deploymentId).subscribe((res: any) => {
-            const data = res?.data?.releases[0];
-            this.appName = data?.deploymentId?.name;
-            this.sharedService.setlastReleaseStatus(data.status);
+            const releaseData = res?.data?.releases[0];
+            this.sharedService.setlastReleaseStatus(releaseData.status);
             this.lastReleaseStatus = this.sharedService.getlastReleaseStatus() ?? '';
           });
         }

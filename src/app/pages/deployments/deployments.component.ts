@@ -183,6 +183,7 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
         additionalParam: 'deployment',
       },
     }
+    
   ];
   messages: any[] = [];
   private wsSubscription!: Subscription;
