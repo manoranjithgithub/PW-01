@@ -54,7 +54,6 @@ export class DeploymentObservabilityComponent implements OnInit {
         this.deploymentId = params['id'];
       }
     });
-
     const now = new Date();
     const fifteenMinutesAgo = new Date(now.getTime() - 15 * 60000); // 15 minutes in ms
 
@@ -117,14 +116,14 @@ export class DeploymentObservabilityComponent implements OnInit {
       limit: this.pageSize,
       timeRange: duration,
       keyword: "",
-      fromTimestamp: "",
-      toTimestamp: ""
+      fromTimestamp: this.filterForm.value.fromTimestamp ? `${this.filterForm.value.fromTimestamp}:00Z` : '',
+      toTimestamp: this.filterForm.value.toTimestamp ? `${this.filterForm.value.toTimestamp}:00Z` : ''
     };
 
     this.deploymentService.getSelectedDeploymentLogs(req).subscribe(
       (response: any) => {
         if (response.status.toLowerCase() === 'success') {
-          this.deploymentLogs = response;
+          this.deploymentLogs = response.data;
           if (!this.deploymentLogs.logs || this.deploymentLogs.logs.length === 0) {
             console.warn('No logs available for this deployment.');
             return;
@@ -178,13 +177,14 @@ export class DeploymentObservabilityComponent implements OnInit {
       limit: this.pageSize,
       timeRange: duration,
       keyword: keyword,
-      fromTimestamp: fromTimestamp,
+      fromTimestamp: this.filterForm.value.fromTimestamp ? `${this.filterForm.value.fromTimestamp}:00Z` : '',
+      toTimestamp: this.filterForm.value.toTimestamp ? `${this.filterForm.value.toTimestamp}:00Z` : '',
     };
 
     this.deploymentService.getSelectedDeploymentLogs(req).subscribe(
       (response: any) => {
         if (response.status.toLowerCase() === 'success') {
-          this.deploymentLogs = response;
+          this.deploymentLogs = response.data;
           if (!this.deploymentLogs.logs || this.deploymentLogs.logs.length === 0) {
             console.warn('No logs available for this deployment.');
             this.filteredLogs = [];

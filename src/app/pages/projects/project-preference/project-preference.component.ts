@@ -219,7 +219,7 @@ export class ProjectPreferenceComponent implements OnInit, OnDestroy {
       });
   }
   updateIntegrationStatus(name: string, isConnected: boolean) {
-    const integration = this.integrations.find(i => i.provider === name);
+    const integration = this.integrations.find(i => i.provider === name.toLowerCase());
     if (integration) {
       integration.status = isConnected ? 'connected' : 'not connected';
     }

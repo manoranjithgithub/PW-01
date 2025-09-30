@@ -171,17 +171,16 @@ export class CreateProjectComponent implements OnInit {
   }
   getResourceUsage(envId: string): void {
     if (!envId || this.orgName !== 'nimbuz') return;
-    this.project.getResourceUsage(envId).subscribe((res: any) => {
-      if (res.status && res.data) {
-       // this.shared.setCookie('resourceUsage', JSON.stringify(res.data), 10);
-        localStorage.setItem('resourceUsage', JSON.stringify(res.data));
+    // this.project.getResourceUsage(envId).subscribe((res: any) => {
+    //   if (res.status && res.data) {
+    //     localStorage.setItem('resourceUsage', JSON.stringify(res.data));
 
-        const projectResource = res.data.find((r: any) => r.resource_type === 'projects');
-        this.projectExhausted = projectResource?.remaining === 0;
+    //     const projectResource = res.data.find((r: any) => r.resource_type === 'projects');
+    //     this.projectExhausted = projectResource?.remaining === 0;
 
-        const environmentResource = res.data.find((r: any) => r.resource_type === 'environments');
-        this.environmentExhausted = environmentResource?.remaining === 0;
-      }
-    });
+    //     const environmentResource = res.data.find((r: any) => r.resource_type === 'environments');
+    //     this.environmentExhausted = environmentResource?.remaining === 0;
+    //   }
+    // });
   }
 }
