@@ -132,8 +132,9 @@ export class DeploymentObservabilityComponent implements OnInit {
             const [timestamp, ...messageParts] = log.split(' ');
             return { timestamp, message: messageParts.join(' ') };
           });
+          console.log(this.deploymentLogs)
           this.filteredLogs = [...this.parsedLogs];
-          this.totalItems = response.totalPages;
+          this.totalItems = this.deploymentLogs.totalPages;
         } else {
           console.error('Failed to fetch logs:', response.message);
         }
@@ -196,7 +197,7 @@ export class DeploymentObservabilityComponent implements OnInit {
             return { timestamp, message: messageParts.join(' ') };
           });
           this.filteredLogs = [...this.parsedLogs];
-          this.totalItems = response.totalPages;
+          this.totalItems = this.deploymentLogs.totalPages;
         } else {
           console.error('Failed to fetch logs:', response.message);
         }
