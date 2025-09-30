@@ -44,7 +44,10 @@
                 </div>
               </div>
             </div>
-            <div class="custom-dropdown" (click)="toggleDropdown('active', $event)">
+            <button (click)="onOptionSelected('view', active, 'active')" class="btn button-format-solid m-4">
+              View logs
+            </button>
+            <!-- <div class="custom-dropdown" (click)="toggleDropdown('active', $event)">
               <button class="btn btn-icon" type="button">
                 <i class="bi bi-three-dots-vertical"></i>
               </button>
@@ -61,7 +64,7 @@
                   <a class="custom-dropdown-item">{{ active?.status === 'Paused' ? 'Resume' : 'Pause'}}</a>
                 </li>
               </ul>
-            </div>
+            </div> -->
 
           </div>
         </div>

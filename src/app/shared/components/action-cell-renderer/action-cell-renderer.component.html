@@ -15,8 +15,24 @@
   </ul>
 </div>
 
+<div class="custom-dropdown d-inline-block"  *ngIf="additionalParam === 'deployment'" (click)="toggleDropdown($event)">
+  <button class="btn btn-icon" type="button">
+    <i class="bi bi-three-dots-vertical"></i>
+  </button>
+  <ul *ngIf="isDropdownOpen" class="custom-dropdown-menu">
+    <li>
+      <a class="custom-dropdown-item" (click)="viewLogs()">View Logs</a>
+    </li>
+    <li>
+      <a class="custom-dropdown-item" (click)="onOptionSelected('redeploy')">Redeploy</a>
+    </li>
+    <li>
+      <a class="custom-dropdown-item" (click)="onOptionSelected(params?.data?.status === 'Stopped' ? 'Resume' : 'Pause')">{{ params?.data?.status === 'Stopped' ? 'Resume' : 'Pause'}}</a>
+    </li>
+  </ul>
+</div>
 
-<a *ngIf="additionalParam === 'deployment'" (click)="viewLogs()" class="text-orange font-sm">View Logs</a>
+<!-- <a *ngIf="additionalParam === 'deployment'" (click)="c" class="text-orange font-sm">View Logs</a> -->
 
 <app-modal #scaleDeploymentsModel [modalConfig]="scaleDeploymentsModelConfig">
   <div class="container">
