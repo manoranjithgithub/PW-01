@@ -116,8 +116,8 @@ export class DeploymentObservabilityComponent implements OnInit {
       limit: this.pageSize,
       timeRange: duration,
       keyword: "",
-      fromTimestamp: "",
-      toTimestamp: ""
+      fromTimestamp: this.filterForm.value.fromTimestamp ? `${this.filterForm.value.fromTimestamp}:00Z` : '',
+      toTimestamp: this.filterForm.value.toTimestamp ? `${this.filterForm.value.toTimestamp}:00Z` : ''
     };
 
     this.deploymentService.getSelectedDeploymentLogs(req).subscribe(
@@ -177,7 +177,8 @@ export class DeploymentObservabilityComponent implements OnInit {
       limit: this.pageSize,
       timeRange: duration,
       keyword: keyword,
-      fromTimestamp: fromTimestamp,
+      fromTimestamp: this.filterForm.value.fromTimestamp ? `${this.filterForm.value.fromTimestamp}:00Z` : '',
+      toTimestamp: this.filterForm.value.toTimestamp ? `${this.filterForm.value.toTimestamp}:00Z` : '',
     };
 
     this.deploymentService.getSelectedDeploymentLogs(req).subscribe(
