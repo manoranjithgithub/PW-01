@@ -79,14 +79,10 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
 
   overprovisioned: boolean = false;
   underprovisioned: boolean = false;
-  originalCommands = {
-    installCommand: '',
-    buildCommand: '',
-    startCommand: '',
-    zip_file_name: ''
-  };
   isGeneralSettingsChanged = false;
   isSourceSettingsChanged = false;
+  generalcurrentValues: any;
+  sourcecurrentValues: any;
 
   @ViewChild('confirmationModel') private confirmationModel!: ModalComponent;
 
@@ -153,37 +149,6 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
       fileInput: ['', [Validators.required, this.fileValidator.bind(this)]],
       fileName: [{ value: '', disabled: true }]
     });
-
-    // this.networkSettingsForm = this.fb.group({
-    //   service: [''],
-    //   host: [''],
-    //   showAuthentication: [false],
-    //   authentication: this.fb.group({
-    //     username: [''],
-    //     password: ['']
-    //   }),
-    //   customDns: [false],
-    //   customDnsHost: ['']
-    //   // serviceDomainPort : [''],
-    //   // customDomainPort : [''],
-    //   // privateNetworkUrl : ['']
-    // });
-
-    // this.buildSettingsForm = this.fb.group({
-    //   buildCommand: ['']
-    // });
-
-    // this.deploySettingsForm = this.fb.group({
-    //   startCommand: ['']
-    // });
-
-    // this.sharedService.deploymentData$.subscribe(data => {
-    //   this.deploymentdetails = data;
-    //   if (this.deploymentdetails) {
-    //     this.networkSettingsForm.get('service')?.setValue(this.deploymentdetails?.name)
-    //     this.getDeploymentById();
-    //   }
-    // });
     this.ac.queryParams.subscribe(params => {
       const depolyementId = params['id'];
       this.deploymentService.getDeploymentById(depolyementId).subscribe((res: any) => {
@@ -194,24 +159,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
     });
 
     this.getDeployments();
-    // this.networkSettingsForm.get('service')?.valueChanges.subscribe(value => {
-    //   let envType = '';
-    //   const region = localStorage.getItem('region') || 'ap-south-1a';
 
-    //   if (environment) {
-    //     const envObj = JSON.parse(environment);
-    //     envType = envObj?.type || '';
-    //   }
-    //   const domainSuffix = envType === 'prod'
-    //     ? `${envId}.${region}.lb.nimbuz.tech`
-    //     : `${envId}.dev.${region}.lb.nimbuz.tech`;
-    //   this.networkSettingsForm.get('host')?.setValue(`${value}-${domainSuffix}`);
-    // });
-    // this.customDnsHost?.valueChanges.subscribe(value => {
-    //   this.networkSettingsForm.get('customDnsHost')?.setValue(value)
-    // })
-    //.dev.ap-south-1a.lb.nimbuz.tech
-    // const resourceUsage = JSON.parse(this.sharedService.getCookie('resourceUsage'));
     const resourceUsage = JSON.parse(localStorage.getItem('resourceUsage') || '[]');
     const cpuResource = resourceUsage.find(
       (res: any) => res.resource_type === 'CPU'
@@ -233,12 +181,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
         name: key.trim(),
         ...(value as object)
       }));
-      // const defaultResource = this.resources.find(r => r.name === 'atto.r');
 
-      // if (defaultResource) {
-      //   this.generalSettingsForm.get('instanceType')?.setValue(defaultResource.name);
-      //   this.selectedResource = defaultResource;
-      // }
     });
 
     this.generalSettingsForm.get('instanceType')?.valueChanges.subscribe(selectedValue => {
@@ -270,33 +213,10 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
       }
     });
 
-    this.getResourceAllocationStatus(this.deploymentId);
 
   }
 
-  getResourceAllocationStatus(deploymentId: string): void {
-    // this.deploymentService.getDeploymentResourceAllocation(deploymentId).subscribe((res: any) => {
-    //   if (res.status === "Success") {
-    //     this.resourceAllocationDetails = res.data;
-    //     if (this.resourceAllocationDetails) {
-    //       if (this.resourceAllocationDetails.deployment_state === 'overprovisioned') {
-    //         this.overprovisioned = true;
-    //         this.underprovisioned = false;
-    //       }
-    //       else if (this.resourceAllocationDetails.deployment_state === 'underprovisioned') {
-    //         this.overprovisioned = false;
-    //         this.underprovisioned = true;
-    //       }
-    //       else {
-    //         this.overprovisioned = false;
-    //         this.underprovisioned = false;
-    //       }
-    //     }
-    //   } else {
-    //     this.toaster.error(res.message);
-    //   }
-    // });
-  }
+
 
   getDeploymentById(): void {
     // const regionCookie = this.sharedService.getCookie('region');
@@ -320,24 +240,14 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
           installCommand: res.data.application?.installCommand
         });
 
-        this.originalCommands.buildCommand = res.data.application?.buildCommand;
-        this.originalCommands.installCommand = res.data.application?.installCommand;
-        this.originalCommands.startCommand = res.data.application?.startCommand;
-        // this.originalCommands.zip_file_name = res.data.zip_file_name;
-
         const initialValues = this.generalSettingsForm.value;
 
         this.generalSettingsForm.valueChanges.subscribe(currentValues => {
           this.isGeneralSettingsChanged = JSON.stringify(currentValues) !== JSON.stringify(initialValues);
         });
-        //Source
         this.sourceSettingsForm.patchValue({
           type: res.data.sourceCode?.type.toLowerCase(),
-          // provider: res.data.provider,
-          // repoUrl: res.data.repo_url,
-          // branchName: res.data.branch_name,
-          // fileName: res.data.zip_file_name,
-          // fileInput: ''
+
         });
         if (this.sourceSettingsForm.get('type')?.value?.toLowerCase() === "vcs") {
           this.zipUpload = false;
@@ -353,14 +263,8 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
         this.sourceSettingsForm.valueChanges.subscribe(currentValues => {
           this.isSourceSettingsChanged = JSON.stringify(currentValues) !== JSON.stringify(loadingValues);
         });
-        ///////////////////////////
-        // this.networkSettingsForm.get('customDns')?.setValue(!!res.data.is_custom_dns)
-        // this.customDnsHost?.setValue(res.data.custom_domain)
-        //Build
-        // this.buildSettingsForm.setValue({ build_command: res.data.build_command });
-
-        //Deploy
-        // this.deploySettingsForm.setValue({ start_command: res.data.start_command });
+        this.generalcurrentValues = this.generalSettingsForm.value;
+        this.sourcecurrentValues = this.sourceSettingsForm.value;
       }
     });
   }
@@ -374,9 +278,6 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
 
     this.selectedResource = selectedResource;
 
-    // const rawPrice = parseFloat(selectedResource.price.replace('$', '')); 
-    // this.selectedResource.price = `$${rawPrice.toFixed(2)}`;
-    // CPU conversion from m to core
     let selectedCPU = 0;
     if (selectedResource.cpu.endsWith('m')) {
       selectedCPU = parseFloat(selectedResource.cpu.replace('m', '')) / 1000;
@@ -479,79 +380,69 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
   }
 
   onGeneralSubmit(): void {
-    // const regionCookie = this.sharedService.getCookie('region');
     const regionCookie = localStorage.getItem('region');
     if (this.generalSettingsForm.invalid) {
       this.generalSettingsForm.markAllAsTouched();
       return;
     }
-    const formValue = this.generalSettingsForm.value;
-    //const typeValue = this.sourceSettingsForm.getRawValue().type;
-    // if (typeValue === "zip" && !this.fileUploadedSuccessfully) {
-    //   this.toaster.error('Please upload the ZIP file before saving changes.');
-    //   return;
-    // }
+    const formValue = this.generalSettingsForm.getRawValue();
     const sourceFormValue = this.sourceSettingsForm.getRawValue();
     const fileName = sourceFormValue.fileName?.trim();
-    const buildChanged = formValue.buildCommand?.trim() !== this.originalCommands.buildCommand?.trim();
-    const installChanged = formValue.installCommand?.trim() !== this.originalCommands.installCommand?.trim();
-    const startChanged = formValue.startCommand?.trim() !== this.originalCommands.startCommand?.trim();
-    const fileNameChanged = fileName !== this.originalCommands.zip_file_name?.trim();
 
-    const stageToExecute = buildChanged || installChanged || startChanged || fileNameChanged ? 'BuildDeploy' : 'Deploy';
+    const originalApp = this.deploymentdetails?.application || {};
+    const originalNetwork = this.deploymentdetails?.network || {};
+    const originalSource = this.deploymentdetails?.sourceCode || {};
 
-    const ephemeralStorage = formValue.ephemeralStorage ? `${formValue.ephemeralStorage}Gi` : null;
-    const req = {
-      name: 'sample-website-1',
-      environmentId: JSON.parse(localStorage.getItem('environment') || '{}').id,
-      sourceCode: {
-        type: sourceFormValue.type,
-        gitUrl: sourceFormValue.repoUrl,
-        s3FileKey: sourceFormValue.type === 'zip' ? fileName : null,
-      },
-      application: {
-        replicas: formValue.replicas,
-        instanceType: formValue.instanceType,
-        installCommand: formValue.installCommand,
-        buildCommand: formValue.buildCommand,
-        startCommand: formValue.startCommand,
-        ephemeralStorage: ephemeralStorage,
-        storage: formValue.storage,
-      },
-      network: {
-        healthEndpoint: formValue.healthEndpoint,
-        port: formValue.port,
-        isCustomDns: this.showCustomDnsHost,
-        customDomain: this.customDnsHost?.value || null,
-        appIngressDomain: this.ingressDomain
+    const application = this.getChangedFields({
+      replicas: formValue.replicas,
+      instanceType: formValue.instanceType,
+      installCommand: formValue.installCommand,
+      buildCommand: formValue.buildCommand,
+      startCommand: formValue.startCommand,
+      ephemeralStorage: formValue.ephemeralStorage ? `${formValue.ephemeralStorage}Gi` : null,
+      storage: formValue.storage,
+    }, originalApp);
+    const network = this.getChangedFields({
+      healthEndpoint: formValue.healthEndpoint,
+      port: formValue.port,
+    }, originalNetwork);
 
-      },
-      config: {
-        path: this.deploymentdetails?.config?.path || null,
-        name: this.deploymentdetails?.config?.filename || null,
-        data: this.deploymentdetails?.config?.data || null
-      },
-      secret: this.deploymentdetails?.secret || {},
-      environment: this.deploymentdetails?.environment || {},
-    }
+    const sourceCode = this.getChangedFields({
+      type: sourceFormValue.type,
+      gitUrl: sourceFormValue.repoUrl,
+    }, originalSource);
+    const nameChanged = this.getChangedFields({ name: formValue.name }, { name: this.deploymentdetails?.name });
+
+    const req: any = {};
+    if (Object.keys(nameChanged).length) req.name = nameChanged.name;
+    if (Object.keys(sourceCode).length) req.sourceCode = sourceCode;
+    if (Object.keys(application).length) req.application = application;
+    if (Object.keys(network).length) req.network = network;
     this.deploymentService.updateDeployment(this.deploymentdetails?.id, req).subscribe((res: any) => {
       if (res.status.toLowerCase() === "success") {
         this.toaster.success(res.message);
-        this.originalCommands.buildCommand = res.data.build_command;
-        this.originalCommands.installCommand = res.data.install_command;
-        this.originalCommands.startCommand = res.data.start_command;
-        this.originalCommands.zip_file_name = res.data.zip_file_name;
-        // this.generalSettingsForm.markAsPristine();
-        // this.generalSettingsForm.markAsUntouched();
+        this.sourceSettingsForm.patchValue({
+          type: res.data.sourceCode?.type.toLowerCase(),
+        });
+        this.generalSettingsForm.patchValue({
+          name: res.data.name,
+          instanceType: res.data.application?.instanceType,
+          region: regionCookie,
+          replicas: res.data.application?.replicas,
+          ephemeralStorage: res.data.application?.ephemeralStorage ? res.data.application?.ephemeralStorage.replace(/Gi$/, '') : null,
+          storage: res.data.application?.storage,
+          healthEndpoint: res.data.network?.healthEndpoint,
+          port: res.data.network?.port,
+          buildCommand: res.data.application?.buildCommand,
+          startCommand: res.data.application?.startCommand,
+          installCommand: res.data.application?.installCommand
+        });
         this.isGeneralSettingsChanged = false;
         this.isSourceSettingsChanged = false;
       }
     },
       err => {
-        // this.toaster.error('Error updating general settings in deployment');
         console.error(err);
-        // this.generalSettingsForm.markAsPristine();
-        // this.generalSettingsForm.markAsUntouched();
       });
   }
 
@@ -587,34 +478,6 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
       });
   }
 
-  // onNetworkingSubmit(): void {
-  //   this.isGenerateDomain = false;
-  //   // const environment = this.sharedService.getCookie('environment');
-  //   const environment = localStorage.getItem('environment');
-  //   const envId = environment ? JSON.parse(environment).id : null;
-  //   const formValue = this.networkSettingsForm.value
-  //   if (!formValue.showAuthentication) delete formValue.authentication;
-  //   delete formValue.showAuthentication;
-  //   delete formValue.host;
-  //   if (!formValue.customDns) delete formValue.customDnsHost;
-
-  //   this.deploymentService.createEndpoint(envId, formValue).subscribe((res: any) => {
-  //     if (res && res.status.toLowerCase() === 'success') {
-  //       if (res.data?.customDomain) {
-  //         this.showCustomDnsHost = true;
-  //       } else {
-  //         this.ingressDomain = res.data?.domain;
-  //       }
-  //       this.toaster.success(res.message);
-  //       this.fetchCustomDnsHost();
-  //       // this.confirmationModel.close();
-  //     } else {
-  //       this.showCustomDnsHost = false;
-  //       this.closeModal()
-  //     }
-
-  //   })
-  // }
 
   onBuildSubmit(): void {
     console.log(this.buildSettingsForm.value);
@@ -698,83 +561,6 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
     }
   }
 
-  // toggleAuthentication(event: Event): void {
-  //   this.showAuthentication = (event.target as HTMLInputElement).checked;
-  //   this.networkSettingsForm.get('showAuthentication')?.setValue(this.showAuthentication);
-  //   this.updateAuthenticationValidation();
-  // }
-  // private updateAuthenticationValidation(): void {
-  //   const authGroup = this.authentication;
-
-  //   if (this.showAuthentication) {
-  //     authGroup.get('username')?.setValidators(Validators.required);
-  //     authGroup.get('password')?.setValidators(Validators.required);
-  //   } else {
-  //     authGroup.get('username')?.clearValidators();
-  //     authGroup.get('password')?.clearValidators();
-  //   }
-  //   authGroup.get('username')?.updateValueAndValidity();
-  //   authGroup.get('password')?.updateValueAndValidity();
-  // }
-  // get authentication(): FormGroup {
-  //   return this.networkSettingsForm.get('authentication') as FormGroup;
-  // }
-  // isInvalid(controlName: string): boolean {
-  //   const control = this.networkSettingsForm.get(controlName);
-  //   return control ? control.invalid && (control.dirty || control.touched) : false;
-  // }
-  // toggleVisibility(): void {
-  //   this.hide = !this.hide;
-  // }
-
-  // toggleHost(event: Event): void {
-  //   this.isHostDisabled = !(event.target as HTMLInputElement).checked;
-  //   const hostControl = this.networkSettingsForm.get('host');
-  //   if (this.isHostDisabled) {
-  //     hostControl?.disable();
-  //     this.customDnsHost?.setValue('')
-  //     this.networkSettingsForm.get('customDnsHost')?.setValue('')
-  //     this.onNetworkingSubmit()
-  //   } else {
-  //     hostControl?.enable();
-  //   }
-  // }
-
-  // fetchCustomDnsHost() {
-  //   // const environment = this.sharedService.getCookie('environment');
-  //   const environment = localStorage.getItem('environment');
-  //   const envId = environment ? JSON.parse(environment).id : null;
-  //   this.deploymentService.getAuthenticatedresponse(envId, this.deploymentId).subscribe((res: any) => {
-  //     this.showAuthenticationData = res.data;
-  //     this.endpointStatus = res.data?.status;
-  //     const customDomain = res.data.customDomain || '';
-  //     const authentication = this.showAuthenticationData?.authentication || null;
-
-  //     if (customDomain) { this.isHostDisabled = true; }
-  //     this.customDnsHost.setValue(customDomain);
-
-  //     if (authentication) {
-  //       this.networkSettingsForm.get('showAuthentication')?.setValue(true);
-  //     }
-
-  //     const authGroup = this.networkSettingsForm.get('authentication') as FormGroup;
-  //     if (authGroup && authentication.username && authentication.password) {
-  //       authGroup.patchValue({
-  //         username: authentication.username,
-  //         password: authentication.password
-  //       });
-  //     }
-  //   });
-  // }
-
-  // closeModal() {
-  //   this.networkSettingsForm.get('customDns')?.setValue(false)
-  //   this.customDnsHost?.setValue('');
-  //   this.networkSettingsForm.get('customDnsHost')?.setValue('');
-  //   this.showCustomDnsHost = false;
-  //   // this.confirmationModel.close()
-  // }
-
   copyDomainValue(inputElement: HTMLInputElement): void {
     inputElement.select();
     document.execCommand('copy');
@@ -799,40 +585,28 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
     return control.hasError(errorType) && control.touched;
   }
 
-  // shouldEnableButtons(): boolean {
-  //   const auth = this.networkSettingsForm.get('showAuthentication')?.value;
-  //   const dns = this.networkSettingsForm.get('customDns')?.value;
-  //   return !!auth || !!dns;
-  // }
-
-  // deleteEndpoint(){
-  //   const modalRef = this.modalService.open(ConfirmationModalComponent);
-  //   modalRef.componentInstance.selectedItem = 'Endpoint';
-  //   modalRef.componentInstance.message = 'Are you sure you want to delete this endpoint?';
-
-  //   modalRef.result.then(
-  //     (result) => {
-  //       if (result) {
-  //         // const environment = this.sharedService.getCookie('environment');
-  //         const environment = localStorage.getItem('environment');
-  //         const envId = environment ? JSON.parse(environment).id : null;
-  //         this.deploymentService.deleteEndpoint(envId, this.deploymentdetails?.name).subscribe((res: any) => {
-  //           if (res.status === "Success") {
-  //             this.toaster.success(res.message);
-  //             this.ingressDomain ='';
-  //             // this.fetchCustomDnsHost();
-  //           }
-  //         });
-  //       } else {
-  //         console.log('Cancelled delete endpoint!');
-  //       }
-  //     });
-  // }
-
   Port() {
     const portControl = this.generalSettingsForm.get('port');
     if (portControl && portControl.value === '') {
       portControl.setValue(null, { emitEvent: false });
     }
+  }
+
+  private getChangedFields(current: any, original: any): any {
+    const changed: any = {};
+    Object.keys(current).forEach(key => {
+      const currVal = current[key];
+      const origVal = original ? original[key] : undefined;
+      if (currVal === null || currVal === undefined) return;
+
+      if (typeof currVal === 'string' && typeof origVal === 'string') {
+        if (currVal.trim() !== origVal.trim()) {
+          changed[key] = currVal;
+        }
+      } else if (currVal !== origVal) {
+        changed[key] = currVal;
+      }
+    });
+    return changed;
   }
 }

@@ -25,7 +25,7 @@ export class DeploymentsService {
   }
 
   getInstanceTypes() {
-    return this.http.get('../assets/data/instance-type.mock.json')
+    return this.http.get(`${this.deploymentManagement}/instance-type`)
       .pipe(
         catchError(this.handleError.bind(this))
       );
