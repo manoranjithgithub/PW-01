@@ -938,7 +938,7 @@ export class CreateDeploymentsComponent
       environmentId: JSON.parse(localStorage.getItem('environment') || '{}').id,
       name: this.stepOneForm.getRawValue().name,
       sourceCode: {
-        type: this.selectedVCS === 'zip' ? 'file' : 'VCS',
+        type: this.selectedVCS === 'zip' ? 'file' : 'vcs',
         gitUrl: this.buildGitUrl(),
         s3FileKey: null,
       },
