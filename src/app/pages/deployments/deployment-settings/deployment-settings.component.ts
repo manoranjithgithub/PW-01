@@ -258,7 +258,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
           provider: provider,
           repoUrl: repoUrl,
           branchName: branchName,
-          fileName: res.data.sourceCode?.s3key ? res.data.sourceCode?.s3key : ''
+          fileName: res.data.sourceCode?.s3FileKey ? res.data.sourceCode?.s3FileKey : ''
 
         });
         if (this.sourceSettingsForm.get('type')?.value?.toLowerCase() === "vcs") {
