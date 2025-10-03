@@ -112,21 +112,21 @@
     </div>
 
     <hr class="mb-4">
-    <div class="">
+    <div class="" *ngIf="secretData">
         <div class="d-flex justify-content-between">
             <h6 class="fw-bold mb-3">Secrets</h6>
             <button (click)="edit(2)" class="btn"><i class="bi bi-pencil-square edit-icon"></i></button>
         </div>
-        <div class="row mb-4" *ngIf="hasData(secretData.data);else noSecrets">
+        <div class="row mb-4" *ngIf="hasData(secretData?.data);else noSecrets">
             <!-- <div class="col-md-6">
                 <label class="mb-1">Name</label>
                 <span class="d-block">{{secretData?.name}}</span>
             </div> -->
             <div class="row mb-4">
-                <div *ngFor="let entry of objectKeys(secretData.data)" class="col-md-6">
+                <div *ngFor="let entry of objectKeys(secretData?.data)" class="col-md-6">
                     <div class="env-row">
                         <label class="env-label">{{entry}} :</label>
-                        <span class="env-value" title="{{secretData.data[entry]}}">{{secretData.data[entry]}}</span>
+                        <span class="env-value" title="{{secretData?.data[entry]}}">{{secretData?.data[entry]}}</span>
                     </div>
                 </div>
             </div>
