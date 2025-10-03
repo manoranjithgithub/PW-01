@@ -354,6 +354,9 @@ export class ProjectPreferenceComponent implements OnInit, OnDestroy {
 
 
   saveGeneralChanges() {
+    if (this.generalSettingForm.invalid) {
+      return;
+    }
     const { projectName, description } = this.generalSettingForm.value;
 
     const reqBody = {

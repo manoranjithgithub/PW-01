@@ -205,7 +205,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
         this.networkSettingsForm.get('showAuthentication')?.setValue(true);
       }
 
-      const authGroup = this.networkSettingsForm.get('authentication') as FormGroup;
+      const authGroup = this.networkSettingsForm?.get('authentication') as FormGroup;
       if (authGroup && authentication.username && authentication.password) {
         authGroup.patchValue({
           username: authentication.username,
@@ -227,6 +227,13 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
         // this.ingressDomain = res.data?.app_ingress_domain;
         // this.showCustomDnsHost = !!res.data.is_custom_dns;
         //General settings
+        const rawGitUrl = res.data.sourceCode?.gitUrl || '';
+        const [urlPart, , branch] = rawGitUrl.split(' ') || [];
+        const cleanUrl = urlPart.replace(/\/\/.*@/, '//').replace(/\.git$/, '') || '';
+        const provider = cleanUrl.split('/')[2].split('.')[0] || '';
+        const repoUrl = cleanUrl;
+        const branchName = branch || '';
+
         this.generalSettingsForm.patchValue({
           name: res.data.name,
           instanceType: res.data.application?.instanceType,
@@ -248,6 +255,10 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
         });
         this.sourceSettingsForm.patchValue({
           type: res.data.sourceCode?.type.toLowerCase(),
+          provider: provider,
+          repoUrl: repoUrl,
+          branchName: branchName,
+          fileName: res.data.sourceCode?.s3key ? res.data.sourceCode?.s3key : ''
 
         });
         if (this.sourceSettingsForm.get('type')?.value?.toLowerCase() === "vcs") {
@@ -357,11 +368,11 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
       // if (this.selectedFile && envId) {
       //   const formData = new FormData();
 
-        if (this.selectedFile) {
-      //     formData.append('file', this.selectedFile, this.selectedFile.name);
-      //   }
-      //   formData.append('type', 'ZIP');
-      //   formData.append('appName', this.generalSettingsForm.get('name')?.value);
+      if (this.selectedFile) {
+        //     formData.append('file', this.selectedFile, this.selectedFile.name);
+        //   }
+        //   formData.append('type', 'ZIP');
+        //   formData.append('appName', this.generalSettingsForm.get('name')?.value);
         const extension = this.selectedFile.name.split('.').pop()?.toLowerCase() || '';
         this.deploymentService.getS3Details(extension).pipe(
           concatMap((res: any) => {
@@ -422,7 +433,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
 
     const sourceCode = this.getChangedFields({
       type: sourceFormValue.type,
-      gitUrl: sourceFormValue.repoUrl,
+      gitUrl: this.buildGitUrl(),
       s3key: fileName ? this.s3FileKey : null,
 
     }, originalSource);
@@ -435,7 +446,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
     if (Object.keys(network).length) req.network = network;
     this.deploymentService.updateDeployment(this.deploymentdetails?.id, req).subscribe((res: any) => {
       if (res.status.toLowerCase() === "success") {
-        this.toaster.success(res.message);
+        this.toaster.success('Updated successfully');
         this.sourceSettingsForm.patchValue({
           type: res.data.sourceCode?.type.toLowerCase(),
         });
@@ -483,8 +494,8 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
       };
     }
     this.deploymentService.updateDeployment(this.deploymentdetails?.id, req).subscribe((res: any) => {
-      if (res.status === "Success") {
-        this.toaster.success(res.message);
+      if (res.status.toLowerCase() === "success") {
+        this.toaster.success('Updated successfully');
       }
     },
       err => {
@@ -522,8 +533,8 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
       status: this.deploymentdetails?.status,
     }
     this.deploymentService.updateDeployment(this.deploymentdetails?.id, req).subscribe((res: any) => {
-      if (res.status === "Success") {
-        this.toaster.success(res.message);
+      if (res.status.toLowerCase() === "success") {
+        this.toaster.success('Updated successfully');
       }
     },
       err => {
@@ -623,5 +634,18 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
       }
     });
     return changed;
+  }
+
+  private buildGitUrl(): string {
+    const repo = this.sourceSettingsForm.get('repoUrl')?.value.replace(/^(https?:\/\/)?(www\.)?[^/]+\//, '') || '';
+    const branch = this.sourceSettingsForm.get('branchName')?.value || 'main';
+
+    if (this.sourceSettingsForm.get('provider')?.value === 'github') {
+      return `https://token@github.com/${repo}.git -b ${branch}`;
+    }
+    if (this.sourceSettingsForm.get('provider')?.value === 'gitlab') {
+      return `https://${repo}:token@gitlab.com/${repo}.git -b ${branch}`;
+    }
+    return '';
   }
 }

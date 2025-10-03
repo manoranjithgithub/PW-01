@@ -229,7 +229,7 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
       modalRef.result.then(
         (result) => {
           if (result) {
-            this.http.updateDeployment(req.id, {  sourceCode: req?.sourceCode}).subscribe((res: any) => {
+            this.http.updateDeployment(req.id, { sourceCode: req?.sourceCode}).subscribe((res: any) => {
               if (res.status.toLowerCase() === "success") {
                 this.toaster.success(res.message);
 

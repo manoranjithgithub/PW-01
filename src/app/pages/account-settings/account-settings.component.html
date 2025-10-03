@@ -59,7 +59,13 @@
           <div
             *ngIf="resetPasswordForm.get('oldPassword')?.hasError('required') && (submitted || resetPasswordForm.get('oldPassword')?.touched || resetPasswordForm.get('oldPassword')?.dirty)"
             class="text-danger mt-1">
-            Old password is required.
+            Current password is required.
+          </div>
+          <div
+            *ngIf="resetPasswordForm.get('oldPassword')?.hasError('pattern') && (submitted || resetPasswordForm.get('oldPassword')?.touched || resetPasswordForm.get('oldPassword')?.dirty)"
+            class="text-danger mt-1">
+            Current password must be at least 8 characters long and include at least one uppercase letter, one lowercase
+            letter, one number, and one special character.
           </div>
         </div>
         <div class="col-md-4">
@@ -71,12 +77,10 @@
               <i class="bi" [ngClass]="showNewPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
             </button>
           </div>
-          <div
-            *ngIf="resetPasswordForm.get('password')?.hasError('minlength') && (submitted || resetPasswordForm.get('password')?.touched || resetPasswordForm.get('password')?.dirty)"
-            class="text-danger mt-1">
-            <div *ngIf="resetPasswordForm.get('password')?.errors?.['required']">New password is required.</div>
-            <div *ngIf="resetPasswordForm.get('password')?.errors?.['minlength']">Password must be at least 8
-              characters.</div>
+          <div class="text-danger mt-1">
+            <div
+              *ngIf="resetPasswordForm.get('password')?.hasError('required') && (isResetPasswordSubmitted || resetPasswordForm.get('password')?.touched || resetPasswordForm.get('password')?.dirty)">
+              New password is required.</div>
             <div class="text-danger mt-1"
               *ngIf="resetPasswordForm.get('password')?.hasError('pattern') && (isResetPasswordSubmitted || resetPasswordForm.get('password')?.touched || resetPasswordForm.get('password')?.dirty)">
               Password must be at least 8 characters long and include at least one uppercase letter, one lowercase
@@ -98,7 +102,8 @@
             class="text-danger mt-1">
             Confirm password is required.
           </div>
-          <div *ngIf="resetPasswordForm.get('confirmPassword')?.errors?.['mismatch']" class="text-danger mt-1">Confirm password must match the new password.</div>
+          <div *ngIf="resetPasswordForm.get('confirmPassword')?.errors?.['mismatch']" class="text-danger mt-1">Confirm
+            password must match the new password.</div>
 
         </div>
       </div>
