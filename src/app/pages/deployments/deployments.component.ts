@@ -124,7 +124,7 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
       sortable: true,
       filter: false,
       flex: 1,
-      width: 100,
+      width: 200,
       //sort: 'desc',
       valueFormatter: (params: any) => {
         return new Date(params.value).toLocaleDateString('en-US', {

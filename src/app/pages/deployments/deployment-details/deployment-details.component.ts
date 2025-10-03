@@ -135,8 +135,8 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
       (result) => {
         if (result) {
           this.deploymentService.deleteDeployment(this.deploymentId).subscribe((res: any) => {
-            if (res.status === 'Success') {
-              this.toastr.success(res.message);
+            if (res.status.toLowerCase() === 'success') {
+              this.toastr.success('Deployment deleted successfully');
               this.router.navigate(['/deployment']);
             }
           });
