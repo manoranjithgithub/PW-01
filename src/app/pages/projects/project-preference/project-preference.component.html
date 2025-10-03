@@ -18,7 +18,7 @@
                 <div class="col-md-6">
                   <p class="field-label">Project name</p>
                   <ng-container *ngIf="!isGeneralEditMode; else editName">
-                    <p class="field-value">{{ projectNameControl.value }}</p>
+                    <p class="field-value" style="word-break: break-all;">{{ projectNameControl.value }}</p>
                   </ng-container>
                   <ng-template #editName>
                     <input formControlName="projectName" class="form-control" placeholder="Enter project name" />
@@ -32,7 +32,7 @@
                 <div class="col-md-6">
                   <p class="field-label">Description</p>
                   <ng-container *ngIf="!isGeneralEditMode; else editDesc">
-                    <p class="field-value">{{ descriptionControl.value }}</p>
+                    <p class="field-value" style="word-break: break-all;">{{ descriptionControl.value }}</p>
                   </ng-container>
                   <ng-template #editDesc>
                     <textarea formControlName="description" class="form-control" rows="3"
