@@ -230,7 +230,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
         const rawGitUrl = res.data.sourceCode?.gitUrl || '';
         const [urlPart, , branch] = rawGitUrl.split(' ') || [];
         const cleanUrl = urlPart.replace(/\/\/.*@/, '//').replace(/\.git$/, '') || '';
-        const provider = cleanUrl.split('/')[2].split('.')[0] || '';
+        const provider = cleanUrl?.split('/')[2]?.split('.')[0] || '';
         const repoUrl = cleanUrl;
         const branchName = branch || '';
 
