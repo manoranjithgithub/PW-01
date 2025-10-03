@@ -10,7 +10,6 @@ import { SharedService } from '../../../shared/services/shared.service';
 import { ConfirmationModalComponent } from '../../../shared/components/modal/confirmation-modal/confirmation-modal.component';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ActivatedRoute } from '@angular/router';
-import { subscribe } from 'diagnostics_channel';
 
 @Component({
   selector: 'app-environment-variables',
@@ -104,7 +103,7 @@ export class EnvironmentVariablesComponent implements OnInit {
 
   createRule(): FormGroup {
     return this.fb.group({
-      name: ['', [Validators.required, Validators.pattern('^[A-Za-z0-9_-]+$')]],
+      name: ['', [Validators.required, Validators.pattern('^[A-Za-z0-9._-]+$')]],
       value: ['', Validators.required],
     }, { validators: this.nameValueDependencyValidator });
   }

@@ -56,7 +56,6 @@
                   </div>
                 </div>
               </ng-container>
-
               <div *ngIf="zipUpload && !vcsDeploy" class="d-flex gap-2">
                 <div class="flex-fill mb-3">
                   <label for="fileInput" class="custom-label">Select a file to upload (.zip or .tar):</label>
@@ -178,7 +177,7 @@
               <div class="d-flex gap-2">
                 <div class="flex-fill mb-3">
                   <label for="buildCommand" class="custom-label">Build command</label>
-                  <input type="text" placeholder="npm run build" class="form-control custom-values"
+                  <input type="text" placeholder="" class="form-control custom-values"
                     formControlName="buildCommand">
                   <div class="text-danger my-1" *ngIf="isError('buildCommand', 'maxlength')">
                     Maximum 250 characters allowed.
@@ -186,7 +185,7 @@
                 </div>
                 <div class="flex-fill mb-3">
                   <label for="startCommand" class="custom-label">Start command</label>
-                  <input type="text" placeholder="npm run start" class="form-control custom-values"
+                  <input type="text" placeholder="" class="form-control custom-values"
                     formControlName="startCommand">
                   <div class="text-danger my-1" *ngIf="isError('startCommand', 'maxlength')">
                     Maximum 250 characters allowed.
@@ -196,7 +195,7 @@
               <div class="d-flex gap-2">
                 <div class="flex-fill mb-3">
                   <label for="installCommand" class="custom-label">Install command</label>
-                  <input type="text" placeholder="npm install" class="form-control custom-values"
+                  <input type="text" placeholder="" class="form-control custom-values"
                     formControlName="installCommand">
                   <div class="text-danger my-1" *ngIf="isError('installCommand', 'maxlength')">
                     Maximum 250 characters allowed.

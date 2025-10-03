@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { ToastrService } from 'ngx-toastr';
@@ -26,7 +26,11 @@ export class ProjectsService {
   }
 
   getProjectDetailsById(projectId: string) {
-    return this.http.get(`${this.apiUrl}/${projectId}`)
+    const token = localStorage.getItem('accessToken');
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`
+    });
+    return this.http.get(`${this.apiUrl}/${projectId}`, { headers })
       .pipe(
         catchError(this.handleError.bind(this))
       );

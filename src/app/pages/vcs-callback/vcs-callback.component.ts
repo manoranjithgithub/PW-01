@@ -21,6 +21,7 @@ export class VcsCallbackComponent implements OnInit {
       }
 
       const projectId = JSON.parse(localStorage.getItem('project') || '{}').id || '';
+      console.log('ProjectID in VCS callback:', projectId);
       if (projectId) {
         this.projectService.getProjectDetailsById(projectId).subscribe((res: any) => {
           const vcsProfileInfo = {
@@ -28,29 +29,28 @@ export class VcsCallbackComponent implements OnInit {
             gitlab: res.data.gitlab
           }
           localStorage.setItem('vcsProfileInfo', JSON.stringify(vcsProfileInfo));
+          const stateObj = JSON.parse(atob(state));
+          const queryString = new URLSearchParams({
+            provider: stateObj.provider,
+            code: params['code'],
+            state: stateObj.state,
+          }).toString();
+
+
+          const subdomain = stateObj.state.toLowerCase() === 'nimbuz' ? 'app' : stateObj.state;
+
+          if (stateObj.state.toLowerCase() === 'nimbuz') {
+            window.location.href = `${window.location.origin}/create-deployment?${queryString}`;
+            return;
+          }
+
+          const baseDomain = environment.domain || 'localhost';
+          const protocol = window.location.protocol;
+          const redirectUrl = `${protocol}//${subdomain}.${baseDomain}/create-deployment?${queryString}`;
+          console.log(redirectUrl)
+          window.location.href = redirectUrl;
         });
       }
-
-      const stateObj = JSON.parse(atob(state));
-      const queryString = new URLSearchParams({
-        provider: stateObj.provider,
-        code: params['code'],
-        state: stateObj.state,
-      }).toString();
-
-
-      const subdomain = stateObj.state.toLowerCase() === 'nimbuz' ? 'app' : stateObj.state;
-
-      if (stateObj.state.toLowerCase() === 'nimbuz') {
-        window.location.href = `${window.location.origin}/create-deployment?${queryString}`;
-        return;
-      }
-
-      const baseDomain = environment.domain || 'localhost';
-      const protocol = window.location.protocol;
-      const redirectUrl = `${protocol}//${subdomain}.${baseDomain}/create-deployment?${queryString}`;
-      console.log(redirectUrl)
-      window.location.href = redirectUrl;
     });
   }
 }

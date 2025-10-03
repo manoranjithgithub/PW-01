@@ -118,6 +118,7 @@ export class DefaultLayoutComponent implements OnInit {
             '/projects/project-preferences',
             '/users-list',
             '/login',
+            '/create-account'
           ];
           if (this.currentUser !== 'nimbuz') {
             allowedRoutes.push('/users-list');

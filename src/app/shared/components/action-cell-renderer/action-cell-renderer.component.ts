@@ -216,6 +216,7 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
     console.log(data)
     if (this.additionalParam === "deployment") {
       const req = this.params.data;
+      
       // this.http.restartDeployment(this.envId, this.params.data.name, req).subscribe((res: any) => {
       //   if (res.success) {
       //     this.toaster.success('Successfully initiated');
@@ -228,7 +229,7 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
       modalRef.result.then(
         (result) => {
           if (result) {
-            this.http.updateDeployment(req.id, {}).subscribe((res: any) => {
+            this.http.updateDeployment(req.id, {  sourceCode: req?.sourceCode}).subscribe((res: any) => {
               if (res.status.toLowerCase() === "success") {
                 this.toaster.success(res.message);
 
