@@ -228,8 +228,8 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
         // this.showCustomDnsHost = !!res.data.is_custom_dns;
         //General settings
         const rawGitUrl = res.data.sourceCode?.gitUrl || '';
-        const [urlPart, , branch] = rawGitUrl.split(' ') || [];
-        const cleanUrl = urlPart.replace(/\/\/.*@/, '//').replace(/\.git$/, '') || '';
+        const [urlPart, , branch] = rawGitUrl?.split(' ') || [];
+        const cleanUrl = urlPart?.replace(/\/\/.*@/, '//').replace(/\.git$/, '') || '';
         const provider = cleanUrl?.split('/')[2]?.split('.')[0] || '';
         const repoUrl = cleanUrl;
         const branchName = branch || '';
