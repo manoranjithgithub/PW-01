@@ -1,9 +1,8 @@
 <div class="url-wrapper">
     <ng-container *ngIf="publicUrl">
-        <div class="url-line" [attr.title]="!endpointStatus ? 'Endpoint not ready yet' : publicUrl">
+        <div class="url-line">
             <span>Public:</span>
             <a class="ellipsis" href="https://{{publicUrl}}" target="_blank"
-                [ngClass]="{'disabled-link': !endpointStatus}"
                 >{{'https://' + publicUrl }}</a>
         </div>
     </ng-container>
