@@ -236,9 +236,9 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
           storage: res.data.application?.storage,
           healthEndpoint: res.data.network?.healthEndpoint,
           port: res.data.network?.port,
-          buildCommand: res.data.application?.buildCommand,
-          startCommand: res.data.application?.startCommand,
-          installCommand: res.data.application?.installCommand
+          buildCommand: res.data.buildConfig?.buildCommand,
+          startCommand: res.data.buildConfig?.startCommand,
+          installCommand: res.data.buildConfig?.installCommand
         });
 
         const initialValues = this.generalSettingsForm.value;
