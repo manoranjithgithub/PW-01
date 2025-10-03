@@ -17,9 +17,9 @@ export class UrlCellRendererComponent {
     const data = params.data;
     console.log('Cell Renderer Data:', data);
     this.endpointStatus = data.endpointStatus == 'accessible' ? true : false ;
-    this.publicUrl = data?.is_custom_dns
-      ? data?.custom_domain
-      : data?.custom_domain || data?.app_ingress_domain || null;
+    this.publicUrl = data?.network?.customDomain
+      ? data?.network?.customDomain
+      :  data?.network?.appIngressDomain || null;
     this.privateUrl = data?.name || null;
   }
 

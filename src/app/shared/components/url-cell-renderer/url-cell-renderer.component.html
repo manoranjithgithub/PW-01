@@ -11,8 +11,8 @@
         <div class="url-line" [attr.title]="!endpointStatus ? 'Endpoint not ready yet' : privateUrl">
             <span>Private:</span>
             <!-- <span class="ellipsis">{{ privateUrl }}</span> -->
-            <a class="ellipsis" href="https://{{privateUrl}}" target="_blank"  [ngClass]="{'disabled-link': !endpointStatus}"
-                [attr.title]="endpointStatus ? 'Endpoint not ready yet' : null">{{ 'http://' + privateUrl }}</a>
+            <a class="ellipsis" href="https://{{privateUrl}}" target="_blank"
+                >{{ 'http://' + privateUrl }}</a>
         </div>
     </ng-container>
 
