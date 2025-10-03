@@ -22,7 +22,7 @@ import { ConfirmationModalComponent } from '../../../shared/components/modal/con
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { NgbPopoverModule } from '@ng-bootstrap/ng-bootstrap';
-import { env } from 'process';
+import { concatMap, tap } from 'rxjs';
 @Component({
   selector: 'app-deployment-settings',
   standalone: true,
@@ -98,6 +98,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
   @Input() currentStatus: string = '';
   freezeAddNewData: boolean = false;
   endpointStatus: string = '';
+  s3FileKey: string = '';
 
   constructor(private fb: FormBuilder, private sharedService: SharedService, private deploymentService: DeploymentsService,
     private toaster: ToastrService, private modalService: NgbModal, private route: Router, private ac: ActivatedRoute,
@@ -253,7 +254,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
           this.zipUpload = false;
           this.vcsDeploy = true;
         }
-        else if (this.sourceSettingsForm.get('type')?.value === "zip") {
+        else if (this.sourceSettingsForm.get('type')?.value === "file") {
           this.zipUpload = true;
           this.vcsDeploy = false;
         }
@@ -351,30 +352,42 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
     }
     else {
       // const environment = this.sharedService.getCookie('environment');
-      const environment = localStorage.getItem('environment');
-      const envId = environment ? JSON.parse(environment).id : null;
-      if (this.selectedFile && envId) {
-        const formData = new FormData();
+      // const environment = localStorage.getItem('environment');
+      // const envId = environment ? JSON.parse(environment).id : null;
+      // if (this.selectedFile && envId) {
+      //   const formData = new FormData();
 
         if (this.selectedFile) {
-          formData.append('file', this.selectedFile, this.selectedFile.name);
-        }
-        formData.append('type', 'ZIP');
-        formData.append('appName', this.generalSettingsForm.get('name')?.value);
-
-        this.deploymentService.uploadZipDeployment(envId, formData).subscribe((res: any) => {
-          if (res.status === 'Success') {
-            this.fileError = '';
-            this.sourceSettingsForm.get('fileName')?.patchValue(this.selectedFile?.name);
-            this.fileUploadedSuccessfully = true;
-            this.toaster.success('File uploaded successfully');
-          }
-        },
-          err => {
-            this.fileUploadedSuccessfully = false;
-            // this.toaster.error('Error uploading file');
-            console.error(err);
+      //     formData.append('file', this.selectedFile, this.selectedFile.name);
+      //   }
+      //   formData.append('type', 'ZIP');
+      //   formData.append('appName', this.generalSettingsForm.get('name')?.value);
+        const extension = this.selectedFile.name.split('.').pop()?.toLowerCase() || '';
+        this.deploymentService.getS3Details(extension).pipe(
+          concatMap((res: any) => {
+            if (!res?.data) throw new Error('Failed to get S3 details');
+            const s3Data = res.data;
+            return this.deploymentService.uploadFileToS3(s3Data.uploadUrl, this.selectedFile, s3Data.contentType).pipe(
+              tap(() => {
+                this.s3FileKey = s3Data.s3Key;
+              })
+            );
           })
+        );
+
+        // this.deploymentService.uploadZipDeployment(envId, formData).subscribe((res: any) => {
+        //   if (res.status === 'Success') {
+        //     this.fileError = '';
+        //     this.sourceSettingsForm.get('fileName')?.patchValue(this.selectedFile?.name);
+        //     this.fileUploadedSuccessfully = true;
+        //     this.toaster.success('File uploaded successfully');
+        //   }
+        // },
+        //   err => {
+        //     this.fileUploadedSuccessfully = false;
+        //     // this.toaster.error('Error uploading file');
+        //     console.error(err);
+        //   })
       }
     }
   }
@@ -410,6 +423,8 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
     const sourceCode = this.getChangedFields({
       type: sourceFormValue.type,
       gitUrl: sourceFormValue.repoUrl,
+      s3key: fileName ? this.s3FileKey : null,
+
     }, originalSource);
     const nameChanged = this.getChangedFields({ name: formValue.name }, { name: this.deploymentdetails?.name });
 
