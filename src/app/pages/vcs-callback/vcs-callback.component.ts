@@ -21,6 +21,7 @@ export class VcsCallbackComponent implements OnInit {
       }
 
       const projectId = JSON.parse(localStorage.getItem('project') || '{}').id || '';
+      console.log('ProjectID in VCS callback:', projectId);
       if (projectId) {
         this.projectService.getProjectDetailsById(projectId).subscribe((res: any) => {
           const vcsProfileInfo = {

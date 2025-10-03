@@ -104,7 +104,7 @@ export class EnvironmentVariablesComponent implements OnInit {
 
   createRule(): FormGroup {
     return this.fb.group({
-      name: ['', [Validators.required, Validators.pattern('^[A-Za-z0-9_-]+$')]],
+      name: ['', [Validators.required, Validators.pattern('^[A-Za-z0-9._-]+$')]],
       value: ['', Validators.required],
     }, { validators: this.nameValueDependencyValidator });
   }
