@@ -99,7 +99,7 @@ export class RawEditorComponent implements OnChanges {
   envToJson(envString: string): string {
     const jsonObj: { [key: string]: string } = {};
     envString.split('\n').forEach((line) => {
-      const match = line.match(/^([\w.-]+)="?(.*?)"?$/);
+      const match = line.match(/^([\w.-]+)\s*=\s*"?(.+?)"?$/);
       if (match) {
         jsonObj[match[1]] = match[2];
       }
