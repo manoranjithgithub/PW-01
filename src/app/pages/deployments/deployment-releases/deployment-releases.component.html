@@ -32,9 +32,11 @@
                     <div class="circle"></div>
                     <div class="content">
                       <div class="title">
-                        <span>{{ step.title }}<button class="btn px-2 font-sm"
+                        <span>{{ step.title }}
+                          <!-- <button class="btn px-2 font-sm"
                             *ngIf="(step.title !== 'Initiated' && step.status !== 'pending')"
-                            (click)="getLogsInfo(active, i)"> ( view logs )</button></span>
+                            (click)="getLogsInfo(active, i)"> ( view logs )</button> -->
+                          </span>
                       </div>
                       <div class="time">{{ step.time | date: 'short'}}</div>
                       <div *ngIf="step.status" class="title" [innerHTML]="step.message"></div>
