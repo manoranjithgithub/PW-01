@@ -10,7 +10,6 @@ import { SharedService } from '../../../shared/services/shared.service';
 import { ConfirmationModalComponent } from '../../../shared/components/modal/confirmation-modal/confirmation-modal.component';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ActivatedRoute } from '@angular/router';
-import { subscribe } from 'diagnostics_channel';
 
 @Component({
   selector: 'app-environment-variables',
