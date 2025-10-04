@@ -258,9 +258,11 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
           provider: provider,
           repoUrl: repoUrl,
           branchName: branchName,
-          fileName: res.data.sourceCode?.s3key ? res.data.sourceCode?.s3key : ''
-
+          fileName: res.data.sourceCode?.s3FileKey ? res.data.sourceCode?.s3FileKey : ''
         });
+        if(res.data.sourceCode?.type.toLowerCase() === "file"){
+          this.s3FileKey = res.data.sourceCode?.s3FileKey;
+        }
         if (this.sourceSettingsForm.get('type')?.value?.toLowerCase() === "vcs") {
           this.zipUpload = false;
           this.vcsDeploy = true;
@@ -413,7 +415,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
     const sourceFormValue = this.sourceSettingsForm.getRawValue();
     const fileName = sourceFormValue.fileName?.trim();
 
-    const originalApp = this.deploymentdetails?.application || {};
+    const originalApp = { ...(this.deploymentdetails?.application || {}), ...(this.deploymentdetails?.buildConfig || {}) };
     const originalNetwork = this.deploymentdetails?.network || {};
     const originalSource = this.deploymentdetails?.sourceCode || {};
 
@@ -434,7 +436,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
     const sourceCode = this.getChangedFields({
       type: sourceFormValue.type,
       gitUrl: this.buildGitUrl(),
-      s3key: fileName ? this.s3FileKey : null,
+      s3FileKey: fileName ? this.s3FileKey : null,
 
     }, originalSource);
     const nameChanged = this.getChangedFields({ name: formValue.name }, { name: this.deploymentdetails?.name });
