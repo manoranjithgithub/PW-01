@@ -72,6 +72,15 @@ export class ToolsComponent implements OnInit, OnDestroy {
 
   columnDefs: ColDef[] = [
     {
+      headerName: ' ', field: 'icon', sortable: false, filter: false, width: 80,
+      cellStyle: { cursor: 'pointer', color: '#181d1f', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+      cellRenderer: (params: any) => {
+        return `<img src="${params.value}" alt="${params.data.name}" width="24" height="24" />`;
+      },
+      onCellClicked: (event: CellClickedEvent) =>
+        this.gotoAction(event.data)
+    },
+    {
       headerName: 'Name', field: 'name', sortable: true, filter: true, flex: 1,
       cellStyle: { cursor: 'pointer', color: '#181d1f' },
       onCellClicked: (event: CellClickedEvent) =>
@@ -219,7 +228,10 @@ export class ToolsComponent implements OnInit, OnDestroy {
     if (value) {
       this.http.getToolsList(value).subscribe((res: any) => {
         if (res.status) {
-          this.rowData = res.data;
+          this.rowData = res.data.map((tool: any) => ({
+            ...tool,
+            icon: this.getToolIcon(tool.privateHost)
+          }));
           localStorage.setItem('availableTools', JSON.stringify(res.data));
         }
       }, error => {
@@ -414,5 +426,22 @@ export class ToolsComponent implements OnInit, OnDestroy {
         }
       });
   }
+  getToolIcon(toolName: string): string {
+    const name = toolName.toLowerCase();
 
+    if (name.includes('cloudbeaver')) {
+      return 'assets/images/icons/cloudbeaver.png';
+    }
+    if (name.includes('mysql')) {
+      return 'assets/images/icons/mysql.svg';
+    }
+    if (name.includes('postgres')) {
+      return 'assets/images/icons/postgresql.svg';
+    }
+    if (name.includes('mongodb')) {
+      return 'assets/images/icons/mongodb.svg';
+    }
+
+    return 'assets/images/icons/default-tool.png';
+  }
 }
