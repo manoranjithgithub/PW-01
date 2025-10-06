@@ -45,8 +45,8 @@
                 </div>
               </div>
             </div>
-            <button (click)="onOptionSelected('view', active, 'active')" class="btn button-format-solid m-4">
-              View logs
+            <button (click)="onOptionSelected('view', active, 'active')" class="btn button-format-solid m-4" [disabled]="deploymentdetails.status === 'Pending'">
+              View logs 
             </button>
             <!-- <div class="custom-dropdown" (click)="toggleDropdown('active', $event)">
               <button class="btn btn-icon" type="button">
