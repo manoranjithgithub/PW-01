@@ -123,8 +123,8 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
       field: 'createdAt',
       sortable: true,
       filter: false,
-      flex: 1,
-      width: 200,
+      // flex: 1,
+      width: 130,
       //sort: 'desc',
       valueFormatter: (params: any) => {
         return new Date(params.value).toLocaleDateString('en-US', {
