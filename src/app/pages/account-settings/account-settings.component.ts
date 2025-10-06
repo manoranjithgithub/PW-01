@@ -40,8 +40,12 @@ export class AccountComponent implements OnInit {
     });
 
     this.resetPasswordForm = this.fb.group({
-      oldPassword: ['', [Validators.required, Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&=+/-]{8,}$/)]],
-      password: ['', [Validators.required, Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&=+/-]{8,}$/)]],
+      oldPassword: ['', [Validators.required, Validators.pattern(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+={}[\]:;"'<>,.?\/|\\~`])[^\s]{8,}$/
+    )]],
+      password: ['', [Validators.required, Validators.pattern(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+={}[\]:;"'<>,.?\/|\\~`])[^\s]{8,}$/
+    )]],
       confirmPassword: ['', Validators.required],
     }, { validators: this.passwordsMatchValidator });
 
