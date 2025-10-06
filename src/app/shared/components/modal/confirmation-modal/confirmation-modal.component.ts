@@ -18,6 +18,14 @@ export class ConfirmationModalComponent {
 
   typedConfirmation: string = '';
 
+  // Returns true when typedConfirmation matches confirmationWord (case-insensitive, trimmed)
+  isConfirmationMatch(): boolean {
+    if (!this.requireConfirmation) return true;
+    const typed = (this.typedConfirmation || '').trim().toLowerCase();
+    const expected = (this.confirmationWord || '').trim().toLowerCase();
+    return typed.length > 0 && typed === expected;
+  }
+
 
   constructor(public activeModal: NgbActiveModal) { }
 

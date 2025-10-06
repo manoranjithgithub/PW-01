@@ -12,6 +12,7 @@
   <div *ngIf="requireConfirmation" class="mt-3">
     <p class="modal-text">Type <strong>{{ confirmationWord }}</strong> to confirm.</p>
     <input type="text" class="form-control" [(ngModel)]="typedConfirmation" placeholder="Type confirmation word here" />
+    <small *ngIf="typedConfirmation && !isConfirmationMatch()" class="text-danger d-block mt-2">Confirmation word does not match.</small>
   </div>
   </ng-container>
   <ng-template #disconnectTemplate>
@@ -22,6 +23,6 @@
   <hr/>
   <div class="my-4 d-flex justify-content-center align-items-center gap-4">
     <button type="button" class="px-5 py-2 btn-outline" (click)="cancel()">Cancel</button>
-    <button type="button" class="px-5 py-2 btn-solid" (click)="confirm()">Confirm</button>
+    <button type="button" class="px-5 py-2 btn-solid" (click)="confirm()" [disabled]="requireConfirmation && !isConfirmationMatch()">Confirm</button>
   </div>
 </div>
