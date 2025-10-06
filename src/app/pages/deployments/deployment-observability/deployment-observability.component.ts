@@ -107,6 +107,8 @@ export class DeploymentObservabilityComponent implements OnInit {
   getApplicationLogs(deploymentId: string, duration?: string) {
     const environmentStr = localStorage.getItem('environment');
     const environmentId = environmentStr ? JSON.parse(environmentStr).id : '';
+    const fromDate = new Date(this.filterForm.value.fromTimestamp + ":00+05:30");
+    const toDate = new Date(this.filterForm.value.toTimestamp + ":00+05:30");
 
     const req = {
       environmentId: environmentId,
@@ -116,8 +118,8 @@ export class DeploymentObservabilityComponent implements OnInit {
       limit: this.pageSize,
       timeRange: duration,
       keyword: "",
-      fromTimestamp: this.filterForm.value.fromTimestamp ? `${this.filterForm.value.fromTimestamp}:00Z` : '',
-      toTimestamp: this.filterForm.value.toTimestamp ? `${this.filterForm.value.toTimestamp}:00Z` : ''
+      fromTimestamp: this.filterForm.value.fromTimestamp ? fromDate : '',
+      toTimestamp: this.filterForm.value.toTimestamp ? toDate : ''
     };
 
     this.deploymentService.getSelectedDeploymentLogs(req).subscribe(
@@ -169,7 +171,8 @@ export class DeploymentObservabilityComponent implements OnInit {
 
     const environmentStr = localStorage.getItem('environment');
     const environmentId = environmentStr ? JSON.parse(environmentStr).id : '';
-
+    const fromDate = new Date(this.filterForm.value.fromTimestamp + ":00+05:30");
+    const toDate = new Date(this.filterForm.value.toTimestamp + ":00+05:30");
     const req = {
       environmentId: environmentId,
       logType: 'application',
@@ -178,8 +181,8 @@ export class DeploymentObservabilityComponent implements OnInit {
       limit: this.pageSize,
       timeRange: duration,
       keyword: keyword,
-      fromTimestamp: this.filterForm.value.fromTimestamp ? `${this.filterForm.value.fromTimestamp}:00Z` : '',
-      toTimestamp: this.filterForm.value.toTimestamp ? `${this.filterForm.value.toTimestamp}:00Z` : '',
+      fromTimestamp: this.filterForm.value.fromTimestamp ? fromDate : '',
+      toTimestamp: this.filterForm.value.toTimestamp ? toDate : '',
     };
 
     this.deploymentService.getSelectedDeploymentLogs(req).subscribe(
