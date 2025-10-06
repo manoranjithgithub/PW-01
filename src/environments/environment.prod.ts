@@ -36,5 +36,6 @@ export const environment = {
   pricingManagement: 'https://api.nimbuz.tech/pricing-engine',
   userManagement: 'https://api.nimbuz.tech/user/v1/business/organisation',
   logServiceUrl: 'https://api.nimbuz.tech/logs',
+  metricsUrl: 'https://api.nimbuz.tech/metrics/v1',
   domain: 'nimbuz.tech'
 };
