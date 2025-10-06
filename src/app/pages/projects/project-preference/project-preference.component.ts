@@ -309,8 +309,11 @@ export class ProjectPreferenceComponent implements OnInit, OnDestroy {
 
   deleteEnvironment(env: any): void {
     const modalRef = this.modalService.open(ConfirmationModalComponent);
-    modalRef.componentInstance.selectedItem = 'environment';
+    modalRef.componentInstance.selectedItem = 'Environment';
     modalRef.componentInstance.message = 'Are you sure you want to proceed?';
+
+    modalRef.componentInstance.requireConfirmation = true;
+    modalRef.componentInstance.confirmationWord = env?.name || '';
 
     modalRef.result.then(
       (result) => {
@@ -502,6 +505,9 @@ export class ProjectPreferenceComponent implements OnInit, OnDestroy {
     const modalRef = this.modalService.open(ConfirmationModalComponent);
     modalRef.componentInstance.selectedItem = 'Project';
     modalRef.componentInstance.message = 'Are you sure you want to proceed?';
+    
+    modalRef.componentInstance.requireConfirmation = true;
+    modalRef.componentInstance.confirmationWord = this.projectDetails?.name || '';
 
     modalRef.result.then(
       (result) => {
@@ -515,7 +521,7 @@ export class ProjectPreferenceComponent implements OnInit, OnDestroy {
             }
           });
         } else {
-          console.log('Cancelled delete environment!');
+          console.log('Cancelled delete  project!');
         }
       });
   }

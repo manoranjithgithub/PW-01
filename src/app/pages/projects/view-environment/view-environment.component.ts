@@ -301,6 +301,9 @@ export class ViewEnvironmentComponent implements OnInit, OnDestroy {
     modalRef.componentInstance.selectedItem = 'Environment';
     modalRef.componentInstance.message = 'Are you sure you want to proceed?';
 
+    modalRef.componentInstance.requireConfirmation = true;
+    modalRef.componentInstance.confirmationWord = this.envName || '';
+    
     modalRef.result.then(
       (result) => {
         if (result) {
