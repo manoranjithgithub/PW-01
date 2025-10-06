@@ -433,7 +433,7 @@ export class ToolsComponent implements OnInit, OnDestroy {
       return 'assets/images/icons/cloudbeaver.png';
     }
     if (name.includes('mysql')) {
-      return 'assets/images/icons/mysql.svg';
+      return 'assets/images/icons/mysql.png';
     }
     if (name.includes('postgres')) {
       return 'assets/images/icons/postgresql.svg';
