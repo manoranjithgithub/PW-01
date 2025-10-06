@@ -65,6 +65,9 @@ export class ToolsComponent implements OnInit, OnDestroy {
       this.envId = envId
       this.getAvailableTools(envId);
     });
+    setInterval(() => {
+      this.getAvailableTools(JSON.parse(localStorage.getItem('environment') || '{}').id);
+    }, 30000);
   }
 
   columnDefs: ColDef[] = [
