@@ -14,6 +14,7 @@ export class DeploymentsService {
   private jobExecutorUrl = environment.jobExecutorBaseUrl;
   private logServiceUrl = environment.logServiceUrl;
   private projectsBaseUrl = environment.projectsBaseUrl;
+  private metricsApiUrl = environment.metricsUrl;
 
   constructor(public http: HttpClient, private toastr: ToastrService) { }
 
@@ -331,6 +332,12 @@ export class DeploymentsService {
       map(response => response.status === 200 || response.status === 204),
       catchError(this.handleError.bind(this))
     );
+  }
+  getDeploymentMetricsByTime(envId:string, from:string, to:string, timeInterval: number) {
+    return this.http.get(`${this.metricsApiUrl}/namespace?cluster=prod&namespace=${envId}&from=${from}&to=${to}&step=${timeInterval}`)
+      .pipe(
+        catchError(this.handleError.bind(this))
+      );
   }
 
   private handleError(error: HttpErrorResponse) {

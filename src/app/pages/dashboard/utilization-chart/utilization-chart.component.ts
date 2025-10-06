@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, AfterViewInit, ElementRef, ViewChild, OnDestroy, OnChanges, SimpleChanges, ViewEncapsulation  } from '@angular/core';
+import { Component, Input, AfterViewInit, ElementRef, ViewChild, OnDestroy, OnChanges, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { TooltipDirective } from '@coreui/angular';
 import { Chart, registerables } from 'chart.js';
 
@@ -41,7 +41,6 @@ export class UtilizationChartComponent implements AfterViewInit, OnDestroy, OnCh
     const canvas = this.chartCanvas.nativeElement as HTMLCanvasElement;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-
     const value = Math.min(this.value ?? 0, 100);
     let fillColor = '#15BB0D';
     if (value > 80) {
@@ -76,17 +75,17 @@ export class UtilizationChartComponent implements AfterViewInit, OnDestroy, OnCh
         plugins: {
           legend: { display: false },
           tooltip: { enabled: false }
-            // tooltip: {
-            //       enabled: true,
-            //       callbacks: {
-            //         label: function () {
-            //           return 'usage for the past 5 minutes';
-            //         },
-            //         title: function () {
-            //           return '';
-            //         }
-            //       }
-            // },
+          // tooltip: {
+          //       enabled: true,
+          //       callbacks: {
+          //         label: function () {
+          //           return 'usage for the past 5 minutes';
+          //         },
+          //         title: function () {
+          //           return '';
+          //         }
+          //       }
+          // },
         }
       }
     });

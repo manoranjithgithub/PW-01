@@ -123,7 +123,7 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
       field: 'createdAt',
       sortable: true,
       filter: false,
-      flex: 1,
+      // flex: 1,
       width: 200,
       //sort: 'desc',
       valueFormatter: (params: any) => {

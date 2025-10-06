@@ -1,8 +1,14 @@
 <div class="container">
+  <div *ngIf="loading" class="loader-backdrop">
+    <div class="loader-box">
+        <div class="spinner"></div>
+        <p>Please wait while we process your request...</p>
+      </div>
+  </div>
   <form [formGroup]="filterForm" (ngSubmit)="onFilter()"
     class="filter-bar d-flex align-items-end gap-3 p-3 border rounded flex-wrap-md-nowrap w-100">
 
-    <div class="custom-multiselect w-30">
+    <!-- <div class="custom-multiselect w-30">
       <label class="custom-label">Pods:
         <div *ngIf="showPodError" class="text-danger">
           (Please select at least one pod.)
@@ -20,7 +26,7 @@
         </label>
       </div>
 
-    </div>
+    </div> -->
 
     <div class="form-group mb-0" style="min-width: 100px;">
       <label for="duration" class="custom-label">Time Duration:</label>
@@ -89,7 +95,7 @@
       </div>
     </div>
     <div class="usage-box" style="position: relative;">
-      <div  class="chart-overlay">
+      <div class="chart-overlay">
         Coming soon...
       </div>
       <h4><b>Storage Usage</b></h4>
@@ -102,5 +108,4 @@
     </div>
   </div>
 
-  <app-loader></app-loader>
 </div>
