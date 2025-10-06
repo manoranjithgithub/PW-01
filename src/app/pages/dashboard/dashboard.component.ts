@@ -13,6 +13,7 @@ import { ConfirmationModalComponent } from '../../shared/components/modal/confir
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { env } from 'process';
 import { ToastrService } from 'ngx-toastr';
+import { Subscription } from 'rxjs';
 
 
 @Component({
@@ -28,7 +29,7 @@ import { ToastrService } from 'ngx-toastr';
   encapsulation: ViewEncapsulation.None
 })
 
-export class DashboardComponent implements OnInit, AfterViewInit {
+export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   @ViewChild('dateRangeInput', { static: true }) inputRef!: ElementRef;
   selectedRange: { start: string; end: string } | null = null;
@@ -64,6 +65,8 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   ];
   endpoints: any = [];
   currentEnvId: string = '';
+  private subscriptions: Subscription[] = [];
+
   constructor(private fb: FormBuilder, private http: DashboardsService, private sharedService: SharedService,
     private router: Router, private modalService: NgbModal, private toastr: ToastrService
   ) {
@@ -154,6 +157,9 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     //     }
     //   });
     // });
+
+    this.startCpuStream();
+    this.startMemoryStream();
   }
 
   ngAfterViewInit(): void {
@@ -250,4 +256,42 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     }
   }
 
+  startCpuStream() {
+    const sub = this.http
+      .getDeploymentUtilizationSSE('cattle-monitoring-system', 'cpu')
+      .subscribe({
+        next: (res: any) => {
+          const cpu = res.values?.cpu || res.cpu || { usage: 0, limit: 0 };
+          const usageCores = cpu.usage ?? 0;
+          const limitCores = cpu.limit ?? 0;
+          this.utilizationData[0].value = this.getPercentage(usageCores, limitCores);
+          this.utilizationData[0].rawValue = `${usageCores.toFixed(2)} / ${limitCores}`;
+        },
+        error: (err) => console.error('CPU SSE error', err),
+      });
+    this.subscriptions.push(sub);
+  }
+
+  startMemoryStream() {
+    const sub = this.http
+      .getDeploymentUtilizationSSE('cattle-monitoring-system', 'memory')
+      .subscribe({
+        next: (res: any) => {
+          const mem = res.values.memory || res.memory || { usage: 0, limit: 0 };
+          const usageGB = mem.usage ? mem.usage / (1024 * 1024 * 1024) : 0;
+          const limitGB = mem.limit ? mem.limit / (1024 * 1024 * 1024) : 0;
+          this.utilizationData[1].value = this.getPercentage(usageGB, limitGB);
+          this.utilizationData[1].rawValue = `${usageGB.toFixed(2)} GB / ${limitGB.toFixed(2)} GB`;
+        },
+        error: (err) => console.error('Memory SSE error', err),
+      });
+    this.subscriptions.push(sub);
+  }
+  getPercentage(usage: number | null | undefined, limit: number | null | undefined): number {
+    if (usage == null || limit == null || limit === 0) return 0;
+    return parseFloat(((usage / limit) * 100).toFixed(2));
+  }
+  ngOnDestroy(): void {
+    this.subscriptions.forEach(sub => sub.unsubscribe());
+  }
 }
