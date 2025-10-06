@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormField, ResourceInfo, } from '../../../core/models/list-item.model';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AbstractControl, FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import {
   ContainerComponent, ShadowOnScrollDirective, CardGroupComponent, CardComponent, CardBodyComponent, FormCheckInputDirective, FormCheckLabelDirective
@@ -79,7 +79,7 @@ export class CreateToolComponent implements OnInit, OnDestroy {
     })
     const availableTools = JSON.parse(localStorage.getItem('availableTools') || '{}');
     if (availableTools.length > 0) {
-      this.toolNames = Object.values(availableTools.data).map((item: any) => item.name);
+      this.toolNames = availableTools.map((item: any) => item.name);
     }
     this.http.getInstanceTypes().subscribe((res: any) => {
       this.resources = Object.entries(res.data).map(([key, value]) => ({
@@ -141,7 +141,8 @@ export class CreateToolComponent implements OnInit, OnDestroy {
             this.regexValidator(
               new RegExp("^(?!\\d)(?!.*[-]{2})(?!.*[A-Z])[a-z0-9]+(?:-[a-z0-9]+)*$"),
               "Name must not start with a number. Only lowercase letters, numbers, and separators (., -) are allowed. No consecutive separators or uppercase letters. Dots (.) are not allowed"
-            )
+            ),
+            this.uniqueNameValidator(this.toolNames)
           );
           if (this.selectedTool === 'mysql') {
             validators.push((control: AbstractControl) => {
@@ -196,7 +197,10 @@ export class CreateToolComponent implements OnInit, OnDestroy {
   onFieldBlur(fieldKey: string) {
     if (fieldKey === 'name') {
       const nameValue = this.form.get('name')?.value;
-      // const nameExists = this.toolNames.some((name: any) => name === nameValue);
+      if (fieldKey) {
+        this.form.get(fieldKey)?.updateValueAndValidity();
+      }
+      const nameExists = this.toolNames.some((name: any) => name === nameValue);
       // this.getToolNameValidation(nameValue);
     }
   }
@@ -342,6 +346,15 @@ export class CreateToolComponent implements OnInit, OnDestroy {
       console.log('Selected value:', value);
       this.selectedResource = this.resources.find(resource => resource.name === value);
     }
+  }
+  uniqueNameValidator(existingNames: string[]): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      if (!control.value) return null;
+      const nameExists = existingNames.some(
+        name => name.toLowerCase() === control.value.toLowerCase()
+      );
+      return nameExists ? { uniqueName: true } : null;
+    };
   }
 }
 

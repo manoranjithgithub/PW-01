@@ -45,7 +45,8 @@
                 <div *ngFor="let field of formStructure" class="col-md-6 mt-2">
                     <label class="form-label text-capitalize d-flex justify-content-between" [for]="field.key">
                         <span>{{ field.label }} <span class="text-danger">*</span></span>
-                        <span class="text-gray ml-auto text-nowrap" *ngIf="field.label === 'Instance Type' && selectedResource">
+                        <span class="text-gray ml-auto text-nowrap"
+                            *ngIf="field.label === 'Instance Type' && selectedResource">
                             ( <span class="mx-1"><b>CPU:</b> {{selectedResource.cpu}}</span>
                             <span class="mx-1"><b>Memory:</b> {{selectedResource.memory}}</span>
                             <span class="mx-1"><b>Price:</b> {{selectedResource.price}}</span> )
@@ -69,11 +70,15 @@
                             </span>
                         </div>
                         <div class="position-relative" *ngSwitchCase="'select'">
-                            <select class="form-select" [formControlName]="field.key" [id]="field.key" (change)="onFieldChange($event,field.label)">
+                            <select class="form-select" [formControlName]="field.key" [id]="field.key"
+                                (change)="onFieldChange($event,field.label)">
                                 <option *ngFor="let option of field.options" [value]="option">{{option}}</option>
                             </select>
                         </div>
                     </ng-container>
+                    <div *ngIf="form.get([field.key])?.errors?.['uniqueName']" class="text-danger mt-1">
+                        Name already exists. Please choose a different name.
+                    </div>
                     <div *ngIf="form.get([field.key])?.errors?.['regex']" class="text-danger mt-1">
                         {{ form.get([field.key])?.errors?.['regex']}}
                     </div>
