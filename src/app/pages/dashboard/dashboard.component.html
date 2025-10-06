@@ -33,7 +33,7 @@
                         <tbody>
                             <tr *ngFor="let endpoint of endpoints">
                                 <td>{{ endpoint.name }}</td>
-                                <td>
+                                 <!-- <td>
                                     <span [ngClass]="{'disabled-link': endpoint.status !== 'accessible'}"
                                         [attr.title]="endpoint.status === 'unreachable' ? 'Endpoint not ready yet' : endpoint.host">
 
@@ -43,7 +43,11 @@
                                         </button>
                                         {{ endpoint.host }}
                                     </span>
-                                </td>
+                                </td> -->
+                <td>
+                  <a href="{{ endpoint.host }}" target="_blank">
+                    {{ endpoint.host }}
+                  </a>
                                 <td class="text-center text-info">
                                     <c-dropdown class="action-dropdown">
                                         <button class="btn btn-icon" type="button" data-bs-toggle="dropdown"
