@@ -33,7 +33,7 @@ export class AuthInterceptor implements HttpInterceptor {
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     const url = req.url;
-    const skipLoaderUrls = ['/status'];
+    const skipLoaderUrls = ['/status','/deployments?', '/tools/installed'];
     const skipLoader = skipLoaderUrls.some(pattern => url.includes(pattern));
     if (!skipLoader) {
       this.loaderService.show();
