@@ -231,7 +231,7 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
           if (result) {
             this.http.updateDeployment(req.id, { sourceCode: req?.sourceCode}).subscribe((res: any) => {
               if (res.status.toLowerCase() === "success") {
-                this.toaster.success(res.message);
+                this.toaster.success('Redeploy initiated');
 
               }
             },
