@@ -183,7 +183,7 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
         additionalParam: 'deployment',
       },
     }
-    
+
   ];
   messages: any[] = [];
   private wsSubscription!: Subscription;
@@ -244,7 +244,9 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
     this.environmentForm = this.fb.group({
       environmentName: ['', Validators.required]
     });
-
+    setInterval(() => {
+      this.getDeployment(JSON.parse(localStorage.getItem('environment') || '{}'));
+    }, 30000);
 
   }
 
