@@ -45,12 +45,13 @@
                 </div>
               </div>
             </div>
-            <button (click)="onOptionSelected('view', active, 'active')" class="btn button-format-solid m-4" [disabled]="deploymentdetails.status === 'Pending'">
+            <button (click)="onOptionSelected('view', active, 'active')" class="btn button-format-solid m-4"
+            [disabled]="active?.status === 'Pending'">
               View logs 
             </button>
             <!-- <div class="custom-dropdown" (click)="toggleDropdown('active', $event)">
               <button class="btn btn-icon" type="button">
-                <i class="bi bi-three-dots-vertical"></i>
+                <i class="bi bi-three-dots-vertical"></i> 
               </button>
               <ul *ngIf="openDropdown === 'active'" class="custom-dropdown-menu">
                 <li (click)="onOptionSelected('view', active, 'active')">

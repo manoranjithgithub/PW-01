@@ -85,7 +85,7 @@
                 <div class="w-50 mb-3 mt-2">
                   <label for="name" class="custom-label">Name
                   </label>
-                  <input id="name" type="text" for="name" formControlName="name" class="form-control custom-values">
+                  <input id="name" type="text" for="name" formControlName="name" class="form-control custom-values" readonly>
                   <div class="text-danger my-1" *ngIf="isError('name', 'maxlength')">
                     Maximum 40 characters allowed.
                   </div>

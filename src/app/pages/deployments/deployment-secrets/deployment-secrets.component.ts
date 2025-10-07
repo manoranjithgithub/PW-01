@@ -175,13 +175,6 @@ export class DeploymentSecretsComponent implements OnInit {
   }
   addEnvVariables(data: any) {
     const req = {
-      environmentId: this.storedEnvironment?.id,
-      name: this.deploymentdetails?.name,
-      environment: this.deploymentdetails?.environment || null,
-      application: this.deploymentdetails?.application,
-      sourceCode: this.deploymentdetails?.sourceCode,
-      network: this.deploymentdetails?.network,
-      config: this.deploymentdetails?.config,
       secret: data.reduce((acc: any, item: any) => {
         acc[item.EnvVariable] = item.Value;
         return acc;
