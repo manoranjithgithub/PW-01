@@ -73,6 +73,8 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
   @ViewChild('scaleDeploymentsModel') private scaleDeploymentsModel!: ModalComponent;
   @ViewChild('logsModal') private logsModal!: ModalComponent;
   @ViewChild('scrollContainer') scrollContainer!: ElementRef<HTMLDivElement>;
+  // menu viewChild refs not required for positioning; using fixed coords
+  dropdownStyle: any = {};
 
   public scaleDeploymentsModelConfig: any = {
     modalTitle: 'Scale Deployment',
@@ -397,15 +399,33 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
     loadNext();
   }
 
-  toggleDropdown(event: MouseEvent): void {
+  toggleDropdown(event: MouseEvent, btnRef?: HTMLElement): void {
     event.stopPropagation();
+    const btn = (btnRef as HTMLElement) || (event.target as HTMLElement);
+    const rect = btn.getBoundingClientRect();
+    // prefer placing menu under the button; adjust if near bottom
+    const top = rect.bottom + 8; // 8px gap from viewport
+    // align menu so its right edge aligns near button's right edge
+    const left = rect.right - 160; // 160 is approx menu width
+
+    this.dropdownStyle = {
+      position: 'fixed',
+      top: `${top}px`,
+      left: `${left}px`,
+      'z-index': 9999,
+      'pointer-events': 'auto'
+    };
+
     this.isDropdownOpen = !this.isDropdownOpen;
   }
 
   @HostListener('document:click', ['$event'])
   onOutsideClick(event: MouseEvent): void {
     const target = event.target as HTMLElement;
-    if (!target.closest('.custom-dropdown')) {
+    // close when click outside the floating menu or button
+    const clickedInsideMenu = !!target.closest('.floating-dropdown');
+    const clickedInsideBtn = !!target.closest('.btn-icon');
+    if (!clickedInsideMenu && !clickedInsideBtn) {
       this.isDropdownOpen = false;
     }
   }
