@@ -417,9 +417,15 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
       'pointer-events': 'auto'
     };
 
-    this.isDropdownOpen = !this.isDropdownOpen;
+    const willOpen = !this.isDropdownOpen;
+    if (willOpen) {
+      // ask other instances to close first
+      window.dispatchEvent(new Event('close-action-dropdowns'));
+    }
+
+    this.isDropdownOpen = willOpen;
     // store button ref so we can recompute position on scroll/resize
-    this.lastButtonRef = btn as HTMLElement;
+    this.lastButtonRef = willOpen ? (btn as HTMLElement) : null;
   }
 
   updateDropdownPosition(btn: HTMLElement | undefined | null) {
@@ -459,5 +465,12 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
     if (!clickedInsideMenu && !clickedInsideBtn) {
       this.isDropdownOpen = false;
     }
+  }
+
+  // Close when another instance asks to close (only one open at a time)
+  @HostListener('window:close-action-dropdowns', ['$event'])
+  onCloseActionDropdowns(_: Event) {
+    this.isDropdownOpen = false;
+    this.lastButtonRef = null;
   }
 }
