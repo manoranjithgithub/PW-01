@@ -53,6 +53,7 @@ export class DeploymentNetworkingComponent implements OnInit {
   deploymentId: string = '';
   showCustomDnsHost: boolean = false;
   deploymentdetails: any;
+  isPatchedValue: boolean = true;
 
   @ViewChild('confirmationModel') private confirmationModel!: ModalComponent;
 
@@ -95,6 +96,7 @@ export class DeploymentNetworkingComponent implements OnInit {
     const envId = environment ? JSON.parse(environment).id : null;
 
     this.networkSettingsForm.get('service')?.valueChanges.subscribe(value => {
+      this.isPatchedValue = true;
       let envType = '';
       const region = localStorage.getItem('region') || 'ap-south-1a';
 
@@ -106,6 +108,7 @@ export class DeploymentNetworkingComponent implements OnInit {
         ? `${envId}.${region}.lb.nimbuz.tech`
         : `${envId}.dev.${region}.lb.nimbuz.tech`;
       this.networkSettingsForm.get('host')?.setValue(`${value}-${domainSuffix}`);
+      this.isPatchedValue = false
     });
     this.customDnsHost?.valueChanges.subscribe(value => {
       this.networkSettingsForm.get('customDnsHost')?.setValue(value)
@@ -121,18 +124,37 @@ export class DeploymentNetworkingComponent implements OnInit {
       this.customDnsHost.setValue(customDomain);
 
       if (authentication) {
-        this.networkSettingsForm.get('showAuthentication')?.setValue(true);
+        this.networkSettingsForm.get('showAuthentication')?.setValue(true, { emitEvent: false },);
       }
 
       const authGroup = this.networkSettingsForm.get('authentication') as FormGroup;
-      if (authGroup && authentication.username && authentication.password) {
+      if (authGroup && authentication?.username && authentication.password) {
         authGroup.patchValue({
           username: authentication.username,
-          password: authentication.password
-        });
+          password: '********'
+        }, { emitEvent: false });
       }
+      this.isPatchedValue = false
     });
 
+    const authGroup = this.networkSettingsForm.get('authentication') as FormGroup;
+    const usernameControl = authGroup.get('username');
+    const passwordControl = authGroup.get('password');
+    const showAuthControl = this.networkSettingsForm.get('showAuthentication');
+
+    ['host', 'customDns', 'customDnsHost'].forEach(field => {
+      const control = this.networkSettingsForm.get(field);
+      control?.valueChanges.subscribe(() => {
+        if (this.isPatchedValue) return;
+        if (usernameControl && passwordControl) {
+          usernameControl?.reset('', { emitEvent: false });
+          passwordControl?.reset('', { emitEvent: false });
+        }
+        if (showAuthControl?.value !== false) {
+          showAuthControl?.setValue(false, { emitEvent: false });
+        }
+      });
+    });
   }
 
   getDeploymentById(): void {
@@ -173,6 +195,9 @@ export class DeploymentNetworkingComponent implements OnInit {
     delete formValue.showAuthentication;
     delete formValue.host;
     if (!formValue.customDns) delete formValue.customDnsHost;
+    if (this.networkSettingsForm.invalid) {
+      return;
+    }
 
     this.deploymentService.createEndpoint(envId, formValue).subscribe((res: any) => {
       if (res && res.status.toLowerCase() === 'success') {
@@ -187,7 +212,7 @@ export class DeploymentNetworkingComponent implements OnInit {
         this.showCustomDnsHost = false;
         this.closeModal()
       }
-
+      this.networkSettingsForm.markAsPristine();
     })
   }
 
@@ -293,4 +318,5 @@ export class DeploymentNetworkingComponent implements OnInit {
       document.body.removeChild(textarea);
     }
   }
+
 }
