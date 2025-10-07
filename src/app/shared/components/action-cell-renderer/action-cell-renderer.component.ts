@@ -73,6 +73,9 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
   @ViewChild('scaleDeploymentsModel') private scaleDeploymentsModel!: ModalComponent;
   @ViewChild('logsModal') private logsModal!: ModalComponent;
   @ViewChild('scrollContainer') scrollContainer!: ElementRef<HTMLDivElement>;
+  // menu viewChild refs not required for positioning; using fixed coords
+  dropdownStyle: any = {};
+  private lastButtonRef?: HTMLElement | null = null;
 
   public scaleDeploymentsModelConfig: any = {
     modalTitle: 'Scale Deployment',
@@ -397,16 +400,77 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
     loadNext();
   }
 
-  toggleDropdown(event: MouseEvent): void {
+  toggleDropdown(event: MouseEvent, btnRef?: HTMLElement): void {
     event.stopPropagation();
-    this.isDropdownOpen = !this.isDropdownOpen;
+    const btn = (btnRef as HTMLElement) || (event.target as HTMLElement);
+    const rect = btn.getBoundingClientRect();
+    // prefer placing menu under the button; adjust if near bottom
+    const top = rect.bottom + 8; // 8px gap from viewport
+    // align menu so its right edge aligns near button's right edge
+    const left = rect.right - 160; // 160 is approx menu width
+
+    this.dropdownStyle = {
+      position: 'fixed',
+      top: `${top}px`,
+      left: `${left}px`,
+      'z-index': 9999,
+      'pointer-events': 'auto'
+    };
+
+    const willOpen = !this.isDropdownOpen;
+    if (willOpen) {
+      // ask other instances to close first
+      window.dispatchEvent(new Event('close-action-dropdowns'));
+    }
+
+    this.isDropdownOpen = willOpen;
+    // store button ref so we can recompute position on scroll/resize
+    this.lastButtonRef = willOpen ? (btn as HTMLElement) : null;
+  }
+
+  updateDropdownPosition(btn: HTMLElement | undefined | null) {
+    if (!btn) return;
+    const rect = btn.getBoundingClientRect();
+    const top = rect.bottom + 8;
+    const left = rect.right - 160;
+    this.dropdownStyle = {
+      position: 'fixed',
+      top: `${top}px`,
+      left: `${left}px`,
+      'z-index': 9999,
+      'pointer-events': 'auto'
+    };
+  }
+
+  @HostListener('window:scroll', ['$event'])
+  onWindowScroll() {
+    if (this.isDropdownOpen && this.lastButtonRef) {
+      this.updateDropdownPosition(this.lastButtonRef);
+    }
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onWindowResize() {
+    if (this.isDropdownOpen && this.lastButtonRef) {
+      this.updateDropdownPosition(this.lastButtonRef);
+    }
   }
 
   @HostListener('document:click', ['$event'])
   onOutsideClick(event: MouseEvent): void {
     const target = event.target as HTMLElement;
-    if (!target.closest('.custom-dropdown')) {
+    // close when click outside the floating menu or button
+    const clickedInsideMenu = !!target.closest('.floating-dropdown');
+    const clickedInsideBtn = !!target.closest('.btn-icon');
+    if (!clickedInsideMenu && !clickedInsideBtn) {
       this.isDropdownOpen = false;
     }
+  }
+
+  // Close when another instance asks to close (only one open at a time)
+  @HostListener('window:close-action-dropdowns', ['$event'])
+  onCloseActionDropdowns(_: Event) {
+    this.isDropdownOpen = false;
+    this.lastButtonRef = null;
   }
 }

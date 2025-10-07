@@ -86,3 +86,17 @@
 .btn-solid:hover {
     background-color: #222;
 }
+
+/* Disabled appearance for solid button */
+.btn-solid[disabled],
+.btn-solid:disabled {
+    background: #dcdcdc !important;
+    color: #666 !important;
+    cursor: not-allowed;
+    opacity: 1;
+}
+
+.btn-solid[disabled]:hover,
+.btn-solid:disabled:hover {
+    background: #dcdcdc !important;
+}
