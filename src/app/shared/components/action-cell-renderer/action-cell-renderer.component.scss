@@ -402,6 +402,17 @@ pre {
   z-index: 1000;
 }
 
+.floating-dropdown {
+  position: fixed !important;
+  transform: none !important;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.12) !important;
+  border-radius: 8px;
+  background: #fff;
+  padding: 6px 0;
+  min-width: 140px;
+  z-index: 3000 !important;
+}
+
 // .custom-dropdown {
 //   position: absolute;
 //   display: inline-block;

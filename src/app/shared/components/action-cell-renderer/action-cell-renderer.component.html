@@ -1,8 +1,8 @@
-<div class="custom-dropdown d-inline-block"  *ngIf="additionalParam === 'tools'" (click)="toggleDropdown($event)">
-  <button class="btn btn-icon" type="button">
+<div class="custom-dropdown d-inline-block"  *ngIf="additionalParam === 'tools'">
+  <button #dropdownBtn class="btn btn-icon" type="button" (click)="toggleDropdown($event, dropdownBtn)">
     <i class="bi bi-three-dots-vertical"></i>
   </button>
-  <ul *ngIf="isDropdownOpen" class="custom-dropdown-menu">
+  <ul *ngIf="isDropdownOpen" #menu class="custom-dropdown-menu floating-dropdown" [ngStyle]="dropdownStyle">
     <li>
       <a class="custom-dropdown-item" (click)="onOptionSelected('view')">View</a>
     </li>
@@ -15,11 +15,11 @@
   </ul>
 </div>
 
-<div class="custom-dropdown d-inline-block"  *ngIf="additionalParam === 'deployment'" (click)="toggleDropdown($event)">
-  <button class="btn btn-icon" type="button">
+<div class="custom-dropdown d-inline-block"  *ngIf="additionalParam === 'deployment'">
+  <button #dropdownBtnDep class="btn btn-icon" type="button" (click)="toggleDropdown($event, dropdownBtnDep)">
     <i class="bi bi-three-dots-vertical"></i>
   </button>
-  <ul *ngIf="isDropdownOpen" class="custom-dropdown-menu">
+  <ul *ngIf="isDropdownOpen" #menuDep class="custom-dropdown-menu floating-dropdown" [ngStyle]="dropdownStyle">
     <li>
       <a class="custom-dropdown-item" (click)="viewLogs()">View Logs</a>
     </li>
