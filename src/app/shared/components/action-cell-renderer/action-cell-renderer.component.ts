@@ -75,6 +75,7 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
   @ViewChild('scrollContainer') scrollContainer!: ElementRef<HTMLDivElement>;
   // menu viewChild refs not required for positioning; using fixed coords
   dropdownStyle: any = {};
+  private lastButtonRef?: HTMLElement | null = null;
 
   public scaleDeploymentsModelConfig: any = {
     modalTitle: 'Scale Deployment',
@@ -417,6 +418,36 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
     };
 
     this.isDropdownOpen = !this.isDropdownOpen;
+    // store button ref so we can recompute position on scroll/resize
+    this.lastButtonRef = btn as HTMLElement;
+  }
+
+  updateDropdownPosition(btn: HTMLElement | undefined | null) {
+    if (!btn) return;
+    const rect = btn.getBoundingClientRect();
+    const top = rect.bottom + 8;
+    const left = rect.right - 160;
+    this.dropdownStyle = {
+      position: 'fixed',
+      top: `${top}px`,
+      left: `${left}px`,
+      'z-index': 9999,
+      'pointer-events': 'auto'
+    };
+  }
+
+  @HostListener('window:scroll', ['$event'])
+  onWindowScroll() {
+    if (this.isDropdownOpen && this.lastButtonRef) {
+      this.updateDropdownPosition(this.lastButtonRef);
+    }
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onWindowResize() {
+    if (this.isDropdownOpen && this.lastButtonRef) {
+      this.updateDropdownPosition(this.lastButtonRef);
+    }
   }
 
   @HostListener('document:click', ['$event'])
