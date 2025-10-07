@@ -230,7 +230,7 @@ export class ToolsComponent implements OnInit, OnDestroy {
         if (res.status) {
           this.rowData = res.data.map((tool: any) => ({
             ...tool,
-            icon: this.getToolIcon(tool.privateHost)
+            icon: this.getToolIcon(tool.schemaId)
           }));
           localStorage.setItem('availableTools', JSON.stringify(res.data));
         }
