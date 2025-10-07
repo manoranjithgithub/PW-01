@@ -136,11 +136,11 @@
             </div>
             <div class="text-end">
               <button class="btn button-format-solid me-2" (click)="onNetworkingSubmit()"
-                [disabled]="!shouldEnableButtons()">
+                [disabled]="networkSettingsForm.pristine">
                 Generate
               </button>
               <button class="btn button-format-outline" (click)="isGenerateDomain = false"
-                [disabled]="!shouldEnableButtons()">
+                [disabled]="networkSettingsForm.pristine">
                 Cancel
               </button>
             </div>
