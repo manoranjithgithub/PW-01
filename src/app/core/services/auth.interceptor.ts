@@ -70,7 +70,7 @@ export class AuthInterceptor implements HttpInterceptor {
           console.error('Bad Request:', error);
           if (error.error.customError && error.error?.response) {
             const message = error.error.response.error.message;
-            this.toastr.error(message, message);
+            // this.toastr.error(message, message);
           } else {
             if (error.error?.details && Array.isArray(error.error.details)) {
               error.error.details.forEach((detail: string) => {
@@ -78,7 +78,7 @@ export class AuthInterceptor implements HttpInterceptor {
                 this.toastr.error(cleanDetail, 'Validation Error');
               });
             } else {
-              const message = (error.error?.message || 'Bad Request').replace(/"/g, '');
+              const message = (error.error?.error?.message || 'Bad Request').replace(/"/g, '');
               this.toastr.error(message, 'Error');
             }
             // let message = 'Bad Request';

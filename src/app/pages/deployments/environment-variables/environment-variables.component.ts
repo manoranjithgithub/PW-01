@@ -287,15 +287,7 @@ export class EnvironmentVariablesComponent implements OnInit {
       return
     }
     const req = {
-      environmentId: this.storedEnvironment?.id,
-      name: this.deploymentdetails?.name,
       environment: this.updatedReq?.data || null,
-      application: this.deploymentdetails?.application,
-      sourceCode: this.deploymentdetails?.sourceCode,
-      network: this.deploymentdetails?.network,
-      config: this.deploymentdetails?.config,
-      secret: this.deploymentdetails?.secret,
-
     }
     this.deploymentsService.updateDeployment(this.deploymentId, req).subscribe({
       next: (res: any) => {
