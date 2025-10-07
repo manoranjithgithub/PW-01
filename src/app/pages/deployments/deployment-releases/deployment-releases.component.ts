@@ -393,6 +393,9 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
       'Create Job Failed': 'danger',
       'Failed': 'danger',
       'Success': 'success',
+      'Inprogress': 'in-process',
+      'Updating':'warning',
+      'Degraded':'warning',
     };
     return map[status] || 'Pending';
   }
@@ -414,6 +417,9 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
       'Create Job Failed': 'bi-x-circle-fill',
       'Failed': 'bi-x-circle-fill',
       'Success': 'bi-check-circle-fill',
+      'Inprogress': 'bi-check-circle-fill',
+      'Updating': 'bi-box-arrow-in-up',
+      'Degraded': 'bi-arrow-90deg-down'
     };
     return map[status] || '';
   }

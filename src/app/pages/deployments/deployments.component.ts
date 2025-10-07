@@ -293,7 +293,10 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
       'Pending': 'bi-clock',
       'Create Job Failed': 'bi-x-circle-fill',
       'Stopped': 'bi-slash-circle-fill',
-      'Success': 'bi-check-circle-fill'
+      'Success': 'bi-check-circle-fill',
+      'Inprogress': 'bi-check-circle-fill',
+      'Updating': 'bi-box-arrow-in-up',
+      'Degraded': 'bi-arrow-90deg-down',
     };
 
     const statusClassMap: Record<string, string> = {
@@ -313,7 +316,10 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
       'Pending': 'warning',
       'Create Job Failed': 'danger',
       'Stopped': 'danger',
-      'Success': 'success'
+      'Success': 'success',
+      'Inprogress': 'in-process',
+      'Updating': 'warning',
+      'Degraded': 'warning',
     };
 
     const icon = iconMap[status] || 'bi-question-circle-fill';
