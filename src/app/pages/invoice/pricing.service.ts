@@ -14,8 +14,8 @@ export class PricingsService {
 
   constructor(public http: HttpClient, private toastr: ToastrService) { }
 
-  getInvoiceList(userId: string) {
-    return this.http.get(`${this.pricingManagement}/invoice/${userId}`)
+  getInvoiceList(accountId: string, period:string, limit:number, offset:number) {
+    return this.http.get(`${this.pricingManagement}/invoices?account_id=${accountId}&period=${period}&limit=${limit}&offset=${offset}`)
       .pipe(
         catchError(this.handleError.bind(this))
       );

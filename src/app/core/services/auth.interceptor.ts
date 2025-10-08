@@ -33,7 +33,7 @@ export class AuthInterceptor implements HttpInterceptor {
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     const url = req.url;
-    const skipLoaderUrls = ['/status','/deployments?', '/tools/installed'];
+    const skipLoaderUrls = ['/status','/deployments?', '/tools/installed', '/artificat?fileExtension'];
     const skipLoader = skipLoaderUrls.some(pattern => url.includes(pattern));
     if (!skipLoader) {
       this.loaderService.show();
@@ -78,7 +78,7 @@ export class AuthInterceptor implements HttpInterceptor {
                 this.toastr.error(cleanDetail, 'Validation Error');
               });
             } else {
-              const message = (error.error?.error?.message || 'Bad Request').replace(/"/g, '');
+              const message = (error.error?.error?.message || error.error).replace(/"/g, '');
               this.toastr.error(message, 'Error');
             }
             // let message = 'Bad Request';

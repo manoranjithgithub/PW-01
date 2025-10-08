@@ -38,6 +38,8 @@ export class ToolsComponent implements OnInit, OnDestroy {
   isShowToolDetails: boolean = false;
   private subscription: Subscription | undefined;
   toolName: string = '';
+  loading: boolean = true;
+  getToolsIntervel:any
 
   constructor(private http: ToolsService,
     private router: Router, private sharedService: SharedService, private modalService: NgbModal,
@@ -65,7 +67,7 @@ export class ToolsComponent implements OnInit, OnDestroy {
       this.envId = envId
       this.getAvailableTools(envId);
     });
-    setInterval(() => {
+    this.getToolsIntervel = setInterval(() => {
       this.getAvailableTools(JSON.parse(localStorage.getItem('environment') || '{}').id);
     }, 30000);
   }
@@ -233,6 +235,7 @@ export class ToolsComponent implements OnInit, OnDestroy {
             icon: this.getToolIcon(tool.schemaId)
           }));
           localStorage.setItem('availableTools', JSON.stringify(res.data));
+          this.loading = false
         }
       }, error => {
         this.rowData = [];
@@ -245,6 +248,7 @@ export class ToolsComponent implements OnInit, OnDestroy {
 
 
   ngOnDestroy(): void {
+    clearInterval(this.getToolsIntervel)
     this.subscription?.unsubscribe();
   }
 
