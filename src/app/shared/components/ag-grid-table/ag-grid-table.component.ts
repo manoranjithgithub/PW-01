@@ -37,10 +37,11 @@ export class AgGridTableComponent implements OnInit {
 
   onGridReady(params: GridReadyEvent) {
     this.gridApi = params.api;
-    this.overlayMessage = `You do not have a ${this.tableName}, please click 'New ${this.tablebtn}' to create one.`;
-  //    setTimeout(() => {
-  //   this.gridApi.sizeColumnsToFit(); 
-  // }, 0);
+    this.overlayMessage = `You do not have  ${this.tableName}${this.tableName === 'invoice-list' ? '.' : `, please click 'New ${this.tablebtn}' to create one.`}`;
+
+    //    setTimeout(() => {
+    //   this.gridApi.sizeColumnsToFit(); 
+    // }, 0);
   }
 
   defaultColDef =
@@ -77,15 +78,15 @@ export class AgGridTableComponent implements OnInit {
     this.sharedService.isLoading$.subscribe((isLoading: boolean) => {
       if (isLoading) {
         this.overlayMessage = 'Loading...';
-         if (this.gridApi) {
-        this.gridApi.showNoRowsOverlay();
-         }
+        if (this.gridApi) {
+          this.gridApi.showNoRowsOverlay();
+        }
       } else {
         if (this.rowData && this.rowData.length > 0) {
           this.overlayMessage = '';
           this.gridApi.hideOverlay();
         } else {
-          this.overlayMessage = `You do not have a ${this.tableName}, please click 'New ${this.tablebtn}' to create one.`;
+          this.overlayMessage = `You do not have  ${this.tableName}${this.tableName === 'invoice-list' ? '.' : `, please click 'New ${this.tablebtn}' to create one.`}`;
           this.gridApi.showNoRowsOverlay();
         }
       }
