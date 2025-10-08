@@ -5,8 +5,6 @@ import { catchError } from 'rxjs/operators';
 import { ToastrService } from 'ngx-toastr';
 import { environment } from '../../../environments/environment';
 
-import { EventSourcePolyfill } from 'event-source-polyfill';
-
 @Injectable({
   providedIn: 'root'
 })
@@ -28,7 +26,7 @@ export class DashboardsService {
       );
   }
   getDeployments(env: string) {
-    return this.http.get(`${this.apiUrl}/${env}/deployments`)
+    return this.http.get(`${this.deploymentManagement}/deployments?environmentId=${env}`)
       .pipe(
         catchError(this.handleError.bind(this))
       );
@@ -142,6 +140,20 @@ export class DashboardsService {
       return () => console.log(`${resourceType} SSE unsubscribed`);
     });
   }
+
+  getCostDetails(accountId: any, projectId: any, envId: string) {
+    return this.http.get(`${this.pricingManagement}/costs/forecast?account_id=${accountId}&project_id=${projectId}&environment_id=${envId}&group_by=none`)
+      .pipe(
+        catchError(this.handleError.bind(this))
+      );
+  }
+
+  getToolsList(env: string) {
+    return this.http.get(`${this.deploymentManagement}/tools/installed/${env}`).pipe(
+      catchError(this.handleError.bind(this))
+    );
+  }
+
   private handleError(error: HttpErrorResponse) {
     if (error.error instanceof ErrorEvent) {
       console.error('An error occurred:', error.error.message);

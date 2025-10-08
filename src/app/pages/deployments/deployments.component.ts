@@ -187,6 +187,8 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
   ];
   messages: any[] = [];
   private wsSubscription!: Subscription;
+  loading: boolean = true;
+  getDeploymentIntervel: any;
 
   constructor(
     private fb: FormBuilder,
@@ -230,6 +232,7 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
     this.initializeForms();
     this.subscription = this.sharedService.envValueChange$.subscribe(value => {
       this.getDeployment(value);
+     
     });
 
     this.filteredOptions = this.searchControl.valueChanges.pipe(
@@ -244,7 +247,7 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
     this.environmentForm = this.fb.group({
       environmentName: ['', Validators.required]
     });
-    setInterval(() => {
+    this.getDeploymentIntervel = setInterval(() => {
       this.getDeployment(JSON.parse(localStorage.getItem('environment') || '{}'));
     }, 30000);
 
@@ -258,6 +261,7 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
           // const deploymentNames = res.dat.map(item => item.name);
           localStorage.setItem('availableDeplyements', JSON.stringify(res.data));
           this.mergeStatusIntoTable();
+          this.loading = false
         }
       },
         err => {
@@ -408,6 +412,7 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
     });
   }
   ngOnDestroy(): void {
+    clearInterval(this.getDeploymentIntervel)
     this.subscription?.unsubscribe();
     this.pollingSubscription?.unsubscribe();
   }

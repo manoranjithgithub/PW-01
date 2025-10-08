@@ -69,6 +69,7 @@ export class AuthService {
     const decodeData = this.getDecodedAccessToken(token);
     if (decodeData) {
       localStorage.setItem('userId', decodeData?.properties?.nimbuzUserId || '');
+      localStorage.setItem('accountId', decodeData?.properties?.nimbuzAccountId || '');
 
       const userInfo = {
         avatar: decodeData.avatar,
