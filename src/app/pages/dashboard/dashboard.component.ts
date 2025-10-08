@@ -11,9 +11,9 @@ import { Router } from '@angular/router';
 import { DropdownComponent, DropdownItemDirective, DropdownMenuDirective, DropdownToggleDirective } from '@coreui/angular';
 import { ConfirmationModalComponent } from '../../shared/components/modal/confirmation-modal/confirmation-modal.component';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { env } from 'process';
 import { ToastrService } from 'ngx-toastr';
 import { Subscription } from 'rxjs';
+import { forkJoin } from 'rxjs';
 
 
 @Component({
@@ -80,84 +80,65 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(now.getDate() - 7);
 
-    const req = {
-      fromTimestamp: new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1, 0, 0, 0, 0)).toISOString(),
-      toTimestamp: new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0, 23, 59, 59, 999)).toISOString(),
-      userId: localStorage.getItem('userId')
-    };
-    // this.http.getUsageCost(req).subscribe((res: any) => {
-    //   if (res.status.toLowerCase() === 'success') {
-    //     const totalCostSum = res.data?.usage?.reduce(
-    //       (acc: number, item: any) => acc + (item.totalCost || 0),
-    //       0
-    //     ) ?? 0;
-    //     const roundedTotalCost = Math.round(totalCostSum * 100) / 100;
+    // const req = {
+    //   fromTimestamp: new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1, 0, 0, 0, 0)).toISOString(),
+    //   toTimestamp: new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0, 23, 59, 59, 999)).toISOString(),
+    //   userId: localStorage.getItem('userId')
+    // };
+    const env = JSON.parse(localStorage.getItem('environment') || '{}');
+    const accountId = localStorage.getItem('accountId');
+    const project = JSON.parse(localStorage.getItem('project') || '{}');
+    this.http.getCostDetails(accountId, project?.id, env?.id).subscribe((res: any) => {
+      if (res.success) {
+        const totalCostSum = res.data?.totals?.reduce(
+          (acc: number, item: any) => acc + (item.total_cost || 0),
+          0
+        ) ?? 0;
+        const roundedTotalCost = Math.round(totalCostSum * 100) / 100;
 
-    //     this.cards[0].value = totalCostSum === 0
-    //       ? '$0.00'
-    //       : roundedTotalCost.toLocaleString('en-US', {
-    //         style: 'currency',
-    //         currency: 'USD',
-    //         minimumFractionDigits: 2,
-    //         maximumFractionDigits: 2
-    //       });
+        this.cards[0].value = totalCostSum === 0
+          ? '0'
+          : roundedTotalCost.toLocaleString('en-US', {
+            style: 'currency',
+            currency: res?.data?.totals[0].currency,
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+          });
 
-    //     const estimatedCostSum =
-    //       res.data?.estimatedUsage && res.data.estimatedUsage.length > 0
-    //         ? res.data.estimatedUsage.reduce(
-    //           (acc: number, item: any) => acc + (item.estimatedCost || 0),
-    //           0
-    //         )
-    //         : 150;
-    //     console.log(estimatedCostSum)
-    //     const roundedEstimatedCost = Math.round(estimatedCostSum * 100) / 100;
+        const estimatedCostSum = res.data?.projection_mtd_simple?.reduce(
+          (acc: number, item: any) => acc + (item.total_cost || 0),
+          0
+        ) ?? 0;
+        //   console.log(estimatedCostSum)
+        const roundedEstimatedCost = Math.round(estimatedCostSum * 100) / 100;
 
-    //     this.cards[1].value = estimatedCostSum === 0
-    //       ? '$0'
-    //       : roundedEstimatedCost.toLocaleString('en-US', {
-    //         style: 'currency',
-    //         currency: 'USD',
-    //         minimumFractionDigits: 2,
-    //         maximumFractionDigits: 2
-    //       });
-    //   }
-    // })
+        this.cards[1].value = estimatedCostSum === 0
+          ? '0'
+          : roundedEstimatedCost.toLocaleString('en-US', {
+            style: 'currency',
+            currency: res?.data?.projection_mtd_simple[0].currency,
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+          });
+      }
+    })
+    this.currentEnvId = env?.id;
+    this.getEndpointsList(env?.id);
+    this.getStatusCount()
     // const environment = this.sharedService.getCookie('environment');
-    const environment = localStorage.getItem('environment');
-    if (environment) {
-      const envID = JSON.parse(environment).id;
-      // this.http.getDeploymentStatus(envID).subscribe((res: any) => {
-      //   if (res.status.toLowerCase() === 'success') {
-      //     this.cards[2].value = `${res.data.toalActiveWorkloads} / ${res.data.totalPausedWorkloads}`;
-      //     this.cards[3].value = `${res.data.totalFailedWorkloads} / ${res.data.totalPendingWorkloads}`;
-      //   }
-      // });
-      this.currentEnvId = envID;
-      this.getEndpointsList(envID)
-
-    }
-    // this.http.getDeploymentUtilization(this.currentEnvId).subscribe((res: any) => {
-    //   console.log(res);
-    //   this.utilizationData.forEach(item => {
-    //     switch (item.title) {
-    //       case 'CPU':
-    //         item.value = parseFloat(res.data.cpuPercentage);
-    //         item.rawValue = `${(res.data.totalCpuAvg * 1000).toFixed(2)}mCPU`;
-    //         break;
-
-    //       case 'Memory':
-    //         item.value = parseFloat(res.data.ramPercentage);
-    //         item.rawValue = `${(res.data.totalRamAvg * 1000).toFixed(2)}Mi`;
-    //         break;
-
-    //       case 'Storage':
-    //         item.value = 0;
-    //         item.rawValue = '0GB';
-    //         break;
+    // const environment = localStorage.getItem('environment');
+    // if (environment) {
+    //   const envID = JSON.parse(environment).id;
+    //   this.http.getDeploymentStatus(envID).subscribe((res: any) => {
+    //     if (res.status.toLowerCase() === 'success') {
+    //       this.cards[2].value = `${res.data.toalActiveWorkloads} / ${res.data.totalPausedWorkloads}`;
+    //       this.cards[3].value = `${res.data.totalFailedWorkloads} / ${res.data.totalPendingWorkloads}`;
     //     }
     //   });
-    // });
+    //   this.currentEnvId = envID;
+    //   this.getEndpointsList(envID)
 
+    // }
     this.startCpuStream();
     this.startMemoryStream();
   }
@@ -203,7 +184,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   getEndpointsList(envId: string) {
     this.http.getEndpoints(envId).subscribe((res: any) => {
       this.endpoints = res.data;
-      console.log(res)
     })
   }
   viewEndpoint(data: any) {
@@ -293,5 +273,30 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
   ngOnDestroy(): void {
     this.subscriptions.forEach(sub => sub.unsubscribe());
+  }
+
+  getStatusCount() {
+    forkJoin([
+      this.http.getDeployments(this.currentEnvId),
+      this.http.getToolsList(this.currentEnvId)
+    ]).subscribe(([res1, res2]) => {
+      const data = res1 as any
+      const data2 = res2 as any
+
+      const combined = [...data.data, ...data2.data];
+
+      const statusCount = combined.reduce((acc, item) => {
+        if (item.status.toLowerCase() === 'running') acc.running += 1;
+        else if (item.status.toLowerCase() === 'pending') acc.pending += 1;
+        else if (item.status.toLowerCase() === 'failed') acc.failed += 1;
+        else if (item.status.toLowerCase() === 'paused') acc.paused += 1;
+        return acc;
+      }, { running: 0, pending: 0, failed: 0, paused:0});
+      console.log(statusCount);
+      this.cards[2].value = `${statusCount.running} / ${statusCount.paused}`;
+      this.cards[3].value = `${statusCount.failed} / ${statusCount.pending}`;
+
+      // this.statusKeys = Object.keys(this.statusCount);
+    });
   }
 }

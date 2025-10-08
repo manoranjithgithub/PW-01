@@ -19,11 +19,11 @@ export class InvoiceComponent implements OnInit {
   tableData: any[] = [];
   columnDefs: ColDef[] = [
     {
-      field: 'invoiceNumber', headerName: 'Invoice Number', flex: 2, tooltipField: 'invoiceNumber',
+      field: 'id', headerName: 'Invoice Number', flex: 2, tooltipField: 'invoiceNumber',
       cellStyle: { 'white-space': 'nowrap', 'overflow': 'hidden !important', 'text-overflow': 'ellipsis' },
     },
     {
-      field: 'amount', headerName: 'Amount Payable', flex: 1,
+      field: 'subtotal', headerName: 'Amount Payable', flex: 1,
       valueFormatter: params =>
         new Intl.NumberFormat('en-US', {
           style: 'currency',
@@ -32,7 +32,7 @@ export class InvoiceComponent implements OnInit {
         }).format(params.value),
     },
     {
-      field: 'invoiceAmount', headerName: 'Outstanding Amount', flex: 1,
+      field: 'total', headerName: 'Outstanding Amount', flex: 1,
       valueFormatter: params =>
         new Intl.NumberFormat('en-US', {
           style: 'currency',
@@ -41,7 +41,7 @@ export class InvoiceComponent implements OnInit {
         }).format(params.value)
     },
     {
-      field: 'creditApplied', headerName: 'Credit Applied', flex: 1,
+      field: 'tax_amount', headerName: 'Tax Amount', flex: 1,
       valueFormatter: params =>
         new Intl.NumberFormat('en-US', {
           style: 'currency',
@@ -60,7 +60,7 @@ export class InvoiceComponent implements OnInit {
         wrapper.style.color = '#659711';
         wrapper.style.textTransform = 'capitalize';
 
-        if (params.value === 'unpaid') {
+        if (params.value === 'draft') {
           const link = document.createElement('a');
           link.className = 'pay-now-link';
           link.textContent = 'Pay now';
@@ -86,7 +86,7 @@ export class InvoiceComponent implements OnInit {
     },
 
     {
-      field: 'issueDate', headerName: 'Issue Date', flex: 1,
+      field: 'updated_at', headerName: 'Issue Date', flex: 1,
       valueFormatter: params => {
         return new Date(params.value).toLocaleDateString('en-US', {
           year: 'numeric',
@@ -95,38 +95,40 @@ export class InvoiceComponent implements OnInit {
         });
       }
     },
-    {
-      field: 'dueDate', headerName: 'Due Date',
-      flex: 1, valueFormatter: params => {
-        return new Date(params.value).toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit'
-        });
-      }
-    }
+    // {
+    //   field: 'dueDate', headerName: 'Due Date',
+    //   flex: 1, valueFormatter: params => {
+    //     return new Date(params.value).toLocaleDateString('en-US', {
+    //       year: 'numeric',
+    //       month: '2-digit',
+    //       day: '2-digit'
+    //     });
+    //   }
+    // }
   ];
   cashfree: any;
+  limit = 10;
+  offset = 0;
 
   constructor(private http: PricingsService, private toastr: ToastrService) { }
 
   ngOnInit(): void {
     this.getInvoiceList()
     this.cashfree = Cashfree({ mode: 'sandbox' });
-    this.cashfree.on('payment.success', (event: any) => {
-      console.log('Payment Success:', event);
-      this.toastr.success(event.transaction.txnId);
-    });
+    // this.cashfree.on('payment.success', (event: any) => {
+    //   console.log('Payment Success:', event);
+    //   this.toastr.success(event.transaction.txnId);
+    // });
 
-    this.cashfree.on('payment.failed', (event: any) => {
-      console.error('Payment Failed:', event);
-      this.toastr.error(event.transaction.message);
-    });
+    // this.cashfree.on('payment.failed', (event: any) => {
+    //   console.error('Payment Failed:', event);
+    //   this.toastr.error(event.transaction.message);
+    // });
 
-    this.cashfree.on('payment.dismissed', (event: any) => {
-      console.warn('Payment Dismissed:', event);
-      this.toastr.warning('Payment Dismissed');
-    });
+    // this.cashfree.on('payment.dismissed', (event: any) => {
+    //   console.warn('Payment Dismissed:', event);
+    //   this.toastr.warning('Payment Dismissed');
+    // });
   }
 
   goToNewDeployModel(data: any) {
@@ -156,19 +158,25 @@ export class InvoiceComponent implements OnInit {
     });
   }
   getInvoiceList() {
-    const userId = localStorage.getItem('userId');
-
-    if (userId) {
-      // this.http.getInvoiceList(userId).subscribe({
-      //   next: (data: any) => {
-      //     if (data.status.toLowerCase() === 'success') {
-      //       this.tableData = data.data || [];
-      //     }
-      //   },
-      //   error: (error) => {
-      //     console.error('Error fetching invoice data:', error);
-      //   }
-      // });
+    const accountId = localStorage.getItem('accountId');
+    const currentDate = new Date();
+    const period = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
+    if (accountId) {
+      this.http.getInvoiceList(accountId, period, this.limit, this.offset).subscribe({
+        next: (data: any) => {
+          if (data.success) {
+            this.tableData = data.data?.data || [];
+          }
+        },
+        error: (error) => {
+          console.error('Error fetching invoice data:', error);
+        }
+      });
     }
+  }
+  onPageChange(event: { limit: number; offset: number }) {
+    this.limit = event.limit;
+    this.offset = event.offset;
+    this.getInvoiceList();
   }
 }

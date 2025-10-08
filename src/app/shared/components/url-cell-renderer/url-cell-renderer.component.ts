@@ -15,7 +15,6 @@ export class UrlCellRendererComponent {
   
   agInit(params: any): void {
     const data = params.data;
-    console.log('Cell Renderer Data:', data);
     this.endpointStatus = data.endpointStatus == 'accessible' ? true : false ;
     this.publicUrl = data?.network?.customDomain
       ? data?.network?.customDomain

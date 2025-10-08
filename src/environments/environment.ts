@@ -32,7 +32,7 @@ export const environment = {
   usermanagementBaseUrl: 'https://api.dev.nimbuz.tech/user/v1',
   deploymentManagement: 'https://api.dev.nimbuz.tech/deployment/v1',
   wss: 'wss://api.dev.nimbuz.tech/deployment',
-  pricingManagement: 'https://api.dev.nimbuz.tech/pricing-engine',
+  pricingManagement: 'https://api.dev.nimbuz.tech/pricing/v1',
   userManagement: 'https://api.dev.nimbuz.tech/user/v1/business/organisation',
   logServiceUrl: 'https://api.dev.nimbuz.tech/logs',
   metricsUrl: 'https://api.dev.nimbuz.tech/metrics/v1',

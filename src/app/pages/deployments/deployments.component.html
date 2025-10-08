@@ -13,6 +13,12 @@
       </div>
     </div>
   </div> -->
+   <div *ngIf="loading" class="loader-backdrop">
+    <div class="loader-box">
+        <div class="spinner"></div>
+        <p>Please wait while we process your request...</p>
+      </div>
+  </div>
   <c-alert color="warning" *ngIf="deploymentsExhausted">
     <div class="warn-text">
       <i class="bi bi-exclamation-circle-fill"></i> Deployments count has exhausted. Please upgrade to nimbuz business
