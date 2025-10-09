@@ -50,40 +50,40 @@ export class InvoiceComponent implements OnInit {
         }).format(params.value),
     },
     // { field: 'currency', headerName: 'Currency' },
-    {
-      field: 'status',
-      headerName: 'Status',
-      flex: 1,
-      cellRenderer: (params: any) => {
-        const wrapper = document.createElement('div');
-        wrapper.style.textAlign = 'left';
-        wrapper.style.color = '#659711';
-        wrapper.style.textTransform = 'capitalize';
+    // {
+    //   field: 'status',
+    //   headerName: 'Status',
+    //   flex: 1,
+    //   cellRenderer: (params: any) => {
+    //     const wrapper = document.createElement('div');
+    //     wrapper.style.textAlign = 'left';
+    //     wrapper.style.color = '#659711';
+    //     wrapper.style.textTransform = 'capitalize';
 
-        if (params.value === 'draft') {
-          const link = document.createElement('a');
-          link.className = 'pay-now-link';
-          link.textContent = 'Pay now';
-          link.style.textDecoration = 'underline';
-          link.style.color = '#F60';
-          link.style.cursor = 'pointer';
+    //     if (params.value === 'draft') {
+    //       const link = document.createElement('a');
+    //       link.className = 'pay-now-link';
+    //       link.textContent = 'Pay now';
+    //       link.style.textDecoration = 'underline';
+    //       link.style.color = '#F60';
+    //       link.style.cursor = 'pointer';
 
-          wrapper.appendChild(link);
-        } else {
-          wrapper.textContent = params.value;
-        }
+    //       wrapper.appendChild(link);
+    //     } else {
+    //       wrapper.textContent = params.value;
+    //     }
 
-        return wrapper;
-      },
-      onCellClicked: (event: CellClickedEvent) => {
-        if (
-          event.colDef.field === 'status' &&
-          event.value === 'unpaid'
-        ) {
-          this.openPayNow(event.data);
-        }
-      }
-    },
+    //     return wrapper;
+    //   },
+    //   onCellClicked: (event: CellClickedEvent) => {
+    //     if (
+    //       event.colDef.field === 'status' &&
+    //       event.value === 'draft'
+    //     ) {
+    //       this.openPayNow(event.data);
+    //     }
+    //   }
+    // },
 
     {
       field: 'updated_at', headerName: 'Issue Date', flex: 1,
