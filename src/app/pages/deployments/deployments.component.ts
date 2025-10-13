@@ -266,6 +266,7 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
       },
         err => {
           this.tableData = [];
+          this.loading = false
         });
     }
   }

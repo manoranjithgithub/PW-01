@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink, RouterOutlet, Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { UserService } from '../../core/services/user.service';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-register',
@@ -26,7 +27,8 @@ export class RegisterComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private http: UserService,
-    private router: Router
+    private router: Router,
+    private toaster: ToastrService
   ) { }
 
   ngOnInit(): void {
@@ -72,6 +74,7 @@ export class RegisterComponent implements OnInit {
         },
         error: (error) => {
           this.isRegistrationSuccess = false;
+          this.toaster.error(error.error.error?.message);
         }
       });
     } else {
@@ -82,6 +85,7 @@ export class RegisterComponent implements OnInit {
         },
         error: (error) => {
           this.isRegistrationSuccess = false;
+          this.toaster.error(error.error.error?.message);
         }
       });
     }

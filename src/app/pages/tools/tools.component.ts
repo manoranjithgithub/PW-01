@@ -239,6 +239,7 @@ export class ToolsComponent implements OnInit, OnDestroy {
         }
       }, error => {
         this.rowData = [];
+        this.loading = false
       })
     }
   }

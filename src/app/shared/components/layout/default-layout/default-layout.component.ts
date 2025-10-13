@@ -174,7 +174,7 @@ export class DefaultLayoutComponent implements OnInit {
   }
 
   isProjectsPage(): boolean {
-    return ['/projects', '/environment', '/create-project', '/create-environment'].some(path =>
+    return ['/projects', '/environment', '/create-project', '/create-environment','/create-account'].some(path =>
       this.currentUrl.includes(path)
     );
     // return this.currentUrl.includes('/project');
