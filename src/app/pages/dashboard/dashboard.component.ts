@@ -238,7 +238,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   startCpuStream() {
     const sub = this.http
-      .getDeploymentUtilizationSSE('cattle-monitoring-system', 'cpu')
+      .getDeploymentUtilizationSSE(this.currentEnvId, 'cpu')
       .subscribe({
         next: (res: any) => {
           const cpu = res.values?.cpu || res.cpu || { usage: 0, limit: 0 };
@@ -254,7 +254,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   startMemoryStream() {
     const sub = this.http
-      .getDeploymentUtilizationSSE('cattle-monitoring-system', 'memory')
+      .getDeploymentUtilizationSSE(this.currentEnvId, 'memory')
       .subscribe({
         next: (res: any) => {
           const mem = res.values.memory || res.memory || { usage: 0, limit: 0 };
