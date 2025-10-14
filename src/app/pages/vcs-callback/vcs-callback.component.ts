@@ -35,20 +35,8 @@ export class VcsCallbackComponent implements OnInit {
       const baseDomain = environment.domain || 'localhost';
       const protocol = window.location.protocol;
       const redirectUrl = `${protocol}//${subdomain}.${baseDomain}/create-deployment?${queryString}`;
-      console.log(redirectUrl)
-      const projectId = JSON.parse(localStorage.getItem('project') || '{}').id || '';
-      console.log('ProjectID in VCS callback:', projectId);
-      if (projectId) {
-        this.projectService.getProjectDetailsById(projectId).subscribe((res: any) => {
-          const vcsProfileInfo = {
-            github: res.data.github,
-            gitlab: res.data.gitlab
-          }
-          localStorage.setItem('vcsProfileInfo', JSON.stringify(vcsProfileInfo));
-          window.location.href = redirectUrl;
-
-        });
-      }
+      window.location.href = redirectUrl;
+      
     });
   }
 }
