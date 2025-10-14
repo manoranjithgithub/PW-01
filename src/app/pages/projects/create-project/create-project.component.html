@@ -35,16 +35,24 @@
                     <div *ngIf="projectForm.get('projectName')?.hasError('maxlength')" class="text-danger my-1">
                         Maximun 40 characters only.
                     </div>
+                    <div *ngIf="projectForm.get('projectName')?.hasError('minlength')" class="text-danger my-1">
+                        Project name must be at least 3 characters long.
+                    </div>
                     <div *ngIf="projectForm.get('projectName')?.hasError('invalidName') && projectForm.get('projectName')?.touched"
                         class="text-danger text-format">
                         Project name is invalid
+                    </div>
+                    <div *ngIf="projectForm.get('projectName')?.hasError('uniqueName') && projectForm.get('projectName')?.touched"
+                        class="text-danger mt-1">
+                        Name already exists. Please choose a different name.
                     </div>
                 </div>
                 <div class="flex-fill">
                     <label for="projectDesc" class="text-format mt-2">Description </label>
                     <input type="text" id="projectDesc" name="projectDesc" placeholder="Enter description"
                         formControlName="projectDesc" class="form-control text-format" maxlength="250">
-                    <div *ngIf="projectForm.get('projectDesc')?.hasError('maxlength') && projectForm.get('projectDesc')?.touched" class="text-danger my-1">
+                    <div *ngIf="projectForm.get('projectDesc')?.hasError('maxlength') && projectForm.get('projectDesc')?.touched"
+                        class="text-danger my-1">
                         Maximum 250 characters only.
                     </div>
                     <!-- <div *ngIf="projectForm.get('projectDesc')?.hasError('required') && projectForm.get('projectDesc')?.touched" class="text-danger my-1">

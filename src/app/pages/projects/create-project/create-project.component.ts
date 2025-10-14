@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
@@ -37,7 +37,8 @@ export class CreateProjectComponent implements OnInit {
   regionOptions: any = REGION_OPTIONS;
   projectExhausted: boolean = false;
   environmentExhausted: boolean = false;
-  orgName:string = '';
+  orgName: string = '';
+  availableProjects: any = [];
 
   constructor(
     private fb: FormBuilder,
@@ -46,7 +47,7 @@ export class CreateProjectComponent implements OnInit {
     private shared: SharedService,
     private project: ProjectsService) {
     // this.tableTheme = this.shared.getCookie('theme');
-      this.tableTheme = localStorage.getItem('theme') || 'ag-theme-alpine';
+    this.tableTheme = localStorage.getItem('theme') || 'ag-theme-alpine';
   }
 
   ngOnInit(): void {
@@ -55,14 +56,14 @@ export class CreateProjectComponent implements OnInit {
       this.orgName = userData.owner;
     });
 
-   // const envCookie = this.shared.getCookie('environment');
-   const envCookie = localStorage.getItem('environment');
-    if (envCookie) {
-      const envId = JSON.parse(envCookie).id
-      this.getResourceUsage(envId);
-    }
+    // const envCookie = this.shared.getCookie('environment');
+    const envCookie = localStorage.getItem('environment');
+    // if (envCookie) {
+    //   const envId = JSON.parse(envCookie).id
+    //   this.getResourceUsage(envId);
+    // }
     this.projectForm = this.fb.group({
-      projectName: ['', [this.shared.isValidName(), Validators.maxLength(40)]],
+      projectName: ['', [this.shared.isValidName(), Validators.maxLength(40), Validators.minLength(3)]],
       projectDesc: ['', [Validators.maxLength(250)]],
       environmentName: ['default', [this.shared.isValidName(), Validators.maxLength(40)]],
       region: [this.regionOptions[0].name],
@@ -89,6 +90,30 @@ export class CreateProjectComponent implements OnInit {
       })
     });
 
+    this.project.getAllProjects().subscribe({
+      next: (response: any) => {
+        if (response.data?.length > 0) {
+          this.availableProjects = response.data.map((item: any) => item.name.toLowerCase());
+        }
+      }, error: (error) => { }
+    })
+    this.projectForm.get('projectName')?.valueChanges.subscribe((value: string) => {
+      if (!value) return;
+
+      const projectName = value.trim().toLowerCase();
+      const alreadyExists = this.availableProjects.includes(projectName);
+
+      const control = this.projectForm.get('projectName');
+      if (alreadyExists) {
+        control?.setErrors({ uniqueName: true });
+      } else {
+        if (control?.hasError('uniqueName')) {
+          const errors = { ...control.errors };
+          delete errors['uniqueName'];
+          control.setErrors(Object.keys(errors).length ? errors : null);
+        }
+      }
+    });
     // this.getPlanLimits();
 
   }
@@ -169,18 +194,14 @@ export class CreateProjectComponent implements OnInit {
         console.error('Error:', error);
       });
   }
-  getResourceUsage(envId: string): void {
-    if (!envId || this.orgName !== 'nimbuz') return;
-    // this.project.getResourceUsage(envId).subscribe((res: any) => {
-    //   if (res.status && res.data) {
-    //     localStorage.setItem('resourceUsage', JSON.stringify(res.data));
 
-    //     const projectResource = res.data.find((r: any) => r.resource_type === 'projects');
-    //     this.projectExhausted = projectResource?.remaining === 0;
-
-    //     const environmentResource = res.data.find((r: any) => r.resource_type === 'environments');
-    //     this.environmentExhausted = environmentResource?.remaining === 0;
-    //   }
-    // });
+  uniqueNameValidator(existingNames: string[]): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      if (!control.value) return null;
+      const nameExists = existingNames.some(
+        name => name.toLowerCase() === control.value.toLowerCase()
+      );
+      return nameExists ? { uniqueName: true } : null;
+    };
   }
 }
