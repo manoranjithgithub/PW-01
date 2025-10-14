@@ -114,12 +114,10 @@ export class DefaultLayoutComponent implements OnInit {
             '/create-project',
             '/create-environment',
             '/account-settings',
-            '/logout',
             '/projects/project-preferences',
             '/users-list',
-            '/login',
-            '/create-account'
           ];
+          const publicRoutes = ['/', '/login', '/create-account', '/logout', '/login'];
           if (this.currentUser !== 'nimbuz') {
             allowedRoutes.push('/users-list');
           }
@@ -140,8 +138,9 @@ export class DefaultLayoutComponent implements OnInit {
 
           const urlWithoutParams = event.url.split('?')[0];
           const isAllowed = allowedRoutes.some(route => urlWithoutParams.startsWith(route));
+          const isPublicRoute = publicRoutes.includes(urlWithoutParams);
 
-          if ((isProjectMissing || isEnvironmentMissing) && !isAllowed) {
+          if ((isProjectMissing || isEnvironmentMissing) && !isAllowed && !isPublicRoute) {
             this.toastr.warning('Please select a project and environment before continuing.');
             this.router.navigateByUrl('/projects', { replaceUrl: true });
             return;
@@ -174,7 +173,7 @@ export class DefaultLayoutComponent implements OnInit {
   }
 
   isProjectsPage(): boolean {
-    return ['/projects', '/environment', '/create-project', '/create-environment','/create-account'].some(path =>
+    return ['/projects', '/environment', '/create-project', '/create-environment', '/create-account'].some(path =>
       this.currentUrl.includes(path)
     );
     // return this.currentUrl.includes('/project');
