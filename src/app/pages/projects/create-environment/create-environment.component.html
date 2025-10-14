@@ -33,8 +33,14 @@
                         <small *ngIf="environmentForm.get('name')?.hasError('invalidName')">Environment name is
                             invalid
                         </small>
+                        <div *ngIf="environmentForm.get('name')?.hasError('minlength')" class="text-danger my-1">
+                            Project name must be at least 3 characters long.
+                        </div>
                         <small *ngIf="environmentForm.get('name')?.hasError('maxlength')">
                             Maximun 40 characters only.
+                        </small>
+                        <small *ngIf="environmentForm.get('name')?.hasError('uniqueName')">
+                            Name already exists. Please choose a different name.
                         </small>
                     </div>
                 </div>
