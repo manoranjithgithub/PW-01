@@ -49,6 +49,7 @@ import { TooltipDirective } from '@coreui/angular';
 import { environment } from '../../../../environments/environment';
 // import { environment } from 'src/environments/environment';
 import * as yaml from 'js-yaml';
+import { ProjectsService } from '../../projects/projects.service';
 @Component({
   selector: 'app-create-deployments',
   standalone: true,
@@ -174,6 +175,7 @@ export class CreateDeploymentsComponent
     private router: Router,
     private deploymentsService: DeploymentsService,
     private toaster: ToastrService,
+    private projectService: ProjectsService
   ) {
     this.stepOneForm = this._fb.group({
       type: ['', Validators.required],
@@ -214,6 +216,17 @@ export class CreateDeploymentsComponent
 
   ngOnInit(): void {
     this.currentProjectId = JSON.parse(localStorage.getItem('project') || '{}').id || '';
+      if (this.currentProjectId) {
+        this.projectService.getProjectDetailsById(this.currentProjectId).subscribe((res: any) => {
+          const vcsProfileInfo = {
+            github: res.data.github,
+            gitlab: res.data.gitlab
+          }
+          localStorage.setItem('vcsProfileInfo', JSON.stringify(vcsProfileInfo));
+          
+
+        });
+      }
 
     // this.wsSubscription = this.websocketService.getMessages().subscribe({
     //   next: (message) => {
