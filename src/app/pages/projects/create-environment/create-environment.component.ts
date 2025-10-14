@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import {
   CardGroupComponent, CardComponent, CardBodyComponent, AccordionButtonDirective,
@@ -37,6 +37,7 @@ export class CreateEnvironmentComponent implements OnInit {
 
   projectList: any = [];
   isBusiness: boolean = false;
+  availableEnviroinments: any = [];
 
   constructor(
     private fb: FormBuilder, private project: ProjectsService, private shared: SharedService,
@@ -61,9 +62,13 @@ export class CreateEnvironmentComponent implements OnInit {
 
     this.environmentForm = this.fb.group({
       project: [this.projectName],
-      name: ['default', [this.shared.isValidName(), Validators.maxLength(40), Validators.required]],
+      name: ['default', [this.shared.isValidName(),
+      Validators.maxLength(40), Validators.required, Validators.minLength(3),
+      this.uniqueNameValidation()
+      ]],
       region: [this.regionOptions[0].name]
-    })
+    });
+
     this.project.getAllProjects().subscribe((res: any) => {
       if (res && res?.data) {
         this.projectList = res?.data;
@@ -81,6 +86,21 @@ export class CreateEnvironmentComponent implements OnInit {
       pvcStorageMaxUserLimit: [''],
     });
     // this.getPlanLimits();
+
+    this.environmentForm.get('project')?.valueChanges.subscribe((value: string) => {
+      console.log(value)
+      if (!value) return;
+      this.project.getAllEnvironmentsByProject(value).subscribe({
+        next: (response: any) => {
+          if (response.data?.length > 0) {
+            this.availableEnviroinments = response.data.map((item: any) => item.name.toLowerCase());
+            const nameControl = this.environmentForm.get('name');
+            nameControl?.updateValueAndValidity({ onlySelf: true });
+            nameControl?.markAllAsTouched()
+          }
+        }, error: (error) => { }
+      });
+    })
   }
   createEnvironment() {
     if (this.environmentForm.valid) {
@@ -164,5 +184,17 @@ export class CreateEnvironmentComponent implements OnInit {
         console.error('Error:', error);
       });
   }
+  uniqueNameValidation(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      if (!control.value) {
+        return null;
+      }
+      const envName = control.value?.trim().toLowerCase();
+      const alreadyExists = this.availableEnviroinments
+        .map((e: any) => e.toLowerCase())
+        .includes(envName);
 
+      return alreadyExists ? { uniqueName: true } : null;
+    };
+  }
 }
