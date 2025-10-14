@@ -25,7 +25,7 @@ export class AuthGuard implements CanActivate {
       '/projects/project-preferences',
       '/users-list',
     ];
-    const publicRoutes = ['/', '/login', '/create-account', '/logout', '/login'];
+    const publicRoutes = ['/', '/login', '/create-account', '/logout', '/login', '/forgot-password'];
 
     const isAllowed = allowedRoutes.some(r => url.startsWith(r));
     const isPublicRoute = publicRoutes.includes(url);
