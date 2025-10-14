@@ -22,6 +22,7 @@ export class RegisterComponent implements OnInit {
   currentUrl: string = '';
   successMessage: string = '';
   isPasswordReset: boolean = false;
+  loading: boolean = false;
 
 
   constructor(
@@ -38,10 +39,10 @@ export class RegisterComponent implements OnInit {
     this.registrationForm = this.fb.group({
       type: ['individual', Validators.required],
       orgName: ['', [Validators.required, Validators.pattern(/^[a-z0-9-]+$/)]],
-      username: ['', Validators.required],
+      username: ['', [Validators.required, Validators.pattern(/^(?![_-])(?!.*[_-]{2})(?!.*\s)[A-Za-z0-9_-]+(?<![_-])$/)]],
       password: ['', [Validators.required, Validators.pattern(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+={}[\]:;"'<>,.?\/|\\~`])[^\s]{8,}$/
-    )]],
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+={}[\]:;"'<>,.?\/|\\~`])[^\s]{8,}$/
+      )]],
       email: ['', [Validators.required, Validators.email]],
       terms: [false, this.isPasswordReset ? [] : Validators.requiredTrue]
     });
@@ -66,15 +67,18 @@ export class RegisterComponent implements OnInit {
       return;
     }
     delete this.registrationForm.value.terms;
+    this.loading = true;
     if (this.isPasswordReset) {
       this.http.forgotPassword(this.registrationForm.value).subscribe({
         next: (response) => {
           this.successMessage = `Password reset link sent!\nPlease check your email for instructions to reset your password.`;
           this.isRegistrationSuccess = true;
+          this.loading = false;
         },
         error: (error) => {
           this.isRegistrationSuccess = false;
           this.toaster.error(error.error.error?.message);
+          this.loading = false;
         }
       });
     } else {
@@ -82,9 +86,11 @@ export class RegisterComponent implements OnInit {
         next: (response) => {
           this.successMessage = `Registration Successful!\nThank you for registering with us.\nWe've sent verification details to your registered email address. Please follow the instructions in the email to log in and get started.`;
           this.isRegistrationSuccess = true;
+          this.loading = false;
         },
         error: (error) => {
           this.isRegistrationSuccess = false;
+          this.loading = false;
           this.toaster.error(error.error.error?.message);
         }
       });

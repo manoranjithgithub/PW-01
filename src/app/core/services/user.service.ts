@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { catchError, Observable, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
 export interface LoginData {
@@ -47,6 +47,13 @@ export class UserService {
         if (accessToken) {
             headers['Authorization'] = `Bearer ${accessToken}`;
         }
-        return this.http.post<any>(`${this.apiUrl}/user/v1/user/reset-password`, req, { headers });
+        return this.http
+            .post<any>(`${this.apiUrl}/user/v1/user/reset-password`, req, { headers })
+            .pipe(
+                catchError((error) => {
+                    console.error('Password reset error', error);
+                    return throwError(() => error);
+                })
+            );
     }
 }
