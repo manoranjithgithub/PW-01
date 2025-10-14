@@ -20,6 +20,7 @@ export class LoginComponent implements OnInit {
   submitted: boolean = false;
   isRegistrationSuccess: boolean = false;
   showPassword: boolean = false;
+  loading: boolean = false;
 
   constructor(
     private fb: FormBuilder,
@@ -45,6 +46,7 @@ export class LoginComponent implements OnInit {
     if (this.loginForm.invalid) {
       return;
     }
+     this.loading = true;
     this.http.login(this.loginForm.value).subscribe({
       next: (response) => {
         this.toaster.success('Login successful');
@@ -54,6 +56,7 @@ export class LoginComponent implements OnInit {
         }
       },
       error: (error) => {
+         this.loading = false;
         if (error.code === 400) {
           this.toaster.error(`Login failed. ${error.error?.error?.message}`);
         } else {

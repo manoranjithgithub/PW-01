@@ -26,6 +26,7 @@ export class AccountComponent implements OnInit {
   showConfirmPassword = false;
   isResetPasswordSubmitted = false;
   userData: any;
+  loading: boolean = false;
 
   constructor(private fb: FormBuilder, private http: AccountSettingsService, private toaster: ToastrService,
     private sharedService: SharedService, private userService: UserService, private authService: AuthService
@@ -41,11 +42,11 @@ export class AccountComponent implements OnInit {
 
     this.resetPasswordForm = this.fb.group({
       oldPassword: ['', [Validators.required, Validators.pattern(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+={}[\]:;"'<>,.?\/|\\~`])[^\s]{8,}$/
-    )]],
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+={}[\]:;"'<>,.?\/|\\~`])[^\s]{8,}$/
+      )]],
       password: ['', [Validators.required, Validators.pattern(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+={}[\]:;"'<>,.?\/|\\~`])[^\s]{8,}$/
-    )]],
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+={}[\]:;"'<>,.?\/|\\~`])[^\s]{8,}$/
+      )]],
       confirmPassword: ['', Validators.required],
     }, { validators: this.passwordsMatchValidator });
 
@@ -96,7 +97,7 @@ export class AccountComponent implements OnInit {
   onSubmit(): void {
     this.submitted = true;
     if (this.accountForm.invalid) return;
-
+    this.loading = true;
     this.http.updateAccountInfo(this.accountForm.value).subscribe((res: any) => {
       console.log('AccountInfoUpdate', this.accountForm.value);
       if (res.status.toLowerCase() === 'success') {
@@ -104,7 +105,8 @@ export class AccountComponent implements OnInit {
         localStorage.setItem('userInfo', JSON.stringify(res.data));
         this.toaster.success('Updated successfully');
       }
-    })
+      this.loading = false;
+    });
   }
 
   updateAvatarPreview(): void {
@@ -113,18 +115,27 @@ export class AccountComponent implements OnInit {
   onResetPassword(): void {
     this.isResetPasswordSubmitted = true;
     if (this.resetPasswordForm.invalid) return;
+    this.loading = true;
+
     const req = {
       password: this.resetPasswordForm.get('password')?.value,
       oldPassword: this.resetPasswordForm.get('oldPassword')?.value,
       orgName: this.userData?.owner,
       username: this.userData?.userName,
     }
-    this.userService.resetPassword(req).subscribe((res: any) => {
-      if (res.status.toLowerCase() === 'success') {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        this.toaster.success('Password reset successfully');
+    this.userService.resetPassword(req).subscribe({
+      next: (res: any) => {
+        if (res.status?.toLowerCase() === 'success') {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          this.toaster.success('Password reset successfully');
+        }
+        this.loading = false;
+      },
+      error: (err) => {
+        this.toaster.error(err?.error?.message || 'Password reset failed');
+        this.loading = false;
       }
-    })
+    });
   }
 
   togglePassword(field: 'old' | 'new' | 'confirm') {
