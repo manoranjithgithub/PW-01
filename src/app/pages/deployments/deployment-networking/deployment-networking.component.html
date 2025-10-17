@@ -155,7 +155,7 @@
                 [value]="'http://' + deploymentdetails?.name">
 
               <button class="btn btn-outline-secondary" type="button" title="Copy domain"
-                (click)="copyDomain('https://' + ingressDomain)">
+                (click)="copyDomain('http://' + deploymentdetails?.name)">
                 <i class="bi bi-clipboard"></i>
               </button>
 

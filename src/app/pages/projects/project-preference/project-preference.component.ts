@@ -502,10 +502,15 @@ export class ProjectPreferenceComponent implements OnInit, OnDestroy {
     }
   }
   onLayoutButtonClick() {
+    if (this.environments.length > 0){
+      this.toastr.error('Environments must be deleted before deleting the project.')
+      return;
+    }
+
     const modalRef = this.modalService.open(ConfirmationModalComponent);
     modalRef.componentInstance.selectedItem = 'Project';
     modalRef.componentInstance.message = 'Are you sure you want to proceed?';
-    
+
     modalRef.componentInstance.requireConfirmation = true;
     modalRef.componentInstance.confirmationWord = this.projectDetails?.name || '';
 

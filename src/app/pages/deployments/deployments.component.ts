@@ -122,16 +122,23 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
       headerName: 'Date',
       field: 'createdAt',
       sortable: true,
-      filter: false,
+      // filter: false,
       // flex: 1,
       width: 130,
       //sort: 'desc',
-      valueFormatter: (params: any) => {
-        return new Date(params.value).toLocaleDateString('en-US', {
+      filter: 'agTextColumnFilter',
+      valueGetter: (params: any) => {
+        if (!params.data || !params.data.createdAt) return '';
+        const date = new Date(params.data.createdAt);
+        return isNaN(date.getTime()) ? '' : date.toLocaleDateString('en-US', {
           year: 'numeric',
           month: '2-digit',
           day: '2-digit'
         });
+      },
+      valueFormatter: (params: any) => {
+        console.log(params)
+        return params.value || '';
       },
       onCellClicked: (event: CellClickedEvent) =>
         this.gotoAction(event.data)
@@ -232,7 +239,7 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
     this.initializeForms();
     this.subscription = this.sharedService.envValueChange$.subscribe(value => {
       this.getDeployment(value);
-     
+
     });
 
     this.filteredOptions = this.searchControl.valueChanges.pipe(
