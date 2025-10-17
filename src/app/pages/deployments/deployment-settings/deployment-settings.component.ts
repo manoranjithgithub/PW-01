@@ -384,9 +384,10 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
               tap(() => {
                 this.s3FileKey = s3Data.s3Key;
               })
-            );
+            )
           })
-        );
+        ).subscribe()
+
 
         // this.deploymentService.uploadZipDeployment(envId, formData).subscribe((res: any) => {
         //   if (res.status === 'Success') {

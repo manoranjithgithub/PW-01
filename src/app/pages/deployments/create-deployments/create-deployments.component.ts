@@ -168,6 +168,7 @@ export class CreateDeploymentsComponent
   fromReview: boolean = false;
   parsedConfigData: any
   invalidFileFormat: boolean = false;
+  submitted:boolean = false
 
   constructor(
     private _fb: FormBuilder,
@@ -565,6 +566,7 @@ export class CreateDeploymentsComponent
   }
   submitChanges() {
     this.loading = true;
+    this.submitted = true;
     const filePath = this.fileUploadForm.get('filePath')?.value;
     const fileInput = this.fileUploadForm.get('fileInput')?.value;
     const fileName = fileInput ? fileInput.split('\\').pop() : null;
@@ -600,6 +602,7 @@ export class CreateDeploymentsComponent
         })
       )
       .subscribe((results: any) => {
+        this.submitted = false;
         this.toaster.success('Deployment successfully');
         this.router.navigate(['/deployment']);
       });

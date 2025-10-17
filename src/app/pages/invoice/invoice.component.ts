@@ -87,13 +87,20 @@ export class InvoiceComponent implements OnInit {
 
     {
       field: 'updated_at', headerName: 'Issue Date', flex: 1,
-      valueFormatter: params => {
-        return new Date(params.value).toLocaleDateString('en-US', {
+      filter: 'agTextColumnFilter',
+      valueGetter: (params: any) => {
+        if (!params.data || !params.data.updated_at) return '';
+        const date = new Date(params.data.updated_at);
+        return isNaN(date.getTime()) ? '' : date.toLocaleDateString('en-US', {
           year: 'numeric',
           month: '2-digit',
           day: '2-digit'
         });
-      }
+      },
+      valueFormatter: (params: any) => {
+        console.log(params)
+        return params.value || '';
+      },
     },
     // {
     //   field: 'dueDate', headerName: 'Due Date',

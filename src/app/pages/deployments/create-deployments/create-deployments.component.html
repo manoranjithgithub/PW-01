@@ -294,7 +294,7 @@
     <div class="">
       <button class="btn button-format-solid"
         (click)="next(currentStep === 4 ? 'Submit' : (currentStep === 3 ? 'Review' : 'Save & Continue'))"
-        [disabled]="stepOneForm.invalid">
+        [disabled]="stepOneForm.invalid || submitted">
         {{ currentStep === 4 ? 'Submit' : (currentStep === 3 ? 'Review' : 'Save & Continue') }}
       </button>
     </div>

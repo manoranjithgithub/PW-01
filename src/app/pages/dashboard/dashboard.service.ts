@@ -69,11 +69,11 @@ export class DashboardsService {
       );
   }
 
-  deleteEndpoint(env: string, name: string) {
+  deleteEndpoint(environmentId: string, name: string) {
     return this.http.delete(`${this.deploymentManagement}/endpoints`, {
       body: {
-        name: name,
-        environmentId: env
+        name,
+        environmentId
       }
     })
       .pipe(
