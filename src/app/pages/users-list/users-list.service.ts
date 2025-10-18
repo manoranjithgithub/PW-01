@@ -21,7 +21,7 @@ export class UsersListService {
       );
   }
   inviteNewUser(req: any) {
-    return this.http.post(`${this.userBaseUrl}/invite-user`, req)
+    return this.http.post(`${this.userApiUrl}/invite-user`, req)
       .pipe(
         catchError(this.handleError.bind(this))
       );
