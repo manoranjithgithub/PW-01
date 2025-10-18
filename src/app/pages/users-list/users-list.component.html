@@ -23,6 +23,16 @@
                             <small *ngIf="addUserForm.get('username')?.errors?.['required']">Username is
                                 required.</small>
                         </div>
+                        <div *ngIf="
+                    addUserForm.get('username')?.hasError('pattern') &&
+                    (submitted ||
+                      addUserForm.get('username')?.touched ||
+                      addUserForm.get('username')?.dirty)
+                  " class="text-danger mt-1">
+                            Username may only contain alphanumeric characters, underlines or hyphens, cannot have
+                            consecutive
+                            hyphens or underlines, and cannot begin or end with a hyphen or underline.
+                        </div>
                     </div>
                     <div class="form-group w-100">
                         <label for="email" class="form-label">Email</label>

@@ -61,9 +61,9 @@ export class UsersListComponent implements OnInit {
     {
       field: 'isVerified', headerName: 'Verified Email',
       cellRenderer: (params: any) => {
-        if (params.value === true) {
+        if (params.value === "true") {
           return `<span style="color: #43A047">Verified</span>`;
-        } else if (params.value === false) {
+        } else if (params.value === "false") {
           return `<span style="color: #DB2719"> Unverified</span>`;
         } else {
           return '';
@@ -72,7 +72,7 @@ export class UsersListComponent implements OnInit {
     },
 
     {
-      field: 'createdTime', headerName: 'Added on',
+      field: 'createdAt', headerName: 'Added on',
       valueFormatter: (params: any) => {
         const value = params.value;
         const date = value ? new Date(value) : null;
@@ -82,7 +82,7 @@ export class UsersListComponent implements OnInit {
       }
     },
     {
-      field: 'updatedTime',
+      field: 'updatedAt',
       headerName: 'Updated At',
       valueFormatter: (params:any) => {
         const value = params.value;
@@ -101,7 +101,7 @@ export class UsersListComponent implements OnInit {
     private toastr: ToastrService
   ) {
     this.addUserForm = this.fb.group({
-      username: ['', [Validators.required]],
+      username: ['', [Validators.required, Validators.pattern(/^(?![_-])(?!.*[_-]{2})(?!.*\s)[A-Za-z0-9_-]+(?<![_-])$/)]],
       email: ['', [Validators.required, Validators.email]]
     });
 
