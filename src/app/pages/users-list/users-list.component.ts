@@ -101,7 +101,7 @@ export class UsersListComponent implements OnInit {
     private toastr: ToastrService
   ) {
     this.addUserForm = this.fb.group({
-      username: ['', [Validators.required]],
+      username: ['', [Validators.required, Validators.pattern(/^(?![_-])(?!.*[_-]{2})(?!.*\s)[A-Za-z0-9_-]+(?<![_-])$/)]],
       email: ['', [Validators.required, Validators.email]]
     });
 
