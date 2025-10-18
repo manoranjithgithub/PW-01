@@ -25,8 +25,7 @@
                         </div>
                         <div *ngIf="
                     addUserForm.get('username')?.hasError('pattern') &&
-                    (submitted ||
-                      addUserForm.get('username')?.touched ||
+                    (addUserForm.get('username')?.touched ||
                       addUserForm.get('username')?.dirty)
                   " class="text-danger mt-1">
                             Username may only contain alphanumeric characters, underlines or hyphens, cannot have
