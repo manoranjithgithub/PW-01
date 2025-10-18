@@ -30,25 +30,25 @@ export class UsersListComponent implements OnInit {
         return rowIndex + 1;
       },
     },
-    {
-      field: 'avatar',
-      headerName: 'Profile',
-      width: 100,
-      cellRenderer: (params: any) => {
-        const avatarUrl = params.value;
-        const defaultAvatar = 'assets/images/avatars/avatar.jpg';
+    // {
+    //   field: 'avatar',
+    //   headerName: 'Profile',
+    //   width: 100,
+    //   cellRenderer: (params: any) => {
+    //     const avatarUrl = params.value;
+    //     const defaultAvatar = 'assets/images/avatars/avatar.jpg';
 
-        const finalUrl = avatarUrl || defaultAvatar;
+    //     const finalUrl = avatarUrl || defaultAvatar;
 
-        return `<img src="${finalUrl}" alt="avatar" style="width:40px; height:40px;border:1px solid #f1f1f1;padding:5px; border-radius:50%;" onerror="this.src='${defaultAvatar}'" />`;
-      },
-      sortable: false,
-      filter: false
-    },
-    {
-      field: 'displayName', headerName: 'Display Name', tooltipField: 'name', sortable: true, flex: 1,
-      cellStyle: { 'white-space': 'nowrap', 'overflow': 'hidden !important', 'text-overflow': 'ellipsis' },
-    },
+    //     return `<img src="${finalUrl}" alt="avatar" style="width:40px; height:40px;border:1px solid #f1f1f1;padding:5px; border-radius:50%;" onerror="this.src='${defaultAvatar}'" />`;
+    //   },
+    //   sortable: false,
+    //   filter: false
+    // },
+    // {
+    //   field: 'displayName', headerName: 'Display Name', tooltipField: 'name', sortable: true, flex: 1,
+    //   cellStyle: { 'white-space': 'nowrap', 'overflow': 'hidden !important', 'text-overflow': 'ellipsis' },
+    // },
 
     {
       field: 'name', headerName: 'Name',  tooltipField: 'name', sortable: true, flex: 1,
@@ -58,40 +58,40 @@ export class UsersListComponent implements OnInit {
       field: 'email', headerName: 'Email',  tooltipField: 'email', flex: 1,
       cellStyle: { 'white-space': 'nowrap', 'overflow': 'hidden !important', 'text-overflow': 'ellipsis' }
     },
-    // {
-    //   field: 'emailVerified', headerName: 'Verified Email',
-    //   cellRenderer: (params: any) => {
-    //     if (params.value === true) {
-    //       return `<span style="color: #43A047">Verified</span>`;
-    //     } else if (params.value === false) {
-    //       return `<span style="color: #DB2719"> Unverified</span>`;
-    //     } else {
-    //       return '';
-    //     }
-    //   }
-    // },
+    {
+      field: 'isVerfied', headerName: 'Verified Email',
+      cellRenderer: (params: any) => {
+        if (params.value === "true") {
+          return `<span style="color: #43A047">Verified</span>`;
+        } else if (params.value === "false") {
+          return `<span style="color: #DB2719"> Unverified</span>`;
+        } else {
+          return '';
+        }
+      }
+    },
 
-    // {
-    //   field: 'createdTime', headerName: 'Added on',
-    //   valueFormatter: (params: any) => {
-    //     const value = params.value;
-    //     const date = value ? new Date(value) : null;
-    //     return date instanceof Date && !isNaN(date.getTime())
-    //       ? date.toLocaleDateString()
-    //       : '';
-    //   }
-    // },
-    // {
-    //   field: 'updatedTime',
-    //   headerName: 'Updated At',
-    //   valueFormatter: params => {
-    //     const value = params.value;
-    //     const date = value ? new Date(value) : null;
-    //     return date instanceof Date && !isNaN(date.getTime())
-    //       ? date.toLocaleDateString()
-    //       : '';
-    //   }
-    // }
+    {
+      field: 'createdAt', headerName: 'Added on',
+      valueFormatter: (params: any) => {
+        const value = params.value;
+        const date = value ? new Date(value) : null;
+        return date instanceof Date && !isNaN(date.getTime())
+          ? date.toLocaleDateString()
+          : '';
+      }
+    },
+    {
+      field: 'updatedAt',
+      headerName: 'Updated At',
+      valueFormatter: (params:any) => {
+        const value = params.value;
+        const date = value ? new Date(value) : null;
+        return date instanceof Date && !isNaN(date.getTime())
+          ? date.toLocaleDateString()
+          : '';
+      }
+    }
   ];
   orgName: string = '';
   constructor(
@@ -101,15 +101,14 @@ export class UsersListComponent implements OnInit {
     private toastr: ToastrService
   ) {
     this.addUserForm = this.fb.group({
-      orgName: ['', [Validators.required]],
-      username: ['', [Validators.required]],
+      username: ['', [Validators.required, Validators.pattern(/^(?![_-])(?!.*[_-]{2})(?!.*\s)[A-Za-z0-9_-]+(?<![_-])$/)]],
       email: ['', [Validators.required, Validators.email]]
     });
 
-    this.sharedService.user$.subscribe((user: any) => {
-      this.orgName = user.owner;
-      this.addUserForm.get('orgName')?.setValue(user.owner);
-    });
+    // this.sharedService.user$.subscribe((user: any) => {
+    //   this.orgName = user.owner;
+    //   this.addUserForm.get('orgName')?.setValue(user.owner);
+    // });
   }
 
   ngOnInit(): void {
@@ -119,7 +118,7 @@ export class UsersListComponent implements OnInit {
 
 
   addnewUser(value: boolean) {
-    this.addUserForm.get('orgName')?.setValue(this.orgName);
+    // this.addUserForm.get('orgName')?.setValue(this.orgName);
     this.showAddUserSection = value;
     // if (value) {
     //   this.addUserForm.reset();

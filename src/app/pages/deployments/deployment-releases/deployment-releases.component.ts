@@ -518,9 +518,9 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
   getDuration(start: string, end: string): string {
     const startTime = new Date(start).getTime();
     const endTime = new Date(end).getTime();
-    const durationInSeconds = Math.floor((endTime - startTime) / 1000);
-    const hours = Math.floor(durationInSeconds / 3600);
-    const minutes = Math.floor((durationInSeconds % 3600) / 60);
+    const durationInSeconds = Math.floor((endTime - startTime) / 1000) || 0;
+    const hours = Math.floor(durationInSeconds / 3600) || 0;
+    const minutes = Math.floor((durationInSeconds % 3600) / 60) || 0;
     const seconds = durationInSeconds % 60;
     const parts: string[] = [];
     if (hours > 0) {

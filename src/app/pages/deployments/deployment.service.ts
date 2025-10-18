@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { throwError } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { catchError, finalize, map } from 'rxjs/operators';
 import { ToastrService } from 'ngx-toastr';
 import { environment } from '../../../environments/environment';
+import { SharedService } from '../../shared/services/shared.service';
 
 @Injectable({
   providedIn: 'root'
@@ -16,7 +17,7 @@ export class DeploymentsService {
   private projectsBaseUrl = environment.projectsBaseUrl;
   private metricsApiUrl = environment.metricsUrl;
 
-  constructor(public http: HttpClient, private toastr: ToastrService) { }
+  constructor(public http: HttpClient, private toastr: ToastrService, private loaderService: SharedService) { }
 
   getDefualtConfigInfo() {
     return this.http.get(`${this.deploymentManagement}/deploymentSettings`)
@@ -279,8 +280,14 @@ export class DeploymentsService {
       );
   }
 
-  deleteEndpoint(env: string, name: string) {
-    return this.http.delete(`${this.deploymentManagement}/${env}/endpoint/${name}`)
+  deleteEndpoint(environmentId: string, name: string) {
+    return this.http.delete(`${this.deploymentManagement}/endpoints`, {
+      body: {
+        name,
+        environmentId
+      }
+    }
+    )
       .pipe(
         catchError(this.handleError.bind(this))
       );
@@ -330,10 +337,13 @@ export class DeploymentsService {
       observe: 'response'
     }).pipe(
       map(response => response.status === 200 || response.status === 204),
-      catchError(this.handleError.bind(this))
+      catchError(this.handleError.bind(this)),
+      finalize(() => {
+        this.loaderService.hide(); // always hide loader (success or error)
+      })
     );
   }
-  getDeploymentMetricsByTime(envId:string, from:string, to:string, timeInterval: number) {
+  getDeploymentMetricsByTime(envId: string, from: string, to: string, timeInterval: number) {
     return this.http.get(`${this.metricsApiUrl}/namespace?cluster=prod&namespace=${envId}&from=${from}&to=${to}&step=${timeInterval}`)
       .pipe(
         catchError(this.handleError.bind(this))

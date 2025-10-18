@@ -15,13 +15,13 @@ export class UsersListService {
   constructor(public http: HttpClient, private toastr: ToastrService) { }
 
   getAllUSers() {
-    return this.http.get(`${this.userApiUrl}/v1/users`)
+    return this.http.get(`${this.userApiUrl}/list-user`)
       .pipe(
         catchError(this.handleError.bind(this))
       );
   }
   inviteNewUser(req: any) {
-    return this.http.post(`${this.userBaseUrl}/business/user`, req)
+    return this.http.post(`${this.userApiUrl}/invite-user`, req)
       .pipe(
         catchError(this.handleError.bind(this))
       );

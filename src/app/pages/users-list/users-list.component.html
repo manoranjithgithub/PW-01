@@ -4,7 +4,7 @@
         <div class="card-body pb-0">
             <form [formGroup]="addUserForm" (ngSubmit)="onSubmitAddUser()" class="mb-0">
                 <div class="d-flex gap-2 my-2 justify-content-between">
-                    <div class="form-group w-100">
+                    <!-- <div class="form-group w-100">
                         <label for="username" class="form-label"> organization Name</label>
                         <input type="text" id="orgName" formControlName="orgName" class="form-control"
                             placeholder="Organization Name *" readonly required />
@@ -13,7 +13,7 @@
                             <small *ngIf="addUserForm.get('orgName')?.errors?.['required']">Organization Name is
                                 required.</small>
                         </div>
-                    </div>
+                    </div> -->
                     <div class="form-group w-100">
                         <label for="username" class="form-label">Username</label>
                         <input type="text" id="username" formControlName="username" class="form-control"
@@ -22,6 +22,15 @@
                             class="text-danger">
                             <small *ngIf="addUserForm.get('username')?.errors?.['required']">Username is
                                 required.</small>
+                        </div>
+                        <div *ngIf="
+                    addUserForm.get('username')?.hasError('pattern') &&
+                    (addUserForm.get('username')?.touched ||
+                      addUserForm.get('username')?.dirty)
+                  " class="text-danger mt-1">
+                            Username may only contain alphanumeric characters, underlines or hyphens, cannot have
+                            consecutive
+                            hyphens or underlines, and cannot begin or end with a hyphen or underline.
                         </div>
                     </div>
                     <div class="form-group w-100">

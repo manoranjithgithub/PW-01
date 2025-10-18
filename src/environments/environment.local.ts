@@ -23,7 +23,7 @@ export const environment = {
     loginUrl: 'https://api.dev.nimbuz.tech',
     projectsApiUrl: 'https://api.dev.nimbuz.tech/project/v1/projects',
     projectsBaseUrl: 'https://api.dev.nimbuz.tech/project/v1',
-    usermanagementApiUrl: 'https://api.dev.nimbuz.tech/user/v1/users/user',
+    usermanagementApiUrl: 'https://api.dev.nimbuz.tech/user/v1/user/user',
     usermanagementBaseUrl: 'https://api.dev.nimbuz.tech/user/v1',
     deploymentManagement: 'https://api.dev.nimbuz.tech/deployment/v1',
     jobExecutorBaseUrl: 'https://api.dev.nimbuz.tech/job-executor/v1',
