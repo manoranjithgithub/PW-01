@@ -59,7 +59,7 @@ export class UsersListComponent implements OnInit {
       cellStyle: { 'white-space': 'nowrap', 'overflow': 'hidden !important', 'text-overflow': 'ellipsis' }
     },
     {
-      field: 'isVerified', headerName: 'Verified Email',
+      field: 'isVerfied', headerName: 'Verified Email',
       cellRenderer: (params: any) => {
         if (params.value === "true") {
           return `<span style="color: #43A047">Verified</span>`;
