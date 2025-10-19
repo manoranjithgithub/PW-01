@@ -1,0 +1,76 @@
+<div class="container mt-4">
+    <h3 class="mb-3">Deployment Configuration</h3>
+    <hr />
+    <form [formGroup]="deploymentForm" (ngSubmit)="onSubmit()">
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="llmId" class="form-label">LLM ID</label>
+                <input type="text" id="llmId" class="form-control" formControlName="llmId" placeholder="Enter LLM ID" />
+                <div class="text-danger mt-1" *ngIf="
+                deploymentForm.get('llmId')?.hasError('required') &&
+                (submitted ||
+                  deploymentForm.get('llmId')?.touched ||
+                  deploymentForm.get('llmId')?.dirty)
+              ">
+                    LLM ID is required.
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label for="replica" class="form-label">Replica</label>
+                <input type="number" id="replica" class="form-control" formControlName="replica"
+                    placeholder="Enter number of replicas" />
+                <div class="text-danger mt-1" *ngIf="
+                (deploymentForm.get('replica')?.hasError('required')) &&
+                (submitted ||
+                  deploymentForm.get('replica')?.touched ||
+                  deploymentForm.get('replica')?.dirty)
+              ">
+                    Replica count is required.</div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Instance Type (Hardcoded) -->
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Instance Type</label>
+                <input type="text" class="form-control" formControlName="instanceType" readonly />
+            </div>
+
+            <!-- Context Length -->
+            <div class="col-md-6 mb-3">
+                <label for="contextLength" class="form-label">Context Length</label>
+                <input type="number" id="contextLength" class="form-control" formControlName="contextLength"
+                    placeholder="Enter context length" />
+                <div class="text-danger mt-1" *ngIf="
+                deploymentForm.get('contextLength')?.hasError('required') &&
+                (submitted ||
+                  deploymentForm.get('contextLength')?.touched ||
+                  deploymentForm.get('contextLength')?.dirty)
+              ">
+                    Context length is required.
+
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="storage" class="form-label">Storage (GB)</label>
+                <input type="number" id="storage" class="form-control" formControlName="storage"
+                    placeholder="Enter storage size" />
+                <div class="text-danger mt-1" *ngIf="
+                (deploymentForm.get('storage')?.hasError('required')) &&
+                (submitted ||
+                  deploymentForm.get('storage')?.touched ||
+                  deploymentForm.get('storage')?.dirty)
+              ">Storage size is required.</div>
+            </div>
+        </div>
+
+        <div class="text-end">
+            <button type="submit" class="btn btn-primary mt-3 px-4">Submit</button>
+        </div>
+    </form>
+</div>

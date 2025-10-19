@@ -1,0 +1,116 @@
+.card-child {
+  width: 100%;
+  // height: 350px; 
+  // max-height: calc(100vh - 100px);
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+::ng-deep .accordion-button:not(.collapsed) {
+  background-color: rgba(233, 131, 29, 0.1);
+  /* Change the color when the button is expanded */
+  color: #EA7131;
+  font-family: 'plusFont', sans-serif;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: normal;
+}
+
+.custom-label {
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.custom-heading {
+  color: #001225;
+  font-family: 'plusFont', sans-serif;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: normal;
+}
+
+.custom-content {
+  color: #001225;
+  // font-family: 'plusFont', sans-serif;
+  margin: 10px 0;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+}
+
+.custom-values {
+  font-size: 15px;
+}
+
+.accordion-gap {
+  margin-bottom: 20px;
+}
+
+.custom-width {
+  width: 53%
+}
+
+.custom-txt-width {
+  width: 86%
+}
+
+.input-group-addon {
+  padding: 10px;
+  border: 1px solid #ccc;
+}
+
+.custom-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.custom-form-group {
+  border-radius: 0.25rem;
+  padding: 0 10px;
+}
+
+.copy-icon {
+  padding: 15px 10px;
+  border-radius: 0;
+}
+
+.sub-header {
+  font-weight: 600;
+  margin-bottom: 15px;
+}
+
+.fz-13 {
+  font-size: 13px;
+}
+
+.custom-domain-section {
+  background: #F8F8F8;
+  margin: 10px auto;
+}
+
+.fieldset-section {
+  min-height: 280px;
+}
+
+.btn {
+  &:focus {
+    box-shadow: none;
+  }
+}
+
+.info-icon {
+  font-size: 18px;
+  color: #EA7131;
+  cursor: pointer;
+  vertical-align: middle;
+  margin-left: 10px;
+}
+.wide-popover.popover {
+  max-width: 500px;
+}
