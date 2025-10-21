@@ -286,83 +286,32 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
     }
   }
 
-  fileValidator(control: any): { [key: string]: boolean } | null {
-    const file = control.value;
-    if (file) {
-      const fileExtension = file.split('.').pop()?.toLowerCase();
-      if (!this.allowedFileTypes.includes(`.${fileExtension}`)) {
-        return { invalidFileType: true };
-      }
-    }
-    return null;
-  }
-
-  onFileSelect(event: any): void {
-    const file = event.target.files[0];
-    if (file) {
-      this.selectedFile = file;
-      if (file.size > 500_000_000) {
-        this.toaster.error('File size too large.');
-        this.fileError = 'File size large';
-      }
-      else {
-        const fileNameWithoutExtension = this.removeFileExtension(file.name);
-      }
-    }
-  }
-
-  removeFileExtension(fileName: string): string {
-    const fileNameParts = fileName.split('.');
-    if (fileNameParts.length > 1) {
-      fileNameParts.pop();
-    }
-    return fileNameParts.join('.');
-  }
-
-
-
   onGeneralSubmit(): void {
-    const regionCookie = localStorage.getItem('region');
     if (this.generalSettingsForm.invalid) {
       this.generalSettingsForm.markAllAsTouched();
       return;
     }
     const formValue = this.generalSettingsForm.getRawValue();
-
     const originalApp = { ...(this.deploymentdetails?.application || {}), ...(this.deploymentdetails?.buildConfig || {}) };
-    const originalNetwork = this.deploymentdetails?.network || {};
-    const originalSource = this.deploymentdetails?.sourceCode || {};
 
     const application = this.getChangedFields({
       replicas: formValue.replicas,
       instanceType: formValue.instanceType,
       storage: formValue.storage,
     }, originalApp);
-    const network = this.getChangedFields({
-      healthEndpoint: formValue.healthEndpoint,
-      port: formValue.port,
-    }, originalNetwork);
     const nameChanged = this.getChangedFields({ name: formValue.name }, { name: this.deploymentdetails?.name });
 
     const req: any = {};
     if (Object.keys(nameChanged).length) req.name = nameChanged.name;
     if (Object.keys(application).length) req.application = application;
-    if (Object.keys(network).length) req.network = network;
     this.deploymentService.updateDeployment(this.deploymentdetails?.id, req).subscribe((res: any) => {
       if (res.status.toLowerCase() === "success") {
         this.toaster.success('Updated successfully');
         this.generalSettingsForm.patchValue({
           llmId: res.data.name,
           instanceType: res.data.application?.instanceType,
-          region: regionCookie,
           replicas: res.data.application?.replicas,
-          ephemeralStorage: res.data.application?.ephemeralStorage ? res.data.application?.ephemeralStorage.replace(/Gi$/, '') : null,
           storage: res.data.application?.storage,
-          healthEndpoint: res.data.network?.healthEndpoint,
-          port: res.data.network?.port,
-          buildCommand: res.data.application?.buildCommand,
-          startCommand: res.data.application?.startCommand,
-          installCommand: res.data.application?.installCommand
         });
         this.isGeneralSettingsChanged = false;
         this.isSourceSettingsChanged = false;
@@ -415,36 +364,9 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
         });
     }
   }
-
-  copyDomainValue(inputElement: HTMLInputElement): void {
-    inputElement.select();
-    document.execCommand('copy');
-    inputElement.setSelectionRange(0, 0);
-  }
-
-  onEphemeralMouseOut() {
-    const value = this.generalSettingsForm.get('ephemeralStorage')?.value;
-    const ephemeralStorage = parseFloat(value.replace(/[^\d.]/g, ''));
-    if (ephemeralStorage > this.ephemeralQuota?.remaining) {
-      this.ephemeralExhausted = true;
-      this.generalSettingsForm.setErrors({ invalid: true });
-    }
-    else {
-      this.ephemeralExhausted = false;
-      this.generalSettingsForm.setErrors(null);
-    }
-  }
-
   isError(controlName: string, errorType: string): boolean {
     const control = this.generalSettingsForm.controls[controlName];
     return control.hasError(errorType) && control.touched;
-  }
-
-  Port() {
-    const portControl = this.generalSettingsForm.get('port');
-    if (portControl && portControl.value === '') {
-      portControl.setValue(null, { emitEvent: false });
-    }
   }
 
   private getChangedFields(current: any, original: any): any {
