@@ -69,9 +69,9 @@
                 </div>
 
                 <div class="flex-fill mt-4">
-                  <button type="button" class="btn btn-primary custom-label" [disabled]="sourceSettingsForm.invalid"
-                    (click)="onZipUpload()">
-                    <i class="bi bi-upload"></i> Upload
+                  <button type="button" class="btn btn-primary custom-label"
+                    [disabled]="sourceSettingsForm.invalid || !(isSourceSettingsChanged)" (click)="onZipUpload()">
+                    <i class="bi bi-upload"></i> Save changes
                   </button>
                 </div>
               </div>
@@ -85,7 +85,8 @@
                 <div class="w-50 mb-3 mt-2">
                   <label for="name" class="custom-label">Name
                   </label>
-                  <input id="name" type="text" for="name" formControlName="name" class="form-control custom-values" readonly>
+                  <input id="name" type="text" for="name" formControlName="name" class="form-control custom-values"
+                    readonly>
                   <div class="text-danger my-1" *ngIf="isError('name', 'maxlength')">
                     Maximum 40 characters allowed.
                   </div>
@@ -147,6 +148,9 @@
                   <label for="port" class="custom-label">Port</label>
                   <input id="port" type="text" formControlName="port" class="form-control custom-values"
                     (blur)="Port()">
+                  <div class="text-danger my-1" *ngIf="isError('port', 'min') || isError('port', 'max')">
+                    Invalid Port Number Entered: must be between 1 and 65535.
+                  </div>
                 </div>
 
                 <div class="flex-grow-1 mb-3" style="min-width: 0;">
@@ -177,16 +181,14 @@
               <div class="d-flex gap-2">
                 <div class="flex-fill mb-3">
                   <label for="buildCommand" class="custom-label">Build command</label>
-                  <input type="text" placeholder="" class="form-control custom-values"
-                    formControlName="buildCommand">
+                  <input type="text" placeholder="" class="form-control custom-values" formControlName="buildCommand">
                   <div class="text-danger my-1" *ngIf="isError('buildCommand', 'maxlength')">
                     Maximum 250 characters allowed.
                   </div>
                 </div>
                 <div class="flex-fill mb-3">
                   <label for="startCommand" class="custom-label">Start command</label>
-                  <input type="text" placeholder="" class="form-control custom-values"
-                    formControlName="startCommand">
+                  <input type="text" placeholder="" class="form-control custom-values" formControlName="startCommand">
                   <div class="text-danger my-1" *ngIf="isError('startCommand', 'maxlength')">
                     Maximum 250 characters allowed.
                   </div>
@@ -195,8 +197,7 @@
               <div class="d-flex gap-2">
                 <div class="flex-fill mb-3">
                   <label for="installCommand" class="custom-label">Install command</label>
-                  <input type="text" placeholder="" class="form-control custom-values"
-                    formControlName="installCommand">
+                  <input type="text" placeholder="" class="form-control custom-values" formControlName="installCommand">
                   <div class="text-danger my-1" *ngIf="isError('installCommand', 'maxlength')">
                     Maximum 250 characters allowed.
                   </div>
@@ -211,8 +212,8 @@
 
               <div class="d-flex justify-content-end">
                 <button type="submit" class="btn btn-primary custom-label mt-2"
-                  [disabled]="!(isGeneralSettingsChanged || isSourceSettingsChanged) || generalSettingsForm.invalid"><i
-                    class="bi bi-save"></i> Save changes
+                  [disabled]="!(isGeneralSettingsChanged) || generalSettingsForm.invalid"><i class="bi bi-save"></i>
+                  Save changes
                 </button>
               </div>
             </form>

@@ -66,10 +66,14 @@ export class AgGridTableComponent implements OnInit {
     this.tableTheme = localStorage.getItem('theme') || 'ag-theme-alpine';
     const urlSegments = this.router.url.split('/').filter(Boolean);
     this.tableName = urlSegments[urlSegments.length - 1] == 'tools' ? 'tool' : urlSegments[urlSegments.length - 1];
-    this.tablebtn = urlSegments[urlSegments.length - 1] == 'deployment' ? 'Deploy' : 'Tool';
+    // this.tablebtn = urlSegments[urlSegments.length - 1] == 'deployment' ? 'Deploy' : 'Tool';
+    const lastSegment = urlSegments[urlSegments.length - 1];
+    this.tablebtn = this.capitalizeFirstLetter(lastSegment);
 
   }
-
+  capitalizeFirstLetter(word: string) {
+    return word.charAt(0).toUpperCase() + word.slice(1);
+  }
   ngOnInit(): void {
     this.sharedService.valueChange$.subscribe(value => {
       this.tableTheme = value;

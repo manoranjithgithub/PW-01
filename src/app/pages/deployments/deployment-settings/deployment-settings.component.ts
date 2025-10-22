@@ -136,7 +136,8 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
       ephemeralStorage: [null, Validators.pattern("^[0-9]*\\.?[0-9]+$")],
       storage: [null, Validators.pattern("^[0-9]+$")],
       healthEndpoint: [''],
-      port: ['', [Validators.maxLength(5), Validators.pattern('^[0-9]+$')]],
+      port: ['', [Validators.maxLength(5), Validators.pattern('^[0-9]+$'), Validators.min(1),
+      Validators.max(65535)]],
       buildCommand: ['', Validators.maxLength(250)],
       startCommand: ['', Validators.maxLength(250)],
       installCommand: ['', Validators.maxLength(250)],
@@ -260,7 +261,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
           branchName: branchName,
           fileName: res.data.sourceCode?.s3FileKey ? res.data.sourceCode?.s3FileKey : ''
         });
-        if(res.data.sourceCode?.type.toLowerCase() === "file"){
+        if (res.data.sourceCode?.type.toLowerCase() === "file") {
           this.s3FileKey = res.data.sourceCode?.s3FileKey;
         }
         if (this.sourceSettingsForm.get('type')?.value?.toLowerCase() === "vcs") {
@@ -378,15 +379,32 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
         const extension = this.selectedFile.name.split('.').pop()?.toLowerCase() || '';
         this.deploymentService.getS3Details(extension).pipe(
           concatMap((res: any) => {
-            if (!res?.data) throw new Error('Failed to get S3 details');
+            if (!res?.data) {
+              throw new Error('Failed to get S3 details');
+            }
             const s3Data = res.data;
-            return this.deploymentService.uploadFileToS3(s3Data.uploadUrl, this.selectedFile, s3Data.contentType).pipe(
-              tap(() => {
-                this.s3FileKey = s3Data.s3Key;
-              })
-            )
+            return this.deploymentService.uploadFileToS3(
+              s3Data.uploadUrl,
+              this.selectedFile,
+              s3Data.contentType
+            ).pipe(
+              tap(() => this.s3FileKey = s3Data.s3Key),
+              concatMap(() =>
+                this.deploymentService.updateDeployment(this.deploymentdetails?.id, {
+                  sourceCode: { s3FileKey: this.s3FileKey, type: 'file' }
+                })
+              )
+            );
           })
-        ).subscribe()
+        ).subscribe({
+          next: (res: any) => {
+            this.isSourceSettingsChanged = false;
+          },
+          error: (err) => {
+            console.error('Error during file upload or update:', err);
+          }
+        });
+
 
 
         // this.deploymentService.uploadZipDeployment(envId, formData).subscribe((res: any) => {
