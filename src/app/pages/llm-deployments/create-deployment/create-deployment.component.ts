@@ -1,18 +1,20 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { LLMDeploymentsService } from '../llm-deployment.service';
 
 @Component({
   selector: 'app-create-deployment',
   templateUrl: './create-deployment.component.html',
   styleUrls: ['./create-deployment.component.scss'],
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule]
+  imports: [ReactiveFormsModule, CommonModule],
+  providers:[LLMDeploymentsService]
 })
 export class CreateDeploymentComponent implements OnInit {
   deploymentForm!: FormGroup;
   submitted = false;
-  constructor(private fb: FormBuilder) {
+  constructor(private fb: FormBuilder, private http:LLMDeploymentsService) {
 
   }
 
@@ -37,6 +39,8 @@ export class CreateDeploymentComponent implements OnInit {
     if (this.deploymentForm.invalid) {
       return;
     }
-    console.log('Deployment Data:', this.deploymentForm.getRawValue());
+    this.http.createDeployement(this.deploymentForm.getRawValue()).subscribe(res => {
+    console.log('Deployment Data:', res);
+    })
   }
 }

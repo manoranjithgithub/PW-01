@@ -1,10 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterOutlet, Router } from '@angular/router';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { UserService } from '../../core/services/user.service';
 import { AuthService } from '../../core/services/auth.service';
+import { ColorModeService } from '@coreui/angular';
 
 @Component({
   selector: 'app-login',
@@ -14,7 +15,7 @@ import { AuthService } from '../../core/services/auth.service';
   imports: [RouterLink, RouterOutlet, CommonModule, FormsModule, ReactiveFormsModule],
 })
 export class LoginComponent implements OnInit {
-
+  readonly #colorModeService = inject(ColorModeService);
   loginForm !: FormGroup;
   orgName = '';
   submitted: boolean = false;
@@ -34,9 +35,14 @@ export class LoginComponent implements OnInit {
       username: ['', Validators.required],
       password: ['', Validators.required],
     });
+
+    localStorage.setItem('theme', 'light');
+    this.#colorModeService.setStoredTheme('selectedTheme', 'light');
   }
 
   ngOnInit(): void {
+    localStorage.setItem('theme', 'light');
+    this.#colorModeService.setStoredTheme('selectedTheme', 'light');
     const subdomain = this.getSubdomain();
     this.loginForm.get('orgName')?.setValue(subdomain);
   }
@@ -46,17 +52,17 @@ export class LoginComponent implements OnInit {
     if (this.loginForm.invalid) {
       return;
     }
-     this.loading = true;
+    this.loading = true;
     this.http.login(this.loginForm.value).subscribe({
       next: (response) => {
         this.toaster.success('Login successful');
         localStorage.setItem('accessToken', response.data.token);
-        if(this.authService.isTokenReady()) {
+        if (this.authService.isTokenReady()) {
           this.router.navigate(['/projects']);
         }
       },
       error: (error) => {
-         this.loading = false;
+        this.loading = false;
         if (error.code === 400) {
           this.toaster.error(`Login failed. ${error.error?.error?.message}`);
         } else {

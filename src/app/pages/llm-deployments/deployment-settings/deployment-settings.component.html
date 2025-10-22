@@ -55,8 +55,7 @@
               </span>
             </span>
           </label>
-          <input type="text" class="form-control custom-values" formControlName="storage"
-            (blur)="onEphemeralMouseOut()">
+          <input type="text" class="form-control custom-values" formControlName="storage">
           <div class="text-danger my-1" *ngIf="ephemeralExhausted">
             Storage usage exceeded.
           </div>

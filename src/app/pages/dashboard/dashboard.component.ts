@@ -106,7 +106,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
           });
 
         const estimatedCostSum = res.data?.projection_mtd_simple?.reduce(
-          (acc: number, item: any) => acc + (item.total_cost || 0),
+          (acc: number, item: any) => acc + (Number(item.projected_total) || 0),
           0
         ) ?? 0;
         //   console.log(estimatedCostSum)

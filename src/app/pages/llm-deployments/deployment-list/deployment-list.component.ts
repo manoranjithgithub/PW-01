@@ -9,7 +9,7 @@ import { SharedService } from '../../../shared/services/shared.service';
 import { Router } from '@angular/router';
 import { AgGridTableComponent } from '../../../shared/components/ag-grid-table/ag-grid-table.component';
 import { AgGridModule } from 'ag-grid-angular';
-import { DeploymentsService } from '../../deployments/deployment.service';
+import { LLMDeploymentsService } from '../llm-deployment.service';
 
 @Component({
   selector: 'app-deployment-list',
@@ -17,7 +17,7 @@ import { DeploymentsService } from '../../deployments/deployment.service';
   styleUrls: ['./deployment-list.component.scss'],
   standalone: true,
   imports: [CommonModule, AgGridTableComponent, AgGridModule],
-  providers: [DeploymentsService]
+  providers: [LLMDeploymentsService]
 })
 export class DeploymentListComponent implements OnInit, OnDestroy {
 
@@ -112,7 +112,7 @@ export class DeploymentListComponent implements OnInit, OnDestroy {
   constructor(
     private sharedService: SharedService,
     private router: Router,
-    private deploymentsService: DeploymentsService
+    private deploymentsService: LLMDeploymentsService
   ) {
     const storedEnvironment = localStorage.getItem('environment');
     const storedProject = localStorage.getItem('project');

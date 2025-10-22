@@ -23,7 +23,6 @@
         if (parts.length === 2) return parts.pop().split(';').shift();
       }
       const savedTheme = getCookie('theme') || 'light';
-
       document.documentElement.setAttribute('data-coreui-theme', savedTheme);
     });
 

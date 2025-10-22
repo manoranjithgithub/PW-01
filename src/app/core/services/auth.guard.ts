@@ -4,6 +4,7 @@ import { Observable, of } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
 import { AuthService } from './auth.service';
 import { ToastrService } from 'ngx-toastr';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -39,6 +40,10 @@ export class AuthGuard implements CanActivate {
     if ((isProjectMissing || isEnvironmentMissing) && !isAllowed && !isPublicRoute) {
       this.toastr.warning('Please select a project and environment before continuing.');
       this.router.navigateByUrl('/projects', { replaceUrl: true });
+      return false;
+    }
+    if (environment.production && route.routeConfig?.path?.includes('llm')) {
+      this.router.navigate(['/login']);
       return false;
     }
     return true;
