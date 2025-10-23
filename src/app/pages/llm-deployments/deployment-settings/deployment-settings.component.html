@@ -1,0 +1,83 @@
+<fieldset [disabled]="freezeAddNewData" class="card-child">
+  <div class="mt-4">
+    <form cForm [formGroup]="generalSettingsForm" (ngSubmit)="onGeneralSubmit()">
+      <div class="d-flex flex-wrap gap-2">
+        <div class="w-50 mb-3 mt-2">
+          <label for="llmId" class="custom-label">LLM ID
+          </label>
+          <input id="llmId" type="text" for="llmId" formControlName="llmId" class="form-control custom-values" readonly>
+          <div class="text-danger my-1" *ngIf="isError('llmId', 'maxlength')">
+            Maximum 40 characters allowed.
+          </div>
+        </div>
+        <div class="flex-grow-1 mb-3" style="min-width: 0;">
+          <label class="form-label w-100">
+            <div class="d-flex custom-label justify-content-between align-items-center text-nowrap">
+              <span>
+                Instance Type <span class="required text-danger">*</span>
+              </span>
+              <span class="text-gray ml-auto text-nowrap custom-label">
+                ( <span class="mx-1"><b>CPU:</b> {{selectedResource?.cpu}}</span>
+                <span class="mx-1"><b>Memory:</b> {{selectedResource?.memory}}</span>
+                <span class="mx-1"><b>Price:</b> {{selectedResource?.price}}</span> )
+              </span>
+            </div>
+          </label>
+          <input id="instanceType" type="text" for="instanceType" formControlName="instanceType"
+            class="form-control custom-values" readonly>
+          <div class="text-danger my-1" *ngIf="isError('instanceType', 'required')">
+            Instance type is required.
+          </div>
+          <div class="text-danger my-1" *ngIf="cpuExhausted">
+            CPU usage exceeded.
+          </div>
+          <div class="text-danger my-1" *ngIf="ramExhausted">
+            RAM usage exceeded.
+          </div>
+        </div>
+      </div>
+      <div class="d-flex gap-2">
+        <div class="flex-fill mb-3">
+          <label for="replicas" class="custom-label">Replicas
+          </label>
+          <input id="replicas" type="text" for="replicas" formControlName="replicas" class="form-control custom-values">
+          <div *ngIf="generalSettingsForm.get('replicas')?.invalid && generalSettingsForm.get('replicas')?.touched"
+            class="text-danger text-format">
+            <small>Replicas is required</small>
+          </div>
+        </div>
+        <div class="flex-grow-1 mb-3" style="min-width: 0;">
+          <label class="custom-label d-flex justify-content-between align-items-center text-nowrap">
+            <span>
+              Storage (GB)
+              <span [cTooltip]="storageValidation" cTooltipPlacement="top" class="text-warning cursor mx-1">
+                <i class="bi bi-exclamation-circle"></i>
+              </span>
+            </span>
+          </label>
+          <input type="text" class="form-control custom-values" formControlName="storage">
+          <div class="text-danger my-1" *ngIf="ephemeralExhausted">
+            Storage usage exceeded.
+          </div>
+        </div>
+      </div>
+      <div class="d-flex justify-content-end">
+        <button type="submit" class="btn btn-primary custom-label mt-2"
+          [disabled]="!(isGeneralSettingsChanged || isSourceSettingsChanged) || generalSettingsForm.invalid"><i
+            class="bi bi-save"></i> Save changes
+        </button>
+      </div>
+    </form>
+  </div>
+  <hr/>
+  <div class="mt-4">
+    <div class="custom-heading">Delete Application</div>
+    <div class="custom-content">Deleting this application will permanently delete all its deployments and remove it from
+      this environment. This cannot be undone.</div>
+    <div class="mt-2">
+      <button class="btn button-format-solid custom-label" (click)="deleteDeployment()">
+        <i class="bi bi-trash"></i> Delete Application
+      </button>
+    </div>
+  </div>
+</fieldset>

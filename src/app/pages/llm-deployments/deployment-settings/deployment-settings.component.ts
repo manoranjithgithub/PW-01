@@ -13,7 +13,6 @@ import {
 import { ResourceQuotaComponent } from '../../settings/resource-quota/resource-quota.component';
 import { CommonModule, ViewportScroller } from '@angular/common';
 import { SharedService } from '../../../shared/services/shared.service';
-import { DeploymentsService } from '../deployment.service';
 import { ToastrService } from 'ngx-toastr';
 import { DEPLOYMENT_TYPES } from '../../../shared/constants/nimbuz.constant';
 import { ModalComponent } from '../../../shared/components/model/model.component';
@@ -23,6 +22,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { NgbPopoverModule } from '@ng-bootstrap/ng-bootstrap';
 import { concatMap, tap } from 'rxjs';
+import { DeploymentsService } from '../../deployments/deployment.service';
 @Component({
   selector: 'app-deployment-settings',
   standalone: true,
@@ -42,7 +42,6 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
 
   @Output() closeModalEvent = new EventEmitter<void>();
   generalSettingsForm !: FormGroup;
-  sourceSettingsForm!: FormGroup;
   networkSettingsForm !: FormGroup;
   buildSettingsForm !: FormGroup;
   deploySettingsForm !: FormGroup;
@@ -129,28 +128,11 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
     });
 
     this.generalSettingsForm = this.fb.group({
-      name: ['', Validators.maxLength(40)],
+      llmId: ['', Validators.maxLength(40)],
       instanceType: ['', Validators.required],
-      region: [{ value: '', disabled: true }],
       replicas: ['', Validators.required],
-      ephemeralStorage: [null, Validators.pattern("^[0-9]*\\.?[0-9]+$")],
       storage: [null, Validators.pattern("^[0-9]+$")],
-      healthEndpoint: [''],
-      port: ['', [Validators.maxLength(5), Validators.pattern('^[0-9]+$'), Validators.min(1),
-      Validators.max(65535)]],
-      buildCommand: ['', Validators.maxLength(250)],
-      startCommand: ['', Validators.maxLength(250)],
-      installCommand: ['', Validators.maxLength(250)],
     })
-
-    this.sourceSettingsForm = this.fb.group({
-      type: [{ value: '', disabled: true }],
-      provider: [{ value: '', disabled: true }],
-      repoUrl: [{ value: '', disabled: true }],
-      branchName: [{ value: '', disabled: true }],
-      fileInput: ['', [Validators.required, this.fileValidator.bind(this)]],
-      fileName: [{ value: '', disabled: true }]
-    });
     this.ac.queryParams.subscribe(params => {
       const depolyementId = params['id'];
       this.deploymentService.getDeploymentById(depolyementId).subscribe((res: any) => {
@@ -254,32 +236,10 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
         this.generalSettingsForm.valueChanges.subscribe(currentValues => {
           this.isGeneralSettingsChanged = JSON.stringify(currentValues) !== JSON.stringify(initialValues);
         });
-        this.sourceSettingsForm.patchValue({
-          type: res.data.sourceCode?.type.toLowerCase(),
-          provider: provider,
-          repoUrl: repoUrl,
-          branchName: branchName,
-          fileName: res.data.sourceCode?.s3FileKey ? res.data.sourceCode?.s3FileKey : ''
-        });
         if (res.data.sourceCode?.type.toLowerCase() === "file") {
           this.s3FileKey = res.data.sourceCode?.s3FileKey;
         }
-        if (this.sourceSettingsForm.get('type')?.value?.toLowerCase() === "vcs") {
-          this.zipUpload = false;
-          this.vcsDeploy = true;
-        }
-        else if (this.sourceSettingsForm.get('type')?.value === "file") {
-          this.zipUpload = true;
-          this.vcsDeploy = false;
-        }
-
-        const loadingValues = this.sourceSettingsForm.value;
-
-        this.sourceSettingsForm.valueChanges.subscribe(currentValues => {
-          this.isSourceSettingsChanged = JSON.stringify(currentValues) !== JSON.stringify(loadingValues);
-        });
         this.generalcurrentValues = this.generalSettingsForm.value;
-        this.sourcecurrentValues = this.sourceSettingsForm.value;
       }
     });
   }
@@ -326,163 +286,32 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
     }
   }
 
-  fileValidator(control: any): { [key: string]: boolean } | null {
-    const file = control.value;
-    if (file) {
-      const fileExtension = file.split('.').pop()?.toLowerCase();
-      if (!this.allowedFileTypes.includes(`.${fileExtension}`)) {
-        return { invalidFileType: true };
-      }
-    }
-    return null;
-  }
-
-  onFileSelect(event: any): void {
-    const file = event.target.files[0];
-    if (file) {
-      this.selectedFile = file;
-      if (file.size > 500_000_000) {
-        this.toaster.error('File size too large.');
-        this.fileError = 'File size large';
-      }
-      else {
-        const fileNameWithoutExtension = this.removeFileExtension(file.name);
-        this.sourceSettingsForm.get('fileName')?.patchValue(fileNameWithoutExtension)
-      }
-    }
-  }
-
-  removeFileExtension(fileName: string): string {
-    const fileNameParts = fileName.split('.');
-    if (fileNameParts.length > 1) {
-      fileNameParts.pop();
-    }
-    return fileNameParts.join('.');
-  }
-
-  onZipUpload(): void {
-    if (this.sourceSettingsForm.invalid) {
-      this.fileError = 'Please select a valid file to upload.';
-    }
-    else {
-      // const environment = this.sharedService.getCookie('environment');
-      // const environment = localStorage.getItem('environment');
-      // const envId = environment ? JSON.parse(environment).id : null;
-      // if (this.selectedFile && envId) {
-      //   const formData = new FormData();
-
-      if (this.selectedFile) {
-        //     formData.append('file', this.selectedFile, this.selectedFile.name);
-        //   }
-        //   formData.append('type', 'ZIP');
-        //   formData.append('appName', this.generalSettingsForm.get('name')?.value);
-        const extension = this.selectedFile.name.split('.').pop()?.toLowerCase() || '';
-        this.deploymentService.getS3Details(extension).pipe(
-          concatMap((res: any) => {
-            if (!res?.data) {
-              throw new Error('Failed to get S3 details');
-            }
-            const s3Data = res.data;
-            return this.deploymentService.uploadFileToS3(
-              s3Data.uploadUrl,
-              this.selectedFile,
-              s3Data.contentType
-            ).pipe(
-              tap(() => this.s3FileKey = s3Data.s3Key),
-              concatMap(() =>
-                this.deploymentService.updateDeployment(this.deploymentdetails?.id, {
-                  sourceCode: { s3FileKey: this.s3FileKey, type: 'file' }
-                })
-              )
-            );
-          })
-        ).subscribe({
-          next: (res: any) => {
-            this.isSourceSettingsChanged = false;
-          },
-          error: (err) => {
-            console.error('Error during file upload or update:', err);
-          }
-        });
-
-
-
-        // this.deploymentService.uploadZipDeployment(envId, formData).subscribe((res: any) => {
-        //   if (res.status === 'Success') {
-        //     this.fileError = '';
-        //     this.sourceSettingsForm.get('fileName')?.patchValue(this.selectedFile?.name);
-        //     this.fileUploadedSuccessfully = true;
-        //     this.toaster.success('File uploaded successfully');
-        //   }
-        // },
-        //   err => {
-        //     this.fileUploadedSuccessfully = false;
-        //     // this.toaster.error('Error uploading file');
-        //     console.error(err);
-        //   })
-      }
-    }
-  }
-
   onGeneralSubmit(): void {
-    const regionCookie = localStorage.getItem('region');
     if (this.generalSettingsForm.invalid) {
       this.generalSettingsForm.markAllAsTouched();
       return;
     }
     const formValue = this.generalSettingsForm.getRawValue();
-    const sourceFormValue = this.sourceSettingsForm.getRawValue();
-    const fileName = sourceFormValue.fileName?.trim();
-
     const originalApp = { ...(this.deploymentdetails?.application || {}), ...(this.deploymentdetails?.buildConfig || {}) };
-    const originalNetwork = this.deploymentdetails?.network || {};
-    const originalSource = this.deploymentdetails?.sourceCode || {};
 
     const application = this.getChangedFields({
       replicas: formValue.replicas,
       instanceType: formValue.instanceType,
-      installCommand: formValue.installCommand,
-      buildCommand: formValue.buildCommand,
-      startCommand: formValue.startCommand,
-      ephemeralStorage: formValue.ephemeralStorage ? `${formValue.ephemeralStorage}Gi` : null,
       storage: formValue.storage,
     }, originalApp);
-    const network = this.getChangedFields({
-      healthEndpoint: formValue.healthEndpoint,
-      port: formValue.port,
-    }, originalNetwork);
-
-    const sourceCode = this.getChangedFields({
-      type: sourceFormValue.type,
-      gitUrl: this.buildGitUrl(),
-      s3FileKey: fileName ? this.s3FileKey : null,
-
-    }, originalSource);
     const nameChanged = this.getChangedFields({ name: formValue.name }, { name: this.deploymentdetails?.name });
 
     const req: any = {};
     if (Object.keys(nameChanged).length) req.name = nameChanged.name;
-    if (Object.keys(sourceCode).length) req.sourceCode = sourceCode;
     if (Object.keys(application).length) req.application = application;
-    if (Object.keys(network).length) req.network = network;
     this.deploymentService.updateDeployment(this.deploymentdetails?.id, req).subscribe((res: any) => {
       if (res.status.toLowerCase() === "success") {
         this.toaster.success('Updated successfully');
-        this.sourceSettingsForm.patchValue({
-          type: res.data.sourceCode?.type.toLowerCase(),
-        });
         this.generalSettingsForm.patchValue({
-          name: res.data.name,
+          llmId: res.data.name,
           instanceType: res.data.application?.instanceType,
-          region: regionCookie,
           replicas: res.data.application?.replicas,
-          ephemeralStorage: res.data.application?.ephemeralStorage ? res.data.application?.ephemeralStorage.replace(/Gi$/, '') : null,
           storage: res.data.application?.storage,
-          healthEndpoint: res.data.network?.healthEndpoint,
-          port: res.data.network?.port,
-          buildCommand: res.data.application?.buildCommand,
-          startCommand: res.data.application?.startCommand,
-          installCommand: res.data.application?.installCommand
         });
         this.isGeneralSettingsChanged = false;
         this.isSourceSettingsChanged = false;
@@ -492,78 +321,6 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
         console.error(err);
       });
   }
-
-  onSourceSubmit(): void {
-    console.log(this.sourceSettingsForm.value);
-    let req: any = {
-      type: this.deploymentdetails?.type,
-      stageToExecute: "BuildDeploy",
-      status: this.deploymentdetails?.status,
-    };
-    if (this.zipUpload) {
-      req = {
-        ...req,
-        fileName: this.sourceSettingsForm?.get('fileName')?.value,
-      };
-    }
-    else if (this.vcsDeploy) {
-      req = {
-        ...req,
-        provider: this.deploymentdetails?.provider,
-        repoUrl: this.sourceSettingsForm.value.repoUrl,
-        branchName: this.sourceSettingsForm.value.branchName,
-      };
-    }
-    this.deploymentService.updateDeployment(this.deploymentdetails?.id, req).subscribe((res: any) => {
-      if (res.status.toLowerCase() === "success") {
-        this.toaster.success('Updated successfully');
-      }
-    },
-      err => {
-        // this.toaster.error('Error updating source settings in deployment');
-        console.error(err);
-      });
-  }
-
-
-  onBuildSubmit(): void {
-    console.log(this.buildSettingsForm.value);
-    const formValue = this.buildSettingsForm.value;
-    const req = {
-      ...formValue,
-      stageToExecute: "BuildDeploy",
-      status: this.deploymentdetails?.status,
-    }
-    this.deploymentService.updateDeployment(this.deploymentdetails?.id, req).subscribe((res: any) => {
-      if (res.status === "Success") {
-        this.toaster.success(res.message);
-      }
-    },
-      err => {
-        // this.toaster.error('Error updating build settings in deployment');
-        console.error(err);
-      });
-  }
-
-  onDeploySubmit(): void {
-    console.log(this.deploySettingsForm.value);
-    const formValue = this.deploySettingsForm.value;
-    const req = {
-      ...formValue,
-      stageToExecute: "BuildDeploy",
-      status: this.deploymentdetails?.status,
-    }
-    this.deploymentService.updateDeployment(this.deploymentdetails?.id, req).subscribe((res: any) => {
-      if (res.status.toLowerCase() === "success") {
-        this.toaster.success('Updated successfully');
-      }
-    },
-      err => {
-        // this.toaster.error('Error updating deploy settings in deployment');
-        console.error(err);
-      });
-  }
-
   deleteDeployment(): void {
     const modalRef = this.modalService.open(ConfirmationModalComponent);
     modalRef.componentInstance.selectedItem = 'Deployment';
@@ -576,7 +333,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
             if (res.status.toLowerCase() === "success") {
               this.toaster.success(res.message);
               // this.route.navigate(['/deployment']);
-              window.location.href = '/deployment'
+              window.location.href = '/llm/list'
               this.onCloseClicked();
             }
           });
@@ -607,36 +364,9 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
         });
     }
   }
-
-  copyDomainValue(inputElement: HTMLInputElement): void {
-    inputElement.select();
-    document.execCommand('copy');
-    inputElement.setSelectionRange(0, 0);
-  }
-
-  onEphemeralMouseOut() {
-    const value = this.generalSettingsForm.get('ephemeralStorage')?.value;
-    const ephemeralStorage = parseFloat(value.replace(/[^\d.]/g, ''));
-    if (ephemeralStorage > this.ephemeralQuota?.remaining) {
-      this.ephemeralExhausted = true;
-      this.generalSettingsForm.setErrors({ invalid: true });
-    }
-    else {
-      this.ephemeralExhausted = false;
-      this.generalSettingsForm.setErrors(null);
-    }
-  }
-
   isError(controlName: string, errorType: string): boolean {
     const control = this.generalSettingsForm.controls[controlName];
     return control.hasError(errorType) && control.touched;
-  }
-
-  Port() {
-    const portControl = this.generalSettingsForm.get('port');
-    if (portControl && portControl.value === '') {
-      portControl.setValue(null, { emitEvent: false });
-    }
   }
 
   private getChangedFields(current: any, original: any): any {
@@ -655,18 +385,5 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
       }
     });
     return changed;
-  }
-
-  private buildGitUrl(): string {
-    const repo = this.sourceSettingsForm.get('repoUrl')?.value.replace(/^(https?:\/\/)?(www\.)?[^/]+\//, '') || '';
-    const branch = this.sourceSettingsForm.get('branchName')?.value || 'main';
-
-    if (this.sourceSettingsForm.get('provider')?.value === 'github') {
-      return `https://token@github.com/${repo}.git -b ${branch}`;
-    }
-    if (this.sourceSettingsForm.get('provider')?.value === 'gitlab') {
-      return `https://${repo}:token@gitlab.com/${repo}.git -b ${branch}`;
-    }
-    return '';
   }
 }

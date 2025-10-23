@@ -58,4 +58,9 @@ export const navItems: INavData[] = [
     url: '/invoice-list',
     icon: 'bi bi-receipt'
   },
+  {
+    name: 'LLM Deployments',
+    url: '/llm/list',
+    icon: 'bi bi-cloud-upload'
+  }
 ]

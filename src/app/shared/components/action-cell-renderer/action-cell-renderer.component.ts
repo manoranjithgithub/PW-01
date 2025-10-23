@@ -137,7 +137,7 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
         this.pause(this.params.data, 'Pause');
         break;
       case 'Resume':
-         this.pause(this.params.data, 'Resume');
+        this.pause(this.params.data, 'Resume');
         break;
     }
   }
@@ -145,7 +145,12 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
   viewLogs() {
     //  this.showDeploymentView(this.params.data)
     const data = this.params.data;
-    this.route.navigate(['/deployment/deployment-details'], { queryParams: { id: data.id, tabIndex: 5 } });
+    if (this.additionalParam === 'llm') {
+      this.route.navigate(['/llm/deployment-details'], { queryParams: { id: data.id, tabIndex: 1 } });
+
+    } else if (this.additionalParam === 'deployment') {
+      this.route.navigate(['/deployment/deployment-details'], { queryParams: { id: data.id, tabIndex: 5 } });
+    }
   }
 
 
@@ -153,7 +158,6 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
     if (this.additionalParam === "deployment") {
       this.route.navigate(['/edit-deployment'], { queryParams: { id: data.name } });
     }
-
     if (this.additionalParam === "tools") {
       this.route.navigate(['/edit-tool'], { queryParams: { selectedEdit: data.name } });
     }
@@ -174,7 +178,7 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
     }
   }
   pause(data: any, type: string) {
-    if (this.additionalParam === "deployment") {
+    if (this.additionalParam === "deployment" || this.additionalParam === "llm") {
       const req = {
         application: {
           replicas: type === 'Pause' ? '0' : '1'
@@ -217,22 +221,15 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
 
   restart(data: any) {
     console.log(data)
-    if (this.additionalParam === "deployment") {
+    if (this.additionalParam === "deployment" || this.additionalParam === "llm") {
       const req = this.params.data;
-      
-      // this.http.restartDeployment(this.envId, this.params.data.name, req).subscribe((res: any) => {
-      //   if (res.success) {
-      //     this.toaster.success('Successfully initiated');
-      //     console.log("Restarted at", res.data?.restartedAt);
-      //   }
-      // });
       const modalRef = this.modalService.open(DeployConfirmationComponent);
       modalRef.componentInstance.message = 'Are you sure you want to redeploy this deployment?';
 
       modalRef.result.then(
         (result) => {
           if (result) {
-            this.http.updateDeployment(req.id, { sourceCode: req?.sourceCode}).subscribe((res: any) => {
+            this.http.updateDeployment(req.id, { sourceCode: req?.sourceCode }).subscribe((res: any) => {
               if (res.status.toLowerCase() === "success") {
                 this.toaster.success('Redeploy initiated');
 

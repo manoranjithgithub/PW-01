@@ -37,6 +37,7 @@ import { ToastrService } from 'ngx-toastr';
 import { LoaderComponent } from '../../loader/loader.component';
 import { ProjectsService } from '../../../../pages/projects/projects.service';
 import { LayoutActionService } from '../../../services/layout-action.service';
+import { environment } from '../../../../../environments/environment';
 
 // function isOverflown(element: HTMLElement) {
 //   return (
@@ -117,7 +118,7 @@ export class DefaultLayoutComponent implements OnInit {
             '/projects/project-preferences',
             '/users-list',
           ];
-          const publicRoutes = ['/', '/login', '/create-account', '/logout', '/login','/forgot-password'];
+          const publicRoutes = ['/', '/login', '/create-account', '/logout', '/login', '/forgot-password'];
           if (this.currentUser !== 'nimbuz') {
             allowedRoutes.push('/users-list');
           }
@@ -231,10 +232,14 @@ export class DefaultLayoutComponent implements OnInit {
     this.sharedService.user$.subscribe((userData: any) => {
       const user = localStorage.getItem('profileSettings') ? JSON.parse(localStorage.getItem('profileSettings') || '{}') : null;
       this.currentUser = user?.owner
-      const baseItems = [...navItems];
+      let baseItems = [...navItems];
+      if (environment.production) {
+        baseItems = baseItems.filter(item => item.name !== 'LLM Deployments');
+      }
       if (user?.owner !== 'nimbuz') {
         baseItems.push({ name: 'Users', url: '/users-list', icon: 'bi bi-people-fill' });
       }
+
       this.navItems = baseItems;
     });
   }

@@ -214,6 +214,24 @@ export const routes: Routes = [
         loadChildren: () =>
           import('./pages/users-list/routes').then((m) => m.routes),
       },
+      {
+        path: 'llm',
+        canActivate: [AuthGuard],
+        loadChildren: () =>
+          import('./pages/llm-deployments/routes').then((m) => m.routes),
+      },
+      {
+        path: 'llm/create-deployment',
+        canActivate: [AuthGuard],
+        loadChildren: () =>
+          import('./pages/llm-deployments/routes').then((m) => m.routes),
+      },
+      {
+        path: 'llm/deployment-details',
+        canActivate: [AuthGuard],
+        loadChildren: () =>
+          import('./pages/llm-deployments/routes').then((m) => m.routes),
+      },
     ],
   },
   {

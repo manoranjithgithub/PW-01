@@ -38,6 +38,9 @@ export class BreadCrumbComponent implements OnInit {
 
       // Use route data for label if set, else use url segment as fallback
       let label = child.snapshot.data['breadcrumb'] || routeURL;
+      if(routeURL == '' && label === 'Home'){
+        url = '/projects'
+      }
 
       if (label) {
         label = label
@@ -46,7 +49,6 @@ export class BreadCrumbComponent implements OnInit {
 
         breadcrumbs.push({ label, url });
       }
-
       // Continue recursively
       this.createBreadcrumbs(child, url, breadcrumbs);
     }

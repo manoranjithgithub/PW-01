@@ -3,6 +3,7 @@ export const environment = {
     auth: {
         baseAuthUrl: 'https://auth.dev.nimbuz.tech',
     },
+    envName: 'dev',
     casdoorConfig: {
         serverUrl: 'https://auth.dev.nimbuz.tech',
         clientId: 'nimbuz',

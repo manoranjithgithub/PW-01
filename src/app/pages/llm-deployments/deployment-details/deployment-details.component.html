@@ -1,0 +1,60 @@
+<div class="container">
+    <c-nav variant="underline-border">
+        <c-nav-item (click)="onTabChange(0)">
+            <a [cTabContent]="tabContent1" [tabPaneIdx]="0" cNavLink class="px-4 py-2">
+                Settings
+            </a>
+        </c-nav-item>
+        <c-nav-item (click)="onTabChange(1)">
+            <a [cTabContent]="tabContent1" [tabPaneIdx]="1" cNavLink class="px-4 py-2">
+                Application logs
+            </a>
+        </c-nav-item>
+        <c-nav-item (click)="onTabChange(2)">
+            <a [cTabContent]="tabContent1" [tabPaneIdx]="2" cNavLink class="px-4 py-2">
+                Metrics
+            </a>
+        </c-nav-item>
+        <c-nav-item (click)="onTabChange(3)">
+            <a [cTabContent]="tabContent1" [tabPaneIdx]="3" cNavLink class="px-4 py-2">
+                Networking
+            </a>
+        </c-nav-item>
+    </c-nav>
+    <c-tab-content #tabContent1="cTabContent" [activeTabPaneIdx]="selectedTabIndex" cRounded="bottom">
+        <c-tab-pane class="p-3 preview" role="tabpanel">
+            <ng-container *ngIf="selectedTabIndex === 0">
+                <app-deployment-settings (closeModalEvent)="closeModalEvent.emit()"
+                    [currentStatus]="lastReleaseStatus" ></app-deployment-settings>
+            </ng-container>
+        </c-tab-pane>
+
+        <c-tab-pane class="p-3 preview" role="tabpanel">
+            <ng-container *ngIf="selectedTabIndex === 1 && appName">
+                <app-deployment-observability (closeModalEvent)="closeModalEvent.emit()"
+                    [appName]="appName"></app-deployment-observability>
+            </ng-container>
+        </c-tab-pane>
+
+        <c-tab-pane class="p-3 preview" role="tabpanel">
+            <ng-container *ngIf="selectedTabIndex === 2">
+                <app-deployment-metrics (closeModalEvent)="closeModalEvent.emit()"></app-deployment-metrics>
+            </ng-container>
+        </c-tab-pane>
+        <c-tab-pane class="p-3 preview" role="tabpanel">
+            <ng-container *ngIf="selectedTabIndex === 3">
+                <app-deployment-networking (closeModalEvent)="closeModalEvent.emit()"
+                    [currentStatus]="lastReleaseStatus"></app-deployment-networking>
+            </ng-container>
+
+        </c-tab-pane>
+
+    </c-tab-content>
+
+    <div class="d-flex justify-content-between ">
+        <button class="btn button-format-outline  mt-3" (click)="goBack()"> <i class="bi bi-arrow-left"></i>
+            Deployments</button>
+        <button class="btn button-format-solid mt-3" (click)="goToNextTab()" *ngIf="selectedTabIndex < 4"
+            [disabled]="lastReleaseStatus === 'Building' ">Submit</button>
+    </div>
+</div>

@@ -71,3 +71,6 @@
 .ag-row-hover:not(.ag-full-width-row)::before {
   background-color: #FFF6F0 !important;
 }
+::ng-deep .ag-icon-first{
+  color: #fff !important;
+}

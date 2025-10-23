@@ -201,7 +201,9 @@ export class CreateDeploymentsComponent
       storage: [null, Validators.pattern('^[0-9]+$')],
       healthEndpoint: [null, Validators.maxLength(250)],
       zipFilename: [{ value: null, disabled: true }],
-      port: ['', [Validators.required, Validators.maxLength(5), Validators.pattern('^[0-9]+$')]],
+      port: ['', [Validators.required, Validators.maxLength(5), Validators.pattern('^[0-9]+$'),
+        Validators.min(1),Validators.max(65535)
+      ]],
     });
     this.repoListForm = this._fb.group({
       selectedRepo: ['', Validators.required],

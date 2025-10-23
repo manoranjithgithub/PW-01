@@ -15,7 +15,7 @@
   </ul>
 </div>
 
-<div class="custom-dropdown d-inline-block"  *ngIf="additionalParam === 'deployment'">
+<div class="custom-dropdown d-inline-block"  *ngIf="additionalParam === 'deployment' || additionalParam === 'llm'">
   <button #dropdownBtnDep class="btn btn-icon" type="button" (click)="toggleDropdown($event, dropdownBtnDep)">
     <i class="bi bi-three-dots-vertical"></i>
   </button>
