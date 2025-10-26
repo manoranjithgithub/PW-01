@@ -31,8 +31,13 @@ build:
     DOCKER_TLS_CERTDIR: ""
   script:
     - echo $CI_REGISTRY
+    - apk add --no-cache aws-cli
+    - aws ecr describe-repositories --repository-names microservices/${CI_PROJECT_NAME} --region ap-southeast-1 || aws ecr create-repository --repository-name microservices/${CI_PROJECT_NAME} --region ap-southeast-1
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - aws ecr get-login-password --region ap-southeast-1 | docker login --username AWS --password-stdin 096985928716.dkr.ecr.ap-southeast-1.amazonaws.com
     - docker build -t registry.dilligentech.com/dt/paas/nimbuz-portal-fe:dev --build-arg ENV=dev .
+    - docker tag registry.dilligentech.com/dt/paas/${CI_PROJECT_NAME}:dev 096985928716.dkr.ecr.ap-southeast-1.amazonaws.com/microservices/${CI_PROJECT_NAME}:dev
+    - docker push 096985928716.dkr.ecr.ap-southeast-1.amazonaws.com/microservices/${CI_PROJECT_NAME}:dev
     - docker push registry.dilligentech.com/dt/paas/nimbuz-portal-fe:dev
   only:
     - dev
@@ -49,9 +54,12 @@ image-release:
     DOCKER_TLS_CERTDIR: ""
   script:
     - echo $CI_REGISTRY
-    - apk add jq
+    - apk add --no-cache aws-cli jq
+    - aws ecr get-login-password --region ap-southeast-1 | docker login --username AWS --password-stdin 096985928716.dkr.ecr.ap-southeast-1.amazonaws.com
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker build -t registry.dilligentech.com/dt/paas/nimbuz-portal-fe:$(jq .version package.json -r) --build-arg ENV=prod .
+    - docker tag registry.dilligentech.com/dt/paas/${CI_PROJECT_NAME}:$(jq .version package.json -r) 096985928716.dkr.ecr.ap-southeast-1.amazonaws.com/microservices/${CI_PROJECT_NAME}:$(jq .version package.json -r)
+    - docker push 096985928716.dkr.ecr.ap-southeast-1.amazonaws.com/microservices/${CI_PROJECT_NAME}:$(jq .version package.json -r)
     - docker push registry.dilligentech.com/dt/paas/nimbuz-portal-fe:$(jq .version package.json -r)
   only:
     - main
@@ -66,7 +74,7 @@ deploy:
     - mv linux-amd64/helm /usr/bin/
     - rm -rf linux-amd64
     - helm repo add --username $HELM_REGISTRY_USER --password $HELM_REGISTRY_TOKEN dt-charts ${CI_API_V4_URL}/projects/34/packages/helm/stable
-    - helm upgrade --install portal dt-charts/microservice --set namespace=paas-dev --set env=dev --set subDomain=app --set appName=portal --set image.repository=registry.dilligentech.com/dt/paas/nimbuz-portal-fe --set image.tag=dev --set image.pullPolicy=Always --set service.targetPort=80 --namespace paas-dev
+    - helm upgrade --install portal dt-charts/microservice --set namespace=paas-dev --set env=dev --set subDomain=app --set appName=portal --set image.repository=096985928716.dkr.ecr.ap-southeast-1.amazonaws.com/microservices/nimbuz-portal-fe --set image.tag=dev --set image.pullPolicy=Always --set service.targetPort=80 --namespace paas-dev
   only:
     - dev
 
@@ -81,6 +89,6 @@ deploy-prod:
     - mv linux-amd64/helm /usr/bin/
     - rm -rf linux-amd64
     - helm repo add --username $HELM_REGISTRY_USER --password $HELM_REGISTRY_TOKEN dt-charts ${CI_API_V4_URL}/projects/34/packages/helm/stable
-    - helm upgrade --install portal dt-charts/microservice --set namespace=nimbuz-prod --set env=prod --set subDomain=app --set appName=portal --set image.repository=registry.dilligentech.com/dt/paas/nimbuz-portal-fe --set image.tag=$(jq .version package.json -r) --set image.pullPolicy=Always --set service.targetPort=80 --namespace nimbuz-prod
+    - helm upgrade --install portal dt-charts/microservice --set namespace=nimbuz-prod --set env=prod --set subDomain=app --set appName=portal --set image.repository=096985928716.dkr.ecr.ap-southeast-1.amazonaws.com/microservices/${CI_PROJECT_NAME} --set image.tag=$(jq .version package.json -r) --set image.pullPolicy=Always --set service.targetPort=80 --namespace nimbuz-prod
   only:
     - main
