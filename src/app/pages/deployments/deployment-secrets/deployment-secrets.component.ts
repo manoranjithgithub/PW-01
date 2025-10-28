@@ -135,7 +135,7 @@ export class DeploymentSecretsComponent implements OnInit {
 
     if (this.secretForm.valid) {
       const rules = this.secretForm.value.rules;
-      if (this.editIndex !== null) {
+      if (this.editIndex && this.editIndex >= 0) {
         const updatedSecret = {
           EnvVariable: rules[0].name,
           Value: rules[0].value
@@ -157,10 +157,8 @@ export class DeploymentSecretsComponent implements OnInit {
         uniqueMap.set(item.EnvVariable, item);
       });
       this.secretList = Array.from(uniqueMap.values());
-      if (!this.canAddVariables) {
-        this.secretDetails.emit({ data: this.secretList });
-        return;
-      }
+      this.secretDetails.emit({ data: this.secretList });
+
 
       this.addEnvVariables(this.secretList);
       this.rulesFormArray.clear();
@@ -175,7 +173,7 @@ export class DeploymentSecretsComponent implements OnInit {
 
   onVariablesUpdated(updated: { EnvVariable: string; Value: string }[]) {
     this.secretList = updated;
-    this.addEnvVariables(this.secretList);
+    this.addSecret();
   }
   addEnvVariables(data: any) {
     const req = {
@@ -185,6 +183,7 @@ export class DeploymentSecretsComponent implements OnInit {
       }, {} as { [key: string]: string }),
 
     }
+
     if (this.deploymentId) {
       this.deploymentsService.updateDeployment(this.deploymentId, req).subscribe({
         next: (res: any) => {
@@ -252,28 +251,22 @@ export class DeploymentSecretsComponent implements OnInit {
           this.editIndex = -1;
 
           const req = {
-            environmentId: this.storedEnvironment?.id,
-            name: this.deploymentdetails?.name,
-            environment: this.secretList.reduce((acc: any, item: any) => {
+            secret: this.secretList.reduce((acc: any, item: any) => {
               acc[item.EnvVariable] = item.Value;
               return acc;
             }, {} as { [key: string]: string }),
-            application: this.deploymentdetails?.application,
-            sourceCode: this.deploymentdetails?.sourceCode,
-            network: this.deploymentdetails?.network,
-            config: this.deploymentdetails?.config,
-            secret: this.deploymentdetails?.secret,
-
           }
-          this.deploymentsService.createDeployement(req).subscribe({
-            next: (res: any) => {
-              console.log(res);
-              this.secretList = this.mapEnvVariables(res.data.environment || {});
-            },
-            error: (err) => {
-              this.toaster.error(err);
-            }
-          });
+          if (this.deploymentId) {
+            this.deploymentsService.updateDeployment(this.deploymentId, req).subscribe({
+              next: (res: any) => {
+                console.log(res);
+                this.secretList = this.mapEnvVariables(res.data.secret || {});
+              },
+              error: (err) => {
+                this.toaster.error(err);
+              }
+            });
+          }
         }
       });
   }
@@ -289,8 +282,8 @@ export class DeploymentSecretsComponent implements OnInit {
     // }
 
     if (!this.canAddVariables && this.secretDataFromParent?.data) {
-      const newVariables = this.mapEnvVariables(this.secretDataFromParent.data);
-      this.secretList = [...this.secretList, ...newVariables];
+      // const newVariables = this.mapEnvVariables(this.secretDataFromParent.data);
+      this.secretList = this.secretDataFromParent.data;
     }
   }
 }

@@ -51,7 +51,7 @@ export class RawEditorComponent implements OnChanges {
   }
 
   updateVariables() {
-    console.log('Updated Variables:', this.activeTab === 'env' ? this.envData : this.jsonData);
+    // console.log('Updated Variables:', this.activeTab === 'env' ? this.envData : this.jsonData);
     try {
       const parsed = JSON.parse(this.jsonData);
       const result: { EnvVariable: string; Value: string }[] = Object.entries(parsed).map(
