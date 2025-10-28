@@ -260,7 +260,7 @@ export class DeploymentSecretsComponent implements OnInit {
             this.deploymentsService.updateDeployment(this.deploymentId, req).subscribe({
               next: (res: any) => {
                 console.log(res);
-                this.secretList = this.mapEnvVariables(res.data.secret || {});
+                // this.secretList = this.mapEnvVariables(res.data.secret || {});
               },
               error: (err) => {
                 this.toaster.error(err);
@@ -284,6 +284,8 @@ export class DeploymentSecretsComponent implements OnInit {
     if (!this.canAddVariables && this.secretDataFromParent?.data) {
       // const newVariables = this.mapEnvVariables(this.secretDataFromParent.data);
       this.secretList = this.secretDataFromParent.data;
+    }else{
+      this.secretList = this.mapEnvVariables(this.deploymentdetails?.secret || {});
     }
   }
 }
