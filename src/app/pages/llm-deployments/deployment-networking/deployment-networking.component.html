@@ -15,7 +15,7 @@
         <input type="text" class="form-control custom-values" [value]="'https://' + networkSettingsForm.get('host')?.value" name="ingressDomain"
           readonly>
         <button class="btn btn-outline-secondary" type="button" title="Copy domain"
-          (click)="copyDomain('https://' + ingressDomain)">
+          (click)="copyDomain('https://' + networkSettingsForm.get('host')?.value)">
           <i class="bi bi-clipboard"></i>
         </button>
         <button class="btn" title="Delete endpoint" (click)="deleteEndpoint()"> <i
