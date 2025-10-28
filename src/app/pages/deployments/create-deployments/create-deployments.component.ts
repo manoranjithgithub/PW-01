@@ -168,7 +168,7 @@ export class CreateDeploymentsComponent
   fromReview: boolean = false;
   parsedConfigData: any
   invalidFileFormat: boolean = false;
-  submitted:boolean = false
+  submitted: boolean = false
 
   constructor(
     private _fb: FormBuilder,
@@ -202,7 +202,7 @@ export class CreateDeploymentsComponent
       healthEndpoint: [null, Validators.maxLength(250)],
       zipFilename: [{ value: null, disabled: true }],
       port: ['', [Validators.required, Validators.maxLength(5), Validators.pattern('^[0-9]+$'),
-        Validators.min(1),Validators.max(65535)
+      Validators.min(1), Validators.max(65535)
       ]],
     });
     this.repoListForm = this._fb.group({
@@ -219,17 +219,17 @@ export class CreateDeploymentsComponent
 
   ngOnInit(): void {
     this.currentProjectId = JSON.parse(localStorage.getItem('project') || '{}').id || '';
-      if (this.currentProjectId) {
-        this.projectService.getProjectDetailsById(this.currentProjectId).subscribe((res: any) => {
-          const vcsProfileInfo = {
-            github: res.data.github,
-            gitlab: res.data.gitlab
-          }
-          localStorage.setItem('vcsProfileInfo', JSON.stringify(vcsProfileInfo));
-          
+    if (this.currentProjectId) {
+      this.projectService.getProjectDetailsById(this.currentProjectId).subscribe((res: any) => {
+        const vcsProfileInfo = {
+          github: res.data.github,
+          gitlab: res.data.gitlab
+        }
+        localStorage.setItem('vcsProfileInfo', JSON.stringify(vcsProfileInfo));
 
-        });
-      }
+
+      });
+    }
 
     // this.wsSubscription = this.websocketService.getMessages().subscribe({
     //   next: (message) => {
@@ -948,6 +948,11 @@ export class CreateDeploymentsComponent
   }
 
   private buildRequest(fileName: string | null, filePath: string | null): any {
+    const secretObj = this.secretData?.data?.reduce((acc: any, item: any) => {
+      acc[item.EnvVariable] = item.Value;
+      return acc;
+    }, {});
+
     const ephemeralStorage = this.stepOneForm.value.ephemeralStorage
       ? `${this.stepOneForm.value.ephemeralStorage}Gi`
       : null;
@@ -983,7 +988,7 @@ export class CreateDeploymentsComponent
         path: filePath || null,
         data: this.parsedConfigData || null,
       },
-      secret: this.secretData?.data || null,
+      secret: secretObj || null,
       environment: this.envData?.data || null
     };
   }

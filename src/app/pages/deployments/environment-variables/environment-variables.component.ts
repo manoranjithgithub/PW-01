@@ -129,7 +129,7 @@ export class EnvironmentVariablesComponent implements OnInit {
     if (this.newVariableForm.valid) {
       const rules = this.newVariableForm.value.rules;
 
-      if (this.editIndex !== null) {
+      if (this.editIndex && this.editIndex >= 0) {
         const updatedVar = {
           EnvVariable: rules[0].name,
           Value: rules[0].value
@@ -165,7 +165,7 @@ export class EnvironmentVariablesComponent implements OnInit {
   }
 
   onVariablesUpdated(updated: { EnvVariable: string; Value: string }[]) {
-    console.log('Received from child:', updated);
+    // console.log('Received from child:', updated);
     this.envList = updated;
     this.addEnvVariables(this.envList);
   }
@@ -232,15 +232,17 @@ export class EnvironmentVariablesComponent implements OnInit {
             }, {} as { [key: string]: string }),
 
           }
-          this.deploymentsService.updateDeployment(this.deploymentId, req).subscribe({
-            next: (res: any) => {
-              console.log(res);
-              this.envList = this.mapEnvVariables(res.data.environment || {});
-            },
-            error: (err) => {
-              this.toaster.error(err);
-            }
-          });
+          if (this.deploymentId) {
+            this.deploymentsService.updateDeployment(this.deploymentId, req).subscribe({
+              next: (res: any) => {
+                console.log(res);
+                this.envList = this.mapEnvVariables(res.data.environment || {});
+              },
+              error: (err) => {
+                this.toaster.error(err);
+              }
+            });
+          }
 
           // this.deploymentsService.createConfigdata(this.storedEnvironment?.id, req).subscribe((res: any) => {
           //   console.log(res);
