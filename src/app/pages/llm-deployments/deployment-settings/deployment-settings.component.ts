@@ -23,6 +23,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { NgbPopoverModule } from '@ng-bootstrap/ng-bootstrap';
 import { concatMap, tap } from 'rxjs';
 import { DeploymentsService } from '../../deployments/deployment.service';
+import { LLMDeploymentsService } from '../llm-deployment.service';
 @Component({
   selector: 'app-deployment-settings',
   standalone: true,
@@ -33,7 +34,7 @@ import { DeploymentsService } from '../../deployments/deployment.service';
     FormCheckComponent, FormsModule, TooltipDirective, AlertComponent, MatIconModule, NgbPopoverModule],
   templateUrl: './deployment-settings.component.html',
   styleUrl: './deployment-settings.component.scss',
-  providers: [DeploymentsService],
+  providers: [LLMDeploymentsService],
   encapsulation: ViewEncapsulation.None
 })
 export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
@@ -98,8 +99,8 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
   freezeAddNewData: boolean = false;
   endpointStatus: string = '';
   s3FileKey: string = '';
-
-  constructor(private fb: FormBuilder, private sharedService: SharedService, private deploymentService: DeploymentsService,
+  envId: string = '';
+  constructor(private fb: FormBuilder, private sharedService: SharedService, private deploymentService: LLMDeploymentsService,
     private toaster: ToastrService, private modalService: NgbModal, private route: Router, private ac: ActivatedRoute,
     private viewportScroller: ViewportScroller
   ) { }
@@ -117,7 +118,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
     this.freezeAddNewData = this.currentStatus && this.currentStatus?.toLowerCase() === 'building' ? true : false;
     // const environment = this.sharedService.getCookie('environment');
     const environment = localStorage.getItem('environment');
-    const envId = environment ? JSON.parse(environment).id : null;
+    this.envId = environment ? JSON.parse(environment).id : null;
 
     this.ac.queryParams.subscribe(params => {
       this.deploymentId = params['id'];
@@ -128,14 +129,19 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
     });
 
     this.generalSettingsForm = this.fb.group({
-      llmId: ['', Validators.maxLength(40)],
-      instanceType: ['', Validators.required],
-      replicas: ['', Validators.required],
       storage: [null, Validators.pattern("^[0-9]+$")],
+      name: ['', [Validators.required]],
+      modelId: ['', Validators.required],
+      replicas: [1, [Validators.required]],
+      instanceType: [{ value: 'femto.m', disabled: true }],
+      contextLength: [512, [Validators.required]],
+      storageSize: [10, [Validators.required]],
+      ephemeralStorageSize: [10, [Validators.required]],
+      environmentId: [''],
     })
     this.ac.queryParams.subscribe(params => {
-      const depolyementId = params['id'];
-      this.deploymentService.getDeploymentById(depolyementId).subscribe((res: any) => {
+      const deploymentId = params['id'];
+      this.deploymentService.getDeploymentById(deploymentId, this.envId).subscribe((res: any) => {
         this.deploymentdetails = res.data;
         //this.networkSettingsForm.get('service')?.setValue(this.deploymentdetails?.name)
         this.getDeploymentById();
@@ -175,27 +181,27 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
       // console.log("Selected Object:", this.selectedResource);
     });
 
-    this.deploymentService.getAuthenticatedresponse(envId, this.deploymentId).subscribe((res: any) => {
-      this.showAuthenticationData = res.data;
-      this.endpointStatus = res.data?.status;
-      const customDomain = res.data.customDomain || '';
-      const authentication = this.showAuthenticationData?.authentication || null;
+    // this.deploymentService.getAuthenticatedresponse(envId, this.deploymentId).subscribe((res: any) => {
+    //   this.showAuthenticationData = res.data;
+    //   this.endpointStatus = res.data?.status;
+    //   const customDomain = res.data.customDomain || '';
+    //   const authentication = this.showAuthenticationData?.authentication || null;
 
-      if (customDomain) { this.isHostDisabled = true; }
-      this.customDnsHost.setValue(customDomain);
+    //   if (customDomain) { this.isHostDisabled = true; }
+    //   this.customDnsHost.setValue(customDomain);
 
-      if (authentication) {
-        this.networkSettingsForm.get('showAuthentication')?.setValue(true);
-      }
+    //   if (authentication) {
+    //     this.networkSettingsForm.get('showAuthentication')?.setValue(true);
+    //   }
 
-      const authGroup = this.networkSettingsForm?.get('authentication') as FormGroup;
-      if (authGroup && authentication.username && authentication.password) {
-        authGroup.patchValue({
-          username: authentication.username,
-          password: authentication.password
-        });
-      }
-    });
+    //   const authGroup = this.networkSettingsForm?.get('authentication') as FormGroup;
+    //   if (authGroup && authentication.username && authentication.password) {
+    //     authGroup.patchValue({
+    //       username: authentication.username,
+    //       password: authentication.password
+    //     });
+    //   }
+    // });
 
 
   }
@@ -205,7 +211,8 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
   getDeploymentById(): void {
     // const regionCookie = this.sharedService.getCookie('region');
     const regionCookie = localStorage.getItem('region');
-    this.deploymentService.getDeploymentById(this.deploymentdetails?.id).subscribe((res: any) => {
+    
+    this.deploymentService.getDeploymentById(this.deploymentdetails?.name, this.envId).subscribe((res: any) => {
       if (res.status.toLowerCase() === "success") {
         // this.ingressDomain = res.data?.app_ingress_domain;
         // this.showCustomDnsHost = !!res.data.is_custom_dns;
@@ -216,20 +223,8 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
         const provider = cleanUrl?.split('/')[2]?.split('.')[0] || '';
         const repoUrl = cleanUrl;
         const branchName = branch || '';
-
-        this.generalSettingsForm.patchValue({
-          name: res.data.name,
-          instanceType: res.data.application?.instanceType,
-          region: regionCookie,
-          replicas: res.data.application?.replicas,
-          ephemeralStorage: res.data.application?.ephemeralStorage ? res.data.application?.ephemeralStorage.replace(/Gi$/, '') : null,
-          storage: res.data.application?.storage,
-          healthEndpoint: res.data.network?.healthEndpoint,
-          port: res.data.network?.port,
-          buildCommand: res.data.buildConfig?.buildCommand,
-          startCommand: res.data.buildConfig?.startCommand,
-          installCommand: res.data.buildConfig?.installCommand
-        });
+        console.log(res)
+        this.generalSettingsForm.patchValue(res.data);
 
         const initialValues = this.generalSettingsForm.value;
 

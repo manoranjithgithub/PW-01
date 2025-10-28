@@ -24,8 +24,8 @@ export class LLMDeploymentsService {
             );
     }
 
-    getDeploymentById(deploymentId: string) {
-        return this.http.get(`${this.deploymentManagement}/llm-deployments/${deploymentId}`)
+    getDeploymentById(deploymentId: string, envId: string) {
+        return this.http.get(`${this.deploymentManagement}/llm-deployments/${deploymentId}?environmentId=${envId}`)
             .pipe(
                 catchError(this.handleError.bind(this))
             );

@@ -219,7 +219,7 @@ export class DeploymentListComponent implements OnInit, OnDestroy {
   gotoAction(params: any) {
     console.log(params)
     // this.sidebarService.hideSidebar();
-    this.router.navigate(['/llm/deployment-details'], { queryParams: { id: params.id } })
+    this.router.navigate(['/llm/deployment-details'], { queryParams: { id: params.name } })
     // this.openDetailsModal(params);
   }
   goToNewDeployModel() {

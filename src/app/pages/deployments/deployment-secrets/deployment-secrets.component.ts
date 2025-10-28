@@ -157,6 +157,10 @@ export class DeploymentSecretsComponent implements OnInit {
         uniqueMap.set(item.EnvVariable, item);
       });
       this.secretList = Array.from(uniqueMap.values());
+      if (!this.canAddVariables) {
+        this.secretDetails.emit({ data: this.secretList });
+        return;
+      }
 
       this.addEnvVariables(this.secretList);
       this.rulesFormArray.clear();
