@@ -5,38 +5,51 @@
 
         <div class="row">
             <div class="col-md-6 mb-3">
-                <label for="llmId" class="form-label">LLM ID</label>
-                <input type="text" id="llmId" class="form-control" formControlName="llmId" placeholder="Enter LLM ID" />
+                <label for="name" class="form-label">Name</label>
+                <input type="text" id="name" class="form-control" formControlName="name" placeholder="Enter name" />
                 <div class="text-danger mt-1" *ngIf="
-                deploymentForm.get('llmId')?.hasError('required') &&
+                deploymentForm.get('name')?.hasError('required') &&
                 (submitted ||
-                  deploymentForm.get('llmId')?.touched ||
-                  deploymentForm.get('llmId')?.dirty)
+                  deploymentForm.get('name')?.touched ||
+                  deploymentForm.get('name')?.dirty)
               ">
-                    LLM ID is required.
+                    Name is required.
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="modelId" class="form-label">Model ID</label>
+                <input type="text" id="modelId" class="form-control" formControlName="modelId"
+                    placeholder="Enter Model ID" />
+                <div class="text-danger mt-1" *ngIf="
+                deploymentForm.get('modelId')?.hasError('required') &&
+                (submitted ||
+                  deploymentForm.get('modelId')?.touched ||
+                  deploymentForm.get('modelId')?.dirty)
+              ">
+                    Model ID is required.
                 </div>
             </div>
 
             <div class="col-md-6 mb-3">
-                <label for="replica" class="form-label">Replica</label>
-                <input type="number" id="replica" class="form-control" formControlName="replica"
+                <label for="replica" class="form-label">Replicas</label>
+                <input type="number" id="replica" class="form-control" formControlName="replicas"
                     placeholder="Enter number of replicas" />
                 <div class="text-danger mt-1" *ngIf="
-                (deploymentForm.get('replica')?.hasError('required')) &&
+                (deploymentForm.get('replicas')?.hasError('required')) &&
                 (submitted ||
-                  deploymentForm.get('replica')?.touched ||
-                  deploymentForm.get('replica')?.dirty)
+                  deploymentForm.get('replicas')?.touched ||
+                  deploymentForm.get('replicas')?.dirty)
               ">
-                    Replica count is required.</div>
+                    Replicas count is required.</div>
             </div>
-        </div>
-
-        <div class="row">
             <!-- Instance Type (Hardcoded) -->
             <div class="col-md-6 mb-3">
                 <label class="form-label">Instance Type</label>
                 <input type="text" class="form-control" formControlName="instanceType" readonly />
             </div>
+        </div>
+
+        <div class="row">
 
             <!-- Context Length -->
             <div class="col-md-6 mb-3">
@@ -53,18 +66,30 @@
 
                 </div>
             </div>
+            <div class="col-md-6 mb-3">
+                <label for="storage" class="form-label">Storage (Gi)</label>
+                <input type="number" id="storage" class="form-control" formControlName="storageSize"
+                    placeholder="Enter storage size" />
+                <div class="text-danger mt-1" *ngIf="
+                (deploymentForm.get('storageSize')?.hasError('required')) &&
+                (submitted ||
+                  deploymentForm.get('storageSize')?.touched ||
+                  deploymentForm.get('storageSize')?.dirty)
+              ">Storage size is required.</div>
+            </div>
         </div>
+
 
         <div class="row">
             <div class="col-md-6 mb-3">
-                <label for="storage" class="form-label">Storage (GB)</label>
-                <input type="number" id="storage" class="form-control" formControlName="storage"
-                    placeholder="Enter storage size" />
+                <label for="ephemeralStorageSize" class="form-label">Ephemeral Storage (Gi)</label>
+                <input type="number" id="ephemeralStorageSize" class="form-control"
+                    formControlName="ephemeralStorageSize" placeholder="Enter storage size" />
                 <div class="text-danger mt-1" *ngIf="
-                (deploymentForm.get('storage')?.hasError('required')) &&
+                (deploymentForm.get('ephemeralStorageSize')?.hasError('required')) &&
                 (submitted ||
-                  deploymentForm.get('storage')?.touched ||
-                  deploymentForm.get('storage')?.dirty)
+                  deploymentForm.get('ephemeralStorageSize')?.touched ||
+                  deploymentForm.get('ephemeralStorageSize')?.dirty)
               ">Storage size is required.</div>
             </div>
         </div>

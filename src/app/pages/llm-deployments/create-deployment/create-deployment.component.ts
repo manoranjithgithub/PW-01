@@ -2,6 +2,8 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LLMDeploymentsService } from '../llm-deployment.service';
+import { ToastrService } from 'ngx-toastr';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-create-deployment',
@@ -14,18 +16,24 @@ import { LLMDeploymentsService } from '../llm-deployment.service';
 export class CreateDeploymentComponent implements OnInit {
   deploymentForm!: FormGroup;
   submitted = false;
-  constructor(private fb: FormBuilder, private http:LLMDeploymentsService) {
+  envId = '';
+  constructor(private fb: FormBuilder, private http: LLMDeploymentsService,
+     private toastr: ToastrService, private router: Router) {
 
   }
 
   ngOnInit(): void {
     this.deploymentForm = this.fb.group({
-      llmId: ['', Validators.required],
-      replica: [1, [Validators.required]],
+      name: ['', [Validators.required]],
+      modelId: ['', Validators.required],
+      replicas: [1, [Validators.required]],
       instanceType: [{ value: 'femto.m', disabled: true }],
       contextLength: [512, [Validators.required]],
-      storage: [10, [Validators.required]],
+      storageSize: [10, [Validators.required]],
+      ephemeralStorageSize: [10, [Validators.required]],
+      environmentId: [''],
     });
+    this.envId = JSON.parse(`${localStorage.getItem('environment')}`).id || '';
   }
   get f() {
     return this.deploymentForm.controls;
@@ -35,12 +43,34 @@ export class CreateDeploymentComponent implements OnInit {
     return control.hasError(errorType) && control.touched;
   }
   onSubmit() {
+    this.deploymentForm.get('environmentId')?.setValue(this.envId);
     this.submitted = true;
     if (this.deploymentForm.invalid) {
       return;
     }
-    this.http.createDeployement(this.deploymentForm.getRawValue()).subscribe(res => {
-    console.log('Deployment Data:', res);
-    })
+    const raw = this.deploymentForm.getRawValue();
+    const appendGi = (val: any) => {
+      if (val === null || val === undefined) return val;
+      const s = String(val);
+      return s.endsWith('Gi') ? s : `${s}Gi`;
+    };
+
+    const payload = {
+      ...raw,
+      storageSize: appendGi(raw.storageSize),
+      ephemeralStorageSize: appendGi(raw.ephemeralStorageSize),
+    };
+
+    this.http.createDeployement(payload).subscribe({
+      next: (res: any) => {
+        const msg = res?.message || 'Deployment created';
+        this.toastr.success(msg);
+        this.router.navigate(['llm/list']);
+      },
+      error: (err: any) => {
+        const errMsg = err?.message || 'Failed to create deployment';
+        this.toastr.error(errMsg);
+      }
+    });
   }
 }

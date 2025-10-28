@@ -27,7 +27,7 @@ export class ReviewScreenComponent implements OnInit {
     private location: Location, private shared: SharedService, private toaster: ToastrService) { }
 
   ngOnInit() {
-    console.log(this.generalDetails)
+    console.log(this.secretData)
     console.log(this.configFileData)
   }
 

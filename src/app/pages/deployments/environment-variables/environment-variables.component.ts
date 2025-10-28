@@ -129,7 +129,7 @@ export class EnvironmentVariablesComponent implements OnInit {
     if (this.newVariableForm.valid) {
       const rules = this.newVariableForm.value.rules;
 
-      if (this.editIndex !== null) {
+      if (this.editIndex && this.editIndex >= 0) {
         const updatedVar = {
           EnvVariable: rules[0].name,
           Value: rules[0].value
@@ -165,7 +165,7 @@ export class EnvironmentVariablesComponent implements OnInit {
   }
 
   onVariablesUpdated(updated: { EnvVariable: string; Value: string }[]) {
-    console.log('Received from child:', updated);
+    // console.log('Received from child:', updated);
     this.envList = updated;
     this.addEnvVariables(this.envList);
   }
@@ -226,28 +226,23 @@ export class EnvironmentVariablesComponent implements OnInit {
           this.envList.splice(index, 1);
           this.editIndex = -1;
           const req = {
-            environmentId: this.storedEnvironment?.id,
-            name: this.deploymentdetails?.name,
             environment: this.envList.reduce((acc: any, item: any) => {
               acc[item.EnvVariable] = item.Value;
               return acc;
             }, {} as { [key: string]: string }),
-            application: this.deploymentdetails?.application,
-            sourceCode: this.deploymentdetails?.sourceCode,
-            network: this.deploymentdetails?.network,
-            config: this.deploymentdetails?.config,
-            secret: this.deploymentdetails?.secret,
 
           }
-          this.deploymentsService.createDeployement(req).subscribe({
-            next: (res: any) => {
-              console.log(res);
-              this.envList = this.mapEnvVariables(res.data.environment || {});
-            },
-            error: (err) => {
-              this.toaster.error(err);
-            }
-          });
+          if (this.deploymentId) {
+            this.deploymentsService.updateDeployment(this.deploymentId, req).subscribe({
+              next: (res: any) => {
+                console.log(res);
+                this.envList = this.mapEnvVariables(res.data.environment || {});
+              },
+              error: (err) => {
+                this.toaster.error(err);
+              }
+            });
+          }
 
           // this.deploymentsService.createConfigdata(this.storedEnvironment?.id, req).subscribe((res: any) => {
           //   console.log(res);

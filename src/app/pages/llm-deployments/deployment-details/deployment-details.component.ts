@@ -8,11 +8,11 @@ import { LayoutActionService } from '../../../shared/services/layout-action.serv
 import { ToastrService } from 'ngx-toastr';
 import { ConfirmationModalComponent } from '../../../shared/components/modal/confirmation-modal/confirmation-modal.component';
 import { NavComponent, NavItemComponent, NavLinkDirective, TabContentComponent, TabContentRefDirective, TabPaneComponent } from '@coreui/angular';
-import { DeploymentsService } from '../../deployments/deployment.service';
 import { DeploymentObservabilityComponent } from '../deployment-observability/deployment-observability.component';
 import { DeploymentMetricsComponent } from '../deployment-metrics/deployment-metrics.component';
 import { DeploymentNetworkingComponent } from '../deployment-networking/deployment-networking.component';
 import { DeploymentSettingsComponent } from '../deployment-settings/deployment-settings.component';
+import { LLMDeploymentsService } from '../llm-deployment.service';
 
 @Component({
   selector: 'app-deployment-details',
@@ -23,7 +23,7 @@ import { DeploymentSettingsComponent } from '../deployment-settings/deployment-s
     NavComponent, NavItemComponent, NavLinkDirective, TabContentRefDirective,
     TabContentComponent, TabPaneComponent, DeploymentObservabilityComponent, DeploymentMetricsComponent,
   DeploymentNetworkingComponent, DeploymentSettingsComponent, ],
-  providers: [DeploymentsService]
+  providers: [LLMDeploymentsService],
 })
 export class DeploymentDetailsComponent implements OnInit, OnDestroy {
   @Output() closeModalEvent = new EventEmitter<void>();
@@ -34,19 +34,20 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
 
   messages: any[] = [];
   appName: string = '';
+  envId: string = '';
 
   constructor(private router: Router, private modalService: NgbModal, private sharedService: SharedService,
     private layoutActionService: LayoutActionService, private location: Location,
-    private activateRoute: ActivatedRoute, private toastr: ToastrService, private deploymentService: DeploymentsService) { }
+    private activateRoute: ActivatedRoute, private toastr: ToastrService, private deploymentService: LLMDeploymentsService) { }
 
   ngOnInit(): void {
-
+    this.envId = JSON.parse(`${localStorage.getItem('environment')}`).id || '';
     this.activateRoute.queryParams.pipe(takeUntil(this.destroy$),
       switchMap(params => {
         if (params['id'] != undefined) {
           this.deploymentId = params['id'];
           this.selectedTabIndex = Number(params['tabIndex']) || 0;
-          return this.deploymentService.getDeploymentById(this.deploymentId);
+          return this.deploymentService.getDeploymentById(this.deploymentId, this.envId);
           return '';
         }
         return [];
@@ -54,8 +55,8 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
       .subscribe((data: any) => {
         this.appName = data?.data.name;
         if (data.status.toLowerCase() === 'success') {
-          this.deploymentService.getReleasesByDeploymentId(this.deploymentId).subscribe((res: any) => {
-            const releaseData = res?.data?.releases[0];
+          this.deploymentService.getDeploymentById(this.deploymentId, this.envId).subscribe((res: any) => {
+            const releaseData = res?.data;
             this.sharedService.setlastReleaseStatus(releaseData.status);
             this.lastReleaseStatus = this.sharedService.getlastReleaseStatus() ?? '';
           });
@@ -115,7 +116,7 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
 
   }
   goBack() {
-    this.router.navigate(['/deployment'])
+    this.router.navigate(['llm/list'])
   }
   onLayoutButtonClick() {
     const modalRef = this.modalService.open(ConfirmationModalComponent);

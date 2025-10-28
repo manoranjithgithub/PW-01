@@ -125,8 +125,8 @@
             <div class="row mb-4">
                 <div *ngFor="let entry of objectKeys(secretData?.data)" class="col-md-6">
                     <div class="env-row">
-                        <label class="env-label">{{entry}} :</label>
-                        <span class="env-value" title="{{secretData?.data[entry]}}">{{secretData?.data[entry]}}</span>
+                        <label class="env-label">{{secretData?.data[entry].EnvVariable}} :</label>
+                        <span class="env-value" title="{{secretData?.data[entry].Value}}">{{secretData?.data[entry].Value}}</span>
                     </div>
                 </div>
             </div>
