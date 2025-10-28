@@ -226,20 +226,13 @@ export class EnvironmentVariablesComponent implements OnInit {
           this.envList.splice(index, 1);
           this.editIndex = -1;
           const req = {
-            environmentId: this.storedEnvironment?.id,
-            name: this.deploymentdetails?.name,
             environment: this.envList.reduce((acc: any, item: any) => {
               acc[item.EnvVariable] = item.Value;
               return acc;
             }, {} as { [key: string]: string }),
-            application: this.deploymentdetails?.application,
-            sourceCode: this.deploymentdetails?.sourceCode,
-            network: this.deploymentdetails?.network,
-            config: this.deploymentdetails?.config,
-            secret: this.deploymentdetails?.secret,
 
           }
-          this.deploymentsService.createDeployement(req).subscribe({
+          this.deploymentsService.updateDeployment(this.deploymentId, req).subscribe({
             next: (res: any) => {
               console.log(res);
               this.envList = this.mapEnvVariables(res.data.environment || {});

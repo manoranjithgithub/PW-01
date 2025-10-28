@@ -18,6 +18,7 @@ import { ActivatedRoute } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { MatIconModule } from '@angular/material/icon';
 import { DeploymentsService } from '../../deployments/deployment.service';
+import { LLMDeploymentsService } from '../llm-deployment.service';
 @Component({
   selector: 'app-deployment-networking',
   standalone: true,
@@ -33,7 +34,7 @@ import { DeploymentsService } from '../../deployments/deployment.service';
     FormsModule, ModalComponent, ReactiveFormsModule, MatIconModule, NgbPopoverModule],
   templateUrl: './deployment-networking.component.html',
   styleUrl: './deployment-networking.component.scss',
-  providers: [DeploymentsService],
+  providers: [LLMDeploymentsService],
   encapsulation: ViewEncapsulation.None
 })
 export class DeploymentNetworkingComponent implements OnInit {
@@ -54,6 +55,7 @@ export class DeploymentNetworkingComponent implements OnInit {
   showCustomDnsHost: boolean = false;
   deploymentdetails: any;
   isPatchedValue: boolean = true;
+  envId = '';
 
   @ViewChild('confirmationModel') private confirmationModel!: ModalComponent;
 
@@ -64,12 +66,12 @@ export class DeploymentNetworkingComponent implements OnInit {
     hideCloseButton: () => true,
   };
 
-  constructor(private fb: FormBuilder, private deploymentService: DeploymentsService,
+  constructor(private fb: FormBuilder, private deploymentService: LLMDeploymentsService,
     private toaster: ToastrService, private modalService: NgbModal, private ac: ActivatedRoute
   ) { }
 
   ngOnInit(): void {
-
+    this.envId = JSON.parse(`${localStorage.getItem('environment')}`).id || '';
     this.networkSettingsForm = this.fb.group({
       service: [''],
       host: [''],
@@ -83,9 +85,9 @@ export class DeploymentNetworkingComponent implements OnInit {
     });
 
     this.ac.queryParams.subscribe(params => {
-      const depolyementId = params['id'];
-      this.deploymentId = depolyementId;
-      this.deploymentService.getDeploymentById(depolyementId).subscribe((res: any) => {
+      const deploymentId = params['id'];
+      this.deploymentId = deploymentId;
+      this.deploymentService.getDeploymentById(deploymentId, this.envId).subscribe((res: any) => {
         this.deploymentdetails = res.data;
         this.networkSettingsForm.get('service')?.setValue(this.deploymentdetails?.name)
         this.getDeploymentById();
@@ -114,28 +116,28 @@ export class DeploymentNetworkingComponent implements OnInit {
       this.networkSettingsForm.get('customDnsHost')?.setValue(value)
     })
 
-    this.deploymentService.getAuthenticatedresponse(envId, this.deploymentId).subscribe((res: any) => {
-      this.showAuthenticationData = res.data;
-      this.endpointStatus = res.data?.status;
-      const customDomain = res.data.customDomain || '';
-      const authentication = this.showAuthenticationData?.authentication || null;
+    // this.deploymentService.getAuthenticatedresponse(envId, this.deploymentId).subscribe((res: any) => {
+    //   this.showAuthenticationData = res.data;
+    //   this.endpointStatus = res.data?.status;
+    //   const customDomain = res.data.customDomain || '';
+    //   const authentication = this.showAuthenticationData?.authentication || null;
 
-      if (customDomain) { this.isHostDisabled = true; }
-      this.customDnsHost.setValue(customDomain);
+    //   if (customDomain) { this.isHostDisabled = true; }
+    //   this.customDnsHost.setValue(customDomain);
 
-      if (authentication) {
-        this.networkSettingsForm.get('showAuthentication')?.setValue(true, { emitEvent: false },);
-      }
+    //   if (authentication) {
+    //     this.networkSettingsForm.get('showAuthentication')?.setValue(true, { emitEvent: false },);
+    //   }
 
-      const authGroup = this.networkSettingsForm.get('authentication') as FormGroup;
-      if (authGroup && authentication?.username && authentication.password) {
-        authGroup.patchValue({
-          username: authentication.username,
-          password: '********'
-        }, { emitEvent: false });
-      }
-      this.isPatchedValue = false
-    });
+    //   const authGroup = this.networkSettingsForm.get('authentication') as FormGroup;
+    //   if (authGroup && authentication?.username && authentication.password) {
+    //     authGroup.patchValue({
+    //       username: authentication.username,
+    //       password: '********'
+    //     }, { emitEvent: false });
+    //   }
+    //   this.isPatchedValue = false
+    // });
 
     const authGroup = this.networkSettingsForm.get('authentication') as FormGroup;
     const usernameControl = authGroup.get('username');
@@ -158,7 +160,7 @@ export class DeploymentNetworkingComponent implements OnInit {
   }
 
   getDeploymentById(): void {
-    this.deploymentService.getDeploymentById(this.deploymentdetails?.id).subscribe((res: any) => {
+    this.deploymentService.getDeploymentById(this.deploymentdetails?.name, this.envId).subscribe((res: any) => {
       if (res.status.toLowerCase() === "success") {
         this.ingressDomain = res.data?.network?.appIngressDomain;
         this.showCustomDnsHost = !!res.data.network?.customDomain;
@@ -199,21 +201,21 @@ export class DeploymentNetworkingComponent implements OnInit {
       return;
     }
 
-    this.deploymentService.createEndpoint(envId, formValue).subscribe((res: any) => {
-      if (res && res.status.toLowerCase() === 'success') {
-        if (res.data?.customDomain) {
-          this.showCustomDnsHost = true;
-        } else {
-          this.ingressDomain = res.data?.domain;
-        }
-        this.toaster.success(res.message);
-        this.fetchCustomDnsHost();
-      } else {
-        this.showCustomDnsHost = false;
-        this.closeModal()
-      }
-      this.networkSettingsForm.markAsPristine();
-    })
+    // this.deploymentService.createEndpoint(envId, formValue).subscribe((res: any) => {
+    //   if (res && res.status.toLowerCase() === 'success') {
+    //     if (res.data?.customDomain) {
+    //       this.showCustomDnsHost = true;
+    //     } else {
+    //       this.ingressDomain = res.data?.domain;
+    //     }
+    //     this.toaster.success(res.message);
+    //     this.fetchCustomDnsHost();
+    //   } else {
+    //     this.showCustomDnsHost = false;
+    //     this.closeModal()
+    //   }
+    //   this.networkSettingsForm.markAsPristine();
+    // })
   }
 
   deleteEndpoint() {
@@ -226,12 +228,12 @@ export class DeploymentNetworkingComponent implements OnInit {
         if (result) {
           const environment = localStorage.getItem('environment');
           const envId = environment ? JSON.parse(environment).id : null;
-          this.deploymentService.deleteEndpoint(envId, this.deploymentdetails?.name).subscribe((res: any) => {
-            if (res.status === "Success") {
-              this.toaster.success(res.message);
-              this.ingressDomain = '';
-            }
-          });
+          // this.deploymentService.deleteEndpoint(envId, this.deploymentdetails?.name).subscribe((res: any) => {
+          //   if (res.status === "Success") {
+          //     this.toaster.success(res.message);
+          //     this.ingressDomain = '';
+          //   }
+          // });
         } else {
           console.log('Cancelled delete endpoint!');
         }
@@ -241,27 +243,27 @@ export class DeploymentNetworkingComponent implements OnInit {
   fetchCustomDnsHost() {
     const environment = localStorage.getItem('environment');
     const envId = environment ? JSON.parse(environment).id : null;
-    this.deploymentService.getAuthenticatedresponse(envId, this.deploymentId).subscribe((res: any) => {
-      this.showAuthenticationData = res.data;
-      this.endpointStatus = res.data?.status;
-      const customDomain = res.data.customDomain || '';
-      const authentication = this.showAuthenticationData?.authentication || null;
+    // this.deploymentService.getAuthenticatedResponse(envId, this.deploymentId).subscribe((res: any) => {
+    //   this.showAuthenticationData = res.data;
+    //   this.endpointStatus = res.data?.status;
+    //   const customDomain = res.data.customDomain || '';
+    //   const authentication = this.showAuthenticationData?.authentication || null;
 
-      if (customDomain) { this.isHostDisabled = true; }
-      this.customDnsHost.setValue(customDomain);
+    //   if (customDomain) { this.isHostDisabled = true; }
+    //   this.customDnsHost.setValue(customDomain);
 
-      if (authentication) {
-        this.networkSettingsForm.get('showAuthentication')?.setValue(true);
-      }
+    //   if (authentication) {
+    //     this.networkSettingsForm.get('showAuthentication')?.setValue(true);
+    //   }
 
-      const authGroup = this.networkSettingsForm.get('authentication') as FormGroup;
-      if (authGroup && authentication.username && authentication.password) {
-        authGroup.patchValue({
-          username: authentication.username,
-          password: authentication.password
-        });
-      }
-    });
+    //   const authGroup = this.networkSettingsForm.get('authentication') as FormGroup;
+    //   if (authGroup && authentication.username && authentication.password) {
+    //     authGroup.patchValue({
+    //       username: authentication.username,
+    //       password: authentication.password
+    //     });
+    //   }
+    // });
   }
 
 
