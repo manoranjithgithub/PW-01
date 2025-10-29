@@ -33,7 +33,7 @@ export class AuthInterceptor implements HttpInterceptor {
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     const url = req.url;
-    const skipLoaderUrls = ['/status','/deployments?', '/tools/installed', '/artificat?fileExtension'];
+    const skipLoaderUrls = ['/status', '/deployments?', '/tools/installed', '/artificat?fileExtension'];
     const skipLoader = skipLoaderUrls.some(pattern => url.includes(pattern));
     if (!skipLoader) {
       this.loaderService.show();
@@ -60,9 +60,13 @@ export class AuthInterceptor implements HttpInterceptor {
             this.authService.logout();
             return throwError(() => error);
           }
-        } else if (error.status === 500 && error.error?.error?.details) {
-          const message = error.error.error.details;
-          this.toastr.error(message, 'Internal Server Error 500:');
+        } else if (error.status === 500) {
+          const message =
+            error.error?.error?.details ||
+            error.error?.error ||
+            error.error?.message ||
+            {message: 'An unexpected error occurred. Please try again later.'};
+          this.toastr.error(message.message, 'Internal Server Error (500)');
         } else if (error.status === 404 && error.error?.error?.details) {
           const message = error.error.error.details;
           this.toastr.error(message, 'Internal Server Error 404:');
