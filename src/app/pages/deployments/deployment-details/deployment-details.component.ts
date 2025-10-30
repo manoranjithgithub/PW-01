@@ -38,7 +38,8 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
   selectedTabIndex = 0;
   private destroy$ = new Subject<void>();
   deploymentId: string = '';
-  @ViewChild(EnvironmentVariablesComponent) child!: EnvironmentVariablesComponent;
+  @ViewChild(EnvironmentVariablesComponent) envVarChild!: EnvironmentVariablesComponent;
+  @ViewChild(DeploymentConfigMapsComponent) configMapChild!: DeploymentConfigMapsComponent;
   lastReleaseStatus: string = '';
 
   private wsSubscription!: Subscription;
@@ -116,7 +117,10 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
   }
   goToNextTab(): void {
     if (this.selectedTabIndex === 1) {
-      this.child.createEnvironmentVariable()
+      this.envVarChild.createEnvironmentVariable()
+    }
+    if (this.selectedTabIndex === 3) {
+      this.configMapChild.updateConfigFile()
     }
     if (this.selectedTabIndex < 4) {
       this.selectedTabIndex++;

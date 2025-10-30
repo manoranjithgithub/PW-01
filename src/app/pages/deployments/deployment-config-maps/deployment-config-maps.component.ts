@@ -84,20 +84,27 @@ export class DeploymentConfigMapsComponent implements OnInit {
   }
 
   updateConfigFile() {
-    const filePathControl = this.fileUploadForm.get('filePath')?.value;
-    const fileInputControl = this.fileUploadForm.get('fileInput')?.value;
-    const fileName = fileInputControl.split("\\").pop();
-    const formData = new FormData();
-    if (filePathControl && fileName && this.selectedFile) {
-      formData.append('file', this.selectedFile, this.selectedFile?.name);
-      formData.append('filePath', filePathControl);
-      formData.append('name', this.deploymentdetails?.name);
-      formData.append('stageToExecute', 'deploy');
+    const req ={
+      config: {
+        path: this.fileUploadForm.get('filePath')?.value,
+        name: this.fileUploadForm.get('fileName')?.value,
+        data: this.parsedConfigData
+      }
     }
-    console.log(this.deploymentdetails)
-    this.deploymentsService.uploadConfigFile(this.deploymentdetails?.environmentId, formData).subscribe(res => {
-      console.log(res)
-    })
+    if (this.deploymentdetails.id) {
+      this.deploymentsService.updateDeployment(this.deploymentdetails.id, req).subscribe({
+        next: (res: any) => {
+          console.log(res);
+          if (res.status.toLowerCase() === 'success') {
+            this.toaster.success('Config Map updated successfully');
+            this.clearFile();
+          }
+        },
+        error: (err) => {
+          this.toaster.error(err);
+        }
+      });
+    }
   }
   fileValidator(allowedExtensions: string[]) {
     return (control: AbstractControl): ValidationErrors | null => {
