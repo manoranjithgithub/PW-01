@@ -95,7 +95,7 @@ export class DeploymentConfigMapsComponent implements OnInit {
       formData.append('stageToExecute', 'deploy');
     }
     console.log(this.deploymentdetails)
-    this.deploymentsService.uploadConfigFile(this.deploymentdetails?.environment_id, formData).subscribe(res => {
+    this.deploymentsService.uploadConfigFile(this.deploymentdetails?.environmentId, formData).subscribe(res => {
       console.log(res)
     })
   }
