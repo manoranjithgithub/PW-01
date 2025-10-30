@@ -432,7 +432,7 @@ export class DeploymentMetricsComponent implements OnInit, AfterViewInit {
   }
 
   onFilter(): void {
-    this.loading = true;
+    // this.loading = true;
     console.log('Filter values:', this.filterForm.value);
     let duration = this.filterForm.get('duration')?.value;
 
@@ -537,7 +537,7 @@ export class DeploymentMetricsComponent implements OnInit, AfterViewInit {
       this.renderCpuChart();
       this.renderRamChart();
       this.renderStorageChart();
-      this.loading = false;
+      // this.loading = false;
     });
     // this.fetchAndAggregateMetrics(this.selectedPods, fromISO, toISO, timeInterval);
   }
