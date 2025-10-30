@@ -202,7 +202,10 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
             if (res.status.toLowerCase() === 'success') {
               this.getEndpointsList(this.currentEnvId);
               this.toastr.success(res.message);
+              scrollTo(0, 0);
             }
+          }, error => {
+            scrollTo(0, 0);
           });
         } else {
           console.log('Cancelled delete Endpoint!');

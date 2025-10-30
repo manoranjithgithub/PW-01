@@ -227,10 +227,13 @@ export class DeploymentNetworkingComponent implements OnInit {
           const environment = localStorage.getItem('environment');
           const envId = environment ? JSON.parse(environment).id : null;
           this.deploymentService.deleteEndpoint(envId, this.deploymentdetails?.name).subscribe((res: any) => {
-            if (res.status === "Success") {
+            if (res.status.toLowerCase() === "success") {
               this.toaster.success(res.message);
               this.ingressDomain = '';
-            }
+              scrollTo(0, 0);            }
+          }, error => {
+            scrollTo(0, 0);
+
           });
         } else {
           console.log('Cancelled delete endpoint!');
