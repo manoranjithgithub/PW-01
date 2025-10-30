@@ -184,7 +184,7 @@ export class DeploymentMetricsComponent implements OnInit, AfterViewInit {
 
   getPodsByDeploymentId(deploymentId: string): void {
     this.deploymentService.getPodsByDeploymentId(deploymentId).subscribe((response: any) => {
-      if (response.status === 'Success') {
+      if (response.status.toLowerCase() === 'success') {
         if (response.data.length === 0) {
           this.showNoDataMessage = true;
           this.cpuUsageData = [];
