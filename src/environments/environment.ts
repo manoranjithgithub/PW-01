@@ -1,41 +1,40 @@
 export const environment = {
   production: false,
   auth: {
-    baseAuthUrl: 'https://auth.nimbuz.tech',
+    baseAuthUrl: 'https://auth.dev.nimbuz.tech',
   },
-  envName: 'prod',
+  envName: 'dev',
   casdoorConfig: {
-    serverUrl: 'https://auth.nimbuz.tech',
+    serverUrl: 'https://auth.dev.nimbuz.tech',
     clientId: 'nimbuz',
     appName: 'nimbuz',
     organizationName: 'nimbuz',
     redirectPath: '/'
   },
-
   gitlab: {
-    clientId: '36920baeac0044278f753546f3466bcc70cf5c9db3a302a794a90d36f9426962',
-    redirectUri: 'https://app.nimbuz.tech/vcs/callback',
+    clientId: '3a8091146b8916dd68b95b0d89dfda4992d8fa10dfc436a97e591e1b82bbd30a',
+    redirectUri: 'https://app.dev.nimbuz.tech/vcs/callback',
     authUrl: 'https://gitlab.com/oauth/authorize',
     tokenUrl: 'https://gitlab.com/oauth/token',
   },
   github: {
-    clientId: 'Ov23liIFW74APX3INF2N',
-    redirectUri: 'https://app.nimbuz.tech/vcs/callback'
+    clientId: 'Ov23lizhCMt2Ih4SgeyJ',
+    redirectUri: 'https://app.dev.nimbuz.tech/vcs/callback',
   },
 
-  apiUrl: 'https://api.nimbuz.tech/core/v1/environments',
-  legacyUrl: 'https://api.nimbuz.tech/core/v1',
-  loginUrl: 'https://api.nimbuz.tech',
-  projectsApiUrl: 'https://api.nimbuz.tech/project/v1/projects',
-  projectsBaseUrl: 'https://api.nimbuz.tech/project/v1',
-  usermanagementApiUrl: 'https://api.nimbuz.tech/user/v1/user',
-  usermanagementBaseUrl: 'https://api.nimbuz.tech/user/v1',
-  deploymentManagement: 'https://api.nimbuz.tech/deployment/v1',
-  jobExecutorBaseUrl: 'https://api.nimbuz.tech/job-executor/v1',
-  wss: 'wss://api.nimbuz.tech/deployment',
-  pricingManagement: 'https://api.nimbuz.tech/pricing/v1',
-  userManagement: 'https://api.nimbuz.tech/user/v1/business/organisation',
-  logServiceUrl: 'https://api.nimbuz.tech/logs',
-  metricsUrl: 'https://api.nimbuz.tech/metrics/v1',
-  domain: 'nimbuz.tech'
+  apiUrl: 'https://api.dev.nimbuz.tech/core/v1/environments',
+  legacyUrl: 'https://api.dev.nimbuz.tech/core/v1',
+  loginUrl: 'https://api.dev.nimbuz.tech',
+  projectsApiUrl: 'https://api.dev.nimbuz.tech/project/v1/projects',
+  projectsBaseUrl: 'https://api.dev.nimbuz.tech/project/v1',
+  jobExecutorBaseUrl: 'https://api.dev.nimbuz.tech/job-executor/v1',
+  usermanagementApiUrl: 'https://api.dev.nimbuz.tech/user/v1/user',
+  usermanagementBaseUrl: 'https://api.dev.nimbuz.tech/user/v1',
+  deploymentManagement: 'https://api.dev.nimbuz.tech/deployment/v1',
+  wss: 'wss://api.dev.nimbuz.tech/deployment',
+  pricingManagement: 'https://api.dev.nimbuz.tech/pricing/v1',
+  userManagement: 'https://api.dev.nimbuz.tech/user/v1/business/organisation',
+  logServiceUrl: 'https://api.dev.nimbuz.tech/logs',
+  metricsUrl: 'https://api.dev.nimbuz.tech/metrics/v1',
+  domain: 'dev.nimbuz.tech'
 };
