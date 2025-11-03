@@ -231,17 +231,6 @@ export class CreateDeploymentsComponent
       });
     }
 
-    // this.wsSubscription = this.websocketService.getMessages().subscribe({
-    //   next: (message) => {
-    //     this.messages.push(message);
-    //   },
-    //   error: (err: any) => console.error('WebSocket error:', err),
-    //   complete: () => console.log('WebSocket connection closed')
-    // });
-
-    // this.deploymentsService.getDefualtConfigInfo().subscribe((res: any) => {
-    //   this.stepOneForm.get('replicas')?.setValue(res.data?.replicas);
-    // });
 
     this.stepOneForm
       .get('instanceType')
@@ -417,29 +406,6 @@ export class CreateDeploymentsComponent
     }
   }
 
-  connectWithVCS(stepper: MatStepper) {
-    this.reposList = [];
-    this.isTypeSelected = true;
-    this.selectedVCS = this.stepOneForm.value.type;
-    if (this.selectedVCS === 'github') {
-      if (this.githubAuthenticated) {
-        this.getGitHubRepos();
-        stepper.next();
-      } else {
-        this.redirectToOAuth('github');
-      }
-    } else if (this.selectedVCS === 'gitlab') {
-      if (this.gitLabAuthenticated) {
-        this.getGitLabRepos();
-        stepper.next();
-      } else {
-        this.redirectToOAuth('gitlab');
-      }
-    } else if (this.selectedVCS === 'zip') {
-      this.zipDeploymentModel.open();
-      this.zipUploadForm.reset();
-    }
-  }
 
   private redirectToOAuth(provider: 'github' | 'gitlab') {
     const { clientId = '', redirectUri = '' } = environment[provider] || {};
@@ -504,35 +470,7 @@ export class CreateDeploymentsComponent
             webhook: repo.permission || false,
           }));
           this.stepOneForm.get('selectedRepo')?.setValue(this.reposList[0].id);
-        }
-
-        // if (Array.isArray(data)) {
-        //   this.reposList = data
-        //     .filter((repo: any) => {
-        //       const accessLevel =
-        //         repo.permissions?.group_access?.access_level ||
-        //         repo.permissions?.project_access?.access_level;
-        //       return accessLevel === 40 || accessLevel === 50;
-        //     })
-        //     .map((repo: any) => ({
-        //       ...repo,
-        //       webhook: true,
-        //     }));
-        // } else if (data.status?.toLowerCase() === 'success') {
-        //   this.reposList = (data.data || []).map((repo: any) => {
-        //     const accessLevel =
-        //       repo.permissions?.group_access?.access_level ||
-        //       repo.permissions?.project_access?.access_level;
-        //     const hasAccess = accessLevel === 40 || accessLevel === 50;
-
-        //     return {
-        //       ...repo,
-        //       webhook: hasAccess,
-        //     };
-        //   });
-        //   this.stepOneForm.get('selectedRepo')?.setValue(this.reposList[0].id);
-        // }
-        else {
+        } else {
           this.reposList = [];
         }
 

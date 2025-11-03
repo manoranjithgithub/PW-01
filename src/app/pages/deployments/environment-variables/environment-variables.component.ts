@@ -1,8 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
-import { FormGroup, Validators, ReactiveFormsModule, FormsModule, FormBuilder, FormArray, AbstractControl, ValidationErrors } from '@angular/forms';
-import { AccordionButtonDirective, AccordionComponent, AccordionItemComponent, TemplateIdDirective, CalloutComponent, AlertComponent, DropdownComponent, DropdownItemDirective, DropdownMenuDirective, DropdownToggleDirective } from '@coreui/angular';
+import { FormGroup, Validators, FormBuilder, FormArray, AbstractControl, ValidationErrors } from '@angular/forms';
 import { DeploymentsService } from '../deployment.service';
-import { CommonModule } from '@angular/common';
 import { ModalComponent } from '../../../shared/components/model/model.component';
 import { RawEditorComponent } from '../../../shared/components/raw-editor/raw-editor.component';
 import { ToastrService } from 'ngx-toastr';
@@ -10,14 +8,12 @@ import { SharedService } from '../../../shared/services/shared.service';
 import { ConfirmationModalComponent } from '../../../shared/components/modal/confirmation-modal/confirmation-modal.component';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ActivatedRoute } from '@angular/router';
+import { SHARED_IMPORTS } from '../../../shared/shared-imports';
 
 @Component({
   selector: 'app-environment-variables',
   standalone: true,
-  imports: [AccordionButtonDirective, AccordionComponent, AccordionItemComponent,
-    TemplateIdDirective, CommonModule, ReactiveFormsModule, FormsModule, CalloutComponent, RawEditorComponent,
-    AlertComponent, ModalComponent, DropdownComponent, DropdownItemDirective, DropdownMenuDirective,
-    DropdownToggleDirective],
+  imports: [RawEditorComponent, SHARED_IMPORTS, ModalComponent],
   providers: [DeploymentsService],
   templateUrl: './environment-variables.component.html',
   styleUrl: './environment-variables.component.scss'
@@ -53,21 +49,15 @@ export class EnvironmentVariablesComponent implements OnInit {
   deploymentId: string = '';
 
   constructor(private fb: FormBuilder, private deploymentsService: DeploymentsService,
-    private sharedService: SharedService, private toaster: ToastrService, private modalService: NgbModal,
+   private toaster: ToastrService, private modalService: NgbModal,
     private ac: ActivatedRoute
   ) {
-    // this.storedEnvironment = JSON.parse(this.sharedService.getCookie('environment'));
     this.storedEnvironment = JSON.parse(localStorage.getItem('environment') || '{}');
   }
 
   ngOnInit() {
     this.freezeAddNewData = this.currentStatus && this.currentStatus?.toLowerCase() === 'building' ? true : false;
-    // const resourceUsage = JSON.parse(this.sharedService.getCookie('resourceUsage'));
     const resourceUsage = JSON.parse(localStorage.getItem('resourceUsage') || '[]');
-    const deploymentResource = resourceUsage.find(
-      (res: any) => res.resource_type === 'config_map'
-    );
-    this.deploymentResourceExhausted = deploymentResource?.remaining === 0;
 
     this.newVariableForm = this.fb.group({
       rules: this.fb.array([]),
