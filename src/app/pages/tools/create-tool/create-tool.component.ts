@@ -228,7 +228,7 @@ export class CreateToolComponent implements OnInit, OnDestroy {
 
     if (this.form.valid) {
       const sizeFields = [
-        'mysql.primary.persistance.size',
+        'mysql.primary.persistence.size',
         'postgresql.primary.persistence.size',
         'mongodb.persistence.size',
         'postgresql.readReplicas.persistence.size'
