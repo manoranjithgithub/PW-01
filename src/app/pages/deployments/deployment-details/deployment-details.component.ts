@@ -17,15 +17,14 @@ import { Observable, Subject, Subscription, switchMap, takeUntil } from 'rxjs';
 import { DeploymentsService } from '../deployment.service';
 import { ToastrService } from 'ngx-toastr';
 import { SharedService } from '../../../shared/services/shared.service';
+import { SHARED_IMPORTS } from '../../../shared/shared-imports';
 
 
 
 @Component({
   selector: 'app-deployment-details',
   standalone: true,
-  imports: [CardGroupComponent, CardComponent, CardBodyComponent, CommonModule,
-    NavComponent, NavItemComponent, NavLinkDirective,
-    TabContentRefDirective, TabContentComponent, TabPaneComponent,
+  imports: [SHARED_IMPORTS,
     DeploymentReleasesComponent, DeploymentSettingsComponent,
     DeploymentSecretsComponent, DeploymentConfigMapsComponent, EnvironmentVariablesComponent,
     DeploymentMetricsComponent, DeploymentObservabilityComponent, DeploymentNetworkingComponent],
@@ -38,7 +37,8 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
   selectedTabIndex = 0;
   private destroy$ = new Subject<void>();
   deploymentId: string = '';
-  @ViewChild(EnvironmentVariablesComponent) child!: EnvironmentVariablesComponent;
+  @ViewChild(EnvironmentVariablesComponent) envVarChild!: EnvironmentVariablesComponent;
+  @ViewChild(DeploymentConfigMapsComponent) configMapChild!: DeploymentConfigMapsComponent;
   lastReleaseStatus: string = '';
 
   private wsSubscription!: Subscription;
@@ -70,15 +70,6 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
           });
         }
         this.layoutActionService.setExtraTitle(`${data.data.name} (${data.data.status})`);
-        // this.onNewMessage().subscribe((msg: any) => {
-        //   const res = JSON.parse(msg);
-        //   console.log(res)
-        //   if (res && res.deployment_id === this.deploymentId) {
-        //     this.sharedService.setlastReleaseStatus(res.status);
-        //     console.log(res.status)
-        //   }
-        // })
-
       });
     this.activateRoute.fragment.subscribe((fragment: string | null) => {
       if (fragment === 'network-section') {
@@ -89,10 +80,6 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
     this.sharedService.releaseStatus$.subscribe(status => {
       this.lastReleaseStatus = status ?? '';
     });
-
-
-    // this.onTabChange(4);
-
     this.layoutActionService.actionClick$
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => {
@@ -116,7 +103,10 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
   }
   goToNextTab(): void {
     if (this.selectedTabIndex === 1) {
-      this.child.createEnvironmentVariable()
+      this.envVarChild.createEnvironmentVariable()
+    }
+    if (this.selectedTabIndex === 3) {
+      this.configMapChild.updateConfigFile()
     }
     if (this.selectedTabIndex < 4) {
       this.selectedTabIndex++;
@@ -145,13 +135,6 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
         }
       });
   }
-  // onNewMessage() {
-  //   return new Observable(observer => {
-  //     this.websocketService.messages.subscribe(msg => {
-  //       observer.next(msg);
-  //     });
-  //   });
-  // }
 
   ngOnDestroy(): void {
     this.destroy$.next();
