@@ -23,8 +23,13 @@
               </span>
             </div>
           </label>
-          <input id="instanceType" type="text" for="instanceType" formControlName="instanceType"
-            class="form-control custom-values" readonly>
+          <select class="form-select" formControlName="instanceType">
+            <option value="Nvidia L2">Nvidia L2</option>
+            <option value="Nvidia L4">Nvidia L4</option>
+            <option value="Nvidia L20">Nvidia L20</option>
+            <option value="Nvidia L40">Nvidia L40</option>
+            <option value="Nvidia L40S">Nvidia L40S</option>
+          </select>
           <div class="text-danger my-1" *ngIf="isError('instanceType', 'required')">
             Instance type is required.
           </div>
@@ -62,7 +67,7 @@
         </div>
       </div>
       <div class="d-flex gap-2">
-      
+
         <div class="flex-grow-1 mb-3 w-50" style="max-width: 50%;">
           <label class="custom-label d-flex justify-content-between align-items-center text-nowrap">
             <span>
@@ -86,7 +91,7 @@
       </div>
     </form>
   </div>
-  <hr/>
+  <hr />
   <div class="mt-4">
     <div class="custom-heading">Delete Application</div>
     <div class="custom-content">Deleting this application will permanently delete all its deployments and remove it from
