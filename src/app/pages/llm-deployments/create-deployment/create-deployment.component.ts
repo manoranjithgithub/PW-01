@@ -27,7 +27,7 @@ export class CreateDeploymentComponent implements OnInit {
       name: ['', [Validators.required]],
       modelId: ['', Validators.required],
       replicas: [1, [Validators.required]],
-      instanceType: [{ value: 'femto.m', disabled: true }],
+      instanceType: ['Nvidia L2', Validators.required],
       contextLength: [512, [Validators.required]],
       storageSize: [10, [Validators.required]],
       ephemeralStorageSize: [10, [Validators.required]],

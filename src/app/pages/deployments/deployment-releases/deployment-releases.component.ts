@@ -157,6 +157,7 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
   viewDeploymentLogs(releaseId: string, sectionName?: string): void {
     this.openModal();
     this.realeseId = releaseId;
+     this.currentPage = 1;
     this.getLogData(0, 'build');
     // this.deploymentService.viewDeploymentLogs(releaseId).subscribe((res: any) => {
     //   if (res.status === "success") {
