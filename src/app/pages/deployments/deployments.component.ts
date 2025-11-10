@@ -44,7 +44,6 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
         });
       },
       valueFormatter: (params: any) => {
-        console.log(params)
         return params.value || '';
       },
       onCellClicked: (event: CellClickedEvent) =>

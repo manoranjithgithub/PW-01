@@ -14,6 +14,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
 import { Subscription } from 'rxjs';
 import { forkJoin } from 'rxjs';
+import { initial } from 'lodash-es';
 
 
 @Component({
@@ -67,6 +68,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   currentEnvId: string = '';
   private subscriptions: Subscription[] = [];
 
+  private subscription: Subscription | undefined;
+
   constructor(private fb: FormBuilder, private http: DashboardsService, private sharedService: SharedService,
     private router: Router, private modalService: NgbModal, private toastr: ToastrService
   ) {
@@ -74,17 +77,37 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnInit(): void {
+
+    this.subscription = this.sharedService.envValueChange$.subscribe(value => {
+      this.initializeDashboard();
+    });
+
+    this.initializeDashboard()
+  }
+
+  ngAfterViewInit(): void {
+    this.picker = new Litepicker({
+      element: this.inputRef.nativeElement,
+      singleMode: false,
+      format: 'YYYY-MM-DD',
+      autoApply: true,
+      setup: (picker) => {
+        picker.on('selected', (startDate, endDate) => {
+          this.selectedRange = {
+            start: startDate.format('YYYY-MM-DD'),
+            end: endDate.format('YYYY-MM-DD'),
+          };
+        });
+      }
+    });
+  }
+  initializeDashboard() {
     this.cards[1].description = this.getCurrentMonthRange();
 
     const now = new Date();
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(now.getDate() - 7);
 
-    // const req = {
-    //   fromTimestamp: new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1, 0, 0, 0, 0)).toISOString(),
-    //   toTimestamp: new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0, 23, 59, 59, 999)).toISOString(),
-    //   userId: localStorage.getItem('userId')
-    // };
     const env = JSON.parse(localStorage.getItem('environment') || '{}');
     const accountId = localStorage.getItem('accountId');
     const project = JSON.parse(localStorage.getItem('project') || '{}');
@@ -109,7 +132,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
           (acc: number, item: any) => acc + (Number(item.projected_total) || 0),
           0
         ) ?? 0;
-        //   console.log(estimatedCostSum)
         const roundedEstimatedCost = Math.round(estimatedCostSum * 100) / 100;
 
         this.cards[1].value = estimatedCostSum === 0
@@ -124,42 +146,10 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     })
     this.currentEnvId = env?.id;
     this.getEndpointsList(env?.id);
-    this.getStatusCount()
-    // const environment = this.sharedService.getCookie('environment');
-    // const environment = localStorage.getItem('environment');
-    // if (environment) {
-    //   const envID = JSON.parse(environment).id;
-    //   this.http.getDeploymentStatus(envID).subscribe((res: any) => {
-    //     if (res.status.toLowerCase() === 'success') {
-    //       this.cards[2].value = `${res.data.toalActiveWorkloads} / ${res.data.totalPausedWorkloads}`;
-    //       this.cards[3].value = `${res.data.totalFailedWorkloads} / ${res.data.totalPendingWorkloads}`;
-    //     }
-    //   });
-    //   this.currentEnvId = envID;
-    //   this.getEndpointsList(envID)
-
-    // }
+    this.getStatusCount();
     this.startCpuStream();
     this.startMemoryStream();
   }
-
-  ngAfterViewInit(): void {
-    this.picker = new Litepicker({
-      element: this.inputRef.nativeElement,
-      singleMode: false,
-      format: 'YYYY-MM-DD',
-      autoApply: true,
-      setup: (picker) => {
-        picker.on('selected', (startDate, endDate) => {
-          this.selectedRange = {
-            start: startDate.format('YYYY-MM-DD'),
-            end: endDate.format('YYYY-MM-DD'),
-          };
-        });
-      }
-    });
-  }
-
   openPicker() {
     this.picker?.show();
   }
@@ -276,6 +266,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
   ngOnDestroy(): void {
     this.subscriptions.forEach(sub => sub.unsubscribe());
+    this.subscription?.unsubscribe();
   }
 
   getStatusCount() {
@@ -294,7 +285,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         else if (item.status.toLowerCase() === 'failed') acc.failed += 1;
         else if (item.status.toLowerCase() === 'paused') acc.paused += 1;
         return acc;
-      }, { running: 0, pending: 0, failed: 0, paused:0});
+      }, { running: 0, pending: 0, failed: 0, paused: 0 });
       console.log(statusCount);
       this.cards[2].value = `${statusCount.running} / ${statusCount.paused}`;
       this.cards[3].value = `${statusCount.failed} / ${statusCount.pending}`;
