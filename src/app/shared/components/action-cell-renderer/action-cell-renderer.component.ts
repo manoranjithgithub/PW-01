@@ -180,9 +180,7 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
   pause(data: any, type: string) {
     if (this.additionalParam === "deployment" || this.additionalParam === "llm") {
       const req = {
-        application: {
-          replicas: type === 'Pause' ? '0' : '1'
-        },
+        action: type === 'Pause' ? 'pause' : 'resume',
       };
       const modalRef = this.modalService.open(DeployConfirmationComponent);
       modalRef.componentInstance.message = `Are you sure you want to ${type} this deployment?`;
