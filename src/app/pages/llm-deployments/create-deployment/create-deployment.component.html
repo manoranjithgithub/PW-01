@@ -42,10 +42,22 @@
               ">
                     Replicas count is required.</div>
             </div>
-            <!-- Instance Type (Hardcoded) -->
+            <!-- Instance Type (Select) -->
             <div class="col-md-6 mb-3">
                 <label class="form-label">Instance Type</label>
-                <input type="text" class="form-control" formControlName="instanceType" readonly />
+                <select class="form-select" formControlName="instanceType">
+                    <option value="Nvidia L2">Nvidia L2</option>
+                    <option value="Nvidia L4">Nvidia L4</option>
+                    <option value="Nvidia L20">Nvidia L20</option>
+                    <option value="Nvidia L40">Nvidia L40</option>
+                    <option value="Nvidia L40S">Nvidia L40S</option>
+                </select>
+                <div class="text-danger mt-1" *ngIf="
+                deploymentForm.get('instanceType')?.hasError('required') &&
+                (submitted || deploymentForm.get('instanceType')?.touched || deploymentForm.get('instanceType')?.dirty)
+              ">
+                    Instance type is required.
+                </div>
             </div>
         </div>
 

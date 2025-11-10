@@ -17,7 +17,6 @@ export class UrlCellRendererComponent {
   
   agInit(params: any): void {
     const data = params.data;
-    console.log(data);
     this.endpointStatus = data.endpointStatus == 'accessible' ? true : false ;
     if (data?.network?.appIngressDomain == 'None') {
       this.publicUrl = `${ data.name } - ${ this.envId }.dev.${ this.region }.lb.nimbuz.tech`;

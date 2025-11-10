@@ -126,16 +126,9 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
   }
 
   onOptionSelected(selectedValue: string, realeseData: any, sectionName: string): void {
-
     this.realeseId = realeseData.id;
     this.selectedReleaseDetails = realeseData;
-    // const moreOptions = event.target as HTMLSelectElement;
-    // const selectedValue = moreOptions.value;
     this.onActionSelected(selectedValue, realeseData.id, sectionName);
-    // if (selectedValue !== "three-dots") {
-    //   moreOptions.options[0].text = '⋮';
-    //   moreOptions.value = "three-dots";
-    // }
   }
 
   onActionSelected(action: any, releaseId: string, sectionName: string): void {
@@ -157,6 +150,7 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
   viewDeploymentLogs(releaseId: string, sectionName?: string): void {
     this.openModal();
     this.realeseId = releaseId;
+    this.currentPage = 1;
     this.getLogData(0, 'build');
     // this.deploymentService.viewDeploymentLogs(releaseId).subscribe((res: any) => {
     //   if (res.status === "success") {
@@ -394,8 +388,8 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
       'Failed': 'danger',
       'Success': 'success',
       'Inprogress': 'in-process',
-      'Updating':'warning',
-      'Degraded':'warning',
+      'Updating': 'warning',
+      'Degraded': 'warning',
     };
     return map[status] || 'Pending';
   }
