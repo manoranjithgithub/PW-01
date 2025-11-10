@@ -44,6 +44,7 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
   private wsSubscription!: Subscription;
   messages: any[] = [];
   appName: string = '';
+  private subscription: Subscription | undefined;
 
   constructor(private router: Router, private modalService: NgbModal, private sharedService: SharedService,
     private layoutActionService: LayoutActionService, private deploymentService: DeploymentsService, private location: Location,
@@ -85,7 +86,11 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
       .subscribe(() => {
         this.onLayoutButtonClick();
       });
+    this.subscription = this.sharedService.envValueChange$.subscribe(value => {
+      this.router.navigate(['/deployment']);
+    });
   }
+
   onTabChange(event: number) {
     this.selectedTabIndex = event;
     const queryParams = { ...this.activateRoute.snapshot.queryParams };
@@ -140,5 +145,6 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
     this.destroy$.next();
     this.destroy$.complete();
     this.layoutActionService.clearExtraTitle();
+    this.subscription?.unsubscribe();
   }
 }
