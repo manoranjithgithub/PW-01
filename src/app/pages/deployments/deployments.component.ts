@@ -132,7 +132,7 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
   statusCellRenderer(params: any): string {
     const status = params.value;
     const meta = this.sharedService.getStatusMeta(status);
-    return `<span class="${meta.statusClass}"><i class="bi ${meta.icon}"></i> ${meta.label}</span>`;
+    return `<span class="${meta.statusClass} text-capitalize"><i class="bi ${meta.icon}"></i> ${meta.label.toLowerCase()}</span>`;
   }
 
   gotoAction(params: any) {

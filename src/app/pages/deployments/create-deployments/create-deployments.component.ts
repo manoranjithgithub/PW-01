@@ -513,6 +513,7 @@ export class CreateDeploymentsComponent
 
     const req = this.buildRequest(fileName, filePath);
     const payload = this.cleanPayload(req);
+    console.log('Final Payload:', payload);
     let upload$: any = of(null);
 
     if (this.fileFormData) {
