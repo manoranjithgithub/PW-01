@@ -171,6 +171,6 @@ export class SharedService {
     };
     const icon = iconMap[status.toLowerCase()] || 'bi-question-circle-fill';
     const statusClass = statusClassMap[status.toLowerCase()] || 'secondary';
-    return { icon, statusClass, label: status };
+    return { icon, statusClass, label: status.toLowerCase() };
   }
 }
