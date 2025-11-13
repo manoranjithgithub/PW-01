@@ -96,20 +96,11 @@ export class ToolsComponent implements OnInit, OnDestroy {
       flex: 1,
       cellRenderer: (params: any) => {
         const status = params.value;
-        const iconMap: Record<string, string> = {
-          'Running': 'bi-check-circle-fill text-success',
-          'Failed': 'bi-x-circle-fill text-danger',
-          'Pending': 'bi-clock text-warning',
-          'Stopped': 'bi-slash-circle-fill text-secondary',
-          'Degraded': 'bi-exclamation-circle-fill text-warning',
-          'Unknown': 'bi-question-circle-fill text-muted'
-        };
-        const iconClass = iconMap[status] || 'bi-info-circle text-muted';
-
+        const meta = this.sharedService.getStatusMeta(status);
         return `
-            <span style="display: flex; align-items: center; gap: 5px;">
-              <i class="bi ${iconClass}"></i>
-              <span>${status}</span>
+            <span style="display: flex; align-items: center; gap: 5px;" class="${meta.statusClass}">
+              <i class="bi ${meta.icon}"></i>
+              <span class="text-capitalize">${meta.label}</span>
             </span>
           `;
       }
@@ -284,32 +275,13 @@ export class ToolsComponent implements OnInit, OnDestroy {
 
   statusCellRenderer(params: any): string {
     const { availableReplicas, replicas } = params.data;
-    const iconMap: Record<string, string> = {
-      'Initiated': 'bi-hourglass-split',
-      'Building': 'bi-check-circle-fill',
-      'Deploying': 'bi-cloud-upload',
-      'Active': 'bi-check-circle-fill',
-      'Paused': 'bi-pause-circle-fill',
-      'Superseded': 'bi-arrow-clockwise',
-      'Deploy Failed': 'bi-x-circle-fill',
-      'Failed': 'bi-x-circle-fill',
-      'Build Timeout': 'bi-clock-history',
-      'Build Failed': 'bi-x-circle-fill',
-      'Deploy Timeout': 'bi-clock-history',
-      'Unavailable': 'bi-x-circle-fill',
-      'Running': 'bi-check-circle-fill',
-      'Pending': 'bi-clock',
-      'Create Job Failed': 'bi-x-circle-fill',
-      'Stopped': 'bi-slash-circle-fill'
-    };
-
-    const status = availableReplicas === replicas
-      ? { text: 'Running', class: 'badge-success' }
+    const statusLabel = availableReplicas === replicas
+      ? 'Running'
       : availableReplicas > 0
-        ? { text: 'Degraded', class: 'badge-warning' }
-        : { text: 'Down', class: 'badge-danger' };
-    const icon = iconMap["status"] || 'bi-question-circle-fill';
-    return `<span class="badge ${status.class}"><i class="bi ${icon}">${status.text} </span>`;
+        ? 'Degraded'
+        : 'Down';
+    const meta = this.sharedService.getStatusMeta(statusLabel);
+    return `<span class="${meta.statusClass}"><i class="bi ${meta.icon}"></i> ${meta.label}</span>`;
   }
 
   gotoDeploymentAction(params: any) {

@@ -119,7 +119,7 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
     this.sharedService.releaseStatus$
       .pipe(takeUntil(this.destroy$), skip(1))
       .subscribe(status => {
-        if (status && status !== this.currentStatus) {
+        if (status && status !== this.currentStatus.toLowerCase()) {
           this.getReleasesByDeploymentId();
         }
       });
@@ -263,15 +263,15 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
     this.deploymentService.getReleasesByDeploymentId(this.deploymentId).subscribe((res: any) => {
       [this.active, ...this.history] = res.data?.releases || [];
       this.deploymentService.getReleaseDataById(this.active.id).pipe(take(1)).subscribe((response: any) => {
-        const status = response.data?.status;
+        const status = response.data?.status.toLowerCase();
         this.releaseData = response.data;
 
-        const isBuilding = status === "Initiated" || status === "Building";
-        const isPending = status === "Pending";
-        const isBuildFailed = ["Build Failed", "Build Timeout", "Failed"].includes(status);
-        const isDeploying = status === "Deploying";
-        const isDeployFailed = ["Deploy Failed", "Deploy Timeout", "Create Job Failed"].includes(status);
-        const isPaused = status === "Paused";
+        const isBuilding = status === "initiated" || status === "building";
+        const isPending = status === "pending";
+        const isBuildFailed = ["build failed", "build timeout", "failed"].includes(status);
+        const isDeploying = status === "deploying";
+        const isDeployFailed = ["deploy failed", "deploy timeout", "create job failed"].includes(status);
+        const isPaused = status === "paused";
 
         const buildStatus = isPending ? "pending" : (isBuildFailed ? "failed" : "success");
         const deployStatus = isPaused
@@ -419,7 +419,8 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
   }
 
   getClassList(status: string): string {
-    return `${this.getIcons(status)} ${this.getStatusClass(status)}`;
+     const meta = this.sharedService.getStatusMeta(status);
+    return `${meta.icon} ${meta.statusClass}`;
   }
 
   openModal() {
