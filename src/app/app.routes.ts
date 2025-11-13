@@ -58,12 +58,6 @@ export const routes: Routes = [
             (m) => m.routes
           ),
       },
-
-      // {
-      //   path: 'edit-deployment',
-      //   canActivate: [AuthGuard],
-      //   loadChildren: () => import('./pages/deployments/create-deployments/routes').then((m) => m.routes)
-      // },
       {
         path: 'deployment-logs',
         canActivate: [AuthGuard],
@@ -99,47 +93,6 @@ export const routes: Routes = [
             (m) => m.routes
           ),
       },
-
-      {
-        path: 'endpoints',
-        // canActivate: [AuthGuard],
-        loadChildren: () =>
-          import('./pages/endpoints/routes').then((m) => m.routes),
-      },
-      {
-        path: 'create-endpoint',
-        canActivate: [AuthGuard],
-        loadChildren: () =>
-          import('./pages/endpoints/create-endpoints/routes').then(
-            (m) => m.routes
-          ),
-      },
-      {
-        path: 'configs',
-        canActivate: [AuthGuard],
-        loadChildren: () =>
-          import('./pages/configurations/routes').then((m) => m.routes),
-      },
-      {
-        path: 'create-config',
-        canActivate: [AuthGuard],
-        loadChildren: () =>
-          import('./pages/configurations/create-config/routes').then(
-            (m) => m.routes
-          ),
-      },
-      {
-        path: 'secrets',
-        canActivate: [AuthGuard],
-        loadChildren: () =>
-          import('./pages/secrets/routes').then((m) => m.routes),
-      },
-      {
-        path: 'create-secret',
-        canActivate: [AuthGuard],
-        loadChildren: () =>
-          import('./pages/secrets/create-secret/routes').then((m) => m.routes),
-      },
       {
         path: 'tools',
         canActivate: [AuthGuard],
@@ -159,19 +112,10 @@ export const routes: Routes = [
           import('./pages/settings/routes').then((m) => m.routes),
       },
       {
-        path: 'volumes',
-        canActivate: [AuthGuard],
-        loadChildren: () =>
-          import('./pages/volumes/routes').then((m) => m.routes),
-      },
-      {
         path: 'account-settings',
         loadChildren: () =>
           import('./pages/account-settings/routes').then((m) => m.routes),
         canActivate: [AuthGuard],
-        // data: {
-        //   title: $localize`:account-settings:Account Settings`
-        // }
       },
       {
         path: 'review-screen',
@@ -239,28 +183,14 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/page404/page404.component').then(
         (m) => m.Page404Component
-      ),
-    // data: {
-    //   breadcrumb: 'Page 404'
-    // }
+      )
   },
   {
     path: '500',
     loadComponent: () =>
       import('./pages/page500/page500.component').then(
         (m) => m.Page500Component
-      ),
-    // data: {
-    //   breadcrumb: 'Page 500'
-    // }
-  },
-  {
-    path: 'business-registration',
-    loadComponent: () =>
-      import('./pages/login/login.component').then((m) => m.LoginComponent),
-    // data: {
-    //   title: 'Login Page'
-    // }
+      )
   },
   {
     path: 'callback',
@@ -282,16 +212,6 @@ export const routes: Routes = [
       import('./pages/register/register.component').then(
         (m) => m.RegisterComponent
       ),
-  },
-  {
-    path: 'environment',
-    loadComponent: () =>
-      import('../app/pages/environment/environment.component').then(
-        (m) => m.EnvironmentComponent
-      ),
-    // data: {
-    //   breadcrumb: 'Environment Page'
-    // }
   },
   {
     path: 'vcs/callback',

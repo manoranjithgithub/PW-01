@@ -13,7 +13,7 @@ import {
   TooltipDirective,
   AlertComponent
 } from '@coreui/angular';
-import { REGION_OPTIONS } from '../../../shared/constants/nimbuz.constant';
+import { RegionOptions } from '../../../core/constants/app.constants';
 
 @Component({
   selector: 'app-create-project',
@@ -34,7 +34,7 @@ export class CreateProjectComponent implements OnInit {
   nameValidation: string = "Name must be alphanumeric & may contain hyphen. No special characters allowed.";
   tableTheme = 'ag-theme-alpine';
   showButtonInChild = false;
-  regionOptions: any = REGION_OPTIONS;
+  regionOptions: any = RegionOptions;
   projectExhausted: boolean = false;
   environmentExhausted: boolean = false;
   orgName: string = '';
@@ -47,7 +47,7 @@ export class CreateProjectComponent implements OnInit {
     private shared: SharedService,
     private project: ProjectsService) {
     // this.tableTheme = this.shared.getCookie('theme');
-    this.tableTheme = localStorage.getItem('theme') || 'ag-theme-alpine';
+    this.tableTheme = localStorage.getItem('theme-default') || 'ag-theme-alpine';
   }
 
   ngOnInit(): void {

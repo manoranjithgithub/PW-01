@@ -40,7 +40,7 @@ export class DeploymentLogsComponent implements OnInit , OnDestroy, AfterViewChe
         this.deploymentId = params['id'];
       });
       // this.tableTheme = this.sharedService.getCookie('theme');
-      this.tableTheme = localStorage.getItem('theme') || 'ag-theme-alpine';
+      this.tableTheme = localStorage.getItem('theme-default') || 'ag-theme-alpine';
     }
 
     ngOnInit(): void {

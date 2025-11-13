@@ -3,8 +3,5 @@ export const routes: Routes = [
   {
     path: '',
     loadComponent: () => import('./account-settings.component').then(m => m.AccountComponent),
-    // data: {
-    //   breadcrumb: $localize`Account Settings`
-    // }
   }
 ];

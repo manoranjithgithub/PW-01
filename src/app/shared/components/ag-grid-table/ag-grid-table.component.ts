@@ -63,7 +63,7 @@ export class AgGridTableComponent implements OnInit {
 
   constructor(private sharedService: SharedService, private router: Router) {
     // this.tableTheme = this.sharedService.getCookie('theme');
-    this.tableTheme = localStorage.getItem('theme') || 'ag-theme-alpine';
+    this.tableTheme = localStorage.getItem('theme-default') || 'ag-theme-alpine';
     const urlSegments = this.router.url.split('/').filter(Boolean);
     this.tableName = urlSegments[urlSegments.length - 1] == 'tools' ? 'tool' : urlSegments[urlSegments.length - 1];
     // this.tablebtn = urlSegments[urlSegments.length - 1] == 'deployment' ? 'Deploy' : 'Tool';

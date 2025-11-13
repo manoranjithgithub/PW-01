@@ -36,13 +36,11 @@ export class LoginComponent implements OnInit {
       password: ['', Validators.required],
     });
 
-    localStorage.setItem('theme', 'light');
-    this.#colorModeService.setStoredTheme('selectedTheme', 'light');
+    localStorage.setItem('theme-default', 'light');
   }
 
   ngOnInit(): void {
-    localStorage.setItem('theme', 'light');
-    this.#colorModeService.setStoredTheme('selectedTheme', 'light');
+    localStorage.setItem('theme-default', 'light');
     const subdomain = this.getSubdomain();
     this.loginForm.get('orgName')?.setValue(subdomain);
   }

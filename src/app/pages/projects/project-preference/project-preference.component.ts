@@ -13,8 +13,7 @@ import {
   DropdownMenuDirective,
   DropdownToggleDirective,
 } from '@coreui/angular';
-import { currentUsageFields, estimatedUsageFields } from '../../../core/constants/usage.fields.constants';
-import { userList } from '../../../core//constants/user-list.constants'
+import { currentUsageFields, estimatedUsageFields, userList } from '../../../core//constants/app.constants'
 import { Integrations } from '../../../core/constants/integrations.constant';
 import { Preferencedata } from '../../../core/constants/preference-data.constant';
 import { ProjectsService } from '../projects.service';

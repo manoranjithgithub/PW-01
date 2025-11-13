@@ -79,7 +79,6 @@ export class AuthService {
         id: decodeData.id,
         owner: decodeData.owner
       };
-      localStorage.setItem('profileSettings', JSON.stringify(userInfo));
       const storedUserInfo = localStorage.getItem('userInfo');
       if (storedUserInfo) {
         const existingUserInfo = JSON.parse(storedUserInfo);

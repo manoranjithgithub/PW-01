@@ -1,9 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, RouterOutlet, Router } from '@angular/router';
+import { RouterLink, RouterOutlet, Router, ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { UserService } from '../../core/services/user.service';
 import { ToastrService } from 'ngx-toastr';
+import { VALIDATION_REGEX } from '../../core/constants/validation-regex.constant';
 
 @Component({
   selector: 'app-register',
@@ -29,23 +30,27 @@ export class RegisterComponent implements OnInit {
     private fb: FormBuilder,
     private http: UserService,
     private router: Router,
-    private toaster: ToastrService
-  ) { }
-
-  ngOnInit(): void {
-    this.currentUrl = this.router.url;
-    this.isPasswordReset = this.currentUrl.includes('forgot-password');
-
-    this.registrationForm = this.fb.group({
+    private toaster: ToastrService,
+    private ac: ActivatedRoute
+  ) { 
+     this.registrationForm = this.fb.group({
       type: ['individual', Validators.required],
       orgName: ['', [Validators.required, Validators.pattern(/^[a-z0-9-]+$/)]],
-      username: ['', [Validators.required, Validators.pattern(/^(?![_-])(?!.*[_-]{2})(?!.*\s)[A-Za-z0-9_-]+(?<![_-])$/)]],
-      password: ['', [Validators.required, Validators.pattern(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+={}[\]:;"'<>,.?\/|\\~`])[^\s]{8,}$/
-      )]],
+      username: ['', [Validators.required, Validators.pattern(VALIDATION_REGEX.USERNAME)]],
+      password: ['', [Validators.required, Validators.pattern(VALIDATION_REGEX.NEW_PASSWORD)]],
       email: ['', [Validators.required, Validators.email]],
       terms: [false, this.isPasswordReset ? [] : Validators.requiredTrue]
     });
+  }
+
+  ngOnInit(): void {
+    this.ac.queryParams.subscribe(params => {
+      this.registrationForm.get('type')?.setValue(params['type'] || 'individual');
+    });
+    this.currentUrl = this.router.url;
+    this.isPasswordReset = this.currentUrl.includes('forgot-password');
+
+   
 
     this.registrationForm.get('type')?.valueChanges.subscribe((typeValue) => {
       if (typeValue === 'individual') {
