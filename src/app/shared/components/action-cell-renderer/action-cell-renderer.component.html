@@ -27,7 +27,7 @@
       <a class="custom-dropdown-item" (click)="onOptionSelected('redeploy')">Redeploy</a>
     </li>
     <li>
-      <a class="custom-dropdown-item" (click)="onOptionSelected(params?.data?.status === 'Stopped' ? 'Resume' : 'Pause')">{{ params?.data?.status === 'Stopped' ? 'Resume' : 'Pause'}}</a>
+      <a class="custom-dropdown-item" (click)="onOptionSelected(params?.data?.status.toLowerCase() === 'stopped' ? 'Resume' : 'Pause')">{{ params?.data?.status.toLowerCase() === 'stopped' ? 'Resume' : 'Pause'}}</a>
     </li>
   </ul>
 </div>
