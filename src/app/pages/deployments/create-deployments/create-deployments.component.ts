@@ -44,7 +44,7 @@ import {
 } from 'rxjs';
 import { EnvironmentVariablesComponent } from '../environment-variables/environment-variables.component';
 import { DeploymentSecretsComponent } from '../deployment-secrets/deployment-secrets.component';
-import { ReviewScreenComponent } from '../../review-screen/review-screen.component';
+import { ReviewScreenComponent } from '../review-screen/review-screen.component';
 import { TooltipDirective } from '@coreui/angular';
 import { environment } from '../../../../environments/environment';
 // import { environment } from 'src/environments/environment';
@@ -169,6 +169,7 @@ export class CreateDeploymentsComponent
   parsedConfigData: any
   invalidFileFormat: boolean = false;
   submitted: boolean = false
+  vcsProfileInfo: any;
 
   constructor(
     private _fb: FormBuilder,
@@ -221,13 +222,10 @@ export class CreateDeploymentsComponent
     this.currentProjectId = JSON.parse(localStorage.getItem('project') || '{}').id || '';
     if (this.currentProjectId) {
       this.projectService.getProjectDetailsById(this.currentProjectId).subscribe((res: any) => {
-        const vcsProfileInfo = {
+        this.vcsProfileInfo = {
           github: res.data.github,
           gitlab: res.data.gitlab
         }
-        localStorage.setItem('vcsProfileInfo', JSON.stringify(vcsProfileInfo));
-
-
       });
     }
 
@@ -484,8 +482,7 @@ export class CreateDeploymentsComponent
   }
 
   getUserProfile() {
-    const profileInfo = JSON.parse(localStorage.getItem('vcsProfileInfo') || '{}');
-    if (profileInfo.github) {
+    if (this.vcsProfileInfo?.github) {
       this.githubAuthenticated = true;
       this.getGitHubRepos();
     } else {
@@ -494,8 +491,7 @@ export class CreateDeploymentsComponent
     }
   }
   getGitLabUserProfile() {
-    const profileInfo = JSON.parse(localStorage.getItem('vcsProfileInfo') || '{}');
-    if (profileInfo.gitlab) {
+    if (this.vcsProfileInfo?.gitlab) {
       this.gitLabAuthenticated = true;
       this.getGitLabRepos();
     } else {

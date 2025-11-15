@@ -101,7 +101,6 @@ export class DefaultLayoutComponent implements OnInit {
     private toastr: ToastrService, private projectService: ProjectsService,
     private layoutActionService: LayoutActionService
   ) {
-
     this.#colorModeService.localStorageItemName.set('theme-default');
 
     this.router.events.pipe(
@@ -174,7 +173,7 @@ export class DefaultLayoutComponent implements OnInit {
   }
 
   isProjectsPage(): boolean {
-    return ['/projects', '/environment', '/create-project', '/create-environment', '/create-account'].some(path =>
+    return ['/projects', '/environment', '/projects/create-project', '/create-environment', '/create-account'].some(path =>
       this.currentUrl.includes(path)
     );
     // return this.currentUrl.includes('/project');
@@ -230,7 +229,7 @@ export class DefaultLayoutComponent implements OnInit {
       }
     });
     this.sharedService.user$.subscribe((userData: any) => {
-      const user = localStorage.getItem('profileSettings') ? JSON.parse(localStorage.getItem('profileSettings') || '{}') : null;
+      const user = userData;
       this.currentUser = user?.owner
       let baseItems = [...navItems];
       if (environment.production) {
@@ -262,7 +261,7 @@ export class DefaultLayoutComponent implements OnInit {
   setTheme(event: Event) {
     const color = (event.target as HTMLInputElement).checked ? 'light' : 'dark';
     // this.sharedService.setCookie('theme', color, 10)\
-    localStorage.setItem('theme-default', color);
+    localStorage.setItem('theme-default', JSON.stringify(color));
     this.colorMode.set(color);
     this.sharedService.emitValueChange(color);
   }
@@ -286,5 +285,16 @@ export class DefaultLayoutComponent implements OnInit {
   getItemStatus(): string {
     const match = this.selectedItemFromCom?.match(/\(([^)]+)\)/);
     return match ? match[1] : '';
+  }
+  get cleanColorMode() {
+    const mode = this.colorMode();
+    if (typeof mode !== 'string') {
+      return mode;
+    }
+    try {
+      return JSON.parse(mode);
+    } catch {
+      return mode;
+    }
   }
 }

@@ -1,6 +1,6 @@
 describe('Account Settings Form', () => {
   beforeEach(() => {
-    cy.visit('http://localhost:4200/create-deployment');
+    cy.visit('http://localhost:4200/deployment/create-deployment');
   });
 
   it('should display validation errors when submitting an empty form', () => {

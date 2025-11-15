@@ -39,11 +39,11 @@
                 <span class="input-group-text">
                   <i class="bi bi-lock"></i>
                 </span>
-                <input [type]="showPassword ? 'text' : 'password'" class="form-control" placeholder="Password *"
+                <input [type]="visiblePasswordFields.has('password') ? 'text' : 'password'" class="form-control" placeholder="Password *"
                   formControlName="password" />
                 <span class="input-group-text password-toggle" style="cursor:pointer;"
-                  (click)="togglePasswordVisibility()">
-                  <i class="bi" [ngClass]="showPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
+                  (click)="togglePasswordVisibility('password')">
+                  <i class="bi" [ngClass]="visiblePasswordFields.has('password') ? 'bi-eye-slash' : 'bi-eye'"></i>
                 </span>
               </div>
               <div

@@ -119,7 +119,7 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
     this.sharedService.releaseStatus$
       .pipe(takeUntil(this.destroy$), skip(1))
       .subscribe(status => {
-        if (status && status !== this.currentStatus) {
+        if (status && status !== this.currentStatus.toLowerCase()) {
           this.getReleasesByDeploymentId();
         }
       });
@@ -263,15 +263,15 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
     this.deploymentService.getReleasesByDeploymentId(this.deploymentId).subscribe((res: any) => {
       [this.active, ...this.history] = res.data?.releases || [];
       this.deploymentService.getReleaseDataById(this.active.id).pipe(take(1)).subscribe((response: any) => {
-        const status = response.data?.status;
+        const status = response.data?.status.toLowerCase();
         this.releaseData = response.data;
 
-        const isBuilding = status === "Initiated" || status === "Building";
-        const isPending = status === "Pending";
-        const isBuildFailed = ["Build Failed", "Build Timeout", "Failed"].includes(status);
-        const isDeploying = status === "Deploying";
-        const isDeployFailed = ["Deploy Failed", "Deploy Timeout", "Create Job Failed"].includes(status);
-        const isPaused = status === "Paused";
+        const isBuilding = status === "initiated" || status === "building";
+        const isPending = status === "pending";
+        const isBuildFailed = ["build failed", "build timeout", "failed"].includes(status);
+        const isDeploying = status === "deploying";
+        const isDeployFailed = ["deploy failed", "deploy timeout", "create job failed"].includes(status);
+        const isPaused = status === "paused";
 
         const buildStatus = isPending ? "pending" : (isBuildFailed ? "failed" : "success");
         const deployStatus = isPaused
@@ -370,56 +370,10 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
   hasFailedStatus(): boolean {
     return this.steps.some(s => s.status === 'failed');
   }
-  getStatusClass(status: string): string {
-    const map: Record<string, string> = {
-      'Initiated': 'pending',
-      'Building': 'in-process',
-      'Deploying': 'success',
-      'Active': 'success',
-      'Running': 'success',
-      'Paused': 'paused',
-      'Superseded': 'paused',
-      'Deploy Failed': 'failed',
-      'Build Failed': 'failed',
-      'Build Timeout': 'warning',
-      'Deploy Timeout': 'warning',
-      'Pending': 'warning',
-      'Create Job Failed': 'danger',
-      'Failed': 'danger',
-      'Success': 'success',
-      'Inprogress': 'in-process',
-      'Updating': 'warning',
-      'Degraded': 'warning',
-    };
-    return map[status] || 'Pending';
-  }
-  getIcons(status: string) {
-
-    const map: Record<string, string> = {
-      'Initiated': 'bi-check-circle-fill',
-      'Building': 'bi-check-circle-fill',
-      'Deploying': 'bi-check-circle-fill',
-      'Active': 'bi-check-circle-fill',
-      'Paused': 'bi-pause-circle-fill',
-      'Superseded': 'bi-arrow-clockwise',
-      'Deploy Failed': 'bi-x-circle-fill',
-      'Build Failed': 'bi-x-circle-fill',
-      'Build Timeout': 'bi-clock-history',
-      'Deploy Timeout': 'bi-clock-history',
-      'Running': 'bi-arrow-repeat',
-      'Pending': 'bi-clock',
-      'Create Job Failed': 'bi-x-circle-fill',
-      'Failed': 'bi-x-circle-fill',
-      'Success': 'bi-check-circle-fill',
-      'Inprogress': 'bi-check-circle-fill',
-      'Updating': 'bi-box-arrow-in-up',
-      'Degraded': 'bi-arrow-90deg-down'
-    };
-    return map[status] || '';
-  }
 
   getClassList(status: string): string {
-    return `${this.getIcons(status)} ${this.getStatusClass(status)}`;
+    const meta = this.sharedService.getStatusMeta(status);
+    return `${meta.icon} ${meta.statusClass}`;
   }
 
   openModal() {

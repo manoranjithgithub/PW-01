@@ -54,6 +54,7 @@ export class SwitchProjectComponent implements OnInit {
   private envSubscription?: Subscription;
 
   selectedEnvironmentObj: any;
+  vcsProfileInfo: any = {}  ;
 
   constructor(
     private authService: AuthService,
@@ -153,11 +154,10 @@ export class SwitchProjectComponent implements OnInit {
     const projectId = this.form.value.project?.id;
     if (projectId) {
       this.projectService.getProjectDetailsById(projectId).subscribe((res: any) => {
-        const vcsProfileInfo = {
+        this.vcsProfileInfo = {
           github: res.data.github,
           gitlab: res.data.gitlab
         }
-        localStorage.setItem('vcsProfileInfo', JSON.stringify(vcsProfileInfo));
       });
     }
     this.showEnvironmentModel.close();
@@ -171,7 +171,7 @@ export class SwitchProjectComponent implements OnInit {
   private getSavedSelections() {
     return {
       project: this.safeParse(localStorage.getItem('project')),
-      region: localStorage.getItem('region'),
+      region: 'ap-south-1a',
       environment: this.safeParse(localStorage.getItem('environment'))
     };
   }

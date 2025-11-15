@@ -16,8 +16,7 @@
             <div class="m-4">
               <!-- *ngIf="hasFailedStatus()" -->
               <div class="realse-status-header">
-                <div class="status-title" [ngClass]="getStatusClass(currentStatus)"> <i class="bi"
-                    [ngClass]="getIcons(currentStatus)"></i> {{
+                <div class="status-title" [ngClass]="getClassList(currentStatus)"> {{
                   currentStatus
                   }}</div>
 

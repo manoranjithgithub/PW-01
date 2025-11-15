@@ -27,14 +27,16 @@ export class UtilizationChartComponent implements AfterViewInit, OnDestroy, OnCh
     moderate: 80,
     max: 100
   };
-
+  private viewInit = false;
   ngOnChanges(changes: SimpleChanges): void {
+    if (!this.viewInit) return;
     if (changes['value'] || changes['rawValue']) {
       this.renderGauge();
     }
   }
 
   ngAfterViewInit(): void {
+    this.viewInit = true;
     this.renderGauge();
   }
   renderGauge(): void {
@@ -75,17 +77,6 @@ export class UtilizationChartComponent implements AfterViewInit, OnDestroy, OnCh
         plugins: {
           legend: { display: false },
           tooltip: { enabled: false }
-          // tooltip: {
-          //       enabled: true,
-          //       callbacks: {
-          //         label: function () {
-          //           return 'usage for the past 5 minutes';
-          //         },
-          //         title: function () {
-          //           return '';
-          //         }
-          //       }
-          // },
         }
       }
     });

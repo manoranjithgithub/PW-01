@@ -24,13 +24,6 @@
         </div>
         <hr />
         <div class="d-flex justify-content-between">
-            <!-- <button class="btn button-format-outline" (click)="toolsBack()">
-                <i class="bi bi-arrow-left"></i> Tools list
-            </button> -->
-            <!-- <div>
-                <button class="btn button-format-outline me-2" (click)="showTools()">View details</button>
-                <button class="btn button-format-solid" (click)="install()">Install</button>
-            </div> -->
         </div>
     </ng-container>
 
@@ -38,7 +31,6 @@
         <form [formGroup]="form" *ngIf="isShowForm">
             <div class="d-flex align-items-center">
                 <div class="tool-text me-3">{{ selectedTool }}</div>
-                <!-- <i class="bi bi-info-circle"></i> -->
             </div>
             <hr class="mb-2" />
             <div class="row mt-4">
@@ -95,33 +87,6 @@
                         class="text-danger mt-1">
                         Maximum 30 characters allowed.
                     </div>
-
-                    <!-- <small *ngIf="form.get(field.key)?.errors?.['lowercase'] && form.get(field.key)?.value?.length"
-                        class="text-danger">
-                        Only lowercase letters are allowed.
-                    </small> -->
-                    <!-- <div *ngIf="form.get([field.key])?.errors && form.get([field.key])?.value?.length">
-                        <div *ngIf="form.get([field.key])?.hasError('minLength')">
-                            <small class="text-danger">Minimum length is 10 characters</small>
-                        </div>
-                        <div *ngIf="form.get([field.key])?.hasError('letter')">
-                            <small class="text-danger">At least one letter</small>
-                        </div>
-                        <div *ngIf="form.get([field.key])?.hasError('specialChar')">
-                            <small class="text-danger">At least one special character</small>
-                        </div>
-                        <div *ngIf="form.get([field.key])?.hasError('number')">
-                            <small class="text-danger">At least one number</small>
-                        </div>
-                        <div *ngIf="form.get([field.key])?.hasError('noSpaces')">
-                            <small class="text-danger">No spaces allowed</small>
-                        </div>
-                    </div> -->
-                    <!-- <small
-                        *ngIf="form.get([field.key])?.hasError('gigabyteValidator') && form.get([field.key])?.value?.length"
-                        class="text-danger">
-                        Only numbers are allowed. The values will be considered as 'GI'
-                    </small> -->
                 </div>
             </div>
 

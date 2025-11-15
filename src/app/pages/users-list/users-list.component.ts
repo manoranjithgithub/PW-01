@@ -24,38 +24,19 @@ export class UsersListComponent implements OnInit {
   addUserForm!: FormGroup;
 
   columnDefs = [
-    { field: '', headerName: 'S.No', maxWidth: 80,sortable: true,
+    {
+      field: '', headerName: 'S.No', maxWidth: 80, sortable: true,
       valueGetter: (params: any) => {
         const rowIndex = params.node.rowIndex;
         return rowIndex + 1;
       },
     },
-    // {
-    //   field: 'avatar',
-    //   headerName: 'Profile',
-    //   width: 100,
-    //   cellRenderer: (params: any) => {
-    //     const avatarUrl = params.value;
-    //     const defaultAvatar = 'assets/images/avatars/avatar.jpg';
-
-    //     const finalUrl = avatarUrl || defaultAvatar;
-
-    //     return `<img src="${finalUrl}" alt="avatar" style="width:40px; height:40px;border:1px solid #f1f1f1;padding:5px; border-radius:50%;" onerror="this.src='${defaultAvatar}'" />`;
-    //   },
-    //   sortable: false,
-    //   filter: false
-    // },
-    // {
-    //   field: 'displayName', headerName: 'Display Name', tooltipField: 'name', sortable: true, flex: 1,
-    //   cellStyle: { 'white-space': 'nowrap', 'overflow': 'hidden !important', 'text-overflow': 'ellipsis' },
-    // },
-
     {
-      field: 'name', headerName: 'Name',  tooltipField: 'name', sortable: true, flex: 1,
+      field: 'name', headerName: 'Name', tooltipField: 'name', sortable: true, flex: 1,
       cellStyle: { 'white-space': 'nowrap', 'overflow': 'hidden !important', 'text-overflow': 'ellipsis' },
     },
     {
-      field: 'email', headerName: 'Email',  tooltipField: 'email', flex: 1,
+      field: 'email', headerName: 'Email', tooltipField: 'email', flex: 1,
       cellStyle: { 'white-space': 'nowrap', 'overflow': 'hidden !important', 'text-overflow': 'ellipsis' }
     },
     {
@@ -84,7 +65,7 @@ export class UsersListComponent implements OnInit {
     {
       field: 'updatedAt',
       headerName: 'Updated At',
-      valueFormatter: (params:any) => {
+      valueFormatter: (params: any) => {
         const value = params.value;
         const date = value ? new Date(value) : null;
         return date instanceof Date && !isNaN(date.getTime())

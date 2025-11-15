@@ -32,39 +32,7 @@ export const routes: Routes = [
       {
         path: 'deployment',
         canActivate: [AuthGuard],
-        // data: { breadcrumb: 'Deployments' },
-        children: [
-          {
-            path: '',
-            loadChildren: () =>
-              import('./pages/deployments/routes').then((m) => m.routes),
-            // data: { breadcrumb: 'Deployments' },
-          },
-          {
-            path: 'deployment-details',
-            loadChildren: () =>
-              import('./pages/deployments/deployment-details/routes').then(
-                (m) => m.routes
-              ),
-            // data: { breadcrumb: 'Deployments Details' }
-          },
-        ],
-      },
-      {
-        path: 'create-deployment',
-        canActivate: [AuthGuard],
-        loadChildren: () =>
-          import('./pages/deployments/create-deployments/routes').then(
-            (m) => m.routes
-          ),
-      },
-      {
-        path: 'deployment-logs',
-        canActivate: [AuthGuard],
-        loadChildren: () =>
-          import('./pages/deployments/deployment-logs/routes').then(
-            (m) => m.routes
-          ),
+        loadChildren: () => import('./pages/deployments/routes').then((m) => m.routes),
       },
       {
         path: 'projects',
@@ -83,15 +51,15 @@ export const routes: Routes = [
                 (m) => m.routes
               ),
           },
+          {
+            path: 'create-project',
+            canActivate: [AuthGuard],
+            loadChildren: () =>
+              import('./pages/projects/create-project/routes').then(
+                (m) => m.routes
+              ),
+          },
         ],
-      },
-      {
-        path: 'create-project',
-        canActivate: [AuthGuard],
-        loadChildren: () =>
-          import('./pages/projects/create-project/routes').then(
-            (m) => m.routes
-          ),
       },
       {
         path: 'tools',
@@ -100,29 +68,10 @@ export const routes: Routes = [
           import('./pages/tools/routes').then((m) => m.routes),
       },
       {
-        path: 'create-tool',
-        canActivate: [AuthGuard],
-        loadChildren: () =>
-          import('./pages/tools/create-tool/routes').then((m) => m.routes),
-      },
-      {
-        path: 'settings',
-        canActivate: [AuthGuard],
-        loadChildren: () =>
-          import('./pages/settings/routes').then((m) => m.routes),
-      },
-      {
         path: 'account-settings',
         loadChildren: () =>
           import('./pages/account-settings/routes').then((m) => m.routes),
         canActivate: [AuthGuard],
-      },
-      {
-        path: 'review-screen',
-        loadComponent: () =>
-          import('./pages/review-screen/review-screen.component').then(
-            (m) => m.ReviewScreenComponent
-          ),
       },
       {
         path: 'create-environment',
@@ -140,18 +89,7 @@ export const routes: Routes = [
             (m) => m.routes
           ),
       },
-      {
-        path: 'view-tool',
-        canActivate: [AuthGuard],
-        loadChildren: () =>
-          import('./pages/tools/view-tool/routes').then((m) => m.routes),
-      },
-      {
-        path: 'edit-tool',
-        canActivate: [AuthGuard],
-        loadChildren: () =>
-          import('./pages/tools/edit-tool/routes').then((m) => m.routes),
-      },
+
       {
         path: 'users-list',
         canActivate: [AuthGuard],
@@ -227,5 +165,5 @@ export const routes: Routes = [
         (m) => m.LoginComponent
       ),
   },
-  { path: '**', redirectTo: 'project' },
+  { path: '**', redirectTo: 'projects' },
 ];

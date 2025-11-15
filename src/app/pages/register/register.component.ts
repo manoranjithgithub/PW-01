@@ -5,6 +5,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { UserService } from '../../core/services/user.service';
 import { ToastrService } from 'ngx-toastr';
 import { VALIDATION_REGEX } from '../../core/constants/validation-regex.constant';
+import { togglePasswordField } from '../../shared/helpers/password.helper';
 
 @Component({
   selector: 'app-register',
@@ -24,6 +25,8 @@ export class RegisterComponent implements OnInit {
   successMessage: string = '';
   isPasswordReset: boolean = false;
   loading: boolean = false;
+  visiblePasswordFields = new Set<string>();
+
 
 
   constructor(
@@ -32,14 +35,14 @@ export class RegisterComponent implements OnInit {
     private router: Router,
     private toaster: ToastrService,
     private ac: ActivatedRoute
-  ) { 
-     this.registrationForm = this.fb.group({
+  ) {
+    this.registrationForm = this.fb.group({
       type: ['individual', Validators.required],
       orgName: ['', [Validators.required, Validators.pattern(/^[a-z0-9-]+$/)]],
       username: ['', [Validators.required, Validators.pattern(VALIDATION_REGEX.USERNAME)]],
       password: ['', [Validators.required, Validators.pattern(VALIDATION_REGEX.NEW_PASSWORD)]],
       email: ['', [Validators.required, Validators.email]],
-      terms: [false, this.isPasswordReset ? [] : Validators.requiredTrue]
+      terms: [false]
     });
   }
 
@@ -49,8 +52,7 @@ export class RegisterComponent implements OnInit {
     });
     this.currentUrl = this.router.url;
     this.isPasswordReset = this.currentUrl.includes('forgot-password');
-
-   
+    this.registrationForm.get('terms')?.setValidators(this.isPasswordReset ? [] : Validators.requiredTrue);
 
     this.registrationForm.get('type')?.valueChanges.subscribe((typeValue) => {
       if (typeValue === 'individual') {
@@ -65,44 +67,47 @@ export class RegisterComponent implements OnInit {
     }
   }
 
-
   onSubmit(): void {
-    if (this.registrationForm.invalid) {
-      this.submitted = true;
-      return;
-    }
-    delete this.registrationForm.value.terms;
+    this.submitted = true;
+    if (this.registrationForm.invalid) return;
     this.loading = true;
-    if (this.isPasswordReset) {
-      this.http.forgotPassword(this.registrationForm.value).subscribe({
-        next: (response) => {
-          this.successMessage = `Password reset link sent!\nPlease check your email for instructions to reset your password.`;
-          this.isRegistrationSuccess = true;
-          this.loading = false;
-        },
-        error: (error) => {
-          this.isRegistrationSuccess = false;
-          this.toaster.error(error.error.error?.message);
-          this.loading = false;
-        }
-      });
-    } else {
-      this.http.register(this.registrationForm.value).subscribe({
-        next: (response) => {
-          this.successMessage = `Registration Successful!\nThank you for registering with us.\nWe've sent verification details to your registered email address. Please follow the instructions in the email to log in and get started.`;
-          this.isRegistrationSuccess = true;
-          this.loading = false;
-        },
-        error: (error) => {
-          this.isRegistrationSuccess = false;
-          this.loading = false;
-          this.toaster.error(error.error.error?.message);
-        }
-      });
-    }
+    const { terms, ...finalPayload } = this.registrationForm.value;
+    const apiCall = this.isPasswordReset
+      ? this.http.forgotPassword(finalPayload)
+      : this.http.register(finalPayload);
+
+    apiCall.subscribe({
+      next: () => {
+        this.handleSuccess();
+      },
+      error: (error) => {
+        this.handleError(error);
+      },
+    });
   }
 
-  togglePasswordVisibility(): void {
-    this.showPassword = !this.showPassword;
+  private handleSuccess(): void {
+    this.loading = false;
+    this.isRegistrationSuccess = true;
+
+    this.successMessage = this.isPasswordReset
+      ? `Password reset link sent!
+Please check your email for instructions to reset your password.`
+      : `Registration Successful!
+Thank you for registering with us.
+We've sent verification details to your registered email address. Please follow the instructions to log in.`;
+  }
+
+  private handleError(error: any): void {
+    this.loading = false;
+    this.isRegistrationSuccess = false;
+
+    const message = error?.error?.error?.message || 'Something went wrong';
+    this.toaster.error(message);
+  }
+
+
+  togglePasswordVisibility(field: string): void {
+    togglePasswordField(this.visiblePasswordFields, field);
   }
 }

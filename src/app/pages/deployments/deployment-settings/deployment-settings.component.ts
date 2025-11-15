@@ -10,7 +10,6 @@ import {
   AlertComponent,
   TooltipDirective
 } from '@coreui/angular';
-import { ResourceQuotaComponent } from '../../settings/resource-quota/resource-quota.component';
 import { CommonModule, ViewportScroller } from '@angular/common';
 import { SharedService } from '../../../shared/services/shared.service';
 import { DeploymentsService } from '../deployment.service';
@@ -29,7 +28,7 @@ import { concatMap, tap } from 'rxjs';
   imports: [AccordionComponent,
     AccordionItemComponent,
     TemplateIdDirective, ModalComponent,
-    AccordionButtonDirective, ReactiveFormsModule, ResourceQuotaComponent, CommonModule, CalloutComponent,
+    AccordionButtonDirective, ReactiveFormsModule, CommonModule, CalloutComponent,
     FormCheckComponent, FormsModule, TooltipDirective, AlertComponent, MatIconModule, NgbPopoverModule],
   templateUrl: './deployment-settings.component.html',
   styleUrl: './deployment-settings.component.scss',
@@ -221,13 +220,8 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
 
 
   getDeploymentById(): void {
-    // const regionCookie = this.sharedService.getCookie('region');
-    const regionCookie = localStorage.getItem('region');
     this.deploymentService.getDeploymentById(this.deploymentdetails?.id).subscribe((res: any) => {
       if (res.status.toLowerCase() === "success") {
-        // this.ingressDomain = res.data?.app_ingress_domain;
-        // this.showCustomDnsHost = !!res.data.is_custom_dns;
-        //General settings
         const rawGitUrl = res.data.sourceCode?.gitUrl || '';
         const [urlPart, , branch] = rawGitUrl?.split(' ') || [];
         const cleanUrl = urlPart?.replace(/\/\/.*@/, '//').replace(/\.git$/, '') || '';
@@ -238,7 +232,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
         this.generalSettingsForm.patchValue({
           name: res.data.name,
           instanceType: res.data.application?.instanceType,
-          region: regionCookie,
+          region: 'ap-south-1a',
           replicas: res.data.application?.replicas,
           ephemeralStorage: res.data.application?.ephemeralStorage ? res.data.application?.ephemeralStorage.replace(/Gi$/, '') : null,
           storage: res.data.application?.storage,
@@ -425,7 +419,6 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
   }
 
   onGeneralSubmit(): void {
-    const regionCookie = localStorage.getItem('region');
     if (this.generalSettingsForm.invalid) {
       this.generalSettingsForm.markAllAsTouched();
       return;
@@ -474,7 +467,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
         this.generalSettingsForm.patchValue({
           name: res.data.name,
           instanceType: res.data.application?.instanceType,
-          region: regionCookie,
+          region: 'ap-south-1a',
           replicas: res.data.application?.replicas,
           ephemeralStorage: res.data.application?.ephemeralStorage ? res.data.application?.ephemeralStorage.replace(/Gi$/, '') : null,
           storage: res.data.application?.storage,

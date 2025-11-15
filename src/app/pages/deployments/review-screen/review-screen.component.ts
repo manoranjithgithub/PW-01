@@ -1,8 +1,8 @@
 import { Component, Output, EventEmitter, ViewEncapsulation, OnInit, Input } from '@angular/core';
-import { DeploymentsService } from '../deployments/deployment.service';
+import { DeploymentsService } from '../deployment.service';
 import { CommonModule, Location } from '@angular/common';
 import { Router } from '@angular/router';
-import { SharedService } from '../../shared/services/shared.service';
+import { SharedService } from '../../../shared/services/shared.service';
 import { ToastrService } from 'ngx-toastr';
 @Component({
   selector: 'app-review-screen',

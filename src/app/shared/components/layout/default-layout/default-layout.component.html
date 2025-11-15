@@ -30,11 +30,11 @@
   }
   <div class="fixed-profile mx-4 mb-2 rounded mt-3 mb-4">
     <div class="hstack gap-4">
-      <div class="text-dark mode-type">{{ colorMode() === 'light' ? 'Light Mode' : 'Dark Mode' }}</div>
+      <div class="text-dark mode-type">{{ cleanColorMode === 'light' ? 'Light Mode' : 'Dark Mode' }}</div>
       <div class="john-title">
         <div class="theme-toggle">
           <label class="switch">
-            <input type="checkbox" [checked]="colorMode() === 'light'" (change)="setTheme($event)">
+            <input type="checkbox" [checked]="cleanColorMode === 'light'" (change)="setTheme($event)">
             <span class="slider">
               <i class="bi bi-moon icon-moon"></i>
               <i class="bi bi-sun icon-sun"></i>

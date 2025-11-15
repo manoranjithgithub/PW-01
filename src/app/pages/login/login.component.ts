@@ -6,6 +6,7 @@ import { ToastrService } from 'ngx-toastr';
 import { UserService } from '../../core/services/user.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ColorModeService } from '@coreui/angular';
+import { togglePasswordField } from '../../shared/helpers/password.helper';
 
 @Component({
   selector: 'app-login',
@@ -22,6 +23,7 @@ export class LoginComponent implements OnInit {
   isRegistrationSuccess: boolean = false;
   showPassword: boolean = false;
   loading: boolean = false;
+  visiblePasswordFields = new Set<string>();
 
   constructor(
     private fb: FormBuilder,
@@ -35,12 +37,10 @@ export class LoginComponent implements OnInit {
       username: ['', Validators.required],
       password: ['', Validators.required],
     });
-
-    localStorage.setItem('theme-default', 'light');
   }
 
   ngOnInit(): void {
-    localStorage.setItem('theme-default', 'light');
+    localStorage.setItem('theme-default', JSON.stringify('light'));
     const subdomain = this.getSubdomain();
     this.loginForm.get('orgName')?.setValue(subdomain);
   }
@@ -71,8 +71,8 @@ export class LoginComponent implements OnInit {
 
   }
 
-  togglePasswordVisibility(): void {
-    this.showPassword = !this.showPassword;
+  togglePasswordVisibility(field: string): void {
+    togglePasswordField(this.visiblePasswordFields, field);
   }
 
   private getSubdomain(): string {

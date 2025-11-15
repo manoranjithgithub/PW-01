@@ -12,6 +12,6 @@ import { Component, Input, ViewEncapsulation } from '@angular/core';
 export class SummaryCardComponent {
   @Input() value: string | number = '';
   @Input() label: string = '';
-  @Input() change: number = 0;
+  // @Input() change: number = 0;
   @Input() description: string = 'from last 7 days';
 }

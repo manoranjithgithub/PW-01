@@ -79,7 +79,7 @@ export class CreateToolComponent implements OnInit, OnDestroy {
     })
     const availableTools = JSON.parse(localStorage.getItem('availableTools') || '{}');
     if (availableTools.length > 0) {
-      this.toolNames = availableTools.map((item: any) => item.name);
+      this.toolNames = availableTools;
     }
     this.http.getInstanceTypes().subscribe((res: any) => {
       this.resources = Object.entries(res.data).map(([key, value]) => ({

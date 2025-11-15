@@ -114,7 +114,7 @@ export class AgGridTableComponent implements OnInit {
     this.rowClicked.emit(data.data)
   }
   newProject() {
-    this.router.navigate(['/create-project'])
+    this.router.navigate(['/projects/create-project'])
   }
   addNewUser() {
     this.addUuserEvent.emit(true);

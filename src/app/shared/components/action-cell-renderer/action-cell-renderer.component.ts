@@ -159,7 +159,7 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
       this.route.navigate(['/edit-deployment'], { queryParams: { id: data.name } });
     }
     if (this.additionalParam === "tools") {
-      this.route.navigate(['/edit-tool'], { queryParams: { selectedEdit: data.name } });
+      this.route.navigate(['/tools/edit-tool'], { queryParams: { selectedEdit: data.name } });
     }
   }
 
@@ -287,7 +287,7 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
     console.log("additionalParamView", this.additionalParam);
     console.log("View data", data.name);
     if (this.additionalParam === "tools") {
-      this.route.navigate(['/view-tool'], { queryParams: { selectedView: data.name } });
+      this.route.navigate(['/tools/view-tool'], { queryParams: { selectedView: data.name } });
     }
   }
   showDeploymentView(deploymentDetails: any) {

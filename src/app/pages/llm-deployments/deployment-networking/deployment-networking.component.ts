@@ -100,7 +100,7 @@ export class DeploymentNetworkingComponent implements OnInit {
     this.networkSettingsForm.get('service')?.valueChanges.subscribe(value => {
       this.isPatchedValue = true;
       let envType = '';
-      const region = localStorage.getItem('region') || 'ap-south-1a';
+      const region = 'ap-south-1a';
 
       if (environment) {
         const envObj = JSON.parse(environment);

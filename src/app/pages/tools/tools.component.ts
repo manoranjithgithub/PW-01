@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { AgGridModule } from 'ag-grid-angular';
 import { ColDef, CellClickedEvent } from 'ag-grid-community';
 import { CommonModule } from '@angular/common';
@@ -7,8 +7,6 @@ import {
 } from '@coreui/angular';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { ToastrService } from 'ngx-toastr';
 import { ConfirmationModalComponent } from '../../shared/components/modal/confirmation-modal/confirmation-modal.component';
 import { LoaderComponent } from '../../shared/components/loader/loader.component';
 import { AgGridTableComponent } from '../../shared/components/ag-grid-table/ag-grid-table.component';
@@ -31,22 +29,14 @@ export class ToolsComponent implements OnInit, OnDestroy {
   envId: string = '';
   rowData = [];
 
-  deploymentData = [];
-  configData = [];
-  secretData = [];
-  endpointsData = [];
-  isShowToolDetails: boolean = false;
   private subscription: Subscription | undefined;
   toolName: string = '';
   loading: boolean = true;
-  getToolsIntervel:any
+  getToolsIntervel: any
 
   constructor(private http: ToolsService,
-    private router: Router, private sharedService: SharedService, private modalService: NgbModal,
-    private toaster: ToastrService, private cdr: ChangeDetectorRef
+    private router: Router, private sharedService: SharedService
   ) {
-    //this.tableTheme = this.sharedService.getCookie('theme')
-    // const storedValue = this.sharedService.getCookie('environment');
     const storedValue = localStorage.getItem('environment');
     if (storedValue && storedValue !== "undefined") {
       this.envId = JSON.parse(storedValue).id
@@ -56,7 +46,6 @@ export class ToolsComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.subscription = this.sharedService.envValueChange$.subscribe((value: any) => {
-      // const savedEnv = this.sharedService.getCookie('environment');
       const savedEnv = localStorage.getItem('environment');
       if (!savedEnv) {
         this.router.navigate(['/environments']);
@@ -96,20 +85,12 @@ export class ToolsComponent implements OnInit, OnDestroy {
       flex: 1,
       cellRenderer: (params: any) => {
         const status = params.value;
-        const iconMap: Record<string, string> = {
-          'Running': 'bi-check-circle-fill text-success',
-          'Failed': 'bi-x-circle-fill text-danger',
-          'Pending': 'bi-clock text-warning',
-          'Stopped': 'bi-slash-circle-fill text-secondary',
-          'Degraded': 'bi-exclamation-circle-fill text-warning',
-          'Unknown': 'bi-question-circle-fill text-muted'
-        };
-        const iconClass = iconMap[status] || 'bi-info-circle text-muted';
+        const meta = this.sharedService.getStatusMeta(status);
 
         return `
-            <span style="display: flex; align-items: center; gap: 5px;">
-              <i class="bi ${iconClass}"></i>
-              <span>${status}</span>
+            <span style="display: flex; align-items: center; gap: 5px;" class="${meta.statusClass}">
+              <i class="bi ${meta.icon}"></i>
+              <span class="text-capitalize">${meta.label}</span>
             </span>
           `;
       }
@@ -213,17 +194,12 @@ export class ToolsComponent implements OnInit, OnDestroy {
   ];
 
   addTools() {
-    this.router.navigate(['/create-tool'])
-  }
-
-  editTools() {
-    this.router.navigate(['/create-tool'], { queryParams: { name: this.toolName } })
+    this.router.navigate(['/tools/create-tool'])
   }
 
   gotoAction(params: any) {
-    console.log(params)
     this.toolName = params.name;
-    this.router.navigate(['/view-tool'], { queryParams: { selectedView: this.toolName } })
+    this.router.navigate(['/tools/view-tool'], { queryParams: { selectedView: this.toolName } })
   }
 
   getAvailableTools(value: any): void {
@@ -234,7 +210,7 @@ export class ToolsComponent implements OnInit, OnDestroy {
             ...tool,
             icon: this.getToolIcon(tool.schemaId)
           }));
-          localStorage.setItem('availableTools', JSON.stringify(res.data));
+          localStorage.setItem('availableTools', JSON.stringify(res.data?.map((tool: any) => tool.name)));
           this.loading = false
         }
       }, error => {
@@ -247,190 +223,11 @@ export class ToolsComponent implements OnInit, OnDestroy {
     this.isShowTable = true;
   }
 
-
   ngOnDestroy(): void {
     clearInterval(this.getToolsIntervel)
     this.subscription?.unsubscribe();
   }
 
-  //deployments column def
-  deploymentsColDefs: ColDef[] = [
-    {
-      headerName: 'Name', field: 'name', sortable: true, filter: true, flex: 1,
-      cellStyle: { cursor: 'pointer', textDecoration: 'underline', color: '#39f' },
-      onCellClicked: (event: CellClickedEvent) =>
-        this.gotoDeploymentAction(event.data)
-    },
-    {
-      headerName: 'Status',
-      field: 'availableReplicas',
-      sortable: true,
-      filter: false,
-      flex: 1,
-      cellRenderer: (params: any) => this.statusCellRenderer(params),
-      cellStyle: { textAlign: 'center' }
-    },
-    { headerName: 'Replicas', field: 'replicas', sortable: true, filter: false, flex: 1 },
-    {
-      headerName: 'Created At',
-      field: 'createdAt',
-      sortable: true,
-      filter: false,
-      flex: 1,
-      sort: 'desc',
-      valueFormatter: (params: any) => this.sharedService.formatDate(params.value)
-    }
-  ];
-
-  statusCellRenderer(params: any): string {
-    const { availableReplicas, replicas } = params.data;
-    const iconMap: Record<string, string> = {
-      'Initiated': 'bi-hourglass-split',
-      'Building': 'bi-check-circle-fill',
-      'Deploying': 'bi-cloud-upload',
-      'Active': 'bi-check-circle-fill',
-      'Paused': 'bi-pause-circle-fill',
-      'Superseded': 'bi-arrow-clockwise',
-      'Deploy Failed': 'bi-x-circle-fill',
-      'Failed': 'bi-x-circle-fill',
-      'Build Timeout': 'bi-clock-history',
-      'Build Failed': 'bi-x-circle-fill',
-      'Deploy Timeout': 'bi-clock-history',
-      'Unavailable': 'bi-x-circle-fill',
-      'Running': 'bi-check-circle-fill',
-      'Pending': 'bi-clock',
-      'Create Job Failed': 'bi-x-circle-fill',
-      'Stopped': 'bi-slash-circle-fill'
-    };
-
-    const status = availableReplicas === replicas
-      ? { text: 'Running', class: 'badge-success' }
-      : availableReplicas > 0
-        ? { text: 'Degraded', class: 'badge-warning' }
-        : { text: 'Down', class: 'badge-danger' };
-    const icon = iconMap["status"] || 'bi-question-circle-fill';
-    return `<span class="badge ${status.class}"><i class="bi ${icon}">${status.text} </span>`;
-  }
-
-  gotoDeploymentAction(params: any) {
-    this.router.navigate(['/deployment-logs'], { queryParams: { id: params.name } })
-  }
-
-  //Endpoints column def
-  endpointsColDefs: ColDef[] = [
-    {
-      headerName: 'Name', field: 'name', sortable: true, filter: true, flex: 1,
-      cellStyle: { cursor: 'pointer', textDecoration: 'underline', color: '#39f' },
-      onCellClicked: (event: CellClickedEvent) =>
-        this.gotoEndpointAction(event.data)
-    },
-    {
-      headerName: 'Endpoint', field: 'host', sortable: true, flex: 1,
-      cellStyle: { cursor: 'pointer', textDecoration: 'underline', color: '#39f' },
-      onCellClicked: (event: CellClickedEvent) =>
-        this.openHost(event.data)
-    },
-    {
-      headerName: 'Authentication',
-      field: 'authentication',
-      sortable: true,
-      flex: 1,
-      cellRenderer: (params: any) => {
-        const status = params.value
-          ? { text: 'Authenticated', class: 'badge-success' }
-          : { text: 'Not Authenticated', class: 'badge-danger' };
-
-        return `<span class="badge ${status.class}">${status.text}</span>`;
-      },
-      cellStyle: { textAlign: 'left' }
-    },
-    {
-      headerName: 'Created At',
-      sortable: true,
-      sort: 'desc',
-      field: 'createdAt',
-      width: 150,
-      valueFormatter: (params: any) => this.sharedService.formatDate(params.value)
-    }
-
-  ];
-
-  gotoEndpointAction(params: any) {
-    this.router.navigate(['/create-endpoint'], { queryParams: { id: params.name } })
-  }
-
-  openHost(params: any) {
-    window.open(`https://${params?.host}`, '_blank');
-  }
-
-  //Configurations column def
-  configurationsColDefs: ColDef[] = [
-    {
-      headerName: 'Name', field: 'name', sortable: true, filter: true, flex: 1,
-      cellStyle: { cursor: 'pointer', textDecoration: 'underline', color: '#39f' },
-      onCellClicked: (event: CellClickedEvent) =>
-        this.gotoConfigAction(event.data)
-    },
-    {
-      headerName: 'Created At',
-      field: 'createdAt',
-      sortable: true,
-      filter: false,
-      flex: 1,
-      sort: 'desc',
-      valueFormatter: (params: any) => this.sharedService.formatDate(params.value)
-    },
-
-  ];
-
-  gotoConfigAction(value: any) {
-    this.router.navigate(['/create-config'], { queryParams: { id: value.name } })
-  }
-
-  //Secrets column Def
-  secretsColDefs: ColDef[] = [
-    {
-      headerName: 'Name', field: 'name', sortable: true, filter: true, flex: 1,
-      cellStyle: { cursor: 'pointer', textDecoration: 'underline', color: '#39f' },
-      onCellClicked: (event: CellClickedEvent) =>
-        this.gotoSecretsAction(event.data)
-    },
-    {
-      headerName: 'Created At',
-      field: 'createdAt',
-      sortable: true,
-      filter: false,
-      flex: 1,
-      sort: 'desc',
-      valueFormatter: (params: any) => this.sharedService.formatDate(params.value)
-    },
-  ];
-
-  gotoSecretsAction(value: any) {
-    this.router.navigate(['/create-secret'], { queryParams: { id: value.name } })
-  }
-
-  openConfirmationDialog() {
-    const modalRef = this.modalService.open(ConfirmationModalComponent);
-    modalRef.componentInstance.selectedItem = 'Tool';
-    modalRef.componentInstance.message = 'Are you sure you want to proceed?';
-
-    modalRef.result.then(
-      (result) => {
-        if (result) {
-          this.http.deleteTools(this.envId, this.toolName).subscribe((res: any) => {
-            if (res.success) {
-              this.toaster.success('Deleted Successfully');
-              this.router.navigate(['/tools']);
-              this.getAvailableTools(this.envId);
-              this.isShowToolDetails = false;
-            }
-          })
-        } else {
-          console.log('Cancelled delete!');
-        }
-      });
-  }
   getToolIcon(toolName: string): string {
     const name = toolName.toLowerCase();
 
