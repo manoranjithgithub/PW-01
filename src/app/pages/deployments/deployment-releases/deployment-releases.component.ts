@@ -372,7 +372,7 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
   }
 
   getClassList(status: string): string {
-    const meta = this.sharedService.getStatusMeta(status);
+     const meta = this.sharedService.getStatusMeta(status);
     return `${meta.icon} ${meta.statusClass}`;
   }
 
