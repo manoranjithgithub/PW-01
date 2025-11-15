@@ -27,8 +27,7 @@ export class ReviewScreenComponent implements OnInit {
     private location: Location, private shared: SharedService, private toaster: ToastrService) { }
 
   ngOnInit() {
-    console.log(this.secretData)
-    console.log(this.configFileData)
+    console.log('ReviewScreenComponent')
   }
 
   goBack() {
@@ -39,8 +38,6 @@ export class ReviewScreenComponent implements OnInit {
     // const environment = this.shared.getCookie('environment');
     const environment = localStorage.getItem('environment');
     const envId = environment ? JSON.parse(environment).id : null;
-    console.log('EnvID data', envId);
-    console.log('Reviewtype', this.review.stepOne.type);
 
     const {
       buildCommand,
@@ -75,7 +72,6 @@ export class ReviewScreenComponent implements OnInit {
       zipFileName: this.review.stepOne.zipFilename ?? null,
     };
 
-    console.log('Request Data:', req);
 
     this.deploymentsService.createDeployement(req).subscribe({
       next: (res: any) => {

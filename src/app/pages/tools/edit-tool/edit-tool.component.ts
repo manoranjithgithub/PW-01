@@ -50,7 +50,6 @@ export class EditToolComponent implements OnInit, OnDestroy {
     const storedValue = localStorage.getItem('environment');
     if (storedValue) {
       this.env = JSON.parse(storedValue).id;
-      console.log('envedit', this.env);
     }
     this.ac.queryParams.subscribe(params => {
       this.toolName = params['id'];
@@ -166,7 +165,6 @@ export class EditToolComponent implements OnInit, OnDestroy {
   }
 
   addNameField(schema: FormField): any {
-    console.log('schema-addNameField', schema);
     return {
       name: {
         key: 'name',
@@ -186,14 +184,12 @@ export class EditToolComponent implements OnInit, OnDestroy {
   viewToolDetails() {
     this.http.getToolDetailsById(this.env, this.paramsEdit).subscribe((res: any) => {
       this.toolDetails = res;
-      console.log('toolDetails', this.toolDetails);
       this.toolViewName = this.toolDetails.data.name;
       this.viewdata = this.toolDetails.data.schema;
       this.submitted = false;
 
       const schema = this.toolDetails.data.schema;
       const modifiedSchema = this.addNameViewField(schema);
-      console.log('Modified schema with name field:', modifiedSchema);
       this.createForm(modifiedSchema);
 
       const keysToClean = [
@@ -211,7 +207,6 @@ export class EditToolComponent implements OnInit, OnDestroy {
         }
       });
 
-      console.log('Final schema to send:', finalSchema);
       const modifiedSchemaValue = this.addNameViewField(finalSchema);
       this.createForm(modifiedSchemaValue);
 
@@ -291,7 +286,6 @@ export class EditToolComponent implements OnInit, OnDestroy {
   onFieldChange(event: Event, field: any) {
     const value = (event.target as HTMLSelectElement).value;
     if (field === 'Instance Type') {
-      console.log('Selected value:', value);
       this.selectedResource = this.resources.find(resource => resource.name === value);
     }
   }

@@ -85,17 +85,6 @@ export class AuthInterceptor implements HttpInterceptor {
               const message = (error.error?.error?.message || error.error).replace(/"/g, '');
               this.toastr.error(message, 'Error');
             }
-            // let message = 'Bad Request';
-            // if (error.error?.details && Array.isArray(error.error.details)) {
-            //   message = error.error.details
-            //     .map((d: string) => d.replace(/"/g, ''))
-            //     .join('\n');
-            // } else if (error.error?.message) {
-            //   message = error.error.message.replace(/"/g, '');
-            // } else if (error.error?.customError && error.error?.response?.error?.message) {
-            //   message = error.error.response.error.message.replace(/"/g, '');
-            // }
-            //  this.toastr.error(message, 'Validation Error');
           }
         } else {
           const message = error.error?.error || 'Please try again later';

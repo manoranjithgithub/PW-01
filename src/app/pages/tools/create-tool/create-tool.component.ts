@@ -72,7 +72,6 @@ export class CreateToolComponent implements OnInit, OnDestroy {
       this.route.navigate(['/tools']);
     });
     this.http.getAvailableToolsList().subscribe((res: any) => {
-      console.log('available tools', res);
       this.imgList = Object.values(res.data);
       // this.selectedTool = this.imgList[0].name;
       // this.onImageClick(this.imgList[0]);
@@ -182,7 +181,6 @@ export class CreateToolComponent implements OnInit, OnDestroy {
           this.hide[field.key] = true;
         }
         if (field.label === 'Instance Type') {
-          console.log(field.options[0]);
           field.default_value = field.options[0];
           this.selectedResource = this.resources.find(resource => resource.name === field.options[0]) || { cpu: '', memory: '', price: 0 };
         }
@@ -201,7 +199,6 @@ export class CreateToolComponent implements OnInit, OnDestroy {
         this.form.get(fieldKey)?.updateValueAndValidity();
       }
       const nameExists = this.toolNames.some((name: any) => name === nameValue);
-      // this.getToolNameValidation(nameValue);
     }
   }
 
@@ -329,21 +326,12 @@ export class CreateToolComponent implements OnInit, OnDestroy {
     };
   }
 
-  getToolNameValidation(name: string) {
-    if (this.env && name) {
-      this.http.getToolNameValidation(this.env, name).subscribe((res: any) => {
-        console.log('res', res);
-      });
-    }
-  }
-
   toggleVisibility(key: string): void {
     this.hide[key] = !this.hide[key];
   }
   onFieldChange(event: Event, field: any) {
     const value = (event.target as HTMLSelectElement).value;
     if (field === 'Instance Type') {
-      console.log('Selected value:', value);
       this.selectedResource = this.resources.find(resource => resource.name === value);
     }
   }

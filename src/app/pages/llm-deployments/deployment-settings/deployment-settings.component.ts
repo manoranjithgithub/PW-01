@@ -220,7 +220,6 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
         const provider = cleanUrl?.split('/')[2]?.split('.')[0] || '';
         const repoUrl = cleanUrl;
         const branchName = branch || '';
-        console.log(res)
         this.generalSettingsForm.patchValue(res.data);
 
         const initialValues = this.generalSettingsForm.value;

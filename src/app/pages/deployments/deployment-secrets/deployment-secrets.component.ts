@@ -187,7 +187,6 @@ export class DeploymentSecretsComponent implements OnInit {
     if (this.deploymentId) {
       this.deploymentsService.updateDeployment(this.deploymentId, req).subscribe({
         next: (res: any) => {
-          console.log(res);
           // this.secretList = [...envVariables];
         },
         error: (err) => {
@@ -259,7 +258,6 @@ export class DeploymentSecretsComponent implements OnInit {
           if (this.deploymentId) {
             this.deploymentsService.updateDeployment(this.deploymentId, req).subscribe({
               next: (res: any) => {
-                console.log(res);
                 // this.secretList = this.mapEnvVariables(res.data.secret || {});
               },
               error: (err) => {

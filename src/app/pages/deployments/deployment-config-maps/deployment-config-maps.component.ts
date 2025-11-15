@@ -94,7 +94,6 @@ export class DeploymentConfigMapsComponent implements OnInit {
     if (this.deploymentdetails.id) {
       this.deploymentsService.updateDeployment(this.deploymentdetails.id, req).subscribe({
         next: (res: any) => {
-          console.log(res);
           if (res.status.toLowerCase() === 'success') {
             this.toaster.success('Config Map updated successfully');
             this.clearFile();

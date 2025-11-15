@@ -101,7 +101,6 @@ export class DeploymentMetricsComponent implements OnInit, AfterViewInit {
         this.deploymentId = params['id'];
       }
       this.deploymentService.getDeploymentById(this.deploymentId).subscribe((res: any) => {
-        console.log(res)
         this.deploymentdetails = res.data;
         this.computeMaxLimits();
       });
@@ -154,9 +153,6 @@ export class DeploymentMetricsComponent implements OnInit, AfterViewInit {
 
       if (instanceTypeKey) {
         const instanceInfo = this.instanceTypes[instanceTypeKey];
-        console.log('CPU:', instanceInfo.cpu);
-        console.log('Memory:', instanceInfo.memory);
-        console.log('Storage:', instanceInfo.storage);
         if (instanceInfo.cpu.endsWith('m')) {
           this.maxCpuLimit = parseFloat(instanceInfo.cpu.replace('m', ''));
         } else {
@@ -432,7 +428,6 @@ export class DeploymentMetricsComponent implements OnInit, AfterViewInit {
 
   onFilter(): void {
     this.loading = true;
-    console.log('Filter values:', this.filterForm.value);
     let duration = this.filterForm.get('duration')?.value;
 
     let fromISO: string = '';

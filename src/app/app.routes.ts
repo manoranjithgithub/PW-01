@@ -37,29 +37,7 @@ export const routes: Routes = [
       {
         path: 'projects',
         canActivate: [AuthGuard],
-        children: [
-          {
-            path: '',
-            loadChildren: () =>
-              import('./pages/projects/routes').then((m) => m.routes),
-          },
-          {
-            path: 'project-preferences',
-            canActivate: [AuthGuard],
-            loadChildren: () =>
-              import('./pages/projects/project-preference/routes').then(
-                (m) => m.routes
-              ),
-          },
-          {
-            path: 'create-project',
-            canActivate: [AuthGuard],
-            loadChildren: () =>
-              import('./pages/projects/create-project/routes').then(
-                (m) => m.routes
-              ),
-          },
-        ],
+        loadChildren: () => import('./pages/projects/routes').then((m) => m.routes),
       },
       {
         path: 'tools',
@@ -74,23 +52,6 @@ export const routes: Routes = [
         canActivate: [AuthGuard],
       },
       {
-        path: 'create-environment',
-        canActivate: [AuthGuard],
-        loadChildren: () =>
-          import('./pages/projects/create-environment/routes').then(
-            (m) => m.routes
-          ),
-      },
-      {
-        path: 'environment-preferences',
-        canActivate: [AuthGuard],
-        loadChildren: () =>
-          import('./pages/projects/view-environment/routes').then(
-            (m) => m.routes
-          ),
-      },
-
-      {
         path: 'users-list',
         canActivate: [AuthGuard],
         loadChildren: () =>
@@ -101,19 +62,7 @@ export const routes: Routes = [
         canActivate: [AuthGuard],
         loadChildren: () =>
           import('./pages/llm-deployments/routes').then((m) => m.routes),
-      },
-      {
-        path: 'llm/create-deployment',
-        canActivate: [AuthGuard],
-        loadChildren: () =>
-          import('./pages/llm-deployments/routes').then((m) => m.routes),
-      },
-      {
-        path: 'llm/deployment-details',
-        canActivate: [AuthGuard],
-        loadChildren: () =>
-          import('./pages/llm-deployments/routes').then((m) => m.routes),
-      },
+      }
     ],
   },
   {
@@ -165,5 +114,5 @@ export const routes: Routes = [
         (m) => m.LoginComponent
       ),
   },
-  { path: '**', redirectTo: 'projects' },
+  { path: '**', redirectTo: 'login' },
 ];

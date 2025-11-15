@@ -21,7 +21,7 @@ export class AuthGuard implements CanActivate {
     const allowedRoutes = [
       '/projects',
       '/projects/create-project',
-      '/create-environment',
+      '/projects/create-environment',
       '/account-settings',
       '/projects/project-preferences',
       '/users-list',

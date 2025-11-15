@@ -207,7 +207,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
         else if (item.status.toLowerCase() === 'paused') acc.paused += 1;
         return acc;
       }, { running: 0, pending: 0, failed: 0, paused: 0 });
-      console.log(statusCount);
       this.cards[2].value = `${statusCount.running} / ${statusCount.paused}`;
       this.cards[3].value = `${statusCount.failed} / ${statusCount.pending}`;
     });

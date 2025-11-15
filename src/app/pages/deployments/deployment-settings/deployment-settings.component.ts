@@ -487,7 +487,6 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
   }
 
   onSourceSubmit(): void {
-    console.log(this.sourceSettingsForm.value);
     let req: any = {
       type: this.deploymentdetails?.type,
       stageToExecute: "BuildDeploy",
@@ -520,7 +519,6 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
 
 
   onBuildSubmit(): void {
-    console.log(this.buildSettingsForm.value);
     const formValue = this.buildSettingsForm.value;
     const req = {
       ...formValue,
@@ -539,7 +537,6 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
   }
 
   onDeploySubmit(): void {
-    console.log(this.deploySettingsForm.value);
     const formValue = this.deploySettingsForm.value;
     const req = {
       ...formValue,

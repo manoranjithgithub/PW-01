@@ -1,16 +1,6 @@
 export const environment = {
     production: false,
-    auth: {
-        baseAuthUrl: 'https://auth.dev.nimbuz.tech',
-    },
     envName: 'dev',
-    casdoorConfig: {
-        serverUrl: 'https://auth.dev.nimbuz.tech',
-        clientId: 'nimbuz',
-        appName: 'nimbuz',
-        organizationName: 'built-in',
-        redirectPath: '/'
-    },
     gitlab: {
         clientId: '66d8ed03ba256e0c95fb4c2384f5be16737636ca54c78446d427b3bd985bf884',
         redirectUri: 'http://localhost:4200/dashboard',

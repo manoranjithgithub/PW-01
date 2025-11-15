@@ -103,7 +103,6 @@ export class InvoiceComponent implements OnInit {
         });
       },
       valueFormatter: (params: any) => {
-        console.log(params)
         return params.value || '';
       },
     },
@@ -120,7 +119,6 @@ export class InvoiceComponent implements OnInit {
         });
       },
       valueFormatter: (params: any) => {
-        console.log(params)
         return params.value || '';
       },
     },

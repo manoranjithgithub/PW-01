@@ -88,7 +88,6 @@ export class CreateEnvironmentComponent implements OnInit {
     // this.getPlanLimits();
 
     this.environmentForm.get('project')?.valueChanges.subscribe((value: string) => {
-      console.log(value)
       if (!value) return;
       this.project.getAllEnvironmentsByProject(value).subscribe({
         next: (response: any) => {

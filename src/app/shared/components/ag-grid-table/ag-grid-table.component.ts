@@ -78,20 +78,23 @@ export class AgGridTableComponent implements OnInit {
     this.sharedService.valueChange$.subscribe(value => {
       this.tableTheme = value;
     });
-    // this.gridApi.hideOverlay();
     this.sharedService.isLoading$.subscribe((isLoading: boolean) => {
       if (isLoading) {
         this.overlayMessage = 'Loading...';
-        if (this.gridApi) {
+        if (this.gridApi && !this.gridApi.isDestroyed()) {
           this.gridApi.showNoRowsOverlay();
         }
       } else {
         if (this.rowData && this.rowData.length > 0) {
           this.overlayMessage = '';
-          this.gridApi.hideOverlay();
+          if (this.gridApi && !this.gridApi.isDestroyed()) {
+            this.gridApi.hideOverlay();
+          }
         } else {
           this.overlayMessage = `You do not have  ${this.tableName}${this.tableName === 'invoice-list' ? '.' : `, please click 'New ${this.tablebtn}' to create one.`}`;
-          this.gridApi.showNoRowsOverlay();
+          if (this.gridApi && !this.gridApi.isDestroyed()) {
+            this.gridApi.showNoRowsOverlay();
+          }
         }
       }
     });

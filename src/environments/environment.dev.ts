@@ -1,16 +1,6 @@
 export const environment = {
   production: false,
-  auth: {
-    baseAuthUrl: 'https://auth.dev.nimbuz.tech',
-  },
   envName: 'dev',
-  casdoorConfig: {
-    serverUrl: 'https://auth.dev.nimbuz.tech',
-    clientId: 'nimbuz',
-    appName: 'nimbuz',
-    organizationName: 'built-in',
-    redirectPath: '/'
-  },
   gitlab: {
     clientId: '3a8091146b8916dd68b95b0d89dfda4992d8fa10dfc436a97e591e1b82bbd30a',
     redirectUri: 'https://app.dev.nimbuz.tech/vcs/callback',

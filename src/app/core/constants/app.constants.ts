@@ -21,15 +21,15 @@ export const pageHeaders = [
     { title: 'Projects', url: '/projects', subText: '' },
     { title: 'Create Project', url: '/projects/create-project', subText: 'Create and configure your project within minutes to deploy your application.' },
     { title: 'Project Preferences', url: '/projects/project-preferences', subText: '' },
-    { title: 'Create Environment', url: '/create-environment', subText: 'Create your Environment' },
-    { title: 'Environment Preferences', url: '/environment-preferences', subText: '' },
+    { title: 'Create Environment', url: '/projects/create-environment', subText: 'Create your Environment' },
+    { title: 'Environment Preferences', url: '/projects/environment-preferences', subText: '' },
     { title: 'Create Tool', url: '/tools/create-tool', subText: '' },
     { title: 'Invoice List', url: '/invoice-list', subText: 'View and manage invoices for each billing cycle.' },
     { title: 'Users', url: '/users-list', subText: '' },
     { title: 'View Tool', url: '/tools/view-tool', subText: '' },
     { title: 'Edit Tool', url: '/tools/edit-tool', subText: '' },
     { title: 'Deployment Details', url: '/llm/deployment-details', subText: '' },
-    { title: 'LLM Deployment', url: '/llm/list', subText: '' },
+    { title: 'LLM Deployment', url: '/llm', subText: '' },
 ];
 
 export const userList = [

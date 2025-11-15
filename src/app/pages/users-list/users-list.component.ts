@@ -127,7 +127,6 @@ export class UsersListComponent implements OnInit {
 
   getAllUsers() {
     this.http.getAllUSers().subscribe((res: any) => {
-      console.log(res)
       if (res.status?.toLowerCase() === 'success') {
         this.tableData = res.data
       }

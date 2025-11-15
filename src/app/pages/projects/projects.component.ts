@@ -66,7 +66,6 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     if (!envId || this.orgName !== 'nimbuz') return;
     this.projectService.getResourceUsage(envId).subscribe((res: any) => {
       if (res.status && res.data) {
-        console.log("get resource usage");
         //this.sharedService.setCookie('resourceUsage', JSON.stringify(res.data), 10);
         localStorage.setItem('resourceUsage', JSON.stringify(res.data));
 
@@ -227,7 +226,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
 
   gotoEnvironment() {
     if (this.projectList.length > 0) {
-      this.router.navigate(['/create-environment'])
+      this.router.navigate(['/projects/create-environment'])
     } else {
       this.toastr.warning('Please create a project before creating an environment.');
     }
@@ -238,7 +237,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     if (this.selectedEnvId) {
       const selectedEnv = this.environmentList.find((env: any) => env.id === this.selectedEnvId);
       if (selectedEnv) {
-        this.router.navigate(['/environment-preferences'], {
+        this.router.navigate(['/projects/environment-preferences'], {
           queryParams: {
             envName: selectedEnv.name,
             region: selectedEnv.region,

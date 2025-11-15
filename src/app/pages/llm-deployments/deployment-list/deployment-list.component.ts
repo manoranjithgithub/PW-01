@@ -56,7 +56,6 @@ export class DeploymentListComponent implements OnInit, OnDestroy {
         });
       },
       valueFormatter: (params: any) => {
-        console.log(params)
         return params.value || '';
       },
       onCellClicked: (event: CellClickedEvent) =>
@@ -217,7 +216,6 @@ export class DeploymentListComponent implements OnInit, OnDestroy {
   }
 
   gotoAction(params: any) {
-    console.log(params)
     // this.sidebarService.hideSidebar();
     this.router.navigate(['/llm/deployment-details'], { queryParams: { id: params.name } })
     // this.openDetailsModal(params);

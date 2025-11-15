@@ -257,7 +257,7 @@ export class ProjectPreferenceComponent implements OnInit, OnDestroy {
   }
 
   viewEnvironment(env: any): void {
-    this.router.navigate(['/environment-preferences'], {
+    this.router.navigate(['/projects/environment-preferences'], {
       queryParams: {
         envName: env.name,
         region: env.region,
@@ -325,7 +325,6 @@ export class ProjectPreferenceComponent implements OnInit, OnDestroy {
                 this.environments = this.mapEnvironments(envRes.data);
               });
               // this.router.navigate(['/projects']);
-              console.log('Deleted environment');
             }
           });
         } else {

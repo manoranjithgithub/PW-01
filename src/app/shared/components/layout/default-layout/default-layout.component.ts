@@ -111,8 +111,8 @@ export class DefaultLayoutComponent implements OnInit {
         if (event instanceof NavigationStart) {
           const allowedRoutes = [
             '/projects',
-            '/create-project',
-            '/create-environment',
+            '/projects/create-project',
+            '/projects/create-environment',
             '/account-settings',
             '/projects/project-preferences',
             '/users-list',

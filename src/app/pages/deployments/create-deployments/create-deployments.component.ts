@@ -240,7 +240,6 @@ export class CreateDeploymentsComponent
     this.stepOneForm
       .get('selectedRepo')
       ?.valueChanges.subscribe((selectedValue) => {
-        console.log('Selected Repo:', selectedValue);
         const repoDetails = this.reposList.find(
           (item: any) => item.id == selectedValue
         );
@@ -418,7 +417,6 @@ export class CreateDeploymentsComponent
         : 'https://gitlab.com/oauth/authorize';
     const authUrl = `${baseUrl}?client_id=${clientId}&redirect_uri=${redirectUri}` +
       `&response_type=code&state=${btoa(JSON.stringify(state))}&scope=${encodeURIComponent(scope)}`;
-    // console.log(authUrl);
     window.location.href = authUrl;
   }
   getState(): string {
@@ -661,7 +659,6 @@ export class CreateDeploymentsComponent
   selectedRepoBranch(event: any) {
     if (this.selectedVCS === 'gitlab') {
       this.selectedLabRepo = event;
-      console.log('Selected Lab Repo:', this.selectedLabRepo);
       this.deploymentsService
         .getAvailableBranches(this.currentProjectId, 'gitlab', this.selectedLabRepo?.id)
         .subscribe((branchDetails: any) => {
