@@ -19,6 +19,14 @@ export class InvoiceComponent implements OnInit {
   tableData: any[] = [];
   columnDefs: ColDef[] = [
     {
+      field: '', headerName: 'S.NO', width: 80,
+      valueGetter: (params) => {
+        const a = params.node;
+        if(!a || a.rowIndex === null) return 0;
+        return a.rowIndex +1
+      }
+    },
+    {
       field: 'id', headerName: 'Invoice Number', flex: 2, tooltipField: 'invoiceNumber',
       cellStyle: { 'white-space': 'nowrap', 'overflow': 'hidden !important', 'text-overflow': 'ellipsis' },
     },
@@ -49,42 +57,56 @@ export class InvoiceComponent implements OnInit {
           minimumFractionDigits: 2,
         }).format(params.value),
     },
-    // { field: 'currency', headerName: 'Currency' },
-    // {
-    //   field: 'status',
-    //   headerName: 'Status',
-    //   flex: 1,
-    //   cellRenderer: (params: any) => {
-    //     const wrapper = document.createElement('div');
-    //     wrapper.style.textAlign = 'left';
-    //     wrapper.style.color = '#659711';
-    //     wrapper.style.textTransform = 'capitalize';
+    { field: 'currency', headerName: 'Currency', width:100 },
+    {
+      field: 'status',
+      headerName: 'Status',
+      flex: 1,
+      cellRenderer: (params: any) => {
+        const wrapper = document.createElement('div');
+        wrapper.style.textAlign = 'left';
+        wrapper.style.color = '#659711';
+        wrapper.style.textTransform = 'capitalize';
 
-    //     if (params.value === 'draft') {
-    //       const link = document.createElement('a');
-    //       link.className = 'pay-now-link';
-    //       link.textContent = 'Pay now';
-    //       link.style.textDecoration = 'underline';
-    //       link.style.color = '#F60';
-    //       link.style.cursor = 'pointer';
+        if (params.value === 'draft') {
+          const link = document.createElement('a');
+          link.className = 'pay-now-link';
+          link.textContent = 'Pay now';
+          link.style.textDecoration = 'underline';
+          link.style.color = '#F60';
+          link.style.cursor = 'pointer';
 
-    //       wrapper.appendChild(link);
-    //     } else {
-    //       wrapper.textContent = params.value;
-    //     }
+          wrapper.appendChild(link);
+        } else {
+          wrapper.textContent = params.value;
+        }
 
-    //     return wrapper;
-    //   },
-    //   onCellClicked: (event: CellClickedEvent) => {
-    //     if (
-    //       event.colDef.field === 'status' &&
-    //       event.value === 'draft'
-    //     ) {
-    //       this.openPayNow(event.data);
-    //     }
-    //   }
-    // },
-
+        return wrapper;
+      },
+      onCellClicked: (event: CellClickedEvent) => {
+        if (
+          event.colDef.field === 'status' &&
+          event.value === 'draft'
+        ) {
+          this.openPayNow(event.data);
+        }
+      }
+    },
+{
+      field: '', headerName: 'Issue Month', flex: 1,
+      filter: 'agTextColumnFilter',
+      valueGetter: (params: any) => {
+        if (!params.data || !params.data.updated_at) return '';
+        const date = new Date(params.data.updated_at);
+        return isNaN(date.getTime()) ? '' : date.toLocaleDateString('en-US', {
+          month: 'long',
+        });
+      },
+      valueFormatter: (params: any) => {
+        console.log(params)
+        return params.value || '';
+      },
+    },
     {
       field: 'updated_at', headerName: 'Issue Date', flex: 1,
       filter: 'agTextColumnFilter',
@@ -143,7 +165,7 @@ export class InvoiceComponent implements OnInit {
   }
 
   openPayNow(data: any) {
-    this.http.paynow(data.invoiceNumber).subscribe({
+    this.http.paynow(data.id).subscribe({
       next: (data: any) => {
         const sessionId = data.order.payment_session_id;
 
@@ -169,7 +191,7 @@ export class InvoiceComponent implements OnInit {
     const currentDate = new Date();
     const period = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
     if (accountId) {
-      this.http.getInvoiceList(accountId, period, this.limit, this.offset).subscribe({
+      this.http.getInvoiceList(accountId, this.limit, this.offset).subscribe({
         next: (data: any) => {
           if (data.success) {
             this.tableData = data.data?.data || [];
