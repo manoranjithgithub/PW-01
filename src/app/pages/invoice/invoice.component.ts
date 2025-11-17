@@ -4,6 +4,7 @@ import { AgGridTableComponent } from '../../shared/components/ag-grid-table/ag-g
 import { PricingsService } from './pricing.service';
 import { CellClickedEvent, ColDef } from 'ag-grid-community';
 import { ToastrService } from 'ngx-toastr';
+import { environment } from '../../../environments/environment';
 declare const Cashfree: any;
 
 @Component({
@@ -141,7 +142,7 @@ export class InvoiceComponent implements OnInit {
 
   ngOnInit(): void {
     this.getInvoiceList()
-    this.cashfree = Cashfree({ mode: 'production' });
+    this.cashfree = Cashfree({ mode: environment.cashFree });
     // this.cashfree.on('payment.success', (event: any) => {
     //   console.log('Payment Success:', event);
     //   this.toastr.success(event.transaction.txnId);

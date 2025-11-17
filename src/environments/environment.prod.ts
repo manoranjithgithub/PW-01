@@ -3,6 +3,7 @@ const base = 'https://api.nimbuz.tech';
 export const environment = {
   production: true,
   envName: 'prod',
+  cashFree: 'production',
 
   gitlab: {
     clientId: '36920baeac0044278f753546f3466bcc70cf5c9db3a302a794a90d36f9426962',
