@@ -2,17 +2,15 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { ToastrService } from 'ngx-toastr';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PricingsService {
-  private apiUrl = environment.apiUrl;
   private pricingManagement = environment.pricingManagement;
 
-  constructor(public http: HttpClient, private toastr: ToastrService) { }
+  constructor(public http: HttpClient) { }
 
   getInvoiceList(accountId: string, limit:number, offset:number) {
     return this.http.get(`${this.pricingManagement}/invoices?account_id=${accountId}&limit=${limit}&offset=${offset}`)

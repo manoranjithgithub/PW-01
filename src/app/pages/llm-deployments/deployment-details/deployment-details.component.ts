@@ -5,14 +5,13 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { Subject, switchMap, takeUntil } from 'rxjs';
 import { SharedService } from '../../../shared/services/shared.service';
 import { LayoutActionService } from '../../../shared/services/layout-action.service';
-import { ToastrService } from 'ngx-toastr';
 import { ConfirmationModalComponent } from '../../../shared/components/modal/confirmation-modal/confirmation-modal.component';
 import { NavComponent, NavItemComponent, NavLinkDirective, TabContentComponent, TabContentRefDirective, TabPaneComponent } from '@coreui/angular';
-import { DeploymentObservabilityComponent } from '../deployment-observability/deployment-observability.component';
-import { DeploymentMetricsComponent } from '../deployment-metrics/deployment-metrics.component';
 import { DeploymentNetworkingComponent } from '../deployment-networking/deployment-networking.component';
 import { DeploymentSettingsComponent } from '../deployment-settings/deployment-settings.component';
 import { LLMDeploymentsService } from '../llm-deployment.service';
+import { DeploymentObservabilityComponent } from '../../deployments/deployment-observability/deployment-observability.component';
+import { DeploymentMetricsComponent } from '../../deployments/deployment-metrics/deployment-metrics.component';
 
 @Component({
   selector: 'app-deployment-details',
@@ -38,7 +37,7 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
 
   constructor(private router: Router, private modalService: NgbModal, private sharedService: SharedService,
     private layoutActionService: LayoutActionService, private location: Location,
-    private activateRoute: ActivatedRoute, private toastr: ToastrService, private deploymentService: LLMDeploymentsService) { }
+    private activateRoute: ActivatedRoute, private deploymentService: LLMDeploymentsService) { }
 
   ngOnInit(): void {
     this.envId = JSON.parse(`${localStorage.getItem('environment')}`).id || '';
@@ -62,15 +61,7 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
           });
         }
         this.layoutActionService.setExtraTitle(`${data.data.name} (${data.data.status})`);
-        // this.onNewMessage().subscribe((msg: any) => {
-        //   const res = JSON.parse(msg);
-        //   console.log(res)
-        //   if (res && res.deployment_id === this.deploymentId) {
-        //     this.sharedService.setlastReleaseStatus(res.status);
-        //     console.log(res.status)
-        //   }
-        // })
-
+       
       });
     this.activateRoute.fragment.subscribe((fragment: string | null) => {
       if (fragment === 'network-section') {
@@ -81,10 +72,6 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
     this.sharedService.releaseStatus$.subscribe(status => {
       this.lastReleaseStatus = status ?? '';
     });
-
-
-    // this.onTabChange(4);
-
     this.layoutActionService.actionClick$
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => {

@@ -9,7 +9,7 @@ import { ProjectsService } from '../projects/projects.service';
   standalone: true,
 })
 export class VcsCallbackComponent implements OnInit {
-  constructor(private route: ActivatedRoute, private router: Router, private projectService: ProjectsService) { }
+  constructor(private route: ActivatedRoute, private router: Router) { }
 
   ngOnInit(): void {
 
@@ -28,13 +28,13 @@ export class VcsCallbackComponent implements OnInit {
       const subdomain = stateObj.state.toLowerCase() === 'nimbuz' ? 'app' : stateObj.state;
 
       if (stateObj.state.toLowerCase() === 'nimbuz') {
-        window.location.href = `${window.location.origin}/create-deployment?${queryString}`;
+        window.location.href = `${window.location.origin}/deployment/create-deployment?${queryString}`;
         return;
       }
 
       const baseDomain = environment.domain || 'localhost';
       const protocol = window.location.protocol;
-      const redirectUrl = `${protocol}//${subdomain}.${baseDomain}/create-deployment?${queryString}`;
+      const redirectUrl = `${protocol}//${subdomain}.${baseDomain}/deployment/create-deployment?${queryString}`;
       window.location.href = redirectUrl;
       
     });

@@ -1,17 +1,5 @@
 <div class="container">
     <form [formGroup]="form">
-        <c-alert color="warning" *ngIf="overprovisioned">
-            <div class="warn-text">
-                <i class="bi bi-exclamation-circle-fill"></i> Tool deployment is overprovisioned. Please consider
-                scaling down the Instance Type.
-            </div>
-        </c-alert>
-        <c-alert color="warning" *ngIf="underprovisioned">
-            <div class="warn-text">
-                <i class="bi bi-exclamation-circle-fill"></i> Tool deployment is underprovisioned. Please consider
-                scaling up the Instance Type.
-            </div>
-        </c-alert>
         <div class="d-flex align-items-center">
             <div class="tool-text me-3">{{ toolViewName }}</div>
         </div>
@@ -20,7 +8,8 @@
             <div *ngFor="let field of formStructure" class="col-md-6">
                 <label class="form-label text-capitalize d-flex justify-content-between" [for]="field.key">
                     <span>{{ field.label }}<span class="text-danger">*</span></span>
-                    <span class="text-gray ml-auto text-nowrap" *ngIf="field.label === 'Instance Type' && selectedResource">
+                    <span class="text-gray ml-auto text-nowrap"
+                        *ngIf="field.label === 'Instance Type' && selectedResource">
                         (<span class="mx-1"><b>CPU:</b> {{selectedResource.cpu}}</span>
                         <span class="mx-1"><b>Memory:</b> {{selectedResource.memory}}</span>
                         <span class="mx-1"><b>Price:</b> {{selectedResource.price}}</span> )

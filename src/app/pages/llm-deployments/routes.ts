@@ -2,7 +2,7 @@ import { Routes } from '@angular/router';
 
 export const routes: Routes = [
   {
-    path: 'list',
+    path: '',
     loadComponent: () => import('./deployment-list/deployment-list.component').then(m => m.DeploymentListComponent),
   },
   {

@@ -2,32 +2,14 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { catchError, Observable, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { LoginData, RegistrationData, ResetPasswordData } from '../models/user-data.model';
 
-export interface LoginData {
-    username: string;
-    password: string;
-}
 
-export interface RegistrationData {
-    type: string;
-    orgName: string;
-    username: string;
-    password: string;
-    email: string;
-    address: string;
-    terms: boolean;
-}
-export interface ResetPasswordData {
-    password: string;
-    oldPassword: string;
-    orgName: string;
-    username: string;
-}
 @Injectable({
     providedIn: 'root'
 })
 export class UserService {
-    private apiUrl = environment.loginUrl;
+    private apiUrl = environment.baseUrl;
 
     constructor(private http: HttpClient) { }
 

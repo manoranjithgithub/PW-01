@@ -27,7 +27,7 @@ import { DefaultHeaderComponent } from './default-header/default-header.componen
 import { AuthService } from '../../../../core/services/auth.service';
 import { DeploymentsService } from '../../../services/deployments.service';
 import { BreadCrumbComponent } from '../../bread-crumb/bread-crumb.component';
-import { pageHeaders } from '../../../../core/constants/resource';
+import { pageHeaders } from '../../../../core/constants/app.constants';
 import { Title } from '@angular/platform-browser';
 import { delay, filter, tap } from 'rxjs/operators';
 import { SharedService } from '../../../services/shared.service';
@@ -101,8 +101,7 @@ export class DefaultLayoutComponent implements OnInit {
     private toastr: ToastrService, private projectService: ProjectsService,
     private layoutActionService: LayoutActionService
   ) {
-
-    this.#colorModeService.localStorageItemName.set('coreui-free-angular-admin-template-theme-default');
+    this.#colorModeService.localStorageItemName.set('theme-default');
 
     this.router.events.pipe(
       filter((event): event is NavigationStart | NavigationEnd =>
@@ -112,8 +111,8 @@ export class DefaultLayoutComponent implements OnInit {
         if (event instanceof NavigationStart) {
           const allowedRoutes = [
             '/projects',
-            '/create-project',
-            '/create-environment',
+            '/projects/create-project',
+            '/projects/create-environment',
             '/account-settings',
             '/projects/project-preferences',
             '/users-list',
@@ -174,14 +173,14 @@ export class DefaultLayoutComponent implements OnInit {
   }
 
   isProjectsPage(): boolean {
-    return ['/projects', '/environment', '/create-project', '/create-environment', '/create-account'].some(path =>
+    return ['/projects', '/environment', '/projects/create-project', '/create-environment', '/create-account'].some(path =>
       this.currentUrl.includes(path)
     );
     // return this.currentUrl.includes('/project');
   }
 
   ngOnInit(): void {
-    this.savedTheme = localStorage.getItem('theme') || 'light';
+    this.savedTheme = localStorage.getItem('theme-default') || 'light';
     // console.log('Saved theme:', this.savedTheme);
     this.colorMode.set(this.savedTheme);
     // if (this.router.url.includes('/projects') && window.location.href.includes('code')) {
@@ -230,7 +229,7 @@ export class DefaultLayoutComponent implements OnInit {
       }
     });
     this.sharedService.user$.subscribe((userData: any) => {
-      const user = localStorage.getItem('profileSettings') ? JSON.parse(localStorage.getItem('profileSettings') || '{}') : null;
+      const user = userData;
       this.currentUser = user?.owner
       let baseItems = [...navItems];
       if (environment.production) {
@@ -262,10 +261,9 @@ export class DefaultLayoutComponent implements OnInit {
   setTheme(event: Event) {
     const color = (event.target as HTMLInputElement).checked ? 'light' : 'dark';
     // this.sharedService.setCookie('theme', color, 10)\
-    localStorage.setItem('theme', color);
+    localStorage.setItem('theme-default', JSON.stringify(color));
     this.colorMode.set(color);
     this.sharedService.emitValueChange(color);
-    this.#colorModeService.setStoredTheme('selectedTheme', color);
   }
   onPageActionClick() {
     this.layoutActionService.triggerAction();
@@ -287,5 +285,16 @@ export class DefaultLayoutComponent implements OnInit {
   getItemStatus(): string {
     const match = this.selectedItemFromCom?.match(/\(([^)]+)\)/);
     return match ? match[1] : '';
+  }
+  get cleanColorMode() {
+    const mode = this.colorMode();
+    if (typeof mode !== 'string') {
+      return mode;
+    }
+    try {
+      return JSON.parse(mode);
+    } catch {
+      return mode;
+    }
   }
 }

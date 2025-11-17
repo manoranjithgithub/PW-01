@@ -12,7 +12,7 @@ import { SharedService } from '../../../shared/services/shared.service';
 import { ToastrService } from 'ngx-toastr';
 import { ProjectsService } from '../projects.service';
 import { Router } from '@angular/router';
-import { RegionOptions } from '../../../core/constants/create-environment.constant';
+import { RegionOptions } from '../../../core/constants/app.constants';
 
 @Component({
   selector: 'app-create-environment',
@@ -44,7 +44,7 @@ export class CreateEnvironmentComponent implements OnInit {
     private toaster: ToastrService, private router: Router
   ) {
     // this.tableTheme = this.shared.getCookie('theme');
-    this.tableTheme = localStorage.getItem('theme') || 'ag-theme-alpine';
+    this.tableTheme = localStorage.getItem('theme-default') || 'ag-theme-alpine';
     this.isOpen = true;
     // const storedValue = this.shared.getCookie('project');
     const storedValue = localStorage.getItem('project');
@@ -88,7 +88,6 @@ export class CreateEnvironmentComponent implements OnInit {
     // this.getPlanLimits();
 
     this.environmentForm.get('project')?.valueChanges.subscribe((value: string) => {
-      console.log(value)
       if (!value) return;
       this.project.getAllEnvironmentsByProject(value).subscribe({
         next: (response: any) => {

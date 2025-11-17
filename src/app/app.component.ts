@@ -23,16 +23,10 @@ export class AppComponent implements OnInit {
     private authService: AuthService
   ) {
     this.titleService.setTitle(this.title);
-    // iconSet singleton
     this.iconSetService.icons = { ...iconSubset };
   }
 
   ngOnInit(): void {
-
-    // if (!this.authService.isAuthenticated()) {
-    //   this.authService.login();
-    // }
-
     this.router.events.subscribe((evt) => {
       if (!(evt instanceof NavigationEnd)) {
         return;

@@ -62,7 +62,6 @@ export class LogViewerComponent implements OnInit, AfterViewInit, OnChanges {
     });
   }
   onPageChange(page: number) {
-    console.log(page);
     this.currentPage = page;
     this.getLogs.emit({ itemsPerPage: this.itemsPerPage, currentPage: this.currentPage });
   }

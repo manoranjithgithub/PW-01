@@ -1,10 +1,8 @@
-import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
 
 import { DashboardsService } from './dashboard.service';
 import { SummaryCardComponent } from './summary-card/summary-card.component';
-import { FormBuilder, FormGroup, NgModel, ReactiveFormsModule } from '@angular/forms';
 import { UtilizationChartComponent } from './utilization-chart/utilization-chart.component';
-import Litepicker from 'litepicker';
 import { CommonModule } from '@angular/common';
 import { SharedService } from '../../shared/services/shared.service';
 import { Router } from '@angular/router';
@@ -14,15 +12,14 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
 import { Subscription } from 'rxjs';
 import { forkJoin } from 'rxjs';
-import { initial } from 'lodash-es';
-
+import { CARDS_DATA, UTILIZATION_DATA } from '../../shared/constants/nimbuz.constant';
 
 @Component({
   templateUrl: 'dashboard.component.html',
   styleUrls: ['dashboard.component.scss'],
   standalone: true,
   imports: [
-    CommonModule, SummaryCardComponent, ReactiveFormsModule,
+    CommonModule, SummaryCardComponent,
     UtilizationChartComponent, DropdownComponent, DropdownItemDirective, DropdownMenuDirective,
     DropdownToggleDirective
   ],
@@ -30,76 +27,24 @@ import { initial } from 'lodash-es';
   encapsulation: ViewEncapsulation.None
 })
 
-export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
-
-  @ViewChild('dateRangeInput', { static: true }) inputRef!: ElementRef;
-  selectedRange: { start: string; end: string } | null = null;
-  private picker!: Litepicker;
-
-  cards = [
-    { value: 0, label: 'Spent cost', change: -3.4, description: 'Month to date' },
-    { value: 0, label: 'Estimated cost', change: 3.4, description: ' ' },
-    { value: '0', label: 'Active/Paused deployments', change: -6.2, description: ' ' },
-    { value: 0, label: 'Failed/Pending deployments', change: -9.5, description: ' ' },
-  ];
-  form!: FormGroup;
-
-  utilizationData = [
-    {
-      title: 'CPU',
-      subtitle: 'CPU Utilized vs. Allocated',
-      value: 0,
-      rawValue: '1056'
-    },
-    {
-      title: 'Memory',
-      subtitle: 'Memory Utilized vs. Allocated',
-      value: 0,
-      rawValue: '3200'
-    },
-    {
-      title: 'Storage',
-      subtitle: 'Storage Utilized vs. Allocated',
-      value: 0,
-      rawValue: '5800'
-    }
-  ];
+export class DashboardComponent implements OnInit, OnDestroy {
+  cards = CARDS_DATA;
+  utilizationData = UTILIZATION_DATA;
   endpoints: any = [];
   currentEnvId: string = '';
   private subscriptions: Subscription[] = [];
 
-  private subscription: Subscription | undefined;
+  private envValueSubscription: Subscription | undefined;
 
-  constructor(private fb: FormBuilder, private http: DashboardsService, private sharedService: SharedService,
+  constructor(private http: DashboardsService, private sharedService: SharedService,
     private router: Router, private modalService: NgbModal, private toastr: ToastrService
-  ) {
-
-  }
+  ) { }
 
   ngOnInit(): void {
-
-    this.subscription = this.sharedService.envValueChange$.subscribe(value => {
+    this.envValueSubscription = this.sharedService.envValueChange$.subscribe(value => {
       this.initializeDashboard();
     });
-
     this.initializeDashboard()
-  }
-
-  ngAfterViewInit(): void {
-    this.picker = new Litepicker({
-      element: this.inputRef.nativeElement,
-      singleMode: false,
-      format: 'YYYY-MM-DD',
-      autoApply: true,
-      setup: (picker) => {
-        picker.on('selected', (startDate, endDate) => {
-          this.selectedRange = {
-            start: startDate.format('YYYY-MM-DD'),
-            end: endDate.format('YYYY-MM-DD'),
-          };
-        });
-      }
-    });
   }
   initializeDashboard() {
     this.cards[1].description = this.getCurrentMonthRange();
@@ -150,10 +95,12 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.startCpuStream();
     this.startMemoryStream();
   }
-  openPicker() {
-    this.picker?.show();
+  getEndpointsList(envId: string) {
+    this.http.getEndpoints(envId).subscribe((res: any) => {
+      this.endpoints = res.data;
+    })
   }
-  gotoNetworkSection(data: any) {
+  viewEndpoint(data: any) {
     if (data.deploymentId) {
       this.router.navigate(
         ['/deployment/deployment-details'],
@@ -168,17 +115,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       this.router.navigate(
         ['/tools'])
     }
-
-  }
-
-  getEndpointsList(envId: string) {
-    this.http.getEndpoints(envId).subscribe((res: any) => {
-      this.endpoints = res.data;
-    })
-  }
-  viewEndpoint(data: any) {
-    console.log(data);
-    this.gotoNetworkSection(data);
   }
   deleteEndpoint(data: any) {
     const modalRef = this.modalService.open(ConfirmationModalComponent);
@@ -201,7 +137,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
           console.log('Cancelled delete Endpoint!');
         }
       });
-    console.log(data)
   }
 
   getCurrentMonthRange(): string {
@@ -215,20 +150,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
     return `${startMonth} ${start.getDate()} - ${endMonth} ${end.getDate()}`;
   }
-
-  copyToUrl(text: string): void {
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(text);
-    } else {
-      const textarea = document.createElement('textarea');
-      textarea.value = text;
-      document.body.appendChild(textarea);
-      textarea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textarea);
-    }
-  }
-
   startCpuStream() {
     const sub = this.http
       .getDeploymentUtilizationSSE(this.currentEnvId, 'cpu')
@@ -266,7 +187,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
   ngOnDestroy(): void {
     this.subscriptions.forEach(sub => sub.unsubscribe());
-    this.subscription?.unsubscribe();
+    this.envValueSubscription?.unsubscribe();
   }
 
   getStatusCount() {
@@ -286,11 +207,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         else if (item.status.toLowerCase() === 'paused') acc.paused += 1;
         return acc;
       }, { running: 0, pending: 0, failed: 0, paused: 0 });
-      console.log(statusCount);
       this.cards[2].value = `${statusCount.running} / ${statusCount.paused}`;
       this.cards[3].value = `${statusCount.failed} / ${statusCount.pending}`;
-
-      // this.statusKeys = Object.keys(this.statusCount);
     });
   }
 }

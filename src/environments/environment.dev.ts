@@ -1,16 +1,8 @@
+const base = 'https://api.dev.nimbuz.tech';
+
 export const environment = {
   production: false,
-  auth: {
-    baseAuthUrl: 'https://auth.dev.nimbuz.tech',
-  },
   envName: 'dev',
-  casdoorConfig: {
-    serverUrl: 'https://auth.dev.nimbuz.tech',
-    clientId: 'nimbuz',
-    appName: 'nimbuz',
-    organizationName: 'built-in',
-    redirectPath: '/'
-  },
   gitlab: {
     clientId: '3a8091146b8916dd68b95b0d89dfda4992d8fa10dfc436a97e591e1b82bbd30a',
     redirectUri: 'https://app.dev.nimbuz.tech/vcs/callback',
@@ -22,20 +14,18 @@ export const environment = {
     clientId: 'Ov23lizhCMt2Ih4SgeyJ',
     redirectUri: 'https://app.dev.nimbuz.tech/vcs/callback'
   },
-
-  apiUrl: 'https://api.dev.nimbuz.tech/core/v1/environments',
-  legacyUrl: 'https://api.dev.nimbuz.tech/core/v1',
-  loginUrl: 'https://api.dev.nimbuz.tech',
-  projectsApiUrl: 'https://api.dev.nimbuz.tech/project/v1/projects',
-  projectsBaseUrl: 'https://api.dev.nimbuz.tech/project/v1',
-  usermanagementApiUrl: 'https://api.dev.nimbuz.tech/user/v1/user',
-  usermanagementBaseUrl: 'https://api.dev.nimbuz.tech/user/v1',
-  deploymentManagement: 'https://api.dev.nimbuz.tech/deployment/v1',
-  jobExecutorBaseUrl: 'https://api.dev.nimbuz.tech/job-executor/v1',
-  wss: 'wss://api.dev.nimbuz.tech/deployment',
-  pricingManagement: 'https://api.dev.nimbuz.tech/pricing/v1',
-  userManagement: 'https://api.dev.nimbuz.tech/user/v1/business/organisation',
-  logServiceUrl: 'https://api.dev.nimbuz.tech/logs',
-  metricsUrl: 'https://api.dev.nimbuz.tech/metrics/v1',
   domain: 'dev.nimbuz.tech',
+  wss: 'wss://api.dev.nimbuz.tech/deployment',
+
+  baseUrl: `${base}`,
+  projectsApiUrl: `${base}/project/v1/projects`,
+  projectsBaseUrl: `${base}/project/v1`,
+  usermanagementApiUrl: `${base}/user/v1/user`,
+  usermanagementBaseUrl: `${base}/user/v1`,
+  deploymentManagement: `${base}/deployment/v1`,
+  jobExecutorBaseUrl: `${base}/job-executor/v1`,
+  pricingManagement: `${base}/pricing/v1`,
+  userManagement: `${base}/user/v1/business/organisation`,
+  logServiceUrl: `${base}/logs`,
+  metricsUrl: `${base}/metrics/v1`,
 };

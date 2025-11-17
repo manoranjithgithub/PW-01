@@ -41,7 +41,7 @@ describe('ToolsService', () => {
             expect(data).toEqual(mockResponse);
         });
 
-        const req = httpMock.expectOne(`${environment.apiUrl}/${env}/tools`);
+        const req = httpMock.expectOne(`${environment.deploymentManagement}/${env}/tools`);
         expect(req.request.method).toBe('GET');
         req.flush(mockResponse);
     });
@@ -54,7 +54,7 @@ describe('ToolsService', () => {
             expect(data).toEqual(mockResponse);
         });
 
-        const req = httpMock.expectOne(`${environment.legacyUrl}/tools/${toolId}`);
+        const req = httpMock.expectOne(`${environment.deploymentManagement}/tools/${toolId}`);
         expect(req.request.method).toBe('GET');
         req.flush(mockResponse);
     });
@@ -77,7 +77,7 @@ describe('ToolsService', () => {
           }
       );
   
-      const req = httpMock.expectOne(`${environment.apiUrl}/${env}/tools`);
+      const req = httpMock.expectOne(`${environment.deploymentManagement}/${env}/tools`);
       req.flush(errorResponse.error, { status: errorResponse.status, statusText: errorResponse.statusText });
   });
   
@@ -87,11 +87,11 @@ describe('ToolsService', () => {
         const mockResponse = { id: 1, ...mockRequest };
         const env = 'dev';
 
-        service.createTools(env, mockRequest).subscribe(data => {
+        service.createTools(mockRequest).subscribe(data => {
             expect(data).toEqual(mockResponse);
         });
 
-        const req = httpMock.expectOne(`${environment.apiUrl}/${env}/tools`);
+        const req = httpMock.expectOne(`${environment.deploymentManagement}/${env}/tools`);
         expect(req.request.method).toBe('POST');
         req.flush(mockResponse);
     });
@@ -102,11 +102,11 @@ describe('ToolsService', () => {
         const env = 'dev';
         const toolName = 'Tool1';
 
-        service.updateTools(env, toolName, mockRequest).subscribe(data => {
+        service.updateTools( mockRequest).subscribe(data => {
             expect(data).toEqual(mockResponse);
         });
 
-        const req = httpMock.expectOne(`${environment.apiUrl}/${env}/tools/${toolName}`);
+        const req = httpMock.expectOne(`${environment.deploymentManagement}/${env}/tools/${toolName}`);
         expect(req.request.method).toBe('PUT');
         req.flush(mockResponse);
     });
@@ -120,7 +120,7 @@ describe('ToolsService', () => {
             expect(data).toEqual(mockResponse);
         });
 
-        const req = httpMock.expectOne(`${environment.apiUrl}/${env}/tools/${toolName}`);
+        const req = httpMock.expectOne(`${environment.deploymentManagement}/${env}/tools/${toolName}`);
         expect(req.request.method).toBe('DELETE');
         req.flush(mockResponse);
     });

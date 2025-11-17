@@ -1,17 +1,5 @@
 <div class="container">
     <form [formGroup]="form">
-        <c-alert color="warning" *ngIf="overprovisioned">
-            <div class="warn-text">
-              <i class="bi bi-exclamation-circle-fill"></i> Tool deployment is overprovisioned. Please consider scaling down the
-                Instance Type.
-            </div>
-        </c-alert>
-        <c-alert color="warning" *ngIf="underprovisioned">
-            <div class="warn-text">
-              <i class="bi bi-exclamation-circle-fill"></i> Tool deployment is underprovisioned. Please consider scaling up the
-                Instance Type.
-            </div>
-        </c-alert>
         <div class="d-flex align-items-center">
             <div class="tool-text me-3">{{ toolViewName }}</div>
         </div>

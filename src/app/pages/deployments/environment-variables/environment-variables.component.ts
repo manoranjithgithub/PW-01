@@ -155,7 +155,6 @@ export class EnvironmentVariablesComponent implements OnInit {
   }
 
   onVariablesUpdated(updated: { EnvVariable: string; Value: string }[]) {
-    // console.log('Received from child:', updated);
     this.envList = updated;
     this.addEnvVariables(this.envList);
   }
@@ -225,7 +224,6 @@ export class EnvironmentVariablesComponent implements OnInit {
           if (this.deploymentId) {
             this.deploymentsService.updateDeployment(this.deploymentId, req).subscribe({
               next: (res: any) => {
-                console.log(res);
                 this.envList = this.mapEnvVariables(res.data.environment || {});
               },
               error: (err) => {
@@ -234,20 +232,6 @@ export class EnvironmentVariablesComponent implements OnInit {
             });
           }
 
-          // this.deploymentsService.createConfigdata(this.storedEnvironment?.id, req).subscribe((res: any) => {
-          //   console.log(res);
-          //   if (res?.status == 'Success') {
-          //     this.toaster.success('Deleted successfully!');
-          //     this.deploymentsService.getConfigList(this.storedEnvironment?.id, this.deploymentdetails.name).subscribe((res: any) => {
-          //       console.log(res);
-          //       const envVariables = Object.entries(res.data.data).map(([key, value]) => ({
-          //         EnvVariable: key,
-          //         Value: value
-          //       }));
-          //       this.envList = [...envVariables];
-          //     })
-          //   }
-          // })
         }
       });
   }
@@ -276,25 +260,11 @@ export class EnvironmentVariablesComponent implements OnInit {
     }
     this.deploymentsService.updateDeployment(this.deploymentId, req).subscribe({
       next: (res: any) => {
-        console.log(res);
       },
       error: (err) => {
         this.toaster.error(err);
       }
     });
-    // this.deploymentsService.createConfigdata(this.storedEnvironment?.id, this.updatedReq).subscribe((res: any) => {
-    //   console.log(res);
-    //   if (res?.status == 'Success') {
-    //     this.toaster.success(res.message);
-    //     this.deploymentsService.getConfigList(this.storedEnvironment?.id, this.deploymentdetails.name).subscribe((res: any) => {
-    //       console.log(res);
-    //       const envVariables = Object.entries(res.data.data).map(([key, value]) => ({
-    //         EnvVariable: key,
-    //         Value: value
-    //       }));
-    //       this.envList = [...envVariables];
-    //     })
-    //   }
-    // })
+   
   }
 }

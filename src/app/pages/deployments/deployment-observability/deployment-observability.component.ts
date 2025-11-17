@@ -134,7 +134,6 @@ export class DeploymentObservabilityComponent implements OnInit {
             const [timestamp, ...messageParts] = log.split(' ');
             return { timestamp, message: messageParts.join(' ') };
           });
-          console.log(this.deploymentLogs)
           this.filteredLogs = [...this.parsedLogs];
           this.totalItems = this.deploymentLogs.totalPages;
         } else {
@@ -152,7 +151,6 @@ export class DeploymentObservabilityComponent implements OnInit {
   }
 
   onFilter(): void {
-    console.log('Filter values:', this.filterForm.value);
     const filterValues = this.filterForm.value;
 
     let duration: string | undefined = '';
@@ -224,7 +222,6 @@ export class DeploymentObservabilityComponent implements OnInit {
       container.scrollTop = 0;
   }
   onPageChange(page: number) {
-    console.log(page);
     this.currentPage = page;
     this.getApplicationLogs(this.deploymentId);
   }

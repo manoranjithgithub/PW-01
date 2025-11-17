@@ -1,6 +1,5 @@
-import { CommonModule, Location } from '@angular/common';
+import {  Location } from '@angular/common';
 import { Component, EventEmitter, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
-import { CardBodyComponent, CardComponent, CardGroupComponent, NavComponent, NavItemComponent, NavLinkDirective, TabContentComponent, TabContentRefDirective, TabPaneComponent } from '@coreui/angular';
 import { DeploymentConfigMapsComponent } from '../deployment-config-maps/deployment-config-maps.component';
 import { DeploymentReleasesComponent } from '../deployment-releases/deployment-releases.component';
 import { DeploymentSecretsComponent } from '../deployment-secrets/deployment-secrets.component';
@@ -18,9 +17,6 @@ import { DeploymentsService } from '../deployment.service';
 import { ToastrService } from 'ngx-toastr';
 import { SharedService } from '../../../shared/services/shared.service';
 import { SHARED_IMPORTS } from '../../../shared/shared-imports';
-
-
-
 @Component({
   selector: 'app-deployment-details',
   standalone: true,

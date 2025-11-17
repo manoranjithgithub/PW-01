@@ -119,7 +119,7 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
       this.deploymentsService.getDeployments(env.id).subscribe((res: any) => {
         if (res.status.toLowerCase() === "success") {
           this.tableData = res.data;
-          localStorage.setItem('availableDeplyements', JSON.stringify(res.data));
+          localStorage.setItem('availableDeployments', JSON.stringify(res.data?.map((x: any) => x.name)));
           this.loading = false
         }
       },
@@ -139,7 +139,7 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
     this.router.navigate(['/deployment/deployment-details'], { queryParams: { id: params.id } })
   }
   goToNewDeployment(){
-    this.router.navigate(['/create-deployment'])
+    this.router.navigate(['/deployment/create-deployment'])
   }
 
   ngOnDestroy(): void {

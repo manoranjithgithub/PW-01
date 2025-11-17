@@ -159,7 +159,7 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
       this.route.navigate(['/edit-deployment'], { queryParams: { id: data.name } });
     }
     if (this.additionalParam === "tools") {
-      this.route.navigate(['/edit-tool'], { queryParams: { selectedEdit: data.name } });
+      this.route.navigate(['/tools/edit-tool'], { queryParams: { selectedEdit: data.name } });
     }
   }
 
@@ -200,7 +200,6 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
             },
               err => {
                 this.toaster.error(`Error in ${type} deployment`);
-                console.error(err);
               });
           }
         });
@@ -223,7 +222,6 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
 
 
   restart(data: any) {
-    console.log(data)
     if (this.additionalParam === "deployment" || this.additionalParam === "llm") {
       const req = this.params.data;
       const modalRef = this.modalService.open(DeployConfirmationComponent);
@@ -240,7 +238,6 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
             },
               err => {
                 this.toaster.error('Error redeploying deployment');
-                console.error(err);
               });
           }
         });
@@ -255,15 +252,6 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
     modalRef.result.then(
       (result) => {
         if (result) {
-          if (this.additionalParam === "deployment") {
-            this.http.deleteDeployments(this.envId, this.params.data.name).subscribe((res: any) => {
-              if (res.success) {
-                this.toaster.success('Deleted Successfully');
-                window.location.reload();
-              }
-            });
-
-          }
           if (this.additionalParam === "tools") {
             const envId = localStorage.getItem('environment') ? JSON.parse(localStorage.getItem('environment') || '{}').id : '';
             this.http.deleteTools(envId, this.toolName).subscribe((res: any) => {
@@ -284,21 +272,17 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
   }
 
   view(data: any) {
-    console.log("additionalParamView", this.additionalParam);
-    console.log("View data", data.name);
     if (this.additionalParam === "tools") {
-      this.route.navigate(['/view-tool'], { queryParams: { selectedView: data.name } });
+      this.route.navigate(['/tools/view-tool'], { queryParams: { selectedView: data.name } });
     }
   }
   showDeploymentView(deploymentDetails: any) {
-    console.log('ShowDeploymentID', deploymentDetails.id);
     this.deploymentId = deploymentDetails.id;
     this.getReleasesByDeploymentId();
   }
 
   getReleasesByDeploymentId(): void {
     this.http.getReleasesViewByDeploymentId(this.deploymentId).subscribe((res: any) => {
-      console.log('AllReleaseData', res);
       [this.active, ...this.history] = res.data;
       this.viewLogsa(this.active)
     })
@@ -317,12 +301,10 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
 
   getLogData(index: number, type: string) {
     this.activeTabIndex = index;
-    console.log('getLogData', this.realeseId)
     if (type && this.realeseId) {
       this.http.getDeploymentViewLogs(this.realeseId, type).subscribe((res: any) => {
         if (res.status.toLowerCase() === 'success') {
           this.deploymentLogs = res.data.map((line: any) => {
-            // console.log('DeploymentLogLineData', line)
             const splitIndex = line.indexOf(' ');
             return {
               timestamp: line.slice(0, splitIndex),
