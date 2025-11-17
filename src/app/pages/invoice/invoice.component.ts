@@ -141,7 +141,7 @@ export class InvoiceComponent implements OnInit {
 
   ngOnInit(): void {
     this.getInvoiceList()
-    this.cashfree = Cashfree({ mode: 'sandbox' });
+    this.cashfree = Cashfree({ mode: 'production' });
     // this.cashfree.on('payment.success', (event: any) => {
     //   console.log('Payment Success:', event);
     //   this.toastr.success(event.transaction.txnId);
