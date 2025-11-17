@@ -63,7 +63,7 @@ export class AgGridTableComponent implements OnInit {
 
   constructor(private sharedService: SharedService, private router: Router) {
     // this.tableTheme = this.sharedService.getCookie('theme');
-    this.tableTheme = localStorage.getItem('theme') || 'ag-theme-alpine';
+    this.tableTheme = localStorage.getItem('theme-default') || 'ag-theme-alpine';
     const urlSegments = this.router.url.split('/').filter(Boolean);
     this.tableName = urlSegments[urlSegments.length - 1] == 'tools' ? 'tool' : urlSegments[urlSegments.length - 1];
     // this.tablebtn = urlSegments[urlSegments.length - 1] == 'deployment' ? 'Deploy' : 'Tool';
@@ -78,20 +78,23 @@ export class AgGridTableComponent implements OnInit {
     this.sharedService.valueChange$.subscribe(value => {
       this.tableTheme = value;
     });
-    // this.gridApi.hideOverlay();
     this.sharedService.isLoading$.subscribe((isLoading: boolean) => {
       if (isLoading) {
         this.overlayMessage = 'Loading...';
-        if (this.gridApi) {
+        if (this.gridApi && !this.gridApi.isDestroyed()) {
           this.gridApi.showNoRowsOverlay();
         }
       } else {
         if (this.rowData && this.rowData.length > 0) {
           this.overlayMessage = '';
-          this.gridApi.hideOverlay();
+          if (this.gridApi && !this.gridApi.isDestroyed()) {
+            this.gridApi.hideOverlay();
+          }
         } else {
           this.overlayMessage = `You do not have  ${this.tableName}${this.tableName === 'invoice-list' ? '.' : `, please click 'New ${this.tablebtn}' to create one.`}`;
-          this.gridApi.showNoRowsOverlay();
+          if (this.gridApi && !this.gridApi.isDestroyed()) {
+            this.gridApi.showNoRowsOverlay();
+          }
         }
       }
     });
@@ -114,7 +117,7 @@ export class AgGridTableComponent implements OnInit {
     this.rowClicked.emit(data.data)
   }
   newProject() {
-    this.router.navigate(['/create-project'])
+    this.router.navigate(['/projects/create-project'])
   }
   addNewUser() {
     this.addUuserEvent.emit(true);

@@ -22,8 +22,6 @@ export class BreadCrumbComponent implements OnInit {
       .subscribe(() => {
         this.breadcrumbs = this.createBreadcrumbs(this.route.root);
       });
-
-    // Initial load
     this.breadcrumbs = this.createBreadcrumbs(this.route.root);
   }
 
@@ -35,25 +33,23 @@ export class BreadCrumbComponent implements OnInit {
       if (routeURL !== '') {
         url += `/${routeURL}`;
       }
-
-      // Use route data for label if set, else use url segment as fallback
       let label = child.snapshot.data['breadcrumb'] || routeURL;
-      if(routeURL == '' && label === 'Home'){
-        url = '/projects'
+      if (routeURL == '' && label === 'Home') {
+        breadcrumbs.push({ label, url: '/projects' });
+        this.createBreadcrumbs(child, '', breadcrumbs);
+        continue;
       }
 
       if (label) {
         label = label
-          .replace(/-/g, ' ') // Replace hyphens with spaces
-          .replace(/\b\w/g, (char:any) => char.toUpperCase()); // Capitalize each word
+          .replace(/-/g, ' ')
+          .replace(/\b\w/g, (char: any) => char.toUpperCase());
 
         breadcrumbs.push({ label, url });
       }
-      // Continue recursively
       this.createBreadcrumbs(child, url, breadcrumbs);
     }
 
     return breadcrumbs;
   }
-
 }

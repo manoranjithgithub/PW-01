@@ -18,8 +18,6 @@ import { IconDirective } from '@coreui/icons-angular';
 
 import { SharedService } from '../../../../services/shared.service';
 import { Subscription } from 'rxjs';
-import { DeploymentsService } from '../../../../../shared/services/deployments.service';
-import { ProjectsService } from '../../../../../pages/projects/projects.service';
 import { ListItem } from '../../../../../core/models/list-item.model';
 import { AuthService } from '../../../../../core/services/auth.service';
 
@@ -32,7 +30,6 @@ import { AuthService } from '../../../../../core/services/auth.service';
     IconDirective, HeaderNavComponent, RouterLink, NgTemplateOutlet, ThemeDirective,
     DropdownComponent, DropdownToggleDirective, TextColorDirective,
     DropdownMenuDirective, DropdownItemDirective, CommonModule],
-  providers: [DeploymentsService, ProjectsService]
 })
 
 export class DefaultHeaderComponent extends HeaderComponent implements OnInit, OnDestroy {
@@ -68,8 +65,7 @@ export class DefaultHeaderComponent extends HeaderComponent implements OnInit, O
       : localStorage.getItem('routeName');
 
   constructor(private authService: AuthService,
-    private sharedService: SharedService, private http: DeploymentsService,
-    private projectService: ProjectsService, private deployemntService: DeploymentsService
+    private sharedService: SharedService,
   ) {
     super();
   }
@@ -80,74 +76,18 @@ export class DefaultHeaderComponent extends HeaderComponent implements OnInit, O
 
 
   ngOnInit(): void {
-    // if (this.authService.isTokenReady()) {
-    //   this.deployemntService.getAccountInfo().subscribe((res: any) => {
-    //     this.userInfo = res.data;
-    //     console.log(this.userInfo)
-    //   });
-    // } else {
-    //   this.authService.tokenReady$.subscribe((ready) => {
-    //     if (ready) {
-    //       console.log(this.userInfo)
-    //     }
-    //   });
-    // }
-
-    // this.sharedService.user$.subscribe(user => {
-    //   this.userData = user;
-    // });
-    this.userData = localStorage.getItem('profileSettings') ? JSON.parse(localStorage.getItem('profileSettings') || '{}') : null;
-    // console.log(this.userData)
-  }
-
-  private getEnvironment() {
-    if (!this.projectId) return;
-    this.projectService.getEnvironmentsByProject(this.projectId).subscribe((res: any) => {
-      if (res?.data && res.data.length > 0) {
-        this.getSelectedEnv(res.data[0]);
-        this.listOfenvironments = res?.data;
-        this.selectedEnvironment = res.data[0]?.name;
-      } else {
-        this.selectedEnvironment = '';
-        this.listOfenvironments = [];
-      }
-    },
-      (err) => {
-        this.selectedEnvironment = '';
-        this.listOfenvironments = [];
-      });
-  }
-  getSelectedEnv(env: any) {
-    if (env) {
-      //this.sharedService.setCookie('environment', JSON.stringify(env), 10);
-      localStorage.setItem('environment', JSON.stringify(env));
-      this.selectedEnvironment = env?.name;
-      console.log(this.selectedEnvironment);
-      this.sharedService.emitEnvValueChange(env);
-    }
+    this.authService.processDecodedToken(localStorage.getItem('accessToken') || '');
+    this.userData = this.sharedService.getUser();
   }
 
   getSelectedRegion(region: any) {
     if (region) {
-      // this.sharedService.setCookie('region', JSON.stringify(region), 10);
-      localStorage.setItem('region', JSON.stringify('ap-south-1'));
       this.selectedRegion = region?.name;
       this.selectedEnvironment = region.environments[0]?.name;
       this.listOfenvironments = region.environments;
     }
   }
 
-  // getSelectedProject(project: any) {
-  //   if (project) {
-  //     this.sharedService.setCookie('project', JSON.stringify(project), 10);
-  //     this.sharedService.emitProjectValueChange(project);  // Notify other components
-  //     this.selectedProject = project?.name;
-  //     this.projectId = project?.id;
-  //     this.getEnvironment();
-  //     console.log(this.selectedProject);
-  //     this.getRegionsAndEnvironment();  // Load environment list for selected project
-  //   }
-  // }
 
   logout() {
     this.colorMode.set('light');
@@ -163,47 +103,6 @@ export class DefaultHeaderComponent extends HeaderComponent implements OnInit, O
   isSelectedProject(item: any): boolean {
     return this.selectedProject === item.name;
   }
-
-  // public getRegionsAndEnvironment() {
-  //   if (!this.projectId) return;
-
-  //   this.projectService.getProjectById(this.projectId, true).subscribe((res: any) => {
-  //     if (res?.data) {
-  //       if (res.data.regions?.length > 0) {
-  //         this.listOfRegions = res.data.regions;
-  //         this.selectedRegion = res.data.regions[0]?.name;
-  //         if (res.data.regions[0]?.environments?.length > 0) {
-  //           this.getSelectedRegion(res.data.regions[0]);
-  //         }
-  //       }
-  //     } else {
-  //       this.selectedRegion = '';
-  //       this.listOfRegions = [];
-  //       this.selectedEnvironment = '';
-  //       this.listOfenvironments = [];
-  //     }
-  //   },
-  //     (err) => {
-  //       this.selectedRegion = '';
-  //       this.listOfRegions = [];
-  //       this.selectedEnvironment = '';
-  //       this.listOfenvironments = [];
-  //     });
-  // }
-
-  // private getBasicInfo() {
-  //   const project = this.sharedService.getCookie('project');
-  //   this.projectService.getAllProjects().subscribe((res: any) => {
-  //     this.listOfProjects = res?.data;
-  //     if (project && this.listOfProjects.find(item => item.name === JSON.parse(project)?.name) !== undefined) {
-  //       this.selectedProject = JSON.parse(project)?.name;
-  //       this.projectId = JSON.parse(project)?.id;
-  //       this.getRegionsAndEnvironment();
-  //     } else {
-  //       this.getSelectedProject(res?.data[0]);
-  //     }
-  //   });
-  // }
 
   ngOnDestroy(): void {
     this.projectSubscription?.unsubscribe();

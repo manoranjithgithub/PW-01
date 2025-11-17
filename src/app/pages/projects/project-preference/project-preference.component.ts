@@ -13,8 +13,7 @@ import {
   DropdownMenuDirective,
   DropdownToggleDirective,
 } from '@coreui/angular';
-import { currentUsageFields, estimatedUsageFields } from '../../../core/constants/usage.fields.constants';
-import { userList } from '../../../core//constants/user-list.constants'
+import { currentUsageFields, estimatedUsageFields, userList } from '../../../core//constants/app.constants'
 import { Integrations } from '../../../core/constants/integrations.constant';
 import { Preferencedata } from '../../../core/constants/preference-data.constant';
 import { ProjectsService } from '../projects.service';
@@ -258,7 +257,7 @@ export class ProjectPreferenceComponent implements OnInit, OnDestroy {
   }
 
   viewEnvironment(env: any): void {
-    this.router.navigate(['/environment-preferences'], {
+    this.router.navigate(['/projects/environment-preferences'], {
       queryParams: {
         envName: env.name,
         region: env.region,
@@ -326,7 +325,6 @@ export class ProjectPreferenceComponent implements OnInit, OnDestroy {
                 this.environments = this.mapEnvironments(envRes.data);
               });
               // this.router.navigate(['/projects']);
-              console.log('Deleted environment');
             }
           });
         } else {

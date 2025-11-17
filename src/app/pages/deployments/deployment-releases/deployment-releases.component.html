@@ -8,10 +8,7 @@
       </ng-template>
       <ng-template cTemplateId="accordionBodyTemplate">
         <div class="accordion-body">
-          <!-- <div>
-            <app-ag-grid-table [rowData]="tableData" [columnDefs]="columnDefs" [showButtons]="false"
-              ></app-ag-grid-table>
-          </div> -->
+          
           <div class="d-flex justify-content-between align-items-start">
             <div class="m-4">
               <!-- *ngIf="hasFailedStatus()" -->
@@ -40,7 +37,7 @@
                 </div>
               </div>
             </div>
-            <button (click)="onOptionSelected('view', active, 'active')" class="btn button-format-solid m-4"
+            <button (click)="onOptionSelected(active, 'active')" class="btn button-format-solid m-4"
             [disabled]="(active && active.length === 0) || active?.status === 'Pending'">
               View logs
             </button>
@@ -95,7 +92,7 @@
                         <i class="bi bi-three-dots-vertical"></i>
                       </button>
                       <ul *ngIf="openDropdown === item?.id" class="dropdown-menu show">
-                        <li (click)="onOptionSelected('view', item, 'history')">
+                        <li (click)="onOptionSelected(item, 'history')">
                           <a class="dropdown-item">View logs</a>
                         </li>
                       </ul>

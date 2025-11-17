@@ -56,7 +56,6 @@ export class DeploymentListComponent implements OnInit, OnDestroy {
         });
       },
       valueFormatter: (params: any) => {
-        console.log(params)
         return params.value || '';
       },
       onCellClicked: (event: CellClickedEvent) =>
@@ -115,15 +114,8 @@ export class DeploymentListComponent implements OnInit, OnDestroy {
     private deploymentsService: LLMDeploymentsService
   ) {
     const storedEnvironment = localStorage.getItem('environment');
-    const storedProject = localStorage.getItem('project');
     if (storedEnvironment && storedEnvironment !== "undefined") {
       this.getDeployment(JSON.parse(storedEnvironment));
-    }
-    if (localStorage.getItem('resourceUsage')) {
-      const resourceUsage = JSON.parse(localStorage.getItem('resourceUsage') || '[]');
-      const deploymentResource = resourceUsage.find(
-        (res: any) => res.resource_type === 'deployments'
-      );
     }
   }
 
@@ -133,24 +125,14 @@ export class DeploymentListComponent implements OnInit, OnDestroy {
       this.getDeployment(value);
     });
 
-    // this.filteredOptions = this.searchControl.valueChanges.pipe(
-    //   startWith(''),
-    //   map(value => this._filter(value || ''))
-    // );
   }
-  // private _filter(value: string): any[] {
-  //   return this.deployOptions.filter(option => option.name === value);
-  // }
-
-
   getDeployment(env: any): void {
     if (env) {
 
       this.deploymentsService.getDeployments(env.id).subscribe((res: any) => {
         if (res.status.toLowerCase() === "success") {
           this.tableData = res.data;
-          // const deploymentNames = res.dat.map(item => item.name);
-          localStorage.setItem('availableDeplyements', JSON.stringify(res.data));
+          localStorage.setItem('availableDeployments', JSON.stringify(res.data?.map((x: any) => x.name)));
           this.mergeStatusIntoTable();
           this.loading = false
         }
@@ -164,63 +146,12 @@ export class DeploymentListComponent implements OnInit, OnDestroy {
 
   statusCellRenderer(params: any): string {
     const status = params.value;
-
-    const iconMap: Record<string, string> = {
-      'Initiated': 'bi-hourglass-split',
-      'Building': 'bi-check-circle-fill',
-      'Deploying': 'bi-cloud-upload',
-      'Active': 'bi-check-circle-fill',
-      'Paused': 'bi-pause-circle-fill',
-      'Superseded': 'bi-arrow-clockwise',
-      'Deploy Failed': 'bi-x-circle-fill',
-      'Failed': 'bi-x-circle-fill',
-      'Build Timeout': 'bi-clock-history',
-      'Build Failed': 'bi-x-circle-fill',
-      'Deploy Timeout': 'bi-clock-history',
-      'Unavailable': 'bi-x-circle-fill',
-      'Running': 'bi-check-circle-fill',
-      'Pending': 'bi-clock',
-      'Create Job Failed': 'bi-x-circle-fill',
-      'Stopped': 'bi-slash-circle-fill',
-      'Success': 'bi-check-circle-fill',
-      'Inprogress': 'bi-check-circle-fill',
-      'Updating': 'bi-box-arrow-in-up',
-      'Degraded': 'bi-arrow-90deg-down',
-    };
-
-    const statusClassMap: Record<string, string> = {
-      'Active': 'success',
-      'Initiated': 'success',
-      'Building': 'success',
-      'Deploying': 'success',
-      'Paused': 'warning',
-      'Superseded': 'warning',
-      'Deploy Failed': 'danger',
-      'Failed': 'danger',
-      'Build Timeout': 'danger',
-      'Build Failed': 'danger',
-      'Deploy Timeout': 'danger',
-      'Unavailable': 'danger',
-      'Running': 'primary',
-      'Pending': 'warning',
-      'Create Job Failed': 'danger',
-      'Stopped': 'danger',
-      'Success': 'success',
-      'Inprogress': 'in-process',
-      'Updating': 'warning',
-      'Degraded': 'warning',
-    };
-
-    const icon = iconMap[status] || 'bi-question-circle-fill';
-    const statusClass = statusClassMap[status] || 'secondary';
-    return `<span class="${statusClass}"><i class="bi ${icon}"></i> ${status}</span>`;
+    const meta = this.sharedService.getStatusMeta(status);
+    return `<span class="${meta.statusClass} text-capitalize"><i class="bi ${meta.icon}"></i> ${meta.label.toLowerCase()}</span>`;
   }
 
   gotoAction(params: any) {
-    console.log(params)
-    // this.sidebarService.hideSidebar();
     this.router.navigate(['/llm/deployment-details'], { queryParams: { id: params.name } })
-    // this.openDetailsModal(params);
   }
   goToNewDeployModel() {
     this.router.navigate(['/llm/create-deployment'])

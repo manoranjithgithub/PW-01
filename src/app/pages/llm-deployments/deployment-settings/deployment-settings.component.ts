@@ -10,7 +10,6 @@ import {
   AlertComponent,
   TooltipDirective
 } from '@coreui/angular';
-import { ResourceQuotaComponent } from '../../settings/resource-quota/resource-quota.component';
 import { CommonModule, ViewportScroller } from '@angular/common';
 import { SharedService } from '../../../shared/services/shared.service';
 import { ToastrService } from 'ngx-toastr';
@@ -30,7 +29,7 @@ import { LLMDeploymentsService } from '../llm-deployment.service';
   imports: [AccordionComponent,
     AccordionItemComponent,
     TemplateIdDirective, ModalComponent,
-    AccordionButtonDirective, ReactiveFormsModule, ResourceQuotaComponent, CommonModule, CalloutComponent,
+    AccordionButtonDirective, ReactiveFormsModule, CommonModule, CalloutComponent,
     FormCheckComponent, FormsModule, TooltipDirective, AlertComponent, MatIconModule, NgbPopoverModule],
   templateUrl: './deployment-settings.component.html',
   styleUrl: './deployment-settings.component.scss',
@@ -209,8 +208,6 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
 
 
   getDeploymentById(): void {
-    // const regionCookie = this.sharedService.getCookie('region');
-    const regionCookie = localStorage.getItem('region');
     
     this.deploymentService.getDeploymentById(this.deploymentdetails?.name, this.envId).subscribe((res: any) => {
       if (res.status.toLowerCase() === "success") {
@@ -223,7 +220,6 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
         const provider = cleanUrl?.split('/')[2]?.split('.')[0] || '';
         const repoUrl = cleanUrl;
         const branchName = branch || '';
-        console.log(res)
         this.generalSettingsForm.patchValue(res.data);
 
         const initialValues = this.generalSettingsForm.value;

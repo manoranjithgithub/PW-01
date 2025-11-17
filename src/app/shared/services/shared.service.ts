@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { CookieService } from 'ngx-cookie-service';
 import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
+import { getStatusMeta as helperGetStatusMeta } from '../helpers/status.helper';
 
 export interface User {
   id?: string;
@@ -124,53 +125,6 @@ export class SharedService {
   }
 
   getStatusMeta(status: string): { icon: string; statusClass: string; label: string } {
-    const iconMap: Record<string, string> = {
-      'initiated': 'bi-hourglass-split',
-      'building': 'bi-check-circle-fill',
-      'deploying': 'bi-cloud-upload',
-      'active': 'bi-check-circle-fill',
-      'paused': 'bi-pause-circle-fill',
-      'superseded': 'bi-arrow-clockwise',
-      'deploy failed': 'bi-x-circle-fill',
-      'failed': 'bi-x-circle-fill',
-      'build timeout': 'bi-clock-history',
-      'build failed': 'bi-x-circle-fill',
-      'deploy timeout': 'bi-clock-history',
-      'unavailable': 'bi-x-circle-fill',
-      'running': 'bi-check-circle-fill',
-      'pending': 'bi-clock',
-      'create job failed': 'bi-x-circle-fill',
-      'stopped': 'bi-slash-circle-fill',
-      'success': 'bi-check-circle-fill',
-      'starting': 'bi-check-circle',
-      'updating': 'bi-box-arrow-in-up',
-      'degraded': 'bi-arrow-90deg-down',
-    };
-
-    const statusClassMap: Record<string, string> = {
-      'active': 'success',
-      'initiated': 'success',
-      'building': 'success',
-      'deploying': 'success',
-      'paused': 'warning',
-      'superseded': 'warning',
-      'deploy failed': 'danger',
-      'failed': 'danger',
-      'build timeout': 'danger',
-      'build failed': 'danger',
-      'deploy timeout': 'danger',
-      'unavailable': 'danger',
-      'running': 'primary',
-      'pending': 'warning',
-      'create job failed': 'danger',
-      'stopped': 'danger',
-      'success': 'success',
-      'starting': 'success',
-      'updating': 'warning',
-      'degraded': 'warning',
-    };
-    const icon = iconMap[status.toLowerCase()] || 'bi-question-circle-fill';
-    const statusClass = statusClassMap[status.toLowerCase()] || 'secondary';
-    return { icon, statusClass, label: status.toLowerCase() };
+    return helperGetStatusMeta(status);
   }
 }

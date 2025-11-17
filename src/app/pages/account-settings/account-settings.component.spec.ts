@@ -52,7 +52,7 @@ describe('AccountComponent', () => {
     const req = {
       name: 'Test-1',
       email: 'manoranjith@dilligentech.com',
-      avatar: 'https://app.dev.nimbuz.tech/assets/images/pass-logo.png'
+      avatar: 'https://app.dev.nimbuz.tech/assets/images/logo-dark.png'
     };
 
     const mockResponse = {
@@ -62,7 +62,7 @@ describe('AccountComponent', () => {
         name: "Test-1",
         userName: "Test",
         email: "manoranjith@dilligentech.com",
-        avatar: "https://app.dev.nimbuz.tech/assets/images/pass-logo.png"
+        avatar: "https://app.dev.nimbuz.tech/assets/images/logo-dark.png"
       }
     };
 

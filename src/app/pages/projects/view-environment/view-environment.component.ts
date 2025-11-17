@@ -8,21 +8,18 @@ import {
   TemplateIdDirective,
   TooltipDirective
 } from '@coreui/angular';
-import { REGION_OPTIONS } from '../../../shared/constants/nimbuz.constant';
 import { CommonModule } from '@angular/common';
 import { FormArray, FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink, RouterModule } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
-import { RegionOptions } from '../../../core/constants/create-environment.constant';
 import { Preferencedata } from '../../../core/constants/preference-data.constant';
-import { userList } from '../../../core/constants/user-list.constants';
-import { currentUsageFields, estimatedUsageFields } from '../../../core/constants/usage.fields.constants';
 import { Integrations } from '../../../core/constants/integrations.constant';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { Subject, takeUntil } from 'rxjs';
 import { LayoutActionService } from '../../../shared/services/layout-action.service';
 import { ConfirmationModalComponent } from '../../../shared/components/modal/confirmation-modal/confirmation-modal.component';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { currentUsageFields, estimatedUsageFields, RegionOptions, userList } from '../../../core/constants/app.constants';
 
 @Component({
   selector: 'app-view-environment',
@@ -97,7 +94,7 @@ export class ViewEnvironmentComponent implements OnInit, OnDestroy {
     private layoutActionService: LayoutActionService, private modalService: NgbModal) {
 
     //this.tableTheme = this.shared.getCookie('theme');
-    this.tableTheme = localStorage.getItem('theme') || 'ag-theme-alpine';
+    this.tableTheme = localStorage.getItem('theme-default') || 'ag-theme-alpine';
     this.isOpen = true;
     //const storedValue = this.shared.getCookie('project');
     const storedValue = localStorage.getItem('project');

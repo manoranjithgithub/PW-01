@@ -21,95 +21,40 @@ import { SharedService } from '../../shared/services/shared.service';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
+
   private isRefreshing = false;
-  private refreshTokenSubject: BehaviorSubject<string | null> = new BehaviorSubject<string | null>(null);
+  private refreshTokenSubject = new BehaviorSubject<string | null>(null);
+
+  private readonly skipLoaderUrls = [
+    '/status',
+    '/deployments?',
+    '/tools/installed',
+    '/artificat?fileExtension'
+  ];
 
   constructor(
-    private loaderService: SharedService,
+    private loader: SharedService,
     private authService: AuthService,
     private toastr: ToastrService,
     private router: Router
   ) { }
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    const url = req.url;
-    const skipLoaderUrls = ['/status', '/deployments?', '/tools/installed', '/artificat?fileExtension'];
-    const skipLoader = skipLoaderUrls.some(pattern => url.includes(pattern));
-    if (!skipLoader) {
-      this.loaderService.show();
-    }
+    const skipLoader = this.shouldSkipLoader(req.url);
+    if (!skipLoader) this.loader.show();
     if (req.url.includes('/user-uploads')) {
-      return next.handle(req);
+      return next.handle(req).pipe(finalize(() => !skipLoader && this.loader.hide()));
     }
-
     const token = this.authService.getAccessToken();
-    let request = req;
-
-    if (token) {
-      request = this.addToken(req, token);
-    }
-
+    const request = token ? this.addToken(req, token) : req;
     return next.handle(request).pipe(
-      catchError((error: HttpErrorResponse) => {
-        if (error.status === 401) {
-          const currentToken = this.authService.getAccessToken();
-
-          if (currentToken && this.authService.isTokenExpired(currentToken)) {
-            return this.handle401Error(request, next);
-          } else {
-            this.authService.logout();
-            return throwError(() => error);
-          }
-        } else if (error.status === 500) {
-          const message =
-            error.error?.error?.details ||
-            error.error?.error ||
-            error.error?.message ||
-            {message: 'An unexpected error occurred. Please try again later.'};
-          this.toastr.error(message.message, 'Internal Server Error (500)');
-        } else if (error.status === 404 && error.error?.error?.details) {
-          const message = error.error.error.details;
-          this.toastr.error(message, 'Internal Server Error 404:');
-        } else if (error.status === 400) {
-          console.error('Bad Request:', error);
-          if (error.error.customError && error.error?.response) {
-            const message = error.error.response.error.message;
-            // this.toastr.error(message, message);
-          } else {
-            if (error.error?.details && Array.isArray(error.error.details)) {
-              error.error.details.forEach((detail: string) => {
-                const cleanDetail = detail.replace(/"/g, '');
-                this.toastr.error(cleanDetail, 'Validation Error');
-              });
-            } else {
-              const message = (error.error?.error?.message || error.error).replace(/"/g, '');
-              this.toastr.error(message, 'Error');
-            }
-            // let message = 'Bad Request';
-            // if (error.error?.details && Array.isArray(error.error.details)) {
-            //   message = error.error.details
-            //     .map((d: string) => d.replace(/"/g, ''))
-            //     .join('\n');
-            // } else if (error.error?.message) {
-            //   message = error.error.message.replace(/"/g, '');
-            // } else if (error.error?.customError && error.error?.response?.error?.message) {
-            //   message = error.error.response.error.message.replace(/"/g, '');
-            // }
-            //  this.toastr.error(message, 'Validation Error');
-          }
-        } else {
-          const message = error.error?.error || 'Please try again later';
-          console.error('Unhandled error:', message);
-        }
-
-        return throwError(() => error);
-      }),
-      finalize(() => {
-        if (!skipLoader) {
-          this.loaderService.hide();
-        }
-      })
+      catchError(error => this.handleError(error, request, next)),
+      finalize(() => !skipLoader && this.loader.hide())
     );
+  }
+
+  private shouldSkipLoader(url: string): boolean {
+    return this.skipLoaderUrls.some(pattern => url.includes(pattern));
   }
 
   private addToken(req: HttpRequest<any>, token: string): HttpRequest<any> {
@@ -120,18 +65,72 @@ export class AuthInterceptor implements HttpInterceptor {
     });
   }
 
-  private handle401Error(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+  private handleError(error: HttpErrorResponse, request: HttpRequest<any>, next: HttpHandler) {
+    const status = error.status;
+    switch (status) {
+      case 401:
+        return this.handle401(request, next);
+      case 400:
+        this.handle400(error);
+        break;
+      case 404:
+        this.toastr.error(error.error?.error?.details || 'Resource not found', '404');
+        break;
+      case 500: {
+        const msg = this.extractErrorMessage(error) || 'Internal server error';
+        this.toastr.error(msg, '500');
+        break;
+      }
+      default:
+        console.error('Unhandled error:', this.extractErrorMessage(error));
+        break;
+    }
+    return throwError(() => error);
+  }
+
+  private extractErrorMessage(error: HttpErrorResponse): string {
+    return (
+      error.error?.error?.details ||
+      error.error?.error?.message ||
+      error.error?.message ||
+      error.message ||
+      ''
+    );
+  }
+
+  private handle400(error: HttpErrorResponse) {
+    const err = error.error;
+    if (Array.isArray(err?.details)) {
+      err.details.forEach((detail: string) =>
+        this.toastr.error(detail.replace(/"/g, ''), 'Validation Error')
+      );
+      return;
+    }
+    if (err?.customError && err?.response?.error?.message) {
+      this.toastr.error(err.response.error.message);
+      return;
+    }
+    const message = (err?.error?.message || err?.error || '').replace(/"/g, '');
+    if (message) {
+      this.toastr.error(message, 'Error');
+    }
+  }
+
+  private handle401(request: HttpRequest<any>, next: HttpHandler) {
+    const token = this.authService.getAccessToken();
+    if (!token || !this.authService.isTokenExpired(token)) {
+      this.authService.logout();
+      return throwError(() => new Error('Unauthorized'));
+    }
     if (!this.isRefreshing) {
       this.isRefreshing = true;
       this.refreshTokenSubject.next(null);
-
       return this.authService.refreshToken().pipe(
         switchMap((tokenData: any) => {
           this.isRefreshing = false;
-          const newAccessToken = tokenData.access_token;
-          // this.authService.setAccessToken(tokenData);
-          this.refreshTokenSubject.next(newAccessToken);
-          return next.handle(this.addToken(request, newAccessToken));
+          const newToken = tokenData.access_token;
+          this.refreshTokenSubject.next(newToken);
+          return next.handle(this.addToken(request, newToken));
         }),
         catchError(err => {
           this.isRefreshing = false;
@@ -144,7 +143,7 @@ export class AuthInterceptor implements HttpInterceptor {
       return this.refreshTokenSubject.pipe(
         filter(token => token != null),
         take(1),
-        switchMap((token) => next.handle(this.addToken(request, token!)))
+        switchMap(token => next.handle(this.addToken(request, token!)))
       );
     }
   }

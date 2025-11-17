@@ -32,6 +32,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
   projectExhausted: boolean = false;
   environmentExhausted: boolean = false;
   orgName: string = '';
+  vcsProfileInfo: any = {};
 
   constructor(private projectService: ProjectsService, private sharedService: SharedService,
     private authService: AuthService, private router: Router, private sideNavService: SidebarService,
@@ -65,7 +66,6 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     if (!envId || this.orgName !== 'nimbuz') return;
     this.projectService.getResourceUsage(envId).subscribe((res: any) => {
       if (res.status && res.data) {
-        console.log("get resource usage");
         //this.sharedService.setCookie('resourceUsage', JSON.stringify(res.data), 10);
         localStorage.setItem('resourceUsage', JSON.stringify(res.data));
 
@@ -145,8 +145,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
 
     this.regionList = ['ap-south-1'];
 
-    //const regionFromCookie = this.sharedService.getCookie('region');
-    const regionFromCookie = localStorage.getItem('region');
+    const regionFromCookie = 'ap-south-1a';
     this.selectedRegion = this.regionList.includes(regionFromCookie) ? regionFromCookie : this.regionList[0];
 
     if (!regionFromCookie) {
@@ -161,11 +160,10 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     //this.sharedService.setCookie('project', JSON.stringify(project), 10);
     localStorage.setItem('project', JSON.stringify(project));
     this.projectService.getProjectDetailsById(project.id).subscribe((res: any) => {
-      const vcsProfileInfo = {
+      this.vcsProfileInfo = {
         github: res.data.github,
         gitlab: res.data.gitlab
       }
-      localStorage.setItem('vcsProfileInfo', JSON.stringify(vcsProfileInfo));
     })
     this.environmentList = this.getEnvironmentsByProjectId(this.selectedProjectId)
     this.onRegionChange(this.selectedRegion);
@@ -173,8 +171,6 @@ export class ProjectsComponent implements OnInit, OnDestroy {
 
   onRegionChange(region: string) {
     this.selectedRegion = region;
-    // this.sharedService.setCookie('region', region, 10);
-    localStorage.setItem('region', region);
 
     this.filterEnvironments();
   }
@@ -230,7 +226,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
 
   gotoEnvironment() {
     if (this.projectList.length > 0) {
-      this.router.navigate(['/create-environment'])
+      this.router.navigate(['/projects/create-environment'])
     } else {
       this.toastr.warning('Please create a project before creating an environment.');
     }
@@ -241,7 +237,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     if (this.selectedEnvId) {
       const selectedEnv = this.environmentList.find((env: any) => env.id === this.selectedEnvId);
       if (selectedEnv) {
-        this.router.navigate(['/environment-preferences'], {
+        this.router.navigate(['/projects/environment-preferences'], {
           queryParams: {
             envName: selectedEnv.name,
             region: selectedEnv.region,

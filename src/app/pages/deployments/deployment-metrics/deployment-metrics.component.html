@@ -1,33 +1,7 @@
 <div class="container">
-  <div *ngIf="loading" class="loader-backdrop">
-    <div class="loader-box">
-        <div class="spinner"></div>
-        <p>Please wait while we process your request...</p>
-      </div>
-  </div>
+
   <form [formGroup]="filterForm" (ngSubmit)="onFilter()"
     class="filter-bar d-flex align-items-end gap-3 p-3 border rounded flex-wrap-md-nowrap w-100">
-
-    <!-- <div class="custom-multiselect w-30">
-      <label class="custom-label">Pods:
-        <div *ngIf="showPodError" class="text-danger">
-          (Please select at least one pod.)
-        </div>
-      </label>
-      <div class="dropdown-box custom-values" (click)="toggleDropdown()">
-        {{ selectedPods.length ? selectedPods.join(', ') : 'Select Pod Names' }}
-        <span class="arrow">&#9662;</span>
-      </div>
-
-      <div class="dropdown-list custom-label" *ngIf="dropdownOpen">
-        <label *ngFor="let pod of podList" class="dropdown-item custom-values">
-          <input type="checkbox" [value]="pod" [checked]="isSelected(pod)" (change)="onOptionChange($event)">
-          {{ pod }}
-        </label>
-      </div>
-
-    </div> -->
-
     <div class="form-group mb-0" style="min-width: 100px;">
       <label for="duration" class="custom-label">Time Duration:</label>
       <select id="duration" formControlName="duration" class="form-control custom-values">
@@ -65,14 +39,7 @@
     <div class="form-group mb-0">
       <button type="submit" class="btn btn-primary p-2 custom-label">Apply Filter</button>
     </div>
-
-    <!-- <div class="ms-auto mb-0">
-        <button type="button" class="btn btn-outline-secondary" (click)="onRefresh()">
-          <i class="bi bi-arrow-clockwise"></i>
-        </button>
-      </div> -->
   </form>
-
   <hr>
 
   <div class="usage-container">

@@ -1,24 +1,12 @@
-import { AfterViewChecked, AfterViewInit, Component, ElementRef, HostListener, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, HostListener, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import {
   AccordionButtonDirective,
   AccordionComponent,
   AccordionItemComponent,
   TemplateIdDirective,
   CalloutComponent,
-  DropdownComponent,
-  DropdownItemDirective,
-  DropdownMenuDirective,
-  DropdownToggleDirective,
-  NavComponent,
-  NavItemComponent,
-  NavLinkDirective,
-  TabContentRefDirective,
-  TabContentComponent,
-  TabPaneComponent
 } from '@coreui/angular';
 import { DeploymentsService } from '../deployment.service';
-import { AgGridTableComponent } from '../../../shared/components/ag-grid-table/ag-grid-table.component';
-import { AgGridModule } from 'ag-grid-angular';
 import { ToastrService } from 'ngx-toastr';
 import { CommonModule } from '@angular/common';
 import { SharedService } from '../../../shared/services/shared.service';
@@ -37,10 +25,7 @@ import { skip, Subject, switchMap, take, takeUntil } from 'rxjs';
     AccordionItemComponent,
     TemplateIdDirective,
     AccordionButtonDirective,
-    CalloutComponent, AgGridModule, AgGridTableComponent, CommonModule, ModalComponent,
-    DropdownComponent, DropdownItemDirective, DropdownMenuDirective, DropdownToggleDirective,
-    NavComponent, NavItemComponent, NavLinkDirective,
-    TabContentRefDirective, TabContentComponent, TabPaneComponent, DeployConfirmationComponent,
+    CalloutComponent, CommonModule, ModalComponent, DeployConfirmationComponent,
     RelativeTimePipe, LogViewerComponent],
   providers: [DeploymentsService],
   templateUrl: './deployment-releases.component.html',
@@ -61,7 +46,6 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
 
   showScrollToBottom = false;
   @ViewChild('logsModal') private logsModal!: ModalComponent;
-  // @ViewChild('scrollContainer') scrollContainer!: ElementRef<HTMLDivElement>;
 
   public logsModalConfig: any = {
     modalTitle: 'View log',
@@ -81,7 +65,6 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
 
   paginatedLogs: { timestamp: string; message: string }[] = [];
   firstLoadScrolled = false;
-  activeTabIndex: number = 0;
   @Input() currentStatus: string = '';
   pagesArray: number[] = [];
   pageSizes: number[] = [200, 250, 300];
@@ -99,12 +82,6 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
 
 
   ngOnInit(): void {
-    // this.sharedService.deploymentData$.subscribe(data => {
-    //   if (data) {
-    //     this.deploymentdetails = data;
-    //     this.getReleasesByDeploymentId();
-    //   }
-    // });
     this.ac.queryParams.pipe(takeUntil(this.destroy$),
       switchMap(params => {
         const depolyementId = params['id'];
@@ -125,138 +102,12 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
       });
   }
 
-  onOptionSelected(selectedValue: string, realeseData: any, sectionName: string): void {
+  onOptionSelected(realeseData: any, sectionName: string): void {
     this.realeseId = realeseData.id;
     this.selectedReleaseDetails = realeseData;
-    this.onActionSelected(selectedValue, realeseData.id, sectionName);
-  }
-
-  onActionSelected(action: any, releaseId: string, sectionName: string): void {
-    switch (action) {
-      case 'view':
-        this.viewDeploymentLogs(releaseId, sectionName);
-        break;
-      case 'redeploy':
-        this.redeployDeployment();
-        break;
-      case 'pause':
-        this.pauseDeployment();
-        break;
-      case 'resume':
-        this.resumeDeployment();
-    }
-  }
-
-  viewDeploymentLogs(releaseId: string, sectionName?: string): void {
-    this.openModal();
-    this.realeseId = releaseId;
     this.currentPage = 1;
-    this.getLogData(0, 'build');
-    // this.deploymentService.viewDeploymentLogs(releaseId).subscribe((res: any) => {
-    //   if (res.status === "success") {
-    //     this.deploymentLogs = res.data.map((line: any) => {
-    //       const splitIndex = line.indexOf(' ');
-    //       return {
-    //         timestamp: line.slice(0, splitIndex),
-    //         message: line.slice(splitIndex + 1)
-    //       };
-    //     });
-    //     console.log(this.deploymentLogs)
-
-    //   }
-    // },
-    //   err => {
-    //     this.toaster.error('Error viewing deployment logs');
-    //     console.error(err);
-    //   });
-  }
-
-  redeployDeployment(): void {
-    // const req = {
-    //   environmentId: JSON.parse(localStorage.getItem('environment') || '{}').id,
-    //   name: this.deploymentdetails?.name,
-    //   application: this.deploymentdetails?.application,
-    //   sourceCode: this.deploymentdetails?.sourceCode,
-    //   network: this.deploymentdetails?.network,
-    //   config: this.deploymentdetails?.config,
-    //   secret: this.deploymentdetails?.secret,
-    //   environment: this.deploymentdetails?.environment,
-    // };
-    const modalRef = this.modalService.open(DeployConfirmationComponent);
-    modalRef.componentInstance.message = 'Are you sure you want to redeploy this deployment?';
-
-    modalRef.result.then(
-      (result) => {
-        if (result) {
-          this.deploymentService.updateDeployment(this.deploymentdetails?.id, {}).subscribe((res: any) => {
-            if (res.status.toLowerCase() === "success") {
-              this.toaster.success(res.message);
-
-            }
-          },
-            err => {
-              this.toaster.error('Error redeploying deployment');
-              console.error(err);
-            });
-        }
-      });
-  }
-
-  pauseDeployment(): void {
-    const req = {
-      application: {
-        replicas: '0'
-      },
-    };
-    const modalRef = this.modalService.open(DeployConfirmationComponent);
-    modalRef.componentInstance.message = 'Are you sure you want to pause this deployment?';
-
-    modalRef.result.then(
-      (result) => {
-        if (result) {
-          this.deploymentService.updateDeployment(this.deploymentdetails?.id, req).subscribe((res: any) => {
-            if (res.status.toLowerCase() === "success") {
-              this.toaster.success(res.message);
-            }
-          },
-            err => {
-              this.toaster.error('Error in pause deployment');
-              console.error(err);
-            });
-        }
-      });
-
-  }
-
-  resumeDeployment(): void {
-    this.deploymentdetails.application.replicas = '1';
-    const req = {
-      environmentId: JSON.parse(localStorage.getItem('environment') || '{}').id,
-      name: this.deploymentdetails?.name,
-      application: this.deploymentdetails?.application,
-      sourceCode: this.deploymentdetails?.sourceCode,
-      network: this.deploymentdetails?.network,
-      config: this.deploymentdetails?.config,
-      secret: this.deploymentdetails?.secret,
-      environment: this.deploymentdetails?.environment,
-    };
-    const modalRef = this.modalService.open(DeployConfirmationComponent);
-    modalRef.componentInstance.message = 'Are you sure you want to resume this deployment?';
-
-    modalRef.result.then(
-      (result) => {
-        if (result) {
-          this.deploymentService.updateDeployment(this.deploymentdetails?.id, req).subscribe((res: any) => {
-            if (res.status.toLowerCase() === "success") {
-              this.toaster.success(res.message);
-            }
-          },
-            err => {
-              this.toaster.error('Error in resume deployment');
-              console.error(err);
-            });
-        }
-      });
+    this.getLogData('build');
+    this.logsModal.open('right');
   }
 
   getReleasesByDeploymentId(): void {
@@ -365,70 +216,17 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
       });
 
     });
-    //  time: this.getDuration(this.active.created_at, this.active.updated_at),
   }
   hasFailedStatus(): boolean {
     return this.steps.some(s => s.status === 'failed');
   }
-  getStatusClass(status: string): string {
-    const map: Record<string, string> = {
-      'Initiated': 'pending',
-      'Building': 'in-process',
-      'Deploying': 'success',
-      'Active': 'success',
-      'Running': 'success',
-      'Paused': 'paused',
-      'Superseded': 'paused',
-      'Deploy Failed': 'failed',
-      'Build Failed': 'failed',
-      'Build Timeout': 'warning',
-      'Deploy Timeout': 'warning',
-      'Pending': 'warning',
-      'Create Job Failed': 'danger',
-      'Failed': 'danger',
-      'Success': 'success',
-      'Inprogress': 'in-process',
-      'Updating': 'warning',
-      'Degraded': 'warning',
-    };
-    return map[status] || 'Pending';
-  }
-  getIcons(status: string) {
-
-    const map: Record<string, string> = {
-      'Initiated': 'bi-check-circle-fill',
-      'Building': 'bi-check-circle-fill',
-      'Deploying': 'bi-check-circle-fill',
-      'Active': 'bi-check-circle-fill',
-      'Paused': 'bi-pause-circle-fill',
-      'Superseded': 'bi-arrow-clockwise',
-      'Deploy Failed': 'bi-x-circle-fill',
-      'Build Failed': 'bi-x-circle-fill',
-      'Build Timeout': 'bi-clock-history',
-      'Deploy Timeout': 'bi-clock-history',
-      'Running': 'bi-arrow-repeat',
-      'Pending': 'bi-clock',
-      'Create Job Failed': 'bi-x-circle-fill',
-      'Failed': 'bi-x-circle-fill',
-      'Success': 'bi-check-circle-fill',
-      'Inprogress': 'bi-check-circle-fill',
-      'Updating': 'bi-box-arrow-in-up',
-      'Degraded': 'bi-arrow-90deg-down'
-    };
-    return map[status] || '';
-  }
 
   getClassList(status: string): string {
-     const meta = this.sharedService.getStatusMeta(status);
+    const meta = this.sharedService.getStatusMeta(status);
     return `${meta.icon} ${meta.statusClass}`;
   }
 
-  openModal() {
-    this.activeTabIndex = 0;
-    this.logsModal.open('right');
-  }
-  getLogData(index: number, type: string, resetPage: boolean = false) {
-    this.activeTabIndex = index;
+  getLogData(type: string, resetPage: boolean = false) {
     if (resetPage) {
       this.currentPage = 1;
     }
@@ -452,8 +250,6 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
             };
           });
           this.totalPages = res.data?.totalPages ?? 0;
-          // this.pagesArray = Array.from({ length: this.totalPages }, (_, i) => i + 1);
-          // this.updatePaginatedLogs();
         } else {
           this.toaster.error(res.message);
         }
@@ -477,39 +273,6 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
     this.openDropdown = null;
   }
 
-  // get totalPages(): number {
-  //   return Math.ceil(this.deploymentLogs.length / this.pageSize);
-  // }
-
-  updatePaginatedLogs(): void {
-    const end = this.currentPage * this.pageSize;
-    this.paginatedLogs = this.deploymentLogs.slice(0, end);
-  }
-  onScroll(event: Event): void {
-    const target = event.target as HTMLElement;
-
-    const threshold = 150;
-    const position = target.scrollTop + target.clientHeight;
-    const height = target.scrollHeight;
-
-    if (height - position < threshold && this.currentPage < this.totalPages) {
-      this.currentPage++;
-      // this.updatePaginatedLogs();
-    }
-  }
-  // previousPage(): void {
-  //   if (this.currentPage > 1) {
-  //     this.currentPage--;
-  //     this.updatePaginatedLogs();
-  //   }
-  // }
-
-  // nextPage(): void {
-  //   if (this.currentPage < this.totalPages) {
-  //     this.currentPage++;
-  //     this.updatePaginatedLogs();
-  //   }
-  // }
   getDuration(start: string, end: string): string {
     const startTime = new Date(start).getTime();
     const endTime = new Date(end).getTime();
@@ -529,74 +292,10 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
     return parts.join(' ');
   }
 
-  // scrollToTop(): void {
-  //   this.scrollContainer.nativeElement.scrollTo({
-  //     top: 0,
-  //     behavior: 'smooth'
-  //   });
-  // }
-
-  // scrollToBottom(): void {
-  //   const container = this.scrollContainer.nativeElement;
-  //   container.scrollTo({
-  //     top: container.scrollHeight,
-  //     behavior: 'smooth'
-  //   });
-  // }
-  // scrollToend(): void {
-  //   const container = this.scrollContainer.nativeElement;
-
-  //   const loadNext = () => {
-  //     if (this.currentPage < this.totalPages) {
-  //       this.currentPage++;
-  //       this.updatePaginatedLogs();
-
-  //       setTimeout(() => {
-  //         container.scrollTo({
-  //           top: container.scrollHeight,
-  //           behavior: 'smooth'
-  //         });
-
-  //         loadNext();
-  //       }, 300);
-  //     } else {
-  //       setTimeout(() => {
-  //         container.scrollTo({
-  //           top: container.scrollHeight,
-  //           behavior: 'smooth'
-  //         });
-  //       }, 100);
-  //     }
-  //   };
-
-  //   loadNext();
-  // }
-
-
-  getLogsInfo(realeseData: any, index: number) {
-    this.realeseId = realeseData.id;
-    this.selectedReleaseDetails = realeseData;
-    this.openModal();
-    if (index === 1) {
-      this.selectedRelease = realeseData?.build_job_name;
-      this.getLogData(0, 'build', true);
-    } else {
-      this.selectedRelease = realeseData?.deploy_job_name;
-      this.getLogData(1, 'deploy', true);
-    }
-  }
-
-  changePage(page: number) {
-    if (page >= 1 && page <= this.totalPages) {
-      this.currentPage = page;
-      this.getLogData(this.activeTabIndex, this.activeTabIndex === 0 ? 'build' : 'deploy');
-    }
-  }
-
   onPageSizeChange(event: any, type: string) {
     this.currentPage = event.currentPage;
     this.pageSize = event.itemsPerPage;
-    this.getLogData(this.activeTabIndex, type);
+    this.getLogData(type);
   }
   ngOnDestroy(): void {
     this.destroy$.next();

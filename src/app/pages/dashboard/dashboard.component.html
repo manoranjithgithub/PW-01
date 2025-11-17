@@ -1,8 +1,7 @@
 <div class="container">
     <div class="row">
         <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-4" *ngFor="let card of cards">
-            <app-summary-card [value]="card.value" [label]="card.label" [change]="card.change"
-                [description]="card.description">
+            <app-summary-card [value]="card.value" [label]="card.label" [description]="card.description">
             </app-summary-card>
         </div>
     </div>
@@ -14,7 +13,6 @@
             </app-utilization-chart>
         </div>
     </div>
-
     <div class="endpoint-list my-4 py-4 overflow-hidden">
         <div class="row">
             <div class="col-md-12">
@@ -24,7 +22,6 @@
                     <table class="table align-middle table-hover">
                         <thead class="border-0">
                             <tr class="text-muted">
-                                <!-- <th scope="col">Health status</th> -->
                                 <th scope="col">Endpoint name</th>
                                 <th scope="col">URL</th>
                                 <th scope="col" class="text-center">Manage</th>
@@ -33,21 +30,10 @@
                         <tbody>
                             <tr *ngFor="let endpoint of endpoints">
                                 <td>{{ endpoint.name }}</td>
-                                 <!-- <td>
-                                    <span [ngClass]="{'disabled-link': endpoint.status !== 'accessible'}"
-                                        [attr.title]="endpoint.status === 'unreachable' ? 'Endpoint not ready yet' : endpoint.host">
-
-                                        <button class="btn btn-link p-0 ms-2" (click)="copyToUrl(endpoint.host)"
-                                            title="Copy URL">
-                                            <i class="bi bi-clipboard"></i>
-                                        </button>
+                                <td>
+                                    <a href="{{ endpoint.host }}" target="_blank">
                                         {{ endpoint.host }}
-                                    </span>
-                                </td> -->
-                <td>
-                  <a href="{{ endpoint.host }}" target="_blank">
-                    {{ endpoint.host }}
-                  </a>
+                                    </a>
                                 <td class="text-center text-info">
                                     <c-dropdown class="action-dropdown">
                                         <button class="btn btn-icon" type="button" data-bs-toggle="dropdown"
@@ -76,3 +62,4 @@
             </div>
         </div>
     </div>
+</div>

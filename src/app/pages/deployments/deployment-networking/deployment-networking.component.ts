@@ -1,36 +1,17 @@
 import { Component, EventEmitter, Input, OnInit, Output, ViewChild, ViewEncapsulation } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import {
-  AccordionButtonDirective,
-  AccordionComponent,
-  AccordionItemComponent,
-  TemplateIdDirective,
-  CalloutComponent,
-  FormCheckComponent,
-  AlertComponent,
-  TooltipDirective
-} from '@coreui/angular';
+import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { DeploymentsService } from '../deployment.service';
 import { ModalComponent } from '../../../shared/components/model/model.component';
 import { NgbModal, NgbPopoverModule } from '@ng-bootstrap/ng-bootstrap';
 import { ConfirmationModalComponent } from '../../../shared/components/modal/confirmation-modal/confirmation-modal.component';
-import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
-import { MatIconModule } from '@angular/material/icon';
+import { SHARED_IMPORTS } from '../../../shared/shared-imports';
 @Component({
   selector: 'app-deployment-networking',
   standalone: true,
-  imports: [AccordionButtonDirective,
-    AccordionComponent,
-    AccordionItemComponent,
-    TemplateIdDirective,
-    CalloutComponent,
-    FormCheckComponent,
-    AlertComponent,
-    TooltipDirective,
-    ConfirmationModalComponent, CommonModule,
-    FormsModule, ModalComponent, ReactiveFormsModule, MatIconModule, NgbPopoverModule],
+  imports: [SHARED_IMPORTS,
+    ConfirmationModalComponent, ModalComponent, NgbPopoverModule],
   templateUrl: './deployment-networking.component.html',
   styleUrl: './deployment-networking.component.scss',
   providers: [DeploymentsService],
@@ -42,7 +23,6 @@ export class DeploymentNetworkingComponent implements OnInit {
   @Input() currentStatus: string = '';
   networkSettingsForm !: FormGroup;
   isGenerateDomain: boolean = false;
-  isCustomDomain: boolean = false;
   showAuthenticationData: any;
   endpointStatus: string = '';
   ingressDomain: string = '';
@@ -98,7 +78,7 @@ export class DeploymentNetworkingComponent implements OnInit {
     this.networkSettingsForm.get('service')?.valueChanges.subscribe(value => {
       this.isPatchedValue = true;
       let envType = '';
-      const region = localStorage.getItem('region') || 'ap-south-1a';
+      const region = 'ap-south-1a';
 
       if (environment) {
         const envObj = JSON.parse(environment);
@@ -230,7 +210,8 @@ export class DeploymentNetworkingComponent implements OnInit {
             if (res.status.toLowerCase() === "success") {
               this.toaster.success(res.message);
               this.ingressDomain = '';
-              scrollTo(0, 0);            }
+              scrollTo(0, 0);
+            }
           }, error => {
             scrollTo(0, 0);
 

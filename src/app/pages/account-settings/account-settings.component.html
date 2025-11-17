@@ -1,9 +1,4 @@
-<div *ngIf="loading" class="loader-backdrop">
-  <div class="loader-box">
-    <div class="spinner"></div>
-    <p>Please wait while we process your request...</p>
-  </div>
-</div>
+<app-loader></app-loader>
 
 <div class="container mt-2">
   <c-card class="p-4">
@@ -30,24 +25,10 @@
 
       <div class="row mb-3">
         <div class="col-md-6">
-          <label for="username" class="form-label">User Name</label>
-          <input id="name" formControlName="userName" class="form-control" />
+          <label for="userName" class="form-label">User Name</label>
+          <input id="userName" formControlName="userName" class="form-control" />
         </div>
-
-        <!-- <div class="col-md-6">
-          <label for="avatar" class="form-label">Avatar</label>
-          <div class="d-flex align-items-center gap-2">
-            <input id="avatar" formControlName="avatar" class="form-control w-100" (input)="updateAvatarPreview()" />
-            <div class="avatar-preview">
-              <img *ngIf="avatarPreview" [src]="avatarPreview" alt="Avatar Preview" />
-            </div>
-          </div>
-        </div> -->
       </div>
-
-      <!-- <div class="text-end">
-        <button type="submit" class="btn button-format-solid" (click)="onSubmit()">Update Info</button>
-      </div> -->
     </form>
   </c-card>
   <c-card class="p-4 my-3">
@@ -57,10 +38,10 @@
         <div class="col-md-4">
           <label for="oldPassword" class="form-label">Current Password</label>
           <div class="input-group">
-            <input id="oldPassword" [type]="showOldPassword ? 'text' : 'password'" formControlName="oldPassword"
+            <input id="oldPassword" [type]="visiblePasswordFields.has('old') ? 'text' : 'password'" formControlName="oldPassword"
               class="form-control" />
             <button type="button" class="btn btn-outline-secondary" (click)="togglePassword('old')" tabindex="-1">
-              <i class="bi" [ngClass]="showOldPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
+              <i class="bi" [ngClass]="visiblePasswordFields.has('old') ? 'bi-eye-slash' : 'bi-eye'"></i>
             </button>
           </div>
           <div
@@ -78,10 +59,10 @@
         <div class="col-md-4">
           <label for="password" class="form-label">New Password</label>
           <div class="input-group">
-            <input id="password" [type]="showNewPassword ? 'text' : 'password'" formControlName="password"
+            <input id="password" [type]="visiblePasswordFields.has('new') ? 'text' : 'password'" formControlName="password"
               class="form-control" />
             <button type="button" class="btn btn-outline-secondary" (click)="togglePassword('new')" tabindex="-1">
-              <i class="bi" [ngClass]="showNewPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
+              <i class="bi" [ngClass]="visiblePasswordFields.has('new') ? 'bi-eye-slash' : 'bi-eye'"></i>
             </button>
           </div>
           <div class="text-danger mt-1">
@@ -90,7 +71,7 @@
               New password is required.</div>
             <div class="text-danger mt-1"
               *ngIf="resetPasswordForm.get('password')?.hasError('pattern') && (isResetPasswordSubmitted || resetPasswordForm.get('password')?.touched || resetPasswordForm.get('password')?.dirty)">
-              Password must be at least 8 characters long and include at least one uppercase letter, one lowercase
+              Password must be at least 8 characters long and include at least one lowercase
               letter, one number, and one special character.
             </div>
           </div>
@@ -98,10 +79,10 @@
         <div class="col-md-4">
           <label for="confirmPassword" class="form-label">Confirm Password</label>
           <div class="input-group">
-            <input id="confirmPassword" [type]="showConfirmPassword ? 'text' : 'password'"
+            <input id="confirmPassword" [type]="visiblePasswordFields.has('confirm') ? 'text' : 'password'"
               formControlName="confirmPassword" class="form-control" />
             <button type="button" class="btn btn-outline-secondary" (click)="togglePassword('confirm')" tabindex="-1">
-              <i class="bi" [ngClass]="showConfirmPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
+              <i class="bi" [ngClass]="visiblePasswordFields.has('confirm') ? 'bi-eye-slash' : 'bi-eye'"></i>
             </button>
           </div>
           <div
