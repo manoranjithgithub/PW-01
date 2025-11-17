@@ -8,7 +8,6 @@
     <div class="circle">
       <span *ngIf="i < currentStep">
         <ng-container *ngIf="isStepCompleted(i)">&#10003;</ng-container>
-        <!-- <ng-template #incompleteIcon> <i class="bi bi-x"></i></ng-template> -->
       </span>
     </div>
     <div class="label" [innerHTML]="step.label"></div>
@@ -24,13 +23,6 @@
         <div class="container">
           <div class="row">
             <div class="col-md-4" style="margin-top:1px">
-              <!-- <label class="form-label">Choose a deployment type</label> -->
-              <!-- <select formControlName="type" id="deployOptions" class="form-select" (change)="selectedType($event)">
-                <option value="" disabled selected hidden>Choose a type to continue</option>
-                <option *ngFor="let option of deployOptions" [value]="option.value">
-                  {{ option.name }}
-                </option>
-              </select> -->
               <mat-label class="form-label">Choose a deployment type</mat-label>
               <mat-select formControlName="type" id="deployOptions" class="form-select mt-2">
                 <mat-option value="" disabled selected hidden>Choose a type to continue</mat-option>
@@ -80,7 +72,6 @@
             </div>
           </div>
           <div class="border-bottom mb-4">&nbsp;</div>
-          <!-- <h4>Deployment configuration</h4> -->
           <div class="container">
             <div class="row g-3">
               <div class="col-md-4">
@@ -101,9 +92,6 @@
               <div class="col-md-4">
                 <label class="form-label">Replicas</label>
                 <input type="text" class="form-control" formControlName="replicas">
-                <!-- <div class="text-danger my-1" *ngIf="isError('replicas', 'required')">
-                  This field is required.
-                </div> -->
                 <div class="text-danger my-1"
                   *ngIf="isError('replicas', 'pattern') && !isError('replicas', 'required')">
                   Only numbers are allowed.
@@ -124,7 +112,6 @@
                 </label>
                 <select formControlName="instanceType" id="resource" class="form-select"
                   (change)="onInstanceTypeChange()">
-                  <!-- <option value="">Select a Resource</option> -->
                   <option *ngFor="let resource of resources" [value]="resource.name">
                     {{ resource.name }}
                   </option>
@@ -132,19 +119,10 @@
                 <div class="text-danger my-1" *ngIf="isError('instanceType', 'required')">
                   This field is required.
                 </div>
-                <div class="text-danger my-1" *ngIf="cpuExhausted">
-                  CPU usage exceeded.
-                </div>
-                <div class="text-danger my-1" *ngIf="ramExhausted">
-                  RAM usage exceeded.
-                </div>
               </div>
               <div class="col-md-4">
-                <label class="form-label">Port <span class="required text-danger">*</span></label>
+                <label class="form-label">Port </label>
                 <input type="text" class="form-control" formControlName="port">
-                <div class="text-danger my-1" *ngIf="isError('port', 'required')">
-                  This field is required.
-                </div>
                 <div class="text-danger my-1" *ngIf="isError('port', 'maxlength')">
                   Port can have at most 5 digits.
                 </div>
@@ -201,16 +179,11 @@
                         <i class="bi bi-exclamation-circle"></i>
                       </span>
                     </span>
-                    <span *ngIf="ephemeralQuota" class="text-gray ml-auto text-nowrap"> (
-                      <span class="mx-1"><b>Current:</b> {{ephemeralQuota?.current_usage}}Gi</span>
-                      <span class="mx-1"><b>Max:</b> {{ephemeralQuota?.max_limit}}Gi</span>
-                      <span class="mx-1"><b>Unused:</b> {{ephemeralQuota?.remaining}}Gi</span> )
-                    </span>
+                    
                   </div>
                 </label>
                 <div class="input-group">
-                  <input type="text" class="form-control" formControlName="ephemeralStorage"
-                    (blur)="onEphemeralMouseOut()">
+                  <input type="text" class="form-control" formControlName="ephemeralStorage">
                   <span class="input-group-text">Gi</span>
                 </div>
                 <div class="text-danger my-1" *ngIf="ephemeralExhausted">
@@ -219,17 +192,6 @@
                 <div class="text-danger my-1" *ngIf="isError('ephemeralStorage', 'pattern')">
                   Only numbers are allowed.The value will be considered in 'Gi'.
                 </div>
-              </div>
-              <div class="col-md-4">
-                <!-- <label class="form-label">Storage
-                  <span [cTooltip]="storageValidation" cTooltipPlacement="top" class="text-warning cursor">
-                    <i class="bi bi-exclamation-circle"></i>
-                </span>
-                </label>
-                <input type="text" class="form-control" formControlName="storage">
-                <div class="text-danger my-1" *ngIf="isError('storage', 'pattern')">
-                  Storage must be a number.
-                </div> -->
               </div>
             </div>
           </div>
@@ -257,7 +219,6 @@
               </div>
               <i class="bi bi-x-circle-fill fs-4 text-dark cursor-pointer" (click)="clearFile()"
                 title="Clear Selected File"></i>
-              <!-- <div class="mx-2" *ngIf="fileName">{{ fileName }}</div> -->
             </div>
             <div
               *ngIf="fileUploadForm.get('fileInput')?.hasError('invalidFileType') && fileUploadForm.get('fileInput')?.touched"
@@ -272,9 +233,6 @@
             <div *ngIf="fileUploadForm.get('fileInput')?.hasError('required')" class="text-danger my-2">
               File is required.
             </div>
-            <div *ngIf="invalidFileFormat" class="text-danger my-2">
-              Invalid file format. Please upload a valid JSON or YAML file
-            </div>
           </div>
           <div class="my-2">
             <label class="form-label">File Path</label>
@@ -284,8 +242,6 @@
               File path is required when a file is uploaded.
             </div>
           </div>
-          <!-- <button class="btn btn-primary my-4" [disabled]="fileUploadForm.invalid"
-            (click)="onZipUpload()">Upload</button> -->
         </form>
       </div>
     </ng-container>
@@ -309,6 +265,7 @@
     </div>
   </div>
 </div>
+<!-- zip upload modal -->
 <app-modal #zipDeploymentModel [modalConfig]="zipDeploymentConfig">
   <div class="container">
     <form [formGroup]="zipUploadForm">

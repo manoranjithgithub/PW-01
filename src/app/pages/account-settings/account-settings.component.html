@@ -1,9 +1,4 @@
-<div *ngIf="loading" class="loader-backdrop">
-  <div class="loader-box">
-    <div class="spinner"></div>
-    <p>Please wait while we process your request...</p>
-  </div>
-</div>
+<app-loader></app-loader>
 
 <div class="container mt-2">
   <c-card class="p-4">
@@ -30,8 +25,8 @@
 
       <div class="row mb-3">
         <div class="col-md-6">
-          <label for="username" class="form-label">User Name</label>
-          <input id="name" formControlName="userName" class="form-control" />
+          <label for="userName" class="form-label">User Name</label>
+          <input id="userName" formControlName="userName" class="form-control" />
         </div>
       </div>
     </form>

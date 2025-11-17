@@ -1,9 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
-import { AlertComponent, CalloutComponent, CardBodyComponent, CardComponent, CardGroupComponent, DropdownComponent, DropdownItemDirective, DropdownMenuDirective, DropdownToggleDirective } from '@coreui/angular';
-import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
-import { CommonModule } from '@angular/common';
+import { FormArray, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
-import { SharedService } from '../../../shared/services/shared.service';
 import { DeploymentsService } from '../deployment.service';
 import { ModalComponent } from '../../../shared/components/model/model.component';
 import { RawEditorComponent } from '../../../shared/components/raw-editor/raw-editor.component';
@@ -11,15 +8,12 @@ import { MaskPasswordPipe } from '../../../shared/pipes/mask-password.pipe';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ConfirmationModalComponent } from '../../../shared/components/modal/confirmation-modal/confirmation-modal.component';
 import { ActivatedRoute } from '@angular/router';
+import { SHARED_IMPORTS } from '../../../shared/shared-imports';
 
 @Component({
   selector: 'app-deployment-secrets',
   standalone: true,
-  imports: [CardBodyComponent, CardComponent, CardGroupComponent, ReactiveFormsModule, CommonModule,
-    CalloutComponent, ModalComponent, RawEditorComponent, MaskPasswordPipe, AlertComponent,
-    DropdownComponent, DropdownItemDirective, DropdownMenuDirective,
-    DropdownToggleDirective
-  ],
+  imports: [ModalComponent, RawEditorComponent, MaskPasswordPipe, SHARED_IMPORTS],
   providers: [DeploymentsService],
   templateUrl: './deployment-secrets.component.html',
   styleUrl: './deployment-secrets.component.scss'
@@ -56,17 +50,15 @@ export class DeploymentSecretsComponent implements OnInit {
   @Input() currentStatus: string = '';
   freezeAddNewData: boolean = false;
 
-  constructor(private fb: FormBuilder, private deploymentsService: DeploymentsService,
-    private sharedService: SharedService, private toaster: ToastrService, private modalService: NgbModal,
+  constructor(private fb: FormBuilder, private deploymentsService: DeploymentsService, 
+    private toaster: ToastrService, private modalService: NgbModal,
     private ac: ActivatedRoute
   ) {
-    // this.storedEnvironment = JSON.parse(this.sharedService.getCookie('environment'));
     this.storedEnvironment = JSON.parse(localStorage.getItem('environment') || '{}');
   }
 
   ngOnInit() {
     this.freezeAddNewData = this.currentStatus && this.currentStatus?.toLowerCase() === 'building' ? true : false;
-    // const resourceUsage = JSON.parse(this.sharedService.getCookie('resourceUsage'));
     const resourceUsage = JSON.parse(localStorage.getItem('resourceUsage') || '[]');
     const deploymentResource = resourceUsage.find(
       (res: any) => res.resource_type === 'secrets'
@@ -76,10 +68,7 @@ export class DeploymentSecretsComponent implements OnInit {
     this.secretForm = this.fb.group({
       rules: this.fb.array([]),
     });
-    // this.sharedService.deploymentData$.subscribe(data => {
-    //   console.log('Data from super parent:', data);
-    //   this.deploymentdetails = data;
-    // });
+    
     this.ac.queryParams.subscribe(params => {
       const deploymentId = params['id'];
       this.deploymentId = deploymentId;
@@ -92,7 +81,6 @@ export class DeploymentSecretsComponent implements OnInit {
           this.handleSecretListLoading();
         });
       } else {
-        // If there's no deploymentId but we still want to process secrets (maybe with deploymentData)
         if (this.deploymentData) {
           this.isEditSecret = false;
           this.deploymentdetails = this.deploymentData;
@@ -271,18 +259,10 @@ export class DeploymentSecretsComponent implements OnInit {
 
   private handleSecretListLoading(): void {
     if (!this.deploymentdetails?.name) return;
-
-    // if (this.storedEnvironment && this.canAddVariables) {
-    //   this.deploymentsService.getSecreteList(this.storedEnvironment.id, this.deploymentdetails.name).subscribe((res: any) => {
-    //     const envVariables = this.mapEnvVariables(res?.data?.data || {});
-    //     this.secretList = [...this.secretList, ...envVariables];
-    //   });
-    // }
-
     if (!this.canAddVariables && this.secretDataFromParent?.data) {
       // const newVariables = this.mapEnvVariables(this.secretDataFromParent.data);
       this.secretList = this.secretDataFromParent.data;
-    }else{
+    } else {
       this.secretList = this.mapEnvVariables(this.deploymentdetails?.secret || {});
     }
   }

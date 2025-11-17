@@ -71,7 +71,7 @@
                   <span class="input-group-text">
                     <i class="bi bi-lock"></i>
                   </span>
-                  <input [type]="visiblePasswordFields.has('password') ? 'text' : 'password'" class="form-control" placeholder="Password *"
+                  <input [type]="visiblePasswordFields.has('password') ? 'text' : 'password'" class="form-control" placeholder="{{isPasswordReset ? 'New Password' : 'Password'}} *"
                     formControlName="password" />
                   <span class="input-group-text password-toggle" style="cursor: pointer"
                     (click)="togglePasswordVisibility('password')">

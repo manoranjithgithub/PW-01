@@ -1,7 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { AgGridModule } from 'ag-grid-angular';
-import { AccordionButtonDirective, AccordionComponent, AccordionItemComponent, AlertComponent, ButtonDirective, CalloutComponent, CardBodyComponent, CardComponent, CardGroupComponent, CardHeaderComponent, ColComponent, ContainerComponent, DropdownComponent, DropdownItemDirective, DropdownMenuDirective, DropdownToggleDirective, FormCheckComponent, FormCheckInputDirective, FormCheckLabelDirective, FormControlDirective, FormDirective, FormFeedbackComponent, FormLabelDirective, FormSelectDirective, InputGroupComponent, InputGroupTextDirective, ListGroupDirective, ListGroupItemDirective, ModalComponent, NavComponent, NavItemComponent, NavLinkDirective, RowComponent, ShadowOnScrollDirective, TabContentComponent, TabContentRefDirective, TabPaneComponent, TemplateIdDirective, TextColorDirective, TooltipDirective } from '@coreui/angular';
+import {
+    AccordionButtonDirective, AccordionComponent, AccordionItemComponent, AlertComponent, ButtonDirective, CalloutComponent, CardBodyComponent, CardComponent, CardGroupComponent, CardHeaderComponent, ColComponent, ContainerComponent, DropdownComponent,
+    DropdownItemDirective, DropdownMenuDirective, DropdownToggleDirective, FormCheckComponent, FormCheckInputDirective, FormCheckLabelDirective, FormControlDirective, FormDirective, FormFeedbackComponent, FormLabelDirective, FormSelectDirective, InputGroupComponent, InputGroupTextDirective, ListGroupDirective, ListGroupItemDirective, ModalComponent, NavComponent, NavItemComponent, NavLinkDirective, RowComponent, ShadowOnScrollDirective, TabContentComponent, TabContentRefDirective, TabPaneComponent, TemplateIdDirective, TextColorDirective, TooltipDirective
+} from '@coreui/angular';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -10,6 +13,8 @@ import { RouterLink, RouterOutlet } from '@angular/router';
 import { AgGridTableComponent } from './components/ag-grid-table/ag-grid-table.component';
 import { DefaultHeaderComponent } from './components/layout';
 import { LoaderComponent } from './components/loader/loader.component';
+import { MatButtonModule } from '@angular/material/button';
+import { MatSelectModule } from '@angular/material/select';
 
 export const SHARED_IMPORTS = [
     ReactiveFormsModule,
@@ -27,6 +32,10 @@ export const SHARED_IMPORTS = [
     MatAutocompleteModule,
     MatFormFieldModule,
     MatInputModule,
+    MatButtonModule,
+    MatButtonModule,
+    MatButtonModule,
+    MatSelectModule,
     FormControlDirective,
     ModalComponent,
     AlertComponent,

@@ -1,3 +1,5 @@
+const base = 'https://api.nimbuz.tech';
+
 export const environment = {
   production: true,
   envName: 'prod',
@@ -12,20 +14,19 @@ export const environment = {
     clientId: 'Ov23liIFW74APX3INF2N',
     redirectUri: 'https://app.nimbuz.tech/vcs/callback'
   },
-
-  apiUrl: 'https://api.nimbuz.tech/core/v1/environments',
-  legacyUrl: 'https://api.nimbuz.tech/core/v1',
-  loginUrl: 'https://api.nimbuz.tech',
-  projectsApiUrl: 'https://api.nimbuz.tech/project/v1/projects',
-  projectsBaseUrl: 'https://api.nimbuz.tech/project/v1',
-  usermanagementApiUrl: 'https://api.nimbuz.tech/user/v1/user',
-  usermanagementBaseUrl: 'https://api.nimbuz.tech/user/v1',
-  deploymentManagement: 'https://api.nimbuz.tech/deployment/v1',
-  jobExecutorBaseUrl: 'https://api.nimbuz.tech/job-executor/v1',
+  domain: 'nimbuz.tech',
   wss: 'wss://api.nimbuz.tech/deployment',
-  pricingManagement: 'https://api.nimbuz.tech/pricing/v1',
-  userManagement: 'https://api.nimbuz.tech/user/v1/business/organisation',
-  logServiceUrl: 'https://api.nimbuz.tech/logs',
-  metricsUrl: 'https://api.nimbuz.tech/metrics/v1',
-  domain: 'nimbuz.tech'
+
+  baseUrl: `${base}`,
+  projectsApiUrl: `${base}/project/v1/projects`,
+  projectsBaseUrl: `${base}/project/v1`,
+  usermanagementApiUrl: `${base}/user/v1/user`,
+  usermanagementBaseUrl: `${base}/user/v1`,
+  deploymentManagement: `${base}/deployment/v1`,
+  jobExecutorBaseUrl: `${base}/job-executor/v1`,
+  pricingManagement: `${base}/pricing/v1`,
+  userManagement: `${base}/user/v1/business/organisation`,
+  logServiceUrl: `${base}/logs`,
+  metricsUrl: `${base}/metrics/v1`,
+
 };

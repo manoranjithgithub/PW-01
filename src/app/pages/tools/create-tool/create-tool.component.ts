@@ -1,11 +1,8 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormField, ResourceInfo, } from '../../../core/models/list-item.model';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AbstractControl, FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
-import { CommonModule } from '@angular/common';
-import {
-  ContainerComponent, ShadowOnScrollDirective, CardGroupComponent, CardComponent, CardBodyComponent, FormCheckInputDirective, FormCheckLabelDirective
-} from '@coreui/angular';
+import { AbstractControl, FormBuilder, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
+import { ShadowOnScrollDirective } from '@coreui/angular';
 import { ToastrService } from 'ngx-toastr';
 import { SharedService } from '../../../shared/services/shared.service';
 import { MarkdownModule } from 'ngx-markdown';
@@ -13,11 +10,11 @@ import { Subscription } from 'rxjs';
 import { LoaderComponent } from '../../../shared/components/loader/loader.component';
 import { ToolsService } from '../tools.service';
 import { ModalComponent } from '../../../shared/components/model/model.component';
+import { SHARED_IMPORTS } from '../../../shared/shared-imports';
 @Component({
   selector: 'app-create-tool',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, ContainerComponent, ShadowOnScrollDirective,
-    CardGroupComponent, CardComponent, CardBodyComponent, MarkdownModule, LoaderComponent, ModalComponent],
+  imports: [ShadowOnScrollDirective, MarkdownModule, LoaderComponent, ModalComponent, SHARED_IMPORTS],
   templateUrl: './create-tool.component.html',
   styleUrl: './create-tool.component.scss',
   providers: [ToolsService]
@@ -56,7 +53,6 @@ export class CreateToolComponent implements OnInit, OnDestroy {
     private sharedService: SharedService
   ) {
     this.form = this.fb.group({})
-    // const storedValue = this.sharedService.getCookie('environment');
     const storedValue = localStorage.getItem('environment');
     if (storedValue) {
       this.env = JSON.parse(storedValue).id;
@@ -73,8 +69,6 @@ export class CreateToolComponent implements OnInit, OnDestroy {
     });
     this.http.getAvailableToolsList().subscribe((res: any) => {
       this.imgList = Object.values(res.data);
-      // this.selectedTool = this.imgList[0].name;
-      // this.onImageClick(this.imgList[0]);
     })
     const availableTools = JSON.parse(localStorage.getItem('availableTools') || '{}');
     if (availableTools.length > 0) {
@@ -88,11 +82,6 @@ export class CreateToolComponent implements OnInit, OnDestroy {
     })
   }
 
-  private lowercaseValidator(control: FormControl) {
-    const value = control.value;
-    return /^[a-z-]+$/.test(value) ? null : { lowercase: true };
-  }
-
   private gigabyteValidator(control: FormControl) {
     const value = control.value;
     const regex = /^\d+(\.\d+)?$/;
@@ -100,27 +89,6 @@ export class CreateToolComponent implements OnInit, OnDestroy {
       return { gigabyteValidator: true };
     }
     return null;
-  }
-
-  private passwordValidator(control: FormControl) {
-    const value = control.value || '';
-    const errors: any = {};
-    if (value.length < 10) {
-      errors.minLength = true;
-    }
-    if (!/[a-zA-Z]/.test(value)) {
-      errors.letter = true;
-    }
-    if (!/[!@#$%^&*(),.?":{}|<>_\-\\[\]/+=`~;]/.test(value)) {
-      errors.specialChar = true;
-    }
-    if (!/[0-9]/.test(value)) {
-      errors.number = true;
-    }
-    if (/\s/.test(value)) {
-      errors.noSpaces = true;
-    }
-    return Object.keys(errors).length ? errors : null;
   }
 
   createForm(fields: { [key: string]: FormField }): void {
@@ -153,21 +121,9 @@ export class CreateToolComponent implements OnInit, OnDestroy {
           }
         }
 
-
         if (field.validation?.regex) {
           validators.push(this.regexValidator(new RegExp(field.validation.regex), field.validation.error_message));
         }
-
-
-        // if (
-        //   field.key === 'root_password' ||
-        //   field.key === 'auth.password' ||
-        //   field.key === 'auth.postgresPassword' ||
-        //   field.key === 'auth.rootPassword' ||
-        //   field.key === 'auth.replicaSetKey'
-        // ) {
-        //   validators.push(this.passwordValidator);
-        // }
 
         if (field.key === 'mysql.primary.persistance.size' ||
           field.key === 'postgresql.primary.persistence.size' ||
@@ -287,23 +243,8 @@ export class CreateToolComponent implements OnInit, OnDestroy {
       .replace(/\\#/g, '#');
   }
 
-  getValueByPath(obj: any, path: string): any {
-    return path.split('.').reduce((acc, part) => acc?.[part], obj);
-  }
-
-  setValueByPath(obj: any, path: string, value: any): void {
-    const parts = path.split('.');
-    const last = parts.pop()!;
-    const target = parts.reduce((acc, part) => acc[part] ||= {}, obj);
-    target[last] = value;
-  }
-
   ngOnDestroy() {
     this.subscription?.unsubscribe();
-  }
-
-  toolsBack() {
-    this.route.navigate(['/tools']);
   }
 
   toolsListBack() {

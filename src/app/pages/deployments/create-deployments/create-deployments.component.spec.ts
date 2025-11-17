@@ -95,7 +95,7 @@ describe('CreateDeploymentsComponent', () => {
 
     matSelect.triggerEventHandler('selectionChange', { value: 'zip' });
 
-    component.connectWithVCS(mockStepper);
+    // component.connectWithVCS(mockStepper);
     fixture.detectChanges();
     expect(zipDeploymentModel.open).toHaveBeenCalled();
   });
@@ -106,7 +106,7 @@ describe('CreateDeploymentsComponent', () => {
     const mockStepper = {} as MatStepper;
     component.selectedVCS = 'git';
     matSelect.triggerEventHandler('selectionChange', { value: 'git' });
-    component.connectWithVCS(mockStepper);
+    // component.connectWithVCS(mockStepper);
     fixture.detectChanges();
     expect(zipDeploymentModel.open).not.toHaveBeenCalled();
   });

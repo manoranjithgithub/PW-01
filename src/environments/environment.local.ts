@@ -1,3 +1,5 @@
+
+const base = 'https://api.dev.nimbuz.tech';
 export const environment = {
     production: false,
     envName: 'dev',
@@ -7,20 +9,17 @@ export const environment = {
         authUrl: 'https://gitlab.com/oauth/authorize',
         tokenUrl: 'https://gitlab.com/oauth/token',
     },
-
-
-    apiUrl: 'https://api.dev.nimbuz.tech/core/v1/environments',
-    legacyUrl: 'https://api.dev.nimbuz.tech/core/v1',
-    loginUrl: 'https://api.dev.nimbuz.tech',
-    projectsApiUrl: 'https://api.dev.nimbuz.tech/project/v1/projects',
-    projectsBaseUrl: 'https://api.dev.nimbuz.tech/project/v1',
-    usermanagementApiUrl: 'https://api.dev.nimbuz.tech/user/v1/user/user',
-    usermanagementBaseUrl: 'https://api.dev.nimbuz.tech/user/v1',
-    deploymentManagement: 'https://api.dev.nimbuz.tech/deployment/v1',
-    jobExecutorBaseUrl: 'https://api.dev.nimbuz.tech/job-executor/v1',
+    domain: 'dev.nimbuz.tech',
     wss: 'wss://api.dev.nimbuz.tech/job-executor',
-    pricingManagement: 'https://api.dev.nimbuz.tech/pricing/v1',
-    userManagement: 'https://api.dev.nimbuz.tech/user/v1/business/organisation',
-    logServiceUrl: 'https://api.dev.nimbuz.tech/logs',
 
+    baseUrl: `${base}`,
+    projectsApiUrl: `${base}/project/v1/projects`,
+    projectsBaseUrl: `${base}/project/v1`,
+    usermanagementApiUrl: `${base}/user/v1/user/user`,
+    usermanagementBaseUrl: `${base}/user/v1`,
+    deploymentManagement: `${base}/deployment/v1`,
+    jobExecutorBaseUrl: `${base}/job-executor/v1`,
+    pricingManagement: `${base}/pricing/v1`,
+    userManagement: `${base}/user/v1/business/organisation`,
+    logServiceUrl: `${base}/logs`,
 };

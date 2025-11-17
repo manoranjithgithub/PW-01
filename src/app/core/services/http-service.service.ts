@@ -10,25 +10,9 @@ import { environment } from '../../../environments/environment';
   providedIn: 'root'
 })
 export class HttpService {
-
-  private loginUrl = environment.loginUrl;
   private userManagement = environment.usermanagementBaseUrl;
 
   constructor(private http: HttpClient) { }
-
-  get(apiUrl: string): Observable<any> {
-    return this.http.get<any>(apiUrl)
-      .pipe(
-        catchError(this.handleError)
-      );
-  }
-
-  post(data: any): Observable<any> {
-    return this.http.post<any>(`${this.loginUrl}`, data)
-      .pipe(
-        catchError(this.handleError)
-      );
-  }
 
   getRefreshToken(data: any): Observable<any> {
     return this.http.post<any>(`${this.userManagement}/users`, data)

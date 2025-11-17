@@ -1,33 +1,24 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { AgGridModule } from 'ag-grid-angular';
 import { ColDef, CellClickedEvent } from 'ag-grid-community';
-import { CommonModule } from '@angular/common';
-import {
-  CardGroupComponent, CardComponent, CardBodyComponent, NavComponent, NavItemComponent, NavLinkDirective, TabContentRefDirective, TabContentComponent, RoundedDirective, TabPaneComponent
-} from '@coreui/angular';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ConfirmationModalComponent } from '../../shared/components/modal/confirmation-modal/confirmation-modal.component';
 import { LoaderComponent } from '../../shared/components/loader/loader.component';
-import { AgGridTableComponent } from '../../shared/components/ag-grid-table/ag-grid-table.component';
 import { SharedService } from '../../shared/services/shared.service';
 import { ToolsService } from './tools.service';
 import { ActionCellRendererComponent } from '../../shared/components/action-cell-renderer/action-cell-renderer.component';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
+import { SHARED_IMPORTS } from '../../shared/shared-imports';
 @Component({
   selector: 'app-tools',
   standalone: true,
-  imports: [AgGridModule, CardGroupComponent, CardComponent,
-    CardBodyComponent, CommonModule, NavComponent, NavItemComponent, NavLinkDirective, ConfirmationModalComponent,
-    TabContentRefDirective, TabContentComponent, TabPaneComponent, LoaderComponent, AgGridTableComponent
-  ],
+  imports: [ConfirmationModalComponent, LoaderComponent, SHARED_IMPORTS],
   providers: [ToolsService],
   templateUrl: './tools.component.html',
   styleUrl: './tools.component.scss'
 })
 export class ToolsComponent implements OnInit, OnDestroy {
-  isShowTable: boolean = true;
   envId: string = '';
   rowData = [];
 
@@ -98,17 +89,6 @@ export class ToolsComponent implements OnInit, OnDestroy {
           `;
       }
     },
-    // {
-    //   headerName: 'Endpoint',
-    //   field: 'name',
-    //   sortable: true,
-    //   filter: true,
-    //   flex: 1,
-    //   cellRenderer: (params: any) => {
-    //     const url = `https://${params.value}`;
-    //     return `<a href="${url}" target="_blank">${url}</a>`;
-    //   }
-    // },
     {
       headerName: 'Host',
       field: 'publicHost',
@@ -222,151 +202,9 @@ export class ToolsComponent implements OnInit, OnDestroy {
       })
     }
   }
-  showToolsTable() {
-    this.isShowTable = true;
-  }
-
-  ngOnDestroy(): void {
-    clearInterval(this.getToolsIntervel)
-    this.subscription?.unsubscribe();
-  }
-
-  //deployments column def
-  deploymentsColDefs: ColDef[] = [
-    {
-      headerName: 'Name', field: 'name', sortable: true, filter: true, flex: 1,
-      cellStyle: { cursor: 'pointer', textDecoration: 'underline', color: '#39f' },
-      onCellClicked: (event: CellClickedEvent) =>
-        this.gotoDeploymentAction(event.data)
-    },
-    {
-      headerName: 'Status',
-      field: 'availableReplicas',
-      sortable: true,
-      filter: false,
-      flex: 1,
-      cellRenderer: (params: any) => this.statusCellRenderer(params),
-      cellStyle: { textAlign: 'center' }
-    },
-    { headerName: 'Replicas', field: 'replicas', sortable: true, filter: false, flex: 1 },
-    {
-      headerName: 'Created At',
-      field: 'createdAt',
-      sortable: true,
-      filter: false,
-      flex: 1,
-      sort: 'desc',
-      valueFormatter: (params: any) => this.sharedService.formatDate(params.value)
-    }
-  ];
-
-  statusCellRenderer(params: any): string {
-    const { availableReplicas, replicas } = params.data;
-    const statusLabel = availableReplicas === replicas
-      ? 'Running'
-      : availableReplicas > 0
-        ? 'Degraded'
-        : 'Down';
-    const meta = this.sharedService.getStatusMeta(statusLabel);
-    return `<span class="${meta.statusClass}"><i class="bi ${meta.icon}"></i> ${meta.label}</span>`;
-  }
-
-  gotoDeploymentAction(params: any) {
-    this.router.navigate(['/deployment-logs'], { queryParams: { id: params.name } })
-  }
-
-  //Endpoints column def
-  endpointsColDefs: ColDef[] = [
-    {
-      headerName: 'Name', field: 'name', sortable: true, filter: true, flex: 1,
-      cellStyle: { cursor: 'pointer', textDecoration: 'underline', color: '#39f' },
-      onCellClicked: (event: CellClickedEvent) =>
-        this.gotoEndpointAction(event.data)
-    },
-    {
-      headerName: 'Endpoint', field: 'host', sortable: true, flex: 1,
-      cellStyle: { cursor: 'pointer', textDecoration: 'underline', color: '#39f' },
-      onCellClicked: (event: CellClickedEvent) =>
-        this.openHost(event.data)
-    },
-    {
-      headerName: 'Authentication',
-      field: 'authentication',
-      sortable: true,
-      flex: 1,
-      cellRenderer: (params: any) => {
-        const status = params.value
-          ? { text: 'Authenticated', class: 'badge-success' }
-          : { text: 'Not Authenticated', class: 'badge-danger' };
-
-        return `<span class="badge ${status.class}">${status.text}</span>`;
-      },
-      cellStyle: { textAlign: 'left' }
-    },
-    {
-      headerName: 'Created At',
-      sortable: true,
-      sort: 'desc',
-      field: 'createdAt',
-      width: 150,
-      valueFormatter: (params: any) => this.sharedService.formatDate(params.value)
-    }
-
-  ];
-
-  gotoEndpointAction(params: any) {
-    this.router.navigate(['/create-endpoint'], { queryParams: { id: params.name } })
-  }
 
   openHost(params: any) {
     window.open(`https://${params?.host}`, '_blank');
-  }
-
-  //Configurations column def
-  configurationsColDefs: ColDef[] = [
-    {
-      headerName: 'Name', field: 'name', sortable: true, filter: true, flex: 1,
-      cellStyle: { cursor: 'pointer', textDecoration: 'underline', color: '#39f' },
-      onCellClicked: (event: CellClickedEvent) =>
-        this.gotoConfigAction(event.data)
-    },
-    {
-      headerName: 'Created At',
-      field: 'createdAt',
-      sortable: true,
-      filter: false,
-      flex: 1,
-      sort: 'desc',
-      valueFormatter: (params: any) => this.sharedService.formatDate(params.value)
-    },
-
-  ];
-
-  gotoConfigAction(value: any) {
-    this.router.navigate(['/create-config'], { queryParams: { id: value.name } })
-  }
-
-  //Secrets column Def
-  secretsColDefs: ColDef[] = [
-    {
-      headerName: 'Name', field: 'name', sortable: true, filter: true, flex: 1,
-      cellStyle: { cursor: 'pointer', textDecoration: 'underline', color: '#39f' },
-      onCellClicked: (event: CellClickedEvent) =>
-        this.gotoSecretsAction(event.data)
-    },
-    {
-      headerName: 'Created At',
-      field: 'createdAt',
-      sortable: true,
-      filter: false,
-      flex: 1,
-      sort: 'desc',
-      valueFormatter: (params: any) => this.sharedService.formatDate(params.value)
-    },
-  ];
-
-  gotoSecretsAction(value: any) {
-    this.router.navigate(['/create-secret'], { queryParams: { id: value.name } })
   }
 
   openConfirmationDialog() {
@@ -405,7 +243,11 @@ export class ToolsComponent implements OnInit, OnDestroy {
     if (name.includes('mongodb')) {
       return 'assets/images/icons/mongodb.svg';
     }
-
     return 'assets/images/icons/default-tool.png';
+  }
+
+  ngOnDestroy(): void {
+    clearInterval(this.getToolsIntervel)
+    this.subscription?.unsubscribe();
   }
 }

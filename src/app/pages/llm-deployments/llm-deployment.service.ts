@@ -1,21 +1,16 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { throwError } from 'rxjs';
-import { catchError, finalize, map } from 'rxjs/operators';
-import { ToastrService } from 'ngx-toastr';
+import { catchError, map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
-import { SharedService } from '../../shared/services/shared.service';
 
 @Injectable({
     providedIn: 'root'
 })
 export class LLMDeploymentsService {
     private deploymentManagement = environment.deploymentManagement;
-    private logServiceUrl = environment.logServiceUrl;
-    private projectsBaseUrl = environment.projectsBaseUrl;
-    private metricsApiUrl = environment.metricsUrl;
 
-    constructor(public http: HttpClient, private toastr: ToastrService, private loaderService: SharedService) { }
+    constructor(public http: HttpClient) { }
 
     getDeployments(envId: string) {
         return this.http.get(`${this.deploymentManagement}/llm-deployments?environmentId=${envId}`)
@@ -44,12 +39,7 @@ export class LLMDeploymentsService {
                 catchError(this.handleError.bind(this))
             );
     }
-    // getDeploymentMetrics(req: any) {
-    //     return this.http.post(`${this.pricingManagement}/metrics`, req)
-    //         .pipe(
-    //             catchError(this.handleError.bind(this))
-    //         );
-    // }
+
     deleteDeployment(deploymentId: string) {
         return this.http.delete(`${this.deploymentManagement}/deployments/${deploymentId}`)
             .pipe(
@@ -96,10 +86,6 @@ export class LLMDeploymentsService {
                 errorMessage = error.error.message;
             }
         }
-
-        // this.toastr.error(errorMessage, 'Error');
-        // console.error('API Error:', errorMessage);
-
         return throwError(() => new Error(errorMessage));
     }
 

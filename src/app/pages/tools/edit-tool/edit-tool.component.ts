@@ -1,11 +1,8 @@
-import { AfterViewInit, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormField, ResourceInfo } from '../../../core/models/list-item.model';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AbstractControl, FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators, ValidatorFn } from '@angular/forms';
-import { CommonModule } from '@angular/common';
-import {
-  ContainerComponent, ShadowOnScrollDirective, CardGroupComponent, CardComponent, CardBodyComponent, FormCheckInputDirective, FormCheckLabelDirective, AlertComponent
-} from '@coreui/angular';
+import { AbstractControl, FormBuilder, FormControl, FormGroup, Validators, ValidatorFn } from '@angular/forms';
+import { ShadowOnScrollDirective } from '@coreui/angular';
 import { ToastrService } from 'ngx-toastr';
 import { SharedService } from '../../../shared/services/shared.service';
 import { MarkdownModule } from 'ngx-markdown';
@@ -13,12 +10,12 @@ import { Subscription } from 'rxjs';
 import { LoaderComponent } from '../../../shared/components/loader/loader.component';
 import { ToolsService } from '../tools.service';
 import { ModalComponent } from '../../../shared/components/model/model.component';
+import { SHARED_IMPORTS } from '../../../shared/shared-imports';
 
 @Component({
   selector: 'app-edit-tool',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, ContainerComponent, ShadowOnScrollDirective,
-    CardGroupComponent, CardComponent, CardBodyComponent, MarkdownModule, LoaderComponent, ModalComponent, AlertComponent],
+  imports: [ShadowOnScrollDirective, MarkdownModule, LoaderComponent, ModalComponent, SHARED_IMPORTS],
   templateUrl: './edit-tool.component.html',
   styleUrl: './edit-tool.component.scss',
   providers: [ToolsService]
@@ -34,9 +31,6 @@ export class EditToolComponent implements OnInit, OnDestroy {
   viewdata: any;
   toolViewName: any;
   paramsEdit: any;
-  resourceAllocationDetails: any;
-  overprovisioned: boolean = false;
-  underprovisioned: boolean = false;
   hide: { [key: string]: boolean } = {};
   selectedResource: ResourceInfo = { cpu: '', memory: '', price: 0 };
   resources: any[] = [];
@@ -46,7 +40,6 @@ export class EditToolComponent implements OnInit, OnDestroy {
     private sharedService: SharedService
   ) {
     this.form = this.fb.group({})
-    // const storedValue = this.sharedService.getCookie('environment');
     const storedValue = localStorage.getItem('environment');
     if (storedValue) {
       this.env = JSON.parse(storedValue).id;
@@ -62,7 +55,6 @@ export class EditToolComponent implements OnInit, OnDestroy {
       this.route.navigate(['/tools']);
     });
     this.viewToolDetails();
-    this.getToolsResourceAllocation()
     this.http.getInstanceTypes().subscribe((res: any) => {
       this.resources = Object.entries(res.data).map(([key, value]) => ({
         name: key.trim(),
@@ -71,64 +63,9 @@ export class EditToolComponent implements OnInit, OnDestroy {
     })
   }
 
-  getToolsResourceAllocation() {
-    // const deploymentId = `${this.toolName}_${this.env}`;
-    // this.http.getToolsResourceAllocation(this.paramsEdit, this.env).subscribe((res: any) => {
-    //   if (res.status === "Success") {
-    //     this.resourceAllocationDetails = res.data;
-    //     if (this.resourceAllocationDetails) {
-    //       if (this.resourceAllocationDetails.deployment_state === 'overprovisioned') {
-    //         this.overprovisioned = true;
-    //         this.underprovisioned = false;
-    //       }
-    //       else if (this.resourceAllocationDetails.deployment_state === 'underprovisioned') {
-    //         this.overprovisioned = false;
-    //         this.underprovisioned = true;
-    //       }
-    //       else {
-    //         this.overprovisioned = false;
-    //         this.underprovisioned = false;
-    //       }
-    //     }
-    //   }
-    // });
-  }
-
-
-
   private lowercaseValidator(control: FormControl) {
     const value = control.value;
     return /^[a-z-]+$/.test(value) ? null : { lowercase: true };
-  }
-
-  private gigabyteValidator(control: FormControl) {
-    const value = control.value;
-    const regex = /^\d+(\.\d+)?$/;
-    if (value && !regex.test(value)) {
-      return { gigabyteValidator: true };
-    }
-    return null;
-  }
-
-  private passwordValidator(control: FormControl) {
-    const value = control.value || '';
-    const errors: any = {};
-    if (value.length < 8) {
-      errors.minLength = true;
-    }
-    if (!/[a-zA-Z]/.test(value)) {
-      errors.letter = true;
-    }
-    if (!/[!@#$%^&*(),.?":{}|<>_\-\\[\]/+=`~;]/.test(value)) {
-      errors.specialChar = true;
-    }
-    if (!/[0-9]/.test(value)) {
-      errors.number = true;
-    }
-    if (/\s/.test(value)) {
-      errors.noSpaces = true;
-    }
-    return Object.keys(errors).length ? errors : null;
   }
 
   createForm(fields: { [key: string]: FormField }): void {
@@ -153,7 +90,7 @@ export class EditToolComponent implements OnInit, OnDestroy {
         }
 
         const initialValue = field.value || field.default_value || '';
-        if(field.label === 'Instance Type') {
+        if (field.label === 'Instance Type') {
           this.selectedResource = this.resources.find(resource => resource.name === initialValue) || { cpu: '', memory: '', price: 0 };
         }
         const control = new FormControl(initialValue, validators);
@@ -175,7 +112,7 @@ export class EditToolComponent implements OnInit, OnDestroy {
         default_value: '',
         value: this.toolDetails.name,
         placeholder: '',
-        update:this.viewdata.update || false
+        update: this.viewdata.update || false
       },
       ...schema
     };

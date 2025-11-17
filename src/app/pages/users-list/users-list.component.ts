@@ -1,12 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { UsersListService } from './users-list.service';
 import { CommonModule } from '@angular/common';
-import { ColDef, ColGroupDef } from 'ag-grid-community';
 import { AgGridTableComponent } from '../../shared/components/ag-grid-table/ag-grid-table.component';
-import { SharedService } from '../../shared/services/shared.service';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
-import { sortBy } from 'lodash-es';
+import { VALIDATION_REGEX } from '../../core/constants/validation-regex.constant';
 
 @Component({
   selector: 'app-users-list',
@@ -17,8 +15,6 @@ import { sortBy } from 'lodash-es';
   providers: [UsersListService]
 })
 export class UsersListComponent implements OnInit {
-
-
   tableData: any[] = [];
   showAddUserSection = false;
   addUserForm!: FormGroup;
@@ -77,33 +73,21 @@ export class UsersListComponent implements OnInit {
   orgName: string = '';
   constructor(
     private http: UsersListService,
-    private sharedService: SharedService,
     private fb: FormBuilder,
     private toastr: ToastrService
   ) {
     this.addUserForm = this.fb.group({
-      username: ['', [Validators.required, Validators.pattern(/^(?![_-])(?!.*[_-]{2})(?!.*\s)[A-Za-z0-9_-]+(?<![_-])$/)]],
+      username: ['', [Validators.required, Validators.pattern(VALIDATION_REGEX.USERNAME)]],
       email: ['', [Validators.required, Validators.email]]
     });
-
-    // this.sharedService.user$.subscribe((user: any) => {
-    //   this.orgName = user.owner;
-    //   this.addUserForm.get('orgName')?.setValue(user.owner);
-    // });
   }
 
   ngOnInit(): void {
     this.getAllUsers();
   }
 
-
-
   addnewUser(value: boolean) {
-    // this.addUserForm.get('orgName')?.setValue(this.orgName);
-    this.showAddUserSection = value;
-    // if (value) {
-    //   this.addUserForm.reset();
-    // }
+    this.showAddUserSection = value;   
   }
 
   onSubmitAddUser() {
@@ -115,9 +99,7 @@ export class UsersListComponent implements OnInit {
           this.showAddUserSection = false;
           this.toastr.success(res.message);
         }
-
       })
-
     }
   }
   resetForm() {

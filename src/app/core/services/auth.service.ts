@@ -6,11 +6,6 @@ import { SharedService } from '../../shared/services/shared.service';
 import { HttpService } from './http-service.service';
 import { environment } from '../../../environments/environment';
 
-
-interface JwtPayload {
-  exp: number;
-}
-
 @Injectable({
   providedIn: 'root'
 })
@@ -44,9 +39,6 @@ export class AuthService {
     this.router.navigate(['/login']);
   }
   setAccessToken(token: any) {
-    // localStorage.setItem('accessToken', token.access_token);
-    // localStorage.setItem('refresh_token', token.refresh_token);
-    // this.sharedService.setCookie('refresh_token', token.refresh_token, 10);
     if (token) {
       this.processDecodedToken(token.access_token);
     }

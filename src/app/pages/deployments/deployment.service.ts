@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { throwError } from 'rxjs';
 import { catchError, finalize, map } from 'rxjs/operators';
-import { ToastrService } from 'ngx-toastr';
 import { environment } from '../../../environments/environment';
 import { SharedService } from '../../shared/services/shared.service';
 
@@ -12,68 +11,14 @@ import { SharedService } from '../../shared/services/shared.service';
 export class DeploymentsService {
   private pricingManagement = environment.pricingManagement;
   private deploymentManagement = environment.deploymentManagement;
-  private jobExecutorUrl = environment.jobExecutorBaseUrl;
   private logServiceUrl = environment.logServiceUrl;
   private projectsBaseUrl = environment.projectsBaseUrl;
   private metricsApiUrl = environment.metricsUrl;
 
-  constructor(public http: HttpClient, private toastr: ToastrService, private loaderService: SharedService) { }
-
-  getDefualtConfigInfo() {
-    return this.http.get(`${this.deploymentManagement}/deploymentSettings`)
-      .pipe(
-        catchError(this.handleError.bind(this))
-      );
-  }
+  constructor(public http: HttpClient, private loaderService: SharedService) { }
 
   getInstanceTypes() {
     return this.http.get(`${this.deploymentManagement}/instance-type`)
-      .pipe(
-        catchError(this.handleError.bind(this))
-      );
-  }
-
-  integrateWithGitHub() {
-    return this.http.get(`${this.deploymentManagement}/github`)
-      .pipe(
-        catchError(this.handleError.bind(this))
-      );
-  }
-
-  integrateWithGitLab() {
-    return this.http.get(`${this.deploymentManagement}/gitlab`)
-      .pipe(
-        catchError(this.handleError.bind(this))
-      );
-  }
-
-  getCallback(auth_code: string, projectID: string) {
-    const params = new HttpParams()
-      .set('code', auth_code);
-    return this.http.get(`${this.deploymentManagement}/github/${projectID}/callback`, { params })
-      .pipe(
-        catchError(this.handleError.bind(this))
-      );
-  }
-
-  getGitLabCallback(auth_code: string, projectID: string) {
-    const params = new HttpParams()
-      .set('code', auth_code);
-    return this.http.get(`${this.deploymentManagement}/gitlab/${projectID}/callback`, { params })
-      .pipe(
-        catchError(this.handleError.bind(this))
-      );
-  }
-
-  getGitLabUserRepos(projectID: string) {
-    return this.http.get(`${this.deploymentManagement}/gitlab/${projectID}/repos`)
-      .pipe(
-        catchError(this.handleError.bind(this))
-      );
-  }
-
-  getGitLabUserProfile(projectID: string) {
-    return this.http.get(`${this.deploymentManagement}/gitlab/${projectID}/userprofile`)
       .pipe(
         catchError(this.handleError.bind(this))
       );
@@ -99,32 +44,11 @@ export class DeploymentsService {
       );
   }
 
-  getUserRepos(projectID: string) {
-    return this.http.get(`${this.deploymentManagement}/github/${projectID}/repos`)
-      .pipe(
-        catchError(this.handleError.bind(this))
-      );
-  }
   getAvailableRepos(provider: string, projectId: string) {
     return this.http.get(`${this.projectsBaseUrl}/integrations/vcs/resources?provider=${provider}&projectId=${projectId}&type=repositories`)
       .pipe(
         catchError(this.handleError.bind(this))
       );
-  }
-
-  getUserProfile(projectID: string) {
-    return this.http.get(`${this.deploymentManagement}/github/${projectID}/userprofile`)
-      .pipe(
-        catchError(this.handleError.bind(this))
-      );
-  }
-
-  getGitLabbranch(repoId: any, projectID: string) {
-    return this.http.get(`${this.deploymentManagement}/gitlab/${projectID}/repos/${repoId}/branches`)
-  }
-
-  getGitHubBranch(full_name: any, projectID: string) {
-    return this.http.get(`${this.deploymentManagement}/github/${projectID}/repos/${full_name}/branches`)
   }
 
   getReleasesByDeploymentId(deploymentId: string) {
@@ -133,13 +57,6 @@ export class DeploymentsService {
 
   createDeployement(req: any) {
     return this.http.post(`${this.deploymentManagement}/deployments`, req)
-      .pipe(
-        catchError(this.handleError.bind(this))
-      );
-  }
-
-  uploadZipDeployment(envId: string, req: any) {
-    return this.http.post(`${this.deploymentManagement}/environments/${envId}/deployments/upload`, req)
       .pipe(
         catchError(this.handleError.bind(this))
       );
@@ -159,106 +76,12 @@ export class DeploymentsService {
       );
   }
 
-  viewDeploymentLogs(releaseId: string) {
-    const params = new HttpParams()
-      .set('id', releaseId);
-    return this.http.get(`${this.jobExecutorUrl}/logs`, { params })
-      .pipe(
-        catchError(this.handleError.bind(this))
-      );
-  }
-  getDeploymentLogs(releaseId: string, logType: string, page: number, pageSize: number) {
-    return this.http.get(`${this.deploymentManagement}/releases/${releaseId}/logs?logType=${logType}&page=${page}&limit=${pageSize}`)
-      .pipe(
-        catchError(this.handleError.bind(this))
-      );
-  }
-
-  getApplicationLogs(
-    deploymentId: string, page: number = 1, pageSize: number = 300, duration?: string, fromTimestamp?: string, toTimestamp?: string, keyword?: string,
-  ) {
-    let params = new HttpParams();
-
-    if (duration) {
-      params = params.set('timeRange', duration);
-    }
-    if (fromTimestamp) {
-      params = params.set('fromTimestamp', fromTimestamp);
-    }
-    if (toTimestamp) {
-      params = params.set('toTimestamp', toTimestamp);
-    }
-    if (keyword) {
-      params = params.set('keyword', keyword);
-    }
-
-    return this.http.get(`${this.deploymentManagement}/deployment/${deploymentId}/logs?page=${page}&limit=${pageSize}`, { params })
-      .pipe(
-        catchError(this.handleError.bind(this))
-      );
-  }
-
-  getDeploymentResourceAllocation(deploymentId?: string) {
-    let params = new HttpParams();
-    if (deploymentId) {
-      params = params.set('deploymentId', deploymentId);
-    }
-    return this.http.get(`${this.deploymentManagement}/deployment/getResourceAllocationDetails`, { params })
-      .pipe(catchError(this.handleError));
-  }
-
-  getConfigList(env: string, name: string) {
-    return this.http.get(`${this.deploymentManagement}/${env}/configs/${name}`)
-      .pipe(
-        catchError(this.handleError.bind(this))
-      );
-  }
-  getSecreteList(env: string, name: string) {
-    return this.http.get(`${this.deploymentManagement}/${env}/secrets/${name}`)
-      .pipe(
-        catchError(this.handleError.bind(this))
-      );
-  }
-  createConfigdata(env: string, req: any) {
-    return this.http.post(`${this.deploymentManagement}/${env}/configs`, req)
-      .pipe(
-        catchError(this.handleError.bind(this))
-      );
-  }
-  createSecretsdata(env: string, req: any) {
-    return this.http.post(`${this.deploymentManagement}/${env}/secrets`, req)
-      .pipe(
-        catchError(this.handleError.bind(this))
-      );
-  }
-  checkDeployNameAvailability(env: string, name: string) {
-    return this.http.get(`${this.deploymentManagement}/environments/${env}/deployments/${name}`)
-      .pipe(
-        catchError(this.handleError.bind(this))
-      );
-  }
-
-  uploadConfigFile(env: string, req: any) {
-    return this.http.post(`${this.deploymentManagement}/${env}/configs/upload`, req)
-      .pipe(
-        catchError(this.handleError.bind(this))
-      );
-  }
-
   createEndpoint(environmentId: string, req: any) {
     return this.http.post(`${this.deploymentManagement}/endpoints`, { environmentId, ...req })
       .pipe(
         catchError(this.handleError.bind(this))
       );
   }
-
-  getDeploymentStatus(env: string) {
-    return this.http.get(`${this.deploymentManagement}/environments/${env}/deployments/status`)
-      .pipe(
-        catchError(this.handleError.bind(this))
-      );
-  }
-
   getDeploymentMetrics(req: any) {
     return this.http.post(`${this.pricingManagement}/metrics`, req)
       .pipe(
@@ -311,7 +134,7 @@ export class DeploymentsService {
       );
   }
 
-  getAvailableBranches(projectID: string, provider: string, repoId: string) {
+  getAvailableBranches(projectID: string, provider: string, repoId: string | number) {
     let url = `${this.projectsBaseUrl}/integrations/vcs/resources?provider=${provider}&projectId=${projectID}&type=branches`;
     if (provider === 'gitlab') {
       url += `&repoId=${repoId}`;
@@ -339,7 +162,7 @@ export class DeploymentsService {
       map(response => response.status === 200 || response.status === 204),
       catchError(this.handleError.bind(this)),
       finalize(() => {
-        this.loaderService.hide(); // always hide loader (success or error)
+        this.loaderService.hide();
       })
     );
   }
@@ -360,10 +183,6 @@ export class DeploymentsService {
         errorMessage = error.error.message;
       }
     }
-
-    // this.toastr.error(errorMessage, 'Error');
-    // console.error('API Error:', errorMessage);
-
     return throwError(() => new Error(errorMessage));
   }
 

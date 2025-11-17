@@ -9,36 +9,18 @@ import { environment } from '../../../environments/environment';
   providedIn: 'root'
 })
 export class DashboardsService {
-  private apiUrl = environment.apiUrl;
-  private legacyUrl = environment.legacyUrl;
   private deploymentManagement = environment.deploymentManagement;
   private pricingManagement = environment.pricingManagement;
-  private userApiUrl = environment.usermanagementApiUrl;
   private metricsApiUrl = environment.metricsUrl;
-  private BASE_URL = 'https://api.dev.nimbuz.tech';
 
   constructor(public http: HttpClient, private toastr: ToastrService, private zone: NgZone) { }
 
-  getUsageCount(env: string) {
-    return this.http.get(`${this.apiUrl}/${env}/usage/monthly`)
-      .pipe(
-        catchError(this.handleError)
-      );
-  }
   getDeployments(env: string) {
     return this.http.get(`${this.deploymentManagement}/deployments?environmentId=${env}`)
       .pipe(
         catchError(this.handleError.bind(this))
       );
   }
-
-  getUsageByFilter(env: string, type: string) {
-    return this.http.get(`${this.apiUrl}/${env}/usage/${type}`)
-      .pipe(
-        catchError(this.handleError)
-      );
-  }
-
   getDeploymentStatus(env: string) {
     return this.http.get(`${this.deploymentManagement}/environments/${env}/deployments/status`)
       .pipe(

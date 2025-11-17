@@ -1,9 +1,6 @@
-import { CommonModule } from '@angular/common';
 import {
   AfterViewInit,
-  ChangeDetectorRef,
   Component,
-  OnDestroy,
   OnInit,
   ViewChild,
   ViewEncapsulation,
@@ -12,22 +9,14 @@ import {
   AbstractControl,
   FormBuilder,
   FormGroup,
-  FormsModule,
-  ReactiveFormsModule,
   ValidationErrors,
   ValidatorFn,
   Validators,
 } from '@angular/forms';
 import { MatStepper, MatStepperModule } from '@angular/material/stepper';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
 import { DeploymentOptions } from '../../../core/models/list-item.model';
-import { MatButtonModule } from '@angular/material/button';
-import { MatRadioModule } from '@angular/material/radio';
-import { MatSelect, MatSelectModule } from '@angular/material/select';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
-import { SharedService } from '../../../shared/services/shared.service';
 import { DeploymentsService } from '../deployment.service';
 import { ModalComponent } from '../../../shared/components/model/model.component';
 import { SelectedRepoDetails } from '../../../core/models/deployment.model';
@@ -36,59 +25,38 @@ import {
   concatMap,
   debounceTime,
   finalize,
-  forkJoin,
   of,
-  Subscription,
-  switchMap,
   tap,
 } from 'rxjs';
 import { EnvironmentVariablesComponent } from '../environment-variables/environment-variables.component';
 import { DeploymentSecretsComponent } from '../deployment-secrets/deployment-secrets.component';
 import { ReviewScreenComponent } from '../review-screen/review-screen.component';
-import { TooltipDirective } from '@coreui/angular';
 import { environment } from '../../../../environments/environment';
-// import { environment } from 'src/environments/environment';
-import * as yaml from 'js-yaml';
 import { ProjectsService } from '../../projects/projects.service';
+import { SHARED_IMPORTS } from '../../../shared/shared-imports';
+import { DEPLOY_OPTIONS, DEPLOYMENT_STEPS } from '../../../shared/constants/nimbuz.constant';
+import { VALIDATION_REGEX } from '../../../core/constants/validation-regex.constant';
 @Component({
   selector: 'app-create-deployments',
   standalone: true,
   imports: [
     MatStepperModule,
-    ReactiveFormsModule,
-    FormsModule,
-    CommonModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule,
-    MatRadioModule,
-    MatSelectModule,
     ModalComponent,
     EnvironmentVariablesComponent,
     DeploymentSecretsComponent,
     ReviewScreenComponent,
-    TooltipDirective,
+    SHARED_IMPORTS
   ],
   templateUrl: './create-deployments.component.html',
   styleUrl: './create-deployments.component.scss',
   encapsulation: ViewEncapsulation.None,
   providers: [DeploymentsService],
 })
-export class CreateDeploymentsComponent
-  implements OnInit, AfterViewInit, OnDestroy {
-  steps = [
-    { label: 'General' },
-    { label: 'Environment variable' },
-    { label: 'Secrets' },
-    { label: 'Config as file' },
-    { label: 'Review' },
-  ];
-
+export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
+  steps = DEPLOYMENT_STEPS;
   currentStep = 0;
 
   @ViewChild('stepper') stepper!: MatStepper;
-  @ViewChild('deployTypeSelect') deployTypeSelect!: MatSelect;
-  @ViewChild('repoSelect') repoSelect!: MatSelect;
   @ViewChild('zipDeploymentModel') public zipDeploymentModel!: ModalComponent;
 
   public zipDeploymentConfig: any = {
@@ -100,66 +68,35 @@ export class CreateDeploymentsComponent
   };
 
   stepOneForm: FormGroup;
-  // configForm: FormGroup;
   repoListForm: FormGroup;
-  // branchListForm: FormGroup;
 
-  deployOptions: DeploymentOptions[] = [
-    {
-      icon: 'bi-github',
-      name: 'Deploy from GitHub repo',
-      color: '#000',
-      value: 'github',
-    },
-    {
-      icon: 'bi-gitlab',
-      name: 'Deploy from GitLab repo',
-      color: 'orange',
-      value: 'gitlab',
-    },
-    { icon: 'bi-file-zip', name: 'Deploy zip/tar', color: 'red', value: 'zip' },
-  ];
-  filteredOptions!: any;
-  selectedDeployType!: DeploymentOptions;
-  githubAuthenticated: boolean = false;
-  gitLabAuthenticated: boolean = false;
-  isTypeSelected: boolean = false;
+  deployOptions: DeploymentOptions[] = DEPLOY_OPTIONS
   selectedVCS: string = '';
   reposList: any;
   resources: any[] = [];
   selectedResource: any;
   fileUploadForm!: FormGroup;
   zipUploadForm!: FormGroup;
-  allowedFileTypes: string[] = ['.zip', '.tar'];
+
   fileError: string = '';
   fileExtension: string = '';
   selectedFile: File | null = null;
   selectedConfigFile: File | null = null;
   branches: any;
-  githubRepos: any;
   selectedLabRepo: any;
   selectedHubRepo: any;
-  githubRepoDetails: any;
   selectedRepoDetails!: SelectedRepoDetails;
-  provider: any;
-  messages: any[] = [];
-  private wsSubscription!: Subscription;
-  environmentChanges: boolean = false;
-  secretsChanges: boolean = false;
+
   envData: any;
   secretData: any;
-  loading: boolean = false;
+
   @ViewChild('envDetails') child!: EnvironmentVariablesComponent;
   @ViewChild('secretDetails') secretChild!: DeploymentSecretsComponent;
-  configFileData: any;
+
   fileName: string | null = null;
   selectedRepoName: string = '';
-  cpuQuota: any = 0;
-  ramQuota: any = 0;
-  ephemeralQuota: any = 0;
+
   ephemeralExhausted: boolean = false;
-  cpuExhausted: boolean = false;
-  ramExhausted: boolean = false;
   currentProjectId: string = '';
   fileFormData: any;
   storageValidation: string = 'Enter in unit: Gi';
@@ -167,7 +104,6 @@ export class CreateDeploymentsComponent
   deploymentNames: any = [];
   fromReview: boolean = false;
   parsedConfigData: any
-  invalidFileFormat: boolean = false;
   submitted: boolean = false
   vcsProfileInfo: any;
 
@@ -187,9 +123,7 @@ export class CreateDeploymentsComponent
         '',
         [
           Validators.required,
-          Validators.pattern(
-            /^(?!.*--)(?!-)[a-z0-9]+(-[a-z0-9]+)*$/
-          ),
+          Validators.pattern(VALIDATION_REGEX.APP_NAME),
           Validators.maxLength(50),
         ],
       ],
@@ -202,7 +136,7 @@ export class CreateDeploymentsComponent
       storage: [null, Validators.pattern('^[0-9]+$')],
       healthEndpoint: [null, Validators.maxLength(250)],
       zipFilename: [{ value: null, disabled: true }],
-      port: ['', [Validators.required, Validators.maxLength(5), Validators.pattern('^[0-9]+$'),
+      port: ['', [Validators.maxLength(5), Validators.pattern('^[0-9]+$'),
       Validators.min(1), Validators.max(65535)
       ]],
     });
@@ -278,7 +212,7 @@ export class CreateDeploymentsComponent
           Validators.required,
           Validators.maxLength(40),
           this.isNameAvailable(true),
-          Validators.pattern(/^(?!.*--)(?!-)[a-z0-9]+(-[a-z0-9]+)*$/)
+          Validators.pattern(VALIDATION_REGEX.APP_NAME),
         ]);
         this.fileFormData?.set('appName', lowerCased);
         this.stepOneForm.markAllAsTouched();
@@ -299,111 +233,33 @@ export class CreateDeploymentsComponent
         this.selectedResource = defaultResource;
       }
     });
-    const resourceUsage = JSON.parse(localStorage.getItem('resourceUsage') || '[]');
-    const cpuResource = resourceUsage.find(
-      (res: any) => res.resource_type === 'CPU'
-    );
-    const ramResource = resourceUsage.find(
-      (res: any) => res.resource_type === 'RAM'
-    );
-    const ephemeralResource = resourceUsage.find(
-      (res: any) => res.resource_type === 'ephemeral_storage'
-    );
-
-    this.cpuQuota = cpuResource;
-    this.ramQuota = ramResource;
-    this.ephemeralQuota = ephemeralResource;
-
-
-    const availableDeplyements = JSON.parse(localStorage.getItem('availableDeplyements') || '[]');
-    if (availableDeplyements) {
-      this.deploymentNames = availableDeplyements.map((item: any) => item.name);
-    }
-
+    this.deploymentNames = JSON.parse(localStorage.getItem('availableDeployments') || '[]');
   }
   ngAfterViewInit(): void {
     this.route.queryParams.subscribe((params) => {
       const provider = params['provider'];
       const code = params['code'];
-      this.selectedVCS = provider;
-      if (code) {
-        if (provider === 'github') {
-          this.selectedVCS = 'github';
-          this.stepOneForm.get('type')?.setValue('github');
-
-          this.deploymentsService.getVCSCallback(code, this.currentProjectId, provider).subscribe((res: any) => {
-            if (res && res.status?.toLowerCase() === 'success') {
-              this.getGitHubRepos();
-            }
-          })
-        } else {
-          this.selectedVCS = 'gitlab';
-          this.stepOneForm.get('type')?.setValue('gitlab');
-          this.deploymentsService.getVCSCallback(code, this.currentProjectId, provider).subscribe((res: any) => {
-            if (res && res.status?.toLowerCase() === 'success') {
-              this.getGitLabRepos();
-            }
-          })
-        }
+      if (!provider || !code) {
+        return;
       }
+      this.selectedVCS = provider;
+      this.stepOneForm.get('type')?.setValue(provider);
+      this.deploymentsService.getVCSCallback(code, this.currentProjectId, provider).subscribe((res: any) => {
+        if (res && res.status?.toLowerCase() === 'success') {
+          this.fetchRepos(provider);
+        }
+      })
     });
-  }
-
-  onEphemeralMouseOut() {
-    const value = this.stepOneForm.get('ephemeralStorage')?.value;
-    const ephemeralStorage = parseFloat(value.replace(/[^\d.]/g, ''));
-    if (ephemeralStorage > this.ephemeralQuota?.remaining) {
-      this.ephemeralExhausted = true;
-      this.stepOneForm.setErrors({ invalid: true });
-    } else {
-      this.ephemeralExhausted = false;
-      this.stepOneForm.setErrors(null);
-    }
   }
 
   onInstanceTypeChange(): void {
     const selectedName = this.stepOneForm.get('instanceType')?.value;
-
     const selectedResource = this.resources.find(
       (r) => r.name === selectedName
     );
-
     if (!selectedResource) return;
-
     this.selectedResource = selectedResource;
-    // CPU conversion from m to core
-    let selectedCPU = 0;
-    if (selectedResource.cpu.endsWith('m')) {
-      selectedCPU = parseFloat(selectedResource.cpu.replace('m', '')) / 1000;
-    } else {
-      selectedCPU = parseFloat(selectedResource.cpu);
-    }
-
-    // Memory Conversion from mi/gi to GB
-    let selectedRAM = 0;
-    if (selectedResource.memory.toLowerCase().endsWith('gi')) {
-      selectedRAM = parseFloat(selectedResource.memory);
-    } else if (selectedResource.memory.toLowerCase().endsWith('mi')) {
-      selectedRAM = parseFloat(selectedResource.memory) / 1024;
-    }
-    // Calculate remaining values
-    if (selectedCPU > this.cpuQuota?.remaining) {
-      this.cpuExhausted = true;
-      this.stepOneForm.setErrors({ invalid: true });
-    } else {
-      this.cpuExhausted = false;
-      this.stepOneForm.setErrors(null);
-    }
-    if (selectedRAM > this.ramQuota?.remaining) {
-      this.ramExhausted = true;
-      this.stepOneForm.setErrors({ invalid: true });
-    } else {
-      this.ramExhausted = false;
-      this.stepOneForm.setErrors(null);
-    }
   }
-
-
   private redirectToOAuth(provider: 'github' | 'gitlab') {
     const { clientId = '', redirectUri = '' } = environment[provider] || {};
     const state = {
@@ -430,76 +286,7 @@ export class CreateDeploymentsComponent
     return hostname.split('.')[0];
   }
 
-  getGitHubRepos() {
-    this.deploymentsService.getAvailableRepos('github', this.currentProjectId).subscribe({
-      next: (data: any) => {
-        this.githubRepos = data;
-
-        if (data.status?.toLowerCase() === 'success') {
-          this.reposList = data.data;
-
-          this.reposList = this.reposList.map((repo: any) => ({
-            ...repo,
-            webhook: repo.webhook || false,
-          }));
-          this.stepOneForm.get('selectedRepo')?.setValue(this.reposList[0].id);
-          // this.cdr.detectChanges()
-        } else {
-          this.reposList = [];
-        }
-      },
-      error: (err) => {
-        console.error('Error fetching repositories:', err);
-        this.reposList = [];
-      },
-      complete: () => {
-        this.loading = false;
-      },
-    });
-  }
-  getGitLabRepos() {
-    this.deploymentsService.getAvailableRepos('gitlab', this.currentProjectId).subscribe(
-      (data: any) => {
-        if (data.status?.toLowerCase() === 'success') {
-          this.reposList = data.data.map((repo: any) => ({
-            ...repo,
-            webhook: repo.permission || false,
-          }));
-          this.stepOneForm.get('selectedRepo')?.setValue(this.reposList[0].id);
-        } else {
-          this.reposList = [];
-        }
-
-      },
-      (err) => {
-        console.error('Error fetching GitLab repos:', err);
-        this.toaster.error('Error in getting user repository');
-        this.reposList = [];
-      }
-    );
-  }
-
-  getUserProfile() {
-    if (this.vcsProfileInfo?.github) {
-      this.githubAuthenticated = true;
-      this.getGitHubRepos();
-    } else {
-      this.githubAuthenticated = false;
-      this.redirectToOAuth('github');
-    }
-  }
-  getGitLabUserProfile() {
-    if (this.vcsProfileInfo?.gitlab) {
-      this.gitLabAuthenticated = true;
-      this.getGitLabRepos();
-    } else {
-      this.gitLabAuthenticated = false;
-      this.redirectToOAuth('gitlab');
-    }
-
-  }
   submitChanges() {
-    this.loading = true;
     this.submitted = true;
     const filePath = this.fileUploadForm.get('filePath')?.value;
     const fileInput = this.fileUploadForm.get('fileInput')?.value;
@@ -526,9 +313,7 @@ export class CreateDeploymentsComponent
     upload$
       .pipe(
         concatMap(() => this.deploymentsService.createDeployement(payload)),
-        finalize(() => {
-          this.loading = false;
-        }),
+        finalize(() => { }),
         catchError((err) => {
           console.error('Deployment Error:', err);
           this.toaster.error('Error during deployment process');
@@ -537,7 +322,8 @@ export class CreateDeploymentsComponent
       )
       .subscribe((results: any) => {
         this.submitted = false;
-        this.toaster.success('Deployment successfully');
+        if (!results) return;
+        this.toaster.success('Deployment created successfully');
         this.router.navigate(['/deployment']);
       });
   }
@@ -552,18 +338,14 @@ export class CreateDeploymentsComponent
       if (!file) {
         return null;
       }
-
       const extension = file.split('.').pop()?.toLowerCase();
       const isValidExtension = allowedExtensions.includes(extension!);
-
       if (!isValidExtension) {
         return { invalidFileType: true };
       }
-
       if (file.size > 500_000_000) {
         return { fileSizeExceeded: true };
       }
-
       return null;
     };
   }
@@ -573,7 +355,6 @@ export class CreateDeploymentsComponent
       this.fileError = 'Please select a valid file to upload.';
     }
     else {
-      // const environment = this.shared.getCookie('environment');
       const environment = localStorage.getItem('environment');
       const envId = environment ? JSON.parse(environment).id : null;
       if (this.selectedFile && this.fileExtension && envId) {
@@ -591,33 +372,6 @@ export class CreateDeploymentsComponent
         this.zipDeploymentModel.dismiss();
       }
     }
-  }
-
-  onFileSelect(event: Event, type: string): void {
-    const fileInput = this.fileUploadForm.get('fileInput');
-    const filePath = this.fileUploadForm.get('filePath');
-    const allowedExtensions = ['json', 'yml', 'yaml'];
-    fileInput?.setValidators([
-      Validators.required,
-      this.fileValidator(allowedExtensions),
-    ]);
-    fileInput?.updateValueAndValidity();
-    filePath?.setValidators([Validators.required]);
-    filePath?.updateValueAndValidity();
-
-    const inputElement = event.target as HTMLInputElement;
-    const file = inputElement.files?.[0];
-
-    if (!file) return;
-    this.selectedConfigFile = file;
-    if (file.size > 100_000_000) {
-      this.toaster.error('File size too large.');
-      this.fileError = 'File size large';
-      return;
-    }
-    this.fileUploadForm.get('fileInput')?.setValue(file.name);
-    this.fileName = file.name;
-    this.fileError = '';
   }
 
   onZipFileSelect(event: any): void {
@@ -657,46 +411,45 @@ export class CreateDeploymentsComponent
   }
 
   selectedRepoBranch(event: any) {
-    if (this.selectedVCS === 'gitlab') {
-      this.selectedLabRepo = event;
-      this.deploymentsService
-        .getAvailableBranches(this.currentProjectId, 'gitlab', this.selectedLabRepo?.id)
-        .subscribe((branchDetails: any) => {
-          this.branches = branchDetails.data;
-          this.stepOneForm.get('branchName')?.setValue(this.branches[0]);
-          this.selectedRepoDetails.branchName = this.branches[0];
-        });
-    } else if (this.selectedVCS === 'github') {
-      this.selectedHubRepo = event;
-      this.githubRepoDetails = this.githubRepos.data.find(
-        (repo: any) => this.selectedHubRepo?.id == repo.id
-      );
-      if (this.githubRepoDetails) {
-        this.deploymentsService
-          .getAvailableBranches(
-            this.currentProjectId,
-            'github',
-            this.githubRepoDetails.full_name,
-
-          )
-          .subscribe((hubBranch: any) => {
-            this.branches = hubBranch.data;
-            this.stepOneForm.get('branchName')?.setValue(this.branches[0]);
-            this.selectedRepoDetails.branchName = this.branches[0];
-          });
-      } else {
-        console.error('Selected Repository not found in the list.');
-      }
+    if (!this.selectedVCS) {
+      return;
     }
-  }
-  // goToConfigTab(event: any) {
-  //   this.selectedRepoDetails = this.selectedRepoDetails || { repoUrl: null, branchName: '' };
-  //   this.selectedRepoDetails.branchName = event.value;
-  // }
-  ngOnDestroy() {
-    // this.wsSubscription.unsubscribe();
-    // this.websocketService.closeConnection();
-    console.log('closed');
+    const vcs = this.selectedVCS;
+    let repoIdOrName: string | number;
+    if (vcs === 'gitlab') {
+      this.selectedLabRepo = event;
+      repoIdOrName = this.selectedLabRepo?.id;
+    } else {
+      this.selectedHubRepo = event;
+      const repo = this.reposList.find((r: any) => r.id == this.selectedHubRepo?.id);
+      if (!repo) {
+        console.error('Selected GitHub repo not found.');
+        return;
+      }
+      repoIdOrName = repo.full_name;
+    }
+    if (!repoIdOrName) {
+      console.warn('No valid repository selected.');
+      return;
+    }
+    this.deploymentsService
+      .getAvailableBranches(this.currentProjectId, vcs, repoIdOrName)
+      .subscribe({
+        next: (res: any) => {
+          const branches = res?.data ?? [];
+          this.branches = branches;
+          const firstBranch = branches?.[0] ?? null;
+          if (firstBranch) {
+            this.stepOneForm.get('branchName')?.setValue(firstBranch);
+            this.selectedRepoDetails.branchName = firstBranch;
+          } else {
+            this.stepOneForm.get('branchName')?.reset();
+          }
+        },
+        error: (err) => {
+          this.toaster?.error(`Failed to fetch branches from ${vcs}`);
+        }
+      });
   }
 
   goToStep(index: number) {
@@ -704,33 +457,31 @@ export class CreateDeploymentsComponent
   }
 
   next(label: string) {
-    // this.reviewOpen();
     const labels = label;
     if (labels === 'Submit') {
       this.submitChanges();
       return;
     }
-
     if (this.fromReview) {
       this.currentStep = 4;
       return;
     }
-
-    if (this.currentStep === 1) {
-      this.child.addVariable();
-      // const childArray = this.child.envList;
-    }
-    if (this.currentStep === 2) {
-      this.secretChild.addSecret();
-      // const childArray = this.child.envList;
-    }
-    if (this.fileUploadForm.invalid && this.currentStep === 3) {
-      this.fileUploadForm.markAllAsTouched();
-      return;
-    }
-    if (this.currentStep === 4) {
-      this.submitChanges();
-      return;
+    switch (this.currentStep) {
+      case 1:
+        this.child.addVariable();
+        break;
+      case 2:
+        this.secretChild.addSecret();
+        break;
+      case 3:
+        if (this.fileUploadForm.invalid) {
+          this.fileUploadForm.markAllAsTouched();
+          return;
+        }
+        break;
+      case 4:
+        this.submitChanges();
+        return;
     }
     if (this.currentStep < this.steps.length - 1) {
       this.currentStep++;
@@ -745,23 +496,54 @@ export class CreateDeploymentsComponent
 
   selectedType(option: any) {
     this.selectedVCS = option.value;
-    // this.reposList = [];
-    this.isTypeSelected = true;
-    if (this.selectedVCS === 'github') {
-      this.getUserProfile();
-    } else if (this.selectedVCS === 'gitlab') {
-      this.getGitLabUserProfile();
-    } else if (this.selectedVCS === 'zip') {
-      this.zipDeploymentModel.open();
-      this.zipUploadForm.reset();
+    const handlers: any = {
+      github: () => this.handleVCS('github'),
+      gitlab: () => this.handleVCS('gitlab'),
+      zip: () => {
+        this.zipDeploymentModel.open();
+        this.zipUploadForm.reset();
+      }
+    };
+
+    handlers[this.selectedVCS]?.();
+  }
+
+  handleVCS(type: 'github' | 'gitlab') {
+    const isAuthenticated = this.vcsProfileInfo?.[type];
+
+    if (isAuthenticated) {
+      this.fetchRepos(type);
+    } else {
+      this.redirectToOAuth(type);
     }
   }
-  reviewOpen() {
-    //this.router.navigate(['/review-screen']);
-    const reviewForm = {
-      stepOne: this.stepOneForm.value,
-      repoUrl: this.selectedRepoDetails?.repoUrl ?? null,
-    };
+  private fetchRepos(type: 'github' | 'gitlab') {
+    this.deploymentsService.getAvailableRepos(type, this.currentProjectId).subscribe({
+      next: (data: any) => {
+        if (data.status?.toLowerCase() === 'success') {
+          this.reposList = this.normalizeRepos(type, data.data);
+
+          if (this.reposList.length > 0) {
+            this.stepOneForm.get('selectedRepo')?.setValue(this.reposList[0].id);
+          }
+        } else {
+          this.reposList = [];
+        }
+      },
+      error: (err) => {
+        this.toaster.error('Error in getting user repository');
+        this.reposList = [];
+      }
+    });
+  }
+  private normalizeRepos(type: 'github' | 'gitlab', repos: any[]) {
+    return repos.map((repo: any) => ({
+      ...repo,
+      webhook:
+        type === 'github'
+          ? repo.webhook || false
+          : repo.permission || false
+    }));
   }
   canNavigateToStep(index: number): boolean {
     if (index <= this.currentStep) return true;
@@ -770,11 +552,9 @@ export class CreateDeploymentsComponent
   }
 
   getenvironmentList(event: any) {
-    // this.environmentChanges = event;
     this.envData = event;
   }
   getSecretList(event: any) {
-    // this.environmentChanges = event;
     this.secretData = event;
   }
   isStepCompleted(index: number): boolean {
@@ -783,7 +563,6 @@ export class CreateDeploymentsComponent
         return this.stepOneForm.valid;
       case 1:
         return true;
-      // return this.environmentChanges === true;
       case 2:
         return true;
       default:
@@ -908,7 +687,7 @@ export class CreateDeploymentsComponent
           : null,
       },
       network: {
-        port: this.stepOneForm.value.port ? Number(this.stepOneForm.value.port) : null,
+        port: this.stepOneForm.value.port ? Number(this.stepOneForm.value.port) : 80,
         healthEndpoint: this.stepOneForm.value.healthEndpoint || null,
         isCustomDns: false,
         appIngressDomain: null,
