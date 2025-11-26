@@ -61,8 +61,7 @@ export class DeploymentMetricsComponent implements OnInit, AfterViewInit {
 
   showNoDataMessage: boolean = false;
   deploymentdetails: any;
-  viewInitialized: boolean = false;
-  showPodError: boolean = false;
+  loading: boolean = false;
   instanceTypes: any = {};
   maxCpuLimit: number = 0;
   maxRamLimit: number = 0;
@@ -104,36 +103,27 @@ export class DeploymentMetricsComponent implements OnInit, AfterViewInit {
         toTimestamp: toTimestamp
       });
     });
-    this.onFilter()
   }
 
   computeMaxLimits(): void {
     this.deploymentService.getInstanceTypes().subscribe((response: any) => {
       this.instanceTypes = response.data;
-      const deploymentInstanceType = this.deploymentdetails?.instance_type?.trim();
+      const deploymentInstanceType = this.deploymentdetails?.application?.instanceType;
 
       if (!deploymentInstanceType) {
         console.warn('Instance type is null or undefined.');
         return;
       }
 
-      const instanceTypeKey = Object.keys(this.instanceTypes).find((key: any) =>
-        key.trim() === deploymentInstanceType
+      const instanceTypeKey = this.instanceTypes.find((x: any) =>
+        x.instanceType === deploymentInstanceType
       );
 
       if (instanceTypeKey) {
-        const instanceInfo = this.instanceTypes[instanceTypeKey];
-        if (instanceInfo.cpu.endsWith('m')) {
-          this.maxCpuLimit = parseFloat(instanceInfo.cpu.replace('m', ''));
-        } else {
-          this.maxCpuLimit = parseFloat(instanceInfo.cpu) * 1000; //show value in mCpu
-        }
-        if (instanceInfo.memory.endsWith('Mi')) {
-          this.maxRamLimit = parseFloat(instanceInfo.memory.replace('Mi', ''));
-        } else {
-          this.maxRamLimit = parseFloat(instanceInfo.memory) * 1000; //show value in MiB
-        }
+        this.maxCpuLimit = parseFloat(instanceTypeKey.cpuVcpu) * 1000; //show value in mCpu
+        this.maxRamLimit = parseFloat(instanceTypeKey.memoryGb) * 1024; //show value in MiB
       }
+      this.onFilter()
     });
   }
 
@@ -144,66 +134,7 @@ export class DeploymentMetricsComponent implements OnInit, AfterViewInit {
 
 
   ngAfterViewInit(): void {
-    this.viewInitialized = true;
-  }
-
-  getPodsByDeploymentId(deploymentId: string): void {
-    this.deploymentService.getPodsByDeploymentId(deploymentId).subscribe((response: any) => {
-      if (response.status.toLowerCase() === 'success') {
-        if (response.data.length === 0) {
-          this.showNoDataMessage = true;
-          this.cpuUsageData = [];
-          this.ramUsageData = [];
-          this.storageUsageData = [];
-          return;
-        }
-        this.showNoDataMessage = false;
-        this.podList = response.data;
-        this.selectedPods = this.podList;
-        this.filterForm.get('pods')?.setValue(this.podList);
-
-        const now = new Date().toISOString().split('.')[0] + 'Z';
-        const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString().split('.')[0] + 'Z';
-      }
-      else {
-        this.showNoDataMessage = true;
-      }
-    });
-  }
-
-  getDeploymentMetrics(reqBody: any): void {
-    this.sharedService.show();
-    this.deploymentService.getDeploymentMetrics(reqBody).subscribe((response: any) => {
-      if (response.data.length === 0) {
-        this.showNoDataMessage = true;
-        this.cpuUsageData = [];
-        this.ramUsageData = [];
-        this.storageUsageData = [];
-        return;
-      } else {
-        this.showNoDataMessage = false;
-        this.cpuUsageData = response.data.map((item: any) => ({
-          _id: item._id,
-          cpuAverage: item.cpuAverage
-        }));
-        this.ramUsageData = response.data.map((item: any) => ({
-          _id: item._id,
-          ramAverage: item.memoryAverage
-        }));
-      }
-      if (this.viewInitialized) {
-        this.renderCpuChart();
-        this.renderRamChart();
-        this.renderStorageChart();
-      } else {
-        setTimeout(() => {
-          this.renderCpuChart();
-          this.renderRamChart();
-          this.renderStorageChart();
-        }, 100);
-      }
-    });
-    this.sharedService.hide();
+    this.loading = true;
   }
 
   renderCpuChart(): void {
@@ -227,7 +158,7 @@ export class DeploymentMetricsComponent implements OnInit, AfterViewInit {
         labels,
         datasets: [
           {
-            label: 'CPU Usage (mCPU)',
+            label: `CPU Usage (${this.formatCpuForLabel(this.average(this.cpuUsageData.map(item => Number(item.cpuAverage) || 0)))})`,
             data,
             borderColor: 'rgba(54, 162, 235, 1)',
             backgroundColor: 'rgba(54, 162, 235, 0.2)',
@@ -236,7 +167,7 @@ export class DeploymentMetricsComponent implements OnInit, AfterViewInit {
             pointBackgroundColor: '#1e88e5'
           },
           {
-            label: 'Max CPU Limit',
+            label: `Max CPU Limit (${this.maxCpuLimit} mCPU)`,
             data: labels.map(() => this.maxCpuLimit),
             borderColor: 'red',
             borderWidth: 1,
@@ -283,25 +214,20 @@ export class DeploymentMetricsComponent implements OnInit, AfterViewInit {
       this.ramChart.destroy();
     }
 
-    // Prepare data
-    const data = this.ramUsageData.map(item => Number(item.ramAverage) || 0);
-    const labels = data.map((_, index) => index); // simple numeric index
-
-    // Handle single data point
+    const ramMiBValues = this.ramUsageData.map(val => val.ramAverage / (1024 * 1024));
+    const labels = ramMiBValues.map((_, i) => i.toString());
     if (labels.length === 1) {
       labels.push(labels[0] + 1);
-      data.push(data[0]);
+      ramMiBValues.push(ramMiBValues[0]);
     }
-
-    // Create chart
     this.ramChart = new Chart(this.ramChartRef.nativeElement, {
       type: 'line',
       data: {
         labels,
         datasets: [
           {
-            label: 'RAM Usage (MiB)',
-            data,
+            label: `RAM Usage (${Number(this.average(ramMiBValues)).toFixed(2)} MiB)`,
+            data: ramMiBValues,
             borderColor: 'rgba(75, 192, 192, 1)',
             backgroundColor: 'rgba(75, 192, 192, 0.2)',
             fill: true,
@@ -321,7 +247,22 @@ export class DeploymentMetricsComponent implements OnInit, AfterViewInit {
         responsive: true,
         plugins: {
           title: { display: true, text: 'RAM Usage Over Time' },
-          legend: { display: true },
+          legend: {
+            display: true,
+            labels: {
+              generateLabels: (chart) => {
+                const labels = Chart.defaults.plugins.legend.labels.generateLabels(chart);
+
+                labels.forEach((label) => {
+                  if (label.text === "Max RAM Limit") {
+                    label.text = `Max RAM Limit (${this.maxRamLimit} MiB)`;
+                  }
+                });
+
+                return labels;
+              }
+            }
+          },
           tooltip: { enabled: true }
         },
         scales: {
@@ -487,6 +428,7 @@ export class DeploymentMetricsComponent implements OnInit, AfterViewInit {
       this.renderCpuChart();
       this.renderRamChart();
       this.renderStorageChart();
+      this.loading = false;
     });
   }
 
@@ -499,5 +441,12 @@ export class DeploymentMetricsComponent implements OnInit, AfterViewInit {
 
   toggleDropdown() {
     this.dropdownOpen = !this.dropdownOpen;
+  }
+  private formatCpuForLabel(val: number): string {
+    return `${Number(val).toFixed(0)} mCPU`;
+  }
+  private average(arr: number[]): number {
+    if (!arr || arr.length === 0) return 0;
+    return arr.reduce((s, v) => s + (Number(v) || 0), 0) / arr.length;
   }
 }

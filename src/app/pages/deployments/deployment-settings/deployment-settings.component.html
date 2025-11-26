@@ -58,13 +58,13 @@
               </ng-container>
               <div *ngIf="zipUpload && !vcsDeploy" class="d-flex gap-2">
                 <div class="flex-fill mb-3">
-                  <label for="fileInput" class="custom-label">Select a file to upload (.zip or .tar):</label>
+                  <label for="fileInput" class="custom-label">Select a file to upload (.zip, .tar, .rar):</label>
                   <input type="file" id="fileInput" formControlName="fileInput" class="form-control custom-label"
-                    [accept]="'.zip,.tar'" (change)="onFileSelect($event)" />
+                    [accept]="'.zip,.tar,.rar'" (change)="onFileSelect($event)" />
                   <div
                     *ngIf="sourceSettingsForm.get('fileInput')?.hasError('invalidFileType') && sourceSettingsForm.get('fileInput')?.touched"
                     class="text-danger">
-                    Invalid file type. Only .zip and .tar files are allowed.
+                    Invalid file type. Only .zip, .tar and .rar files are allowed.
                   </div>
                 </div>
 
@@ -98,17 +98,17 @@
                         Instance Type <span class="required text-danger">*</span>
                       </span>
                       <span class="text-gray ml-auto text-nowrap custom-label">
-                        ( <span class="mx-1"><b>CPU:</b> {{selectedResource?.cpu}}</span>
-                        <span class="mx-1"><b>Memory:</b> {{selectedResource?.memory}}</span>
-                        <span class="mx-1"><b>Price:</b> {{selectedResource?.price}}</span> )
+                        ( <span class="mx-1"><b>CPU:</b> {{selectedResource?.cpuVcpu}}</span>
+                        <span class="mx-1"><b>Memory:</b> {{selectedResource?.memoryGb}}</span>
+                        <span class="mx-1"><b>Price:</b> {{selectedResource?.instanceHourRate | currency : selectedResource?.currency}}</span> )
                       </span>
                     </div>
                   </label>
                   <select formControlName="instanceType" id="resource" class="form-select custom-values"
                     (change)="onInstanceTypeChange()">
                     <!-- <option value="">Select a Resource</option> -->
-                    <option *ngFor="let resource of resources" [value]="resource.name">
-                      {{ resource.name }}
+                    <option *ngFor="let resource of resources" [ngValue]="resource">
+                      {{ resource.instanceType }}
                     </option>
                   </select>
                   <div class="text-danger my-1" *ngIf="isError('instanceType', 'required')">

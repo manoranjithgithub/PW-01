@@ -104,16 +104,15 @@
                       Instance Type <span class="required text-danger">*</span>
                     </span>
                     <span class="text-gray ml-auto text-nowrap">
-                      ( <span class="mx-1"><b>CPU:</b> {{selectedResource?.cpu}}</span>
-                      <span class="mx-1"><b>Memory:</b> {{selectedResource?.memory}}</span>
-                      <span class="mx-1"><b>Price:</b> {{selectedResource?.price}}</span> )
+                      ( <span class="mx-1"><b>CPU:</b> {{selectedResource?.cpuVcpu}}</span>
+                      <span class="mx-1"><b>Memory:</b> {{selectedResource?.memoryGb}}</span>
+                      <span class="mx-1"><b>Price:</b> {{selectedResource?.instanceHourRate | currency : selectedResource?.currency}}</span> )
                     </span>
                   </div>
                 </label>
-                <select formControlName="instanceType" id="resource" class="form-select"
-                  (change)="onInstanceTypeChange()">
-                  <option *ngFor="let resource of resources" [value]="resource.name">
-                    {{ resource.name }}
+                <select formControlName="instanceType" id="resource" class="form-select">
+                  <option *ngFor="let resource of resources" [ngValue]="resource">
+                    {{ resource.instanceType }}
                   </option>
                 </select>
                 <div class="text-danger my-1" *ngIf="isError('instanceType', 'required')">
@@ -270,13 +269,13 @@
   <div class="container">
     <form [formGroup]="zipUploadForm">
       <div class="form-group">
-        <label for="zipfileInput">Select a file to upload(in .zip or .tar format) :</label>
+        <label for="zipfileInput">Select a file to upload(in .zip, .tar and .rar format) :</label>
         <input type="file" id="zipfileInput" formControlName="zipfileInput" class="form-control mt-2"
-          [accept]="'.zip,.tar'" (change)="onZipFileSelect($event)" />
+          [accept]="'.zip,.tar,.rar'" (change)="onZipFileSelect($event)" />
         <div
           *ngIf="zipUploadForm.get('zipfileInput')?.hasError('invalidFileType') && zipUploadForm.get('zipfileInput')?.touched"
           class="alert alert-danger mt-4">
-          Invalid file type. Only .zip, .tar files are allowed.
+          Invalid file type. Only .zip, .tar and .rar files are allowed.
         </div>
       </div>
       <div class="d-flex justify-content-center mt-2">

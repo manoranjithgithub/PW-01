@@ -53,7 +53,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
 
   zipUpload: boolean = false;
   vcsDeploy: boolean = false;
-  allowedFileTypes: string[] = ['.zip', '.tar'];
+  allowedFileTypes: string[] = ['.zip', '.tar', '.rar'];
   fileError: string = '';
   selectedFile: File | null = null;
   serviceList: any;
@@ -178,17 +178,11 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
 
     this.deploymentService.getInstanceTypes().subscribe((res: any) => {
       // this.configForm.patchValue(res.data)
-      this.resources = Object.entries(res.data).map(([key, value]) => ({
-        name: key.trim(),
-        ...(value as object)
-      }));
-
+      this.resources = res.data
     });
 
     this.generalSettingsForm.get('instanceType')?.valueChanges.subscribe(selectedValue => {
-      this.selectedResource = this.resources.find(
-        resource => resource.name === selectedValue
-      );
+      this.selectedResource = selectedValue;
       // console.log("Selected Object:", this.selectedResource);
     });
 
@@ -228,10 +222,11 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
         const provider = cleanUrl?.split('/')[2]?.split('.')[0] || '';
         const repoUrl = cleanUrl;
         const branchName = branch || '';
+        const patchInstanceType = this.resources.find(resource => resource.instanceType === res.data.application?.instanceType);
 
         this.generalSettingsForm.patchValue({
           name: res.data.name,
-          instanceType: res.data.application?.instanceType,
+          instanceType: patchInstanceType,
           region: 'ap-south-1a',
           replicas: res.data.application?.replicas,
           ephemeralStorage: res.data.application?.ephemeralStorage ? res.data.application?.ephemeralStorage.replace(/Gi$/, '') : null,
@@ -279,27 +274,27 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
   }
 
   onInstanceTypeChange(): void {
-    const selectedName = this.generalSettingsForm.get('instanceType')?.value;
+    // const selectedName = this.generalSettingsForm.get('instanceType')?.value;
 
-    const selectedResource = this.resources.find(r => r.name === selectedName);
+    const selectedResource = this.generalSettingsForm.get('instanceType')?.value;
 
     if (!selectedResource) return;
 
     this.selectedResource = selectedResource;
 
     let selectedCPU = 0;
-    if (selectedResource.cpu.endsWith('m')) {
-      selectedCPU = parseFloat(selectedResource.cpu.replace('m', '')) / 1000;
+    if (selectedResource.cpuVcpu.endsWith('m')) {
+      selectedCPU = parseFloat(selectedResource.cpuVcpu.replace('m', '')) / 1000;
     } else {
-      selectedCPU = parseFloat(selectedResource.cpu);
+      selectedCPU = parseFloat(selectedResource.cpuVcpu);
     }
 
     // Memory Conversion from mi/gi to GB 
     let selectedRAM = 0;
-    if (selectedResource.memory.toLowerCase().endsWith('gi')) {
-      selectedRAM = parseFloat(selectedResource.memory);
-    } else if (selectedResource.memory.toLowerCase().endsWith('mi')) {
-      selectedRAM = parseFloat(selectedResource.memory) / 1024;
+    if (selectedResource.memoryGb.toLowerCase().endsWith('gi')) {
+      selectedRAM = parseFloat(selectedResource.memoryGb);
+    } else if (selectedResource.memoryGb.toLowerCase().endsWith('mi')) {
+      selectedRAM = parseFloat(selectedResource.memoryGb) / 1024;
     }
     // Calculate remaining values
     if (selectedCPU > this.cpuQuota?.remaining) {
@@ -433,7 +428,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
 
     const application = this.getChangedFields({
       replicas: formValue.replicas,
-      instanceType: formValue.instanceType,
+      instanceType: formValue.instanceType?.instanceType,
       installCommand: formValue.installCommand,
       buildCommand: formValue.buildCommand,
       startCommand: formValue.startCommand,

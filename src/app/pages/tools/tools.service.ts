@@ -10,6 +10,7 @@ import { environment } from '../../../environments/environment';
 })
 export class ToolsService {
     private deploymentUrl = environment.deploymentManagement;
+    private pricingManagement = environment.pricingManagement;
 
     constructor(public http: HttpClient, private toastr: ToastrService) { }
 
@@ -92,7 +93,7 @@ export class ToolsService {
     }
 
     getInstanceTypes() {
-    return this.http.get(`${this.deploymentUrl}/instance-type`)
+    return this.http.get(`${this.pricingManagement}/public/pricing-catalog`)
       .pipe(
         catchError(this.handleError.bind(this))
       );

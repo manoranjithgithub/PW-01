@@ -34,7 +34,7 @@ export class ViewToolComponent implements OnInit, OnDestroy {
   viewdata: any;
   toolViewName: any;
   hide: { [key: string]: boolean } = {};
-  selectedResource: ResourceInfo = { cpu: '', memory: '', price: 0 };
+  selectedResource: ResourceInfo = { cpuVcpu: '', memoryGb: '', instanceHourRate: 0 };
   resources: any[] = [];
 
 
@@ -60,10 +60,7 @@ export class ViewToolComponent implements OnInit, OnDestroy {
     this.viewToolDetails();
 
     this.http.getInstanceTypes().subscribe((res: any) => {
-      this.resources = Object.entries(res.data).map(([key, value]) => ({
-        name: key.trim(),
-        ...(value as object),
-      }));
+      this.resources = res.data;
     })
   }
 
@@ -84,7 +81,7 @@ export class ViewToolComponent implements OnInit, OnDestroy {
         group[field.key] = control;
         group[field.key] = control;
         if (field.label === 'Instance Type') {
-          this.selectedResource = this.resources.find(resource => resource.name === initialValue) || { cpu: '', memory: '', price: 0 };
+          this.selectedResource = this.resources.find(resource => resource.instanceType === initialValue) || { cpuVcpu: '', memoryGb: '', instanceHourRate: 0 };
         }
         this.formStructure.push(field);
       }

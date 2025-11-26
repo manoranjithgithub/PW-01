@@ -9,7 +9,7 @@
       <ng-template cTemplateId="accordionBodyTemplate">
         <div class="accordion-body">
           
-          <div class="d-flex justify-content-between align-items-start">
+          <div class="d-flex justify-content-between align-items-start" *ngIf="deploymentdetails">
             <div class="m-4">
               <!-- *ngIf="hasFailedStatus()" -->
               <div class="realse-status-header">

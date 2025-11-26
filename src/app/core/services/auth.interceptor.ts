@@ -29,7 +29,8 @@ export class AuthInterceptor implements HttpInterceptor {
     '/status',
     '/deployments?',
     '/tools/installed',
-    '/artificat?fileExtension'
+    '/artificat?fileExtension',
+    '/releases/'
   ];
 
   constructor(

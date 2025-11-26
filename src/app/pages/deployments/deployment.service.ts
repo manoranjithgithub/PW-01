@@ -18,7 +18,7 @@ export class DeploymentsService {
   constructor(public http: HttpClient, private loaderService: SharedService) { }
 
   getInstanceTypes() {
-    return this.http.get(`${this.deploymentManagement}/instance-type`)
+    return this.http.get(`${this.pricingManagement}/public/pricing-catalog`)
       .pipe(
         catchError(this.handleError.bind(this))
       );

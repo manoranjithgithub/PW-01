@@ -120,7 +120,7 @@ export class ToolsComponent implements OnInit, OnDestroy {
         const copyTooltip = isSecureLink ? 'Copy URL' : 'Copy Host Name';
         const clipboardIcon = (isAccessible || !isSecureLink)
 
-          ? `<i class="bi bi-clipboard" style="cursor: pointer; position: relative;" 
+          ? `<i class="bi bi-clipboard-check" style="cursor: pointer; position: relative;font-size: 20px; color: #F60;" 
         onmouseenter="document.getElementById('${id}').innerText = 'Copy'" 
         onclick="(function(){
           navigator.clipboard.writeText('${escapedUrl}');
@@ -140,15 +140,15 @@ export class ToolsComponent implements OnInit, OnDestroy {
       ${clipboardIcon}
       <span id="${id}" style="
           position: absolute;
-          top: 0px;
           background: black;
           color: white;
-          padding: 0 10px;
+          padding: 5px 10px;
           border-radius: 5px;
           font-size: 12px;
           opacity: 0;
           transition: opacity 0.2s;
           pointer-events: none;
+          z-index: 1000;
         ">Copy</span>
       ${linkPart}
     </span>
