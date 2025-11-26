@@ -39,7 +39,7 @@ export class ViewToolComponent implements OnInit, OnDestroy {
 
 
   constructor(private http: ToolsService, private ac: ActivatedRoute,
-    private route: Router, private fb: FormBuilder, 
+    private route: Router, private fb: FormBuilder,
     private sharedService: SharedService
   ) {
     this.form = this.fb.group({})
@@ -70,20 +70,22 @@ export class ViewToolComponent implements OnInit, OnDestroy {
     this.formStructure = [];
     for (const key in fields) {
       if (fields.hasOwnProperty(key)) {
-        const field = fields[key];
+        if (fields[key].ui) {
+          const field = fields[key];
 
-        if (field.type === 'password') {
-          this.hide[field.key] = true;
-        }
+          if (field.type === 'password') {
+            this.hide[field.key] = true;
+          }
 
-        const initialValue = field.value || field.default_value || '';
-        const control = new FormControl({ value: initialValue, disabled: true });
-        group[field.key] = control;
-        group[field.key] = control;
-        if (field.label === 'Instance Type') {
-          this.selectedResource = this.resources.find(resource => resource.instanceType === initialValue) || { cpuVcpu: '', memoryGb: '', instanceHourRate: 0 };
+          const initialValue = field.value || field.default_value || '';
+          const control = new FormControl({ value: initialValue, disabled: true });
+          group[field.key] = control;
+          group[field.key] = control;
+          if (field.label === 'Instance Type') {
+            this.selectedResource = this.resources.find(resource => resource.instanceType === initialValue) || { cpuVcpu: '', memoryGb: '', instanceHourRate: 0 };
+          }
+          this.formStructure.push(field);
         }
-        this.formStructure.push(field);
       }
     }
     this.form = this.fb.group(group);
@@ -98,7 +100,8 @@ export class ViewToolComponent implements OnInit, OnDestroy {
         children: {},
         depends_on: null,
         default_value: '',
-        value: this.toolDetails.name
+        value: this.toolDetails.name,
+        ui:true
       },
       ...schema
     };
@@ -136,7 +139,8 @@ export class ViewToolComponent implements OnInit, OnDestroy {
         children: {},
         depends_on: null,
         default_value: '',
-        value: this.toolDetails.data.name
+        value: this.toolDetails.data.name,
+        ui:true
       },
       ...schema
     };

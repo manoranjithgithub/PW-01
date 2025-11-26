@@ -56,7 +56,7 @@ export class EditToolComponent implements OnInit, OnDestroy {
     });
     this.viewToolDetails();
     this.http.getInstanceTypes().subscribe((res: any) => {
-      this.resources =res.data;
+      this.resources = res.data;
     })
   }
 
@@ -70,29 +70,31 @@ export class EditToolComponent implements OnInit, OnDestroy {
     this.formStructure = [];
     for (const key in fields) {
       if (fields.hasOwnProperty(key)) {
-        const field = fields[key];
-        const validators = [Validators.required];
-        if (
-          field.key === 'name'
-        ) {
-          validators.push(this.lowercaseValidator);
-        }
+        if (fields[key].ui) {
+          const field = fields[key];
+          const validators = [Validators.required];
+          if (
+            field.key === 'name'
+          ) {
+            validators.push(this.lowercaseValidator);
+          }
 
-        if (field.type === 'password') {
-          this.hide[field.key] = true;
-        }
+          if (field.type === 'password') {
+            this.hide[field.key] = true;
+          }
 
-        if (field.validation?.regex) {
-          validators.push(this.regexValidator(new RegExp(field.validation.regex), field.validation.error_message));
-        }
+          if (field.validation?.regex) {
+            validators.push(this.regexValidator(new RegExp(field.validation.regex), field.validation.error_message));
+          }
 
-        const initialValue = field.value || field.default_value || '';
-        if (field.label === 'Instance Type') {
-          this.selectedResource = this.resources.find(resource => resource.instanceType === initialValue) || { cpuVcpu: '', memoryGb: '', instanceHourRate: 0 };
+          const initialValue = field.value || field.default_value || '';
+          if (field.label === 'Instance Type') {
+            this.selectedResource = this.resources.find(resource => resource.instanceType === initialValue) || { cpuVcpu: '', memoryGb: '', instanceHourRate: 0 };
+          }
+          const control = new FormControl(initialValue, validators);
+          group[field.key] = control;
+          this.formStructure.push(field);
         }
-        const control = new FormControl(initialValue, validators);
-        group[field.key] = control;
-        this.formStructure.push(field);
       }
     }
     this.form = this.fb.group(group);
@@ -109,7 +111,8 @@ export class EditToolComponent implements OnInit, OnDestroy {
         default_value: '',
         value: this.toolDetails.name,
         placeholder: '',
-        update: this.viewdata.update || false
+        update: this.viewdata.update || false,
+        ui: true
       },
       ...schema
     };
@@ -201,7 +204,8 @@ export class EditToolComponent implements OnInit, OnDestroy {
         depends_on: null,
         default_value: '',
         value: this.toolDetails.data.name,
-        update: this.viewdata.update || false
+        update: this.viewdata.update || false,
+        ui: true
       },
       ...schema
     };

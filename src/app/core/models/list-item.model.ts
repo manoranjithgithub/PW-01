@@ -37,9 +37,10 @@ export interface FormField {
   value: string;
   showPassword?: boolean;
   options?: any
-  validation: any,
+  validation?: any,
   placeholder?: string;
   update?: boolean;
+  ui:boolean
 }
 
 export interface DeploymentOptions {
