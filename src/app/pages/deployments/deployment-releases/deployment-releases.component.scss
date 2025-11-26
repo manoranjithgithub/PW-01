@@ -491,15 +491,27 @@ pre {
 }
 
 
+// .step.in-process .circle {
+//   border-color: #ffc107;
+//   animation: pulse 1.2s infinite;
+// }
 .step.in-process .circle {
-  border-color: #ffc107;
-  animation: pulse 1.2s infinite;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 193, 7, 0.3);
+  border-top-color: #FF9800;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
 }
-
 .step.in-process .desc {
   font-style: italic;
   color: #ff9800;
   font-size: 14px;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes pulse {

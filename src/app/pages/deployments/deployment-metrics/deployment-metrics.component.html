@@ -45,9 +45,11 @@
   <div class="usage-container">
     <div class="usage-box">
       <h4><b>CPU Usage</b></h4>
+      
       <div *ngIf="showNoDataMessage">
         <p>No data to display</p>
       </div>
+      <div *ngIf="loading" class="inner-spinner"></div>
       <div *ngIf="!showNoDataMessage" class="chart-container">
         <canvas #cpuChartCanvas></canvas>
       </div>
@@ -57,6 +59,7 @@
       <div *ngIf="showNoDataMessage">
         <p>No data to display</p>
       </div>
+      <div *ngIf="loading" class="inner-spinner"></div>
       <div *ngIf="!showNoDataMessage" class="chart-container">
         <canvas #ramChartCanvas></canvas>
       </div>

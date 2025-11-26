@@ -167,9 +167,7 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
     this.stepOneForm
       .get('instanceType')
       ?.valueChanges.subscribe((selectedValue) => {
-        this.selectedResource = this.resources.find(
-          (resource) => resource.name === selectedValue
-        );
+        this.selectedResource = selectedValue;
       });
     this.stepOneForm
       .get('selectedRepo')
@@ -222,14 +220,11 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
     })
 
     this.deploymentsService.getInstanceTypes().subscribe((res: any) => {
-      this.resources = Object.entries(res.data).map(([key, value]) => ({
-        name: key.trim(),
-        ...(value as object),
-      }));
-      const defaultResource = this.resources.find((r) => r.name === 'femto.m');
+      this.resources = res.data;
+      const defaultResource = this.resources.find((r) => r.instanceType === 'femto.m');
 
       if (defaultResource) {
-        this.stepOneForm.get('instanceType')?.setValue(defaultResource.name);
+        this.stepOneForm.get('instanceType')?.setValue(defaultResource);
         this.selectedResource = defaultResource;
       }
     });
@@ -252,14 +247,12 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
     });
   }
 
-  onInstanceTypeChange(): void {
-    const selectedName = this.stepOneForm.get('instanceType')?.value;
-    const selectedResource = this.resources.find(
-      (r) => r.name === selectedName
-    );
-    if (!selectedResource) return;
-    this.selectedResource = selectedResource;
-  }
+  // onInstanceTypeChange(): void {
+  //   const selectedName = this.stepOneForm.get('instanceType')?.value;
+  //   const selectedResource = selectedName;
+  //   if (!selectedResource) return;
+  //   this.selectedResource = selectedResource;
+  // }
   private redirectToOAuth(provider: 'github' | 'gitlab') {
     const { clientId = '', redirectUri = '' } = environment[provider] || {};
     const state = {
@@ -377,7 +370,7 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
   onZipFileSelect(event: any): void {
     const file = event.target.files[0];
     const zipfileinput = this.zipUploadForm.get('zipfileInput');
-    const allowedExtensions = ['zip', 'tar'];
+    const allowedExtensions = ['zip', 'tar', 'rar'];
     zipfileinput?.setValidators([
       Validators.required,
       this.fileValidator(allowedExtensions),
@@ -677,7 +670,7 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
       },
       application: {
         replicas: this.stepOneForm.value.replicas || 0,
-        instanceType: this.stepOneForm.value.instanceType,
+        instanceType: this.stepOneForm.value.instanceType?.instanceType,
         installCommand: this.stepOneForm.value.installCommand,
         buildCommand: this.stepOneForm.value.buildCommand,
         startCommand: this.stepOneForm.value.startCommand,
