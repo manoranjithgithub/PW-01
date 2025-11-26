@@ -3,6 +3,8 @@ const base = 'https://api.dev.nimbuz.tech';
 export const environment = {
     production: false,
     envName: 'dev',
+    cashFree: 'sandbox',
+    
     gitlab: {
         clientId: '66d8ed03ba256e0c95fb4c2384f5be16737636ca54c78446d427b3bd985bf884',
         redirectUri: 'http://localhost:4200/dashboard',
