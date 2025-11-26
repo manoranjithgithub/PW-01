@@ -13,10 +13,9 @@ import { SharedService } from '../../../shared/services/shared.service';
 import { ActivatedRoute } from '@angular/router';
 import { ModalComponent } from '../../../shared/components/model/model.component';
 import { DeployConfirmationComponent } from '../../../shared/components/deploy-confirmation/deploy-confirmation.component';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { RelativeTimePipe } from '../../../shared/pipes/relative-time.pipe';
 import { LogViewerComponent } from '../../../shared/components/log-viewer/log-viewer.component';
-import { skip, Subject, switchMap, take, takeUntil } from 'rxjs';
+import { interval, skip, Subject, switchMap, take, takeUntil, takeWhile, tap } from 'rxjs';
 
 @Component({
   selector: 'app-deployment-releases',
@@ -74,10 +73,10 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
   selectedReleaseDetails: any;
   deploymentId: string = '';
   releaseData: any;
+  pollingSub: any;
 
   constructor(private deploymentService: DeploymentsService, private sharedService: SharedService,
-    private toaster: ToastrService, private ac: ActivatedRoute,
-    private modalService: NgbModal) { }
+    private toaster: ToastrService, private ac: ActivatedRoute) { }
 
 
 
@@ -93,13 +92,14 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
         this.deploymentdetails = res.data;
         this.getReleasesByDeploymentId();
       });
-    this.sharedService.releaseStatus$
-      .pipe(takeUntil(this.destroy$), skip(1))
-      .subscribe(status => {
-        if (status && status !== this.currentStatus.toLowerCase()) {
-          this.getReleasesByDeploymentId();
-        }
-      });
+    // this.sharedService.releaseStatus$
+    //   .pipe(takeUntil(this.destroy$), skip(1))
+    //   .subscribe(status => {
+    //     if (status && status !== this.currentStatus.toLowerCase()) {
+    //       this.getReleasesByDeploymentId();
+    //     }
+    //   });
+
   }
 
   onOptionSelected(realeseData: any, sectionName: string): void {
@@ -112,108 +112,19 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
 
   getReleasesByDeploymentId(): void {
     this.deploymentService.getReleasesByDeploymentId(this.deploymentId).subscribe((res: any) => {
+
       [this.active, ...this.history] = res.data?.releases || [];
-      this.deploymentService.getReleaseDataById(this.active.id).pipe(take(1)).subscribe((response: any) => {
-        const status = response.data?.status.toLowerCase();
-        this.releaseData = response.data;
 
-        const isBuilding = status === "initiated" || status === "building";
-        const isPending = status === "pending";
-        const isBuildFailed = ["build failed", "build timeout", "failed"].includes(status);
-        const isDeploying = status === "deploying";
-        const isDeployFailed = ["deploy failed", "deploy timeout", "create job failed"].includes(status);
-        const isPaused = status === "paused";
+      this.deploymentService.getReleaseDataById(this.active.id)
+        .pipe(take(1))
+        .subscribe((response: any) => {
 
-        const buildStatus = isPending ? "pending" : (isBuildFailed ? "failed" : "success");
-        const deployStatus = isPaused
-          ? "paused"
-          : isPending
-            ? "pending"
-            : isDeployFailed
-              ? "failed"
-              : isBuildFailed || isBuilding
-                ? "pending"
-                : "success";
+          this.releaseData = response.data;
+          this.updateSteps(response.data);
 
-        this.steps = [
-          {
-            title: "Initiated",
-            status: "success",
-            time: this.active.createdAt,
-            message: ""
-          }
-        ];
-
-        // Conditionally add build step if not paused
-        if (!isPaused) {
-          const buildTime = new Date(this.active.updatedAt).toLocaleString();
-          const initiatedTime = new Date(this.active.createdAt).toLocaleString();
-          const buildDuration = this.getDuration(initiatedTime, buildTime);
-
-          this.steps.push({
-            title: isPending
-              ? "Build : Pending"
-              : isBuilding
-                ? "Building..."
-                : buildStatus === "success"
-                  ? "Build : Passed"
-                  : "Build › Build image",
-
-            status: isPending ? "pending" : (isBuilding ? "in-process" : buildStatus),
-
-            time: (isPending || isBuilding) ? initiatedTime : buildTime,
-
-            message: isPending
-              ? "Build is waiting to be scheduled."
-              : isBuildFailed
-                ? "Failed to build an image. Please check the build logs for more details."
-                : `Duration: ${buildDuration}`
-          });
-        }
-
-        const deployTime = this.active.updatedAt;
-        const buildTime = this.active.updatedAt;
-        const initiatedTime = this.active.createdAt;
-
-        const deployDuration = (isPaused || isBuilding || isBuildFailed || isPending)
-          ? ""
-          : this.getDuration(buildTime, deployTime);
-
-        // Always add deploy step
-        this.steps.push({
-          title: isPending
-            ? "Deploy : Pending"
-            : isDeploying
-              ? "Deploying..."
-              : deployStatus === "success"
-                ? "Deploy : Passed"
-                : deployStatus === "paused"
-                  ? "Deploy: Paused"
-                  : deployStatus === "failed"
-                    ? "Deploy : Failed"
-                    : "Deploy",
-
-          status: isPending
-            ? "pending"
-            : isDeploying
-              ? "in-process"
-              : isPaused
-                ? "paused"
-                : isBuilding || isBuildFailed
-                  ? "pending"
-                  : deployStatus,
-
-          time: (isBuilding || isBuildFailed || isPaused || isPending) ? "" : deployTime,
-
-          message: isPending
-            ? "Deployment is waiting to be scheduled."
-            : isDeployFailed
-              ? `Duration: ${deployDuration}` + "<br><br>" + "Failed to Deploy. Please check the build logs for more details."
-              : isPaused
-                ? "Deployment is currently paused."
-                : (deployDuration ? `Duration: ${deployDuration}` : "")
+          // 👉 Start Live Polling
+          this.pollReleaseStatus();
         });
-      });
 
     });
   }
@@ -297,6 +208,116 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
     this.pageSize = event.itemsPerPage;
     this.getLogData(type);
   }
+  pollReleaseStatus() {
+    if (!this.active?.id) return;
+
+    this.pollingSub = interval(3000)
+      .pipe(
+        switchMap(() => this.deploymentService.getReleaseDataById(this.active.id)),
+        tap((response: any) => {
+          this.updateSteps(response.data);
+        }),
+        takeWhile((response: any) => {
+          const s = response.data?.status?.toLowerCase();
+          return !['completed', 'success', 'failed', 'build failed', 'deploy failed', 'paused'].includes(s);
+        }, true)
+      )
+      .subscribe();
+  }
+
+  updateSteps(responseData: any) {
+    const status = responseData?.status?.toLowerCase();
+    this.releaseData = responseData;
+    this.currentStatus = responseData?.status;
+
+    const isBuilding = status === "initiated" || status === "building";
+    const isPending = status === "pending";
+    const isBuildFailed = ["build failed", "build timeout", "failed"].includes(status);
+    const isDeploying = status === "deploying";
+    const isDeployFailed = ["deploy failed", "deploy timeout", "create job failed"].includes(status);
+    const isPaused = status === "paused";
+
+    const buildStatus = isPending ? "pending" : (isBuildFailed ? "failed" : "success");
+    const deployStatus = isPaused
+      ? "paused"
+      : isPending
+        ? "pending"
+        : isDeployFailed
+          ? "failed"
+          : isBuildFailed || isBuilding
+            ? "pending"
+            : "success";
+
+    this.steps = [
+      {
+        title: "Initiated",
+        status: "success",
+        time: this.active.createdAt,
+        message: ""
+      }
+    ];
+
+    if (!isPaused) {
+      const buildTime = new Date(this.active.buildStartedAt).toLocaleString();
+      const initiatedTime = new Date(this.active.createdAt).toLocaleString();
+
+      this.steps.push({
+        title: isPending
+          ? "Build : Pending"
+          : isBuilding
+            ? "Building..."
+            : buildStatus === "success"
+              ? "Build : Passed"
+              : "Build › Build image",
+
+        status: isPending ? "pending" : (isBuilding ? "in-process" : buildStatus),
+        time: (isPending || isBuilding) ? initiatedTime : buildTime,
+
+        message: isPending
+          ? "Build is waiting to be scheduled."
+          : isBuildFailed
+            ? "Failed to build an image. Please check the build logs for more details."
+            : ""
+      });
+    }
+
+    const deployTime = this.active.updatedAt;
+
+    this.steps.push({
+      title: isPending
+        ? "Deploy : Pending"
+        : isDeploying
+          ? "Deploying..."
+          : deployStatus === "success"
+            ? "Deploy : Passed"
+            : deployStatus === "paused"
+              ? "Deploy: Paused"
+              : deployStatus === "failed"
+                ? "Deploy : Failed"
+                : "Deploy",
+
+      status: isPending
+        ? "pending"
+        : isDeploying
+          ? "in-process"
+          : isPaused
+            ? "paused"
+            : isBuilding || isBuildFailed
+              ? "pending"
+              : deployStatus,
+
+      time: (isBuilding || isBuildFailed || isPaused || isPending) ? "" : deployTime,
+
+      message: isPending
+        ? "Deployment is waiting to be scheduled."
+        : isDeployFailed
+          ? "Failed to Deploy. Please check logs."
+          : isPaused
+            ? "Deployment is currently paused."
+            : ""
+    });
+  }
+
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();

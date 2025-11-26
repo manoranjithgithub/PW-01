@@ -45,7 +45,7 @@ export class CreateToolComponent implements OnInit, OnDestroy {
   };
   toolNames: any = [];
   hide: { [key: string]: boolean } = {};
-  selectedResource: ResourceInfo = { cpu: '', memory: '', price: 0 };
+  selectedResource: ResourceInfo = { cpuVcpu: '', memoryGb: '', instanceHourRate: 0 };
   resources: any[] = [];
 
   constructor(private http: ToolsService, private ac: ActivatedRoute,
@@ -75,10 +75,7 @@ export class CreateToolComponent implements OnInit, OnDestroy {
       this.toolNames = availableTools;
     }
     this.http.getInstanceTypes().subscribe((res: any) => {
-      this.resources = Object.entries(res.data).map(([key, value]) => ({
-        name: key.trim(),
-        ...(value as object),
-      }));
+      this.resources = res.data
     })
   }
 
@@ -138,7 +135,7 @@ export class CreateToolComponent implements OnInit, OnDestroy {
         }
         if (field.label === 'Instance Type') {
           field.default_value = field.options[0];
-          this.selectedResource = this.resources.find(resource => resource.name === field.options[0]) || { cpu: '', memory: '', price: 0 };
+          this.selectedResource = this.resources.find(resource => resource.instanceType === field.options[0]) || { cpuVcpu: '', memoryGb: '', instanceHourRate: 0 };
         }
         const control = new FormControl(field.default_value || '', validators);
 
@@ -273,7 +270,7 @@ export class CreateToolComponent implements OnInit, OnDestroy {
   onFieldChange(event: Event, field: any) {
     const value = (event.target as HTMLSelectElement).value;
     if (field === 'Instance Type') {
-      this.selectedResource = this.resources.find(resource => resource.name === value);
+      this.selectedResource = this.resources.find(resource => resource.instanceType === value);
     }
   }
   uniqueNameValidator(existingNames: string[]): ValidatorFn {

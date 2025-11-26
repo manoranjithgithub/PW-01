@@ -36,8 +36,8 @@ export interface FormField {
   default_value: any;
   value: string;
   showPassword?: boolean;
-  options?:any
-  validation:any,
+  options?: any
+  validation: any,
   placeholder?: string;
   update?: boolean;
 }
@@ -49,7 +49,8 @@ export interface DeploymentOptions {
   value: string;
 }
 export interface ResourceInfo {
-  cpu: string | number;
-  memory: string | number;
-  price: string | number;
+  cpuVcpu: string | number;
+  memoryGb: string | number;
+  instanceHourRate: string | number;
+  currency?: string;
 }
