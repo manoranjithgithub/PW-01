@@ -136,6 +136,7 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
       storage: [null, Validators.pattern('^[0-9]+$')],
       healthEndpoint: [null, Validators.maxLength(250)],
       zipFilename: [{ value: null, disabled: true }],
+      dockerfilePath: [null, Validators.maxLength(250)],
       port: ['', [Validators.maxLength(5), Validators.pattern('^[0-9]+$'),
       Validators.min(1), Validators.max(65535)
       ]],
@@ -495,6 +496,9 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
       zip: () => {
         this.zipDeploymentModel.open();
         this.zipUploadForm.reset();
+      },
+      docker: () => {
+       console.log(option);
       }
     };
 
@@ -667,6 +671,7 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
         type: this.selectedVCS === 'zip' ? 'file' : 'vcs',
         gitUrl: this.buildGitUrl(),
         s3FileKey: null,
+        dockerfilePath: this.stepOneForm.value.dockerfilePath || null,
       },
       application: {
         replicas: this.stepOneForm.value.replicas || 0,

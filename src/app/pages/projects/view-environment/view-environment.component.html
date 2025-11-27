@@ -40,8 +40,8 @@
               </div>
 
               <div class="col-md-2 text-end">
-                <button *ngIf="!isGeneralEditMode" class="btn btn-link p-0" (click)="toggleGeneralEditMode()">
-                  <i class="bi bi-pencil-square edit-icon"></i>
+                <button *ngIf="!isGeneralEditMode" class="btn  p-0" (click)="toggleGeneralEditMode()">
+                  <i class="bi bi-pencil-square edit-icon"></i> edit
                 </button>
                 <button *ngIf="isGeneralEditMode" class="btn btn-sm border border-2 border-black text-black"
                   (click)="saveEnvChanges()">
@@ -237,8 +237,8 @@
       <ng-template cTemplateId="accordionBodyTemplate">
         <div class="accordion-body">
           <div class="col-md-12 text-end mb-4">
-            <button *ngIf="!isGeneralEditMode" class="btn btn-link p-0" (click)="toggleGeneralEditMode()">
-              <i class="bi bi-pencil-square edit-icon"></i>
+            <button *ngIf="!isGeneralEditMode" class="btn btn-edit p-0" (click)="toggleGeneralEditMode()">
+              <i class="bi bi-pencil-square edit-icon"></i> edit
             </button>
             <button *ngIf="isGeneralEditMode" class="btn btn-sm border border-2 border-black text-black"
               (click)="saveEnvChanges()">

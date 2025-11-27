@@ -75,6 +75,14 @@
                   </button>
                 </div>
               </div>
+              <div class="mb-3" *ngIf="!zipUpload && !vcsDeploy">
+                <label for="dockerfilePath" class="custom-label">Dockerfile Path</label>
+                <input id="dockerfilePath" type="text" formControlName="dockerfilePath"
+                  class="form-control custom-values">
+                <div class="text-danger my-1" *ngIf="sourceSettingsForm.get('dockerfilePath')?.hasError('maxlength')">
+                  Maximum 250 characters allowed.
+                </div>
+              </div>
             </form>
           </div>
           <hr>
@@ -100,7 +108,8 @@
                       <span class="text-gray ml-auto text-nowrap custom-label">
                         ( <span class="mx-1"><b>CPU:</b> {{selectedResource?.cpuVcpu}}</span>
                         <span class="mx-1"><b>Memory:</b> {{selectedResource?.memoryGb}}</span>
-                        <span class="mx-1"><b>Price:</b> {{selectedResource?.instanceHourRate | currency : selectedResource?.currency}}</span> )
+                        <span class="mx-1"><b>Price:</b> {{selectedResource?.instanceHourRate | currency :
+                          selectedResource?.currency}}</span> )
                       </span>
                     </div>
                   </label>

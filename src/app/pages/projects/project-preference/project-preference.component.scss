@@ -174,3 +174,9 @@ bi-three-dots-vertical {
     background-color:rgba(233, 131, 29, 0.1);
     box-shadow: inset 0 calc(-1 * var(--cui-accordion-border-width)) 0 var(--cui-accordion-border-color);
 }
+.btn-edit {
+  border: 1px solid;
+  font-size: small;
+  padding: 2px 8px !important;
+  border-radius: 5px;
+}

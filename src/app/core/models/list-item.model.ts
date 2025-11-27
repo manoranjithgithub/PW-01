@@ -45,9 +45,10 @@ export interface FormField {
 
 export interface DeploymentOptions {
   name: string;
-  color: string;
-  icon: string;
+  // color: string;
+  // icon: string;
   value: string;
+  logo: string;
 }
 export interface ResourceInfo {
   cpuVcpu: string | number;

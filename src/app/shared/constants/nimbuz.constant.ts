@@ -38,18 +38,25 @@ export const CARDS_DATA = [
 ]
 export const DEPLOY_OPTIONS = [
   {
-    icon: 'bi-github',
+    logo: 'assets/images/logos/github.png',
     name: 'Deploy from GitHub repo',
-    color: '#000',
     value: 'github',
   },
   {
-    icon: 'bi-gitlab',
+    logo: 'assets/images/logos/gitlab.png',
     name: 'Deploy from GitLab repo',
-    color: 'orange',
     value: 'gitlab',
   },
-  { icon: 'bi-file-zip', name: 'Deploy zip/tar', color: 'red', value: 'zip' },
+  {
+    logo: 'assets/images/logos/zip.png',
+    name: 'Deploy zip/tar',
+    value: 'zip',
+  },
+  {
+    logo: 'assets/images/logos/docker.png',
+    name: 'Deploy from Docker',
+    value: 'docker',
+  },
 ];
 
 export const DEPLOYMENT_STEPS = [
