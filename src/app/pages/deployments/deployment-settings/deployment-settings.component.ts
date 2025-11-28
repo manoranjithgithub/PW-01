@@ -148,7 +148,8 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
       repoUrl: [{ value: '', disabled: true }],
       branchName: [{ value: '', disabled: true }],
       fileInput: ['', [Validators.required, this.fileValidator.bind(this)]],
-      fileName: [{ value: '', disabled: true }]
+      fileName: [{ value: '', disabled: true }],
+      dockerfilePath: ['', Validators.maxLength(250)],
     });
     this.ac.queryParams.subscribe(params => {
       const depolyementId = params['id'];
@@ -235,7 +236,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
           port: res.data.network?.port,
           buildCommand: res.data.buildConfig?.buildCommand,
           startCommand: res.data.buildConfig?.startCommand,
-          installCommand: res.data.buildConfig?.installCommand
+          installCommand: res.data.buildConfig?.installCommand,
         });
 
         const initialValues = this.generalSettingsForm.value;
@@ -248,7 +249,8 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
           provider: provider,
           repoUrl: repoUrl,
           branchName: branchName,
-          fileName: res.data.sourceCode?.s3FileKey ? res.data.sourceCode?.s3FileKey : ''
+          fileName: res.data.sourceCode?.s3FileKey ? res.data.sourceCode?.s3FileKey : '',
+          dockerfilePath: res.data.sourceCode?.dockerfilePath || '',
         });
         if (res.data.sourceCode?.type.toLowerCase() === "file") {
           this.s3FileKey = res.data.sourceCode?.s3FileKey;
@@ -444,7 +446,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
       type: sourceFormValue.type,
       gitUrl: this.buildGitUrl(),
       s3FileKey: fileName ? this.s3FileKey : null,
-
+      dockerfilePath: sourceFormValue.dockerfilePath
     }, originalSource);
     const nameChanged = this.getChangedFields({ name: formValue.name }, { name: this.deploymentdetails?.name });
 

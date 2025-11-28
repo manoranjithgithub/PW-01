@@ -95,88 +95,90 @@ export class CreateToolComponent implements OnInit, OnDestroy {
 
     for (const key in fields) {
       if (fields.hasOwnProperty(key)) {
+        if (fields[key].ui) {
+          const field = fields[key];
 
-        const field = fields[key];
-
-        const validators = [Validators.required];
-        if (field.key === 'name') {
-          validators.push(
-            Validators.maxLength(30),
-            this.regexValidator(
-              new RegExp("^(?!\\d)(?!.*[-]{2})(?!.*[A-Z])[a-z0-9]+(?:-[a-z0-9]+)*$"),
-              "Name must not start with a number. Only lowercase letters, numbers, and separators (., -) are allowed. No consecutive separators or uppercase letters. Dots (.) are not allowed"
-            ),
-            this.uniqueNameValidator(this.toolNames)
-          );
-          if (this.selectedTool === 'mysql') {
-            validators.push((control: AbstractControl) => {
-              const value = control.value || '';
-              return value.includes('mysql')
-                ? { forbiddenName: 'Name cannot include "mysql".' }
-                : null;
-            });
+          const validators = [Validators.required];
+          if (field.key === 'name') {
+            validators.push(
+              Validators.maxLength(30),
+              this.regexValidator(
+                new RegExp("^(?!\\d)(?!.*[-]{2})(?!.*[A-Z])[a-z0-9]+(?:-[a-z0-9]+)*$"),
+                "Name must not start with a number. Only lowercase letters, numbers, and separators (., -) are allowed. No consecutive separators or uppercase letters. Dots (.) are not allowed"
+              ),
+              this.uniqueNameValidator(this.toolNames)
+            );
+            if (this.selectedTool === 'mysql') {
+              validators.push((control: AbstractControl) => {
+                const value = control.value || '';
+                return value.includes('mysql')
+                  ? { forbiddenName: 'Name cannot include "mysql".' }
+                  : null;
+              });
+            }
           }
-        }
 
-        if (field.validation?.regex) {
-          validators.push(this.regexValidator(new RegExp(field.validation.regex), field.validation.error_message));
-        }
+          if (field.validation?.regex) {
+            validators.push(this.regexValidator(new RegExp(field.validation.regex), field.validation.error_message));
+          }
 
-        if (field.key === 'mysql.primary.persistance.size' ||
-          field.key === 'postgresql.primary.persistence.size' ||
-          field.key === 'mongodb.persistence.size' ||
-          field.key === 'postgresql.readReplicas.persistence.size'
-        ) {
-          validators.push(this.gigabyteValidator);
-        }
+          if (field.key === 'mysql.primary.persistance.size' ||
+            field.key === 'postgresql.primary.persistence.size' ||
+            field.key === 'mongodb.persistence.size' ||
+            field.key === 'postgresql.readReplicas.persistence.size'
+          ) {
+            validators.push(this.gigabyteValidator);
+          }
 
-        if (field.type === 'password') {
-          this.hide[field.key] = true;
-        }
-        if (field.label === 'Instance Type') {
-          field.default_value = field.options[0];
-          this.selectedResource = this.resources.find(resource => resource.instanceType === field.options[0]) || { cpuVcpu: '', memoryGb: '', instanceHourRate: 0 };
-        }
-        const control = new FormControl(field.default_value || '', validators);
+          if (field.type === 'password') {
+            this.hide[field.key] = true;
+          }
+          if (field.label === 'Instance Type') {
+            field.default_value = field.options[0];
+            this.selectedResource = this.resources.find(resource => resource.instanceType === field.options[0]) || { cpuVcpu: '', memoryGb: '', instanceHourRate: 0 };
+          }
+          const control = new FormControl(field.default_value || '', validators);
 
-        group[field.key] = control;
-        this.formStructure.push(field);
+          group[field.key] = control;
+          this.formStructure.push(field);
+        }
+      }
+      }
+      this.form = this.fb.group(group);
+    }
+    onFieldBlur(fieldKey: string) {
+      if (fieldKey === 'name') {
+        const nameValue = this.form.get('name')?.value;
+        if (fieldKey) {
+          this.form.get(fieldKey)?.updateValueAndValidity();
+        }
+        const nameExists = this.toolNames.some((name: any) => name === nameValue);
       }
     }
-    this.form = this.fb.group(group);
-  }
-  onFieldBlur(fieldKey: string) {
-    if (fieldKey === 'name') {
-      const nameValue = this.form.get('name')?.value;
-      if (fieldKey) {
-        this.form.get(fieldKey)?.updateValueAndValidity();
-      }
-      const nameExists = this.toolNames.some((name: any) => name === nameValue);
+
+    addNameField(schema: FormField): any {
+      return {
+        name: {
+          key: 'name',
+          type: 'text',
+          label: 'Name',
+          children: {},
+          depends_on: null,
+          default_value: '',
+          value: this.toolDetails.name,
+          options: [],
+          validation: {},
+          placeholder: '',
+          ui: true
+        },
+        ...schema
+      };
     }
-  }
 
-  addNameField(schema: FormField): any {
-    return {
-      name: {
-        key: 'name',
-        type: 'text',
-        label: 'Name',
-        children: {},
-        depends_on: null,
-        default_value: '',
-        value: this.toolDetails.name,
-        options: [],
-        validation: {},
-        placeholder: ''
-      },
-      ...schema
-    };
-  }
+    onSubmit(): void {
+      const { name, ...formValues } = this.form.getRawValue();
 
-  onSubmit(): void {
-    const { name, ...formValues } = this.form.getRawValue();
-
-    if (this.form.valid) {
+      if(this.form.valid) {
       const sizeFields = [
         'mysql.primary.persistence.size',
         'postgresql.primary.persistence.size',

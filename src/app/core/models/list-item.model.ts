@@ -37,16 +37,18 @@ export interface FormField {
   value: string;
   showPassword?: boolean;
   options?: any
-  validation: any,
+  validation?: any,
   placeholder?: string;
   update?: boolean;
+  ui:boolean
 }
 
 export interface DeploymentOptions {
   name: string;
-  color: string;
-  icon: string;
+  // color: string;
+  // icon: string;
   value: string;
+  logo: string;
 }
 export interface ResourceInfo {
   cpuVcpu: string | number;
