@@ -77,6 +77,12 @@
               <div class="col-md-4">
                 <label class="form-label">Dockerfile Path</label>
                 <input type="text" class="form-control" formControlName="dockerfilePath">
+                <div class="text-danger my-1" *ngIf="isError('dockerfilePath', 'required')">
+                  This field is required.
+                </div>
+                <div class="text-danger my-1" *ngIf="isError('dockerfilePath', 'maxlength')">
+                  Maximum 250 characters allowed.
+                </div>
               </div>
             </div>
           </div>

@@ -1,15 +1,12 @@
 <hr>
 <div class="card-child">
-
   <c-accordion class="accordion-gap  mb-4">
     <c-accordion-item #item0="cAccordionItem" [visible]="true">
-
       <ng-template cTemplateId="accordionHeaderTemplate">
         <button (click)="item0.toggleItem()" [collapsed]="!item0.visible" cAccordionButton>
           General Settings
         </button>
       </ng-template>
-
       <ng-template cTemplateId="accordionBodyTemplate">
         <div class="accordion-body">
           <form *ngIf="generalSettingForm" [formGroup]="generalSettingForm">
@@ -21,14 +18,18 @@
                     <p class="field-value" style="word-break: break-all;">{{ projectNameControl.value }}</p>
                   </ng-container>
                   <ng-template #editName>
-                    <input formControlName="projectName" class="form-control" placeholder="Enter project name" />
+                    <input formControlName="projectName" class="form-control" placeholder="Enter project name" (input)="checkProjectNameUnique()"/>
                     <small class="text-danger mt-1"
                       *ngIf="generalSettingForm.get('projectName')?.hasError('maxlength')">
                       Maximum 40 characters allowed.
                     </small>
+                    <small
+                      *ngIf="generalSettingForm.get('projectName')?.hasError('uniqueName') && generalSettingForm.get('projectName')?.touched"
+                      class="text-danger mt-1">
+                      Name already exists. Please choose a different name.
+                    </small>
                   </ng-template>
                 </div>
-
                 <div class="col-md-6">
                   <p class="field-label">Description</p>
                   <ng-container *ngIf="!isGeneralEditMode; else editDesc">
@@ -47,7 +48,7 @@
                   <i class="bi bi-pencil-square edit-icon"></i> edit
                 </button>
                 <button *ngIf="isGeneralEditMode" class="btn btn-sm border border-2 border-black text-black"
-                  (click)="saveGeneralChanges()">
+                  (click)="saveGeneralChanges()" [disabled]="generalSettingForm.invalid">
                   Save
                 </button>
               </div>
@@ -59,87 +60,6 @@
       </ng-template>
     </c-accordion-item>
   </c-accordion>
-
-  <!-- <c-accordion class="accordion-gap  mb-4">
-    <c-accordion-item #item1="cAccordionItem" [visible]="true">
-
-      <ng-template cTemplateId="accordionHeaderTemplate">
-        <button (click)="item1.toggleItem()" [collapsed]="!item1.visible" cAccordionButton>
-          Usage Details
-        </button>
-      </ng-template>
-
-      <ng-template cTemplateId="accordionBodyTemplate">
-        <div class="accordion-body">
-          <div class="pt-2 mt-0">
-            <h6 class="accordion-sub-title">Instance table - Current usage</h6>
-            <div class="table-responsive mb-2">
-              <table class="table resource-table">
-                <thead>
-                  <tr>
-                    <th>Resource type</th>
-                    <th>Hours</th>
-                    <th>Cost</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngIf="currentUsageData.length === 0">
-                    <td colspan="3" class="text-center">No data found</td>
-                  </tr>
-                  <tr *ngFor="let usage of currentUsageData">
-                    <td class="p-2">{{ usage.instanceType }}</td>
-                    <td class="p-2">{{ usage.hoursFormatted }}</td>
-                    <td class="p-2">{{ usage.costFormatted }}</td>
-                  </tr>
-                </tbody>
-                <tfoot *ngIf="currentUsageData.length > 0">
-                  <tr>
-                    <td colspan="2">Cost</td>
-                    <td>${{ currentUsageTotal }}</td>
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
-          </div>
-
-          <div class="pt-2">
-            <h6 class="accordion-sub-title">Instance table - Estimated usage</h6>
-            <div class="table-responsive mb-2">
-              <table class="table resource-table">
-                <thead>
-                  <tr>
-                    <th>Resource type</th>
-                    <th>Hours</th>
-                    <th>Cost</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngIf="estimatedUsageData.length === 0">
-                    <td colspan="3" class="text-center">No data found</td>
-                  </tr>
-                  <tr *ngFor="let usage of estimatedUsageData">
-                    <td class="p-2">{{ usage?.instanceType }}</td>
-                    <td class="p-2">{{ usage?.hoursFormatted }}</td>
-                    <td class="p-2">{{ usage.costFormatted }}</td>
-                  </tr>
-
-                </tbody>
-                <tfoot *ngIf="estimatedUsageData.length > 0">
-                  <tr>
-                    <td colspan="2">Cost</td>
-                    <td>${{ estimatedUsageTotal }}</td>
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
-          </div>
-        </div>
-
-      </ng-template>
-
-    </c-accordion-item>
-  </c-accordion> -->
-
   <c-accordion class="accordion-gap mb-4">
     <c-accordion-item #item2="cAccordionItem" [visible]="true">
       <ng-template cTemplateId="accordionHeaderTemplate">
@@ -190,170 +110,6 @@
     </c-accordion-item>
   </c-accordion>
 
-  <!-- <c-accordion class="accordion-gap  mb-4">
-    <c-accordion-item #item3="cAccordionItem" [visible]="true">
-      <ng-template cTemplateId="accordionHeaderTemplate">
-        <button (click)="item3.toggleItem()" [collapsed]="!item3.visible" cAccordionButton>
-          Notification Settings
-        </button>
-      </ng-template>
-      <ng-template cTemplateId="accordionBodyTemplate">
-        <div class="accordion-body">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <h6 class="fw-bold mb-0">Emails</h6>
-            <button class="btn btn-sm border border-2 border-black text-black" (click)="addEmail()">+ Add
-              more</button>
-          </div>
-          <p class="text-muted">Please add your email(s) to help us communicate with you effectively.</p>
-          <form cForm [formGroup]="emailIDForm">
-            <div class="card-child">
-              <div class="mb-2">
-                <div formArrayName="rules">
-                  <div *ngFor="let rule of rulesFormArray.controls; let i = index let isLast = last" [formGroupName]="i"
-                    class="d-flex gap-2 mb-2 align-items-center">
-                    <div class="d-flex align-items-center">
-                      <div class="flex-grow-1">
-                        <label class="form-label">Email id</label>
-                        <div class="d-flex align-items-center">
-                          <input type="email" placeholder="Enter email id" class="form-control custom-email-input" formControlName="emailId" />
-                          <button type="button" class="btn btn-outline-secondary rounded-circle ms-2 p-1" *ngIf="isLast"
-                            (click)="addEmail()">
-                            <i class="bi  bi-plus"></i>
-                          </button>
-                          <button type="button" class="btn btn-outline-secondary rounded-circle ms-2 p-1"
-                            *ngIf="rulesFormArray.length > 1" (click)="removeEmail(i)">
-                            <i class="bi bi-dash"></i>
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </form>
-
-          <h6><strong>Preferences</strong></h6>
-          <p class="text-muted">Select your preferences you'd like to receive communications about.</p>
-
-          <form [formGroup]="preferencesForm">
-            <div class="d-flex flex-wrap gap-4">
-              <label class="form-label">
-                <input type="checkbox" class="form-check-input" formControlName="usage" />
-                Usage limits <i class="bi bi-info-circle ms-1"></i>
-              </label>
-              <label class="form-label">
-                <input type="checkbox" class="form-check-input" formControlName="billing" />
-                Billing Updates <i class="bi bi-info-circle ms-1"></i>
-              </label>
-              <label class="form-label">
-                <input type="checkbox" class="form-check-input" formControlName="deployments" />
-                Deployments <i class="bi bi-info-circle ms-1"></i>
-              </label>
-              <label class="form-label">
-                <input type="checkbox" class="form-check-input" formControlName="errors" />
-                System errors <i class="bi bi-info-circle ms-1"></i>
-              </label>
-            </div>
-          </form>
-
-        </div>
-      </ng-template>
-    </c-accordion-item>
-  </c-accordion>
-
-  <c-accordion class="accordion-gap mb-4">
-    <c-accordion-item #item4="cAccordionItem" [visible]="true">
-      <ng-template cTemplateId="accordionHeaderTemplate">
-        <button (click)="item4.toggleItem()" [collapsed]="!item4.visible" cAccordionButton>
-          Access Management
-        </button>
-      </ng-template>
-
-      <ng-template cTemplateId="accordionBodyTemplate">
-        <div class="accordion-body">
-          <div class="d-flex justify-content-end mb-3">
-            <button class="btn btn-sm border border-2 border-black text-black" (click)="toggleAddUserForm()">
-              + Add user
-            </button>
-          </div>
-
-          <form *ngIf="showAddUserForm" [formGroup]="userForm" (ngSubmit)="addUser()" class="mb-3">
-            <div class="row g-3">
-              <div class="col-md-4">
-                <input class="form-control" formControlName="name" placeholder="Name"
-                  [ngClass]="{ 'is-invalid': userForm.get('name')?.invalid && userForm.get('name')?.touched }" />
-                <div *ngIf="userForm.get('name')?.invalid && userForm.get('name')?.touched"
-                  class="text-danger small mt-1">
-                  Name is required
-                </div>
-              </div>
-
-              <div class="col-md-4">
-                <input class="form-control" formControlName="email" placeholder="Email"
-                  [ngClass]="{ 'is-invalid': userForm.get('email')?.invalid && userForm.get('email')?.touched }" />
-                <div *ngIf="userForm.get('email')?.invalid && userForm.get('email')?.touched"
-                  class="text-danger small mt-1">
-                  Valid email required
-                </div>
-              </div>
-
-              <div class="col-md-4">
-                <select formControlName="role" class="form-select w-100">
-                  <option value="" disabled selected hidden>Select Role</option>
-                  <option value="Guest">Guest</option>
-                  <option value="Planner">Planner</option>
-                  <option value="Reporter">Reporter</option>
-                  <option value="Maintainer">Devloper</option>
-                  <option value="Owner">Owner</option>
-                </select>
-                <div *ngIf="userForm.get('role')?.invalid && userForm.get('role')?.touched"
-                  class="text-danger small mt-1">
-                  Role is required
-                </div>
-              </div>
-            </div>
-
-            <div class="row mt-3">
-              <div class="col text-end">
-                <button class="btn btn-outline-dark me-2" type="button" (click)="cancelAddUser()">Cancel</button>
-                <button class="btn btn-dark" type="submit" [disabled]="userForm.invalid">Add</button>
-              </div>
-            </div>
-          </form>
-
-          <div class="table-responsive">
-            <table class="table align-middle">
-              <thead class="text-muted small">
-                <tr>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Role</th>
-                  <th>&nbsp;</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                <tr *ngFor="let user of userList" class="align-middle py-3">
-                  <td class="py-3">
-                    <i class="bi bi-check-circle-fill text-success me-2"></i>{{ user.name }}
-                  </td>
-                  <td class="py-3">{{ user.email }}</td>
-                  <td class="py-3">{{ user.role }}</td>
-                  <td class="py-3 text-end">
-                    <button class="btn btn-outline-danger btn-sm" (click)="deleteAccess(user)">Revoke access</button>
-              
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </ng-template>
-    </c-accordion-item>
-  </c-accordion> -->
-
-
   <c-accordion class="accordion-gap  mb-4">
     <c-accordion-item #item5="cAccordionItem" [visible]="true">
 
@@ -390,13 +146,6 @@
                 </ng-template>
               </div>
             </div>
-
-            <!-- <div class="col-md-6">
-              <div class="border border-dashed rounded d-flex align-items-center justify-content-center p-3"
-                style="height: 80px;">
-                <span class="text-muted">+ Add new integration</span>
-              </div>
-            </div> -->
           </div>
         </div>
       </ng-template>

@@ -1,7 +1,7 @@
 import { Component, HostListener, OnDestroy, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, FormsModule, FormArray, Validators, ReactiveFormsModule, FormControl } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, FormArray, Validators, ReactiveFormsModule, FormControl, ValidatorFn, ValidationErrors, AbstractControl } from '@angular/forms';
 import {
   AccordionButtonDirective,
   AccordionComponent,
@@ -107,6 +107,7 @@ export class ProjectPreferenceComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   isDropdownOpen: { [key: number]: boolean } = {};
   isBusiness: boolean = false;
+  availableProjects: any = [];
 
 
   constructor(private fb: FormBuilder, private projectService: ProjectsService, private route: ActivatedRoute,
@@ -153,7 +154,13 @@ export class ProjectPreferenceComponent implements OnInit, OnDestroy {
         description: [this.projectDetails.description],
       });
     });
-
+    this.projectService.getAllProjects().subscribe({
+      next: (response: any) => {
+        if (response.data?.length > 0) {
+          this.availableProjects = response.data.map((item: any) => item.name.toLowerCase());
+        }
+      }, error: (error) => { }
+    })
     this.emailIDForm = this.fb.group({
       rules: this.fb.array([]),
     });
@@ -500,7 +507,7 @@ export class ProjectPreferenceComponent implements OnInit, OnDestroy {
     }
   }
   onLayoutButtonClick() {
-    if (this.environments.length > 0){
+    if (this.environments.length > 0) {
       this.toastr.error('Environments must be deleted before deleting the project.')
       return;
     }
@@ -571,6 +578,30 @@ export class ProjectPreferenceComponent implements OnInit, OnDestroy {
       this.connectProfile(provider);
     } else {
       console.error('Invalid provider:', provider);
+    }
+  }
+  uniqueNameValidator(existingNames: string[]): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      if (!control.value) return null;
+      const nameExists = existingNames.some(
+        name => name.toLowerCase() === control.value.toLowerCase()
+      );
+      return nameExists ? { uniqueName: true } : null;
+    };
+  }
+  checkProjectNameUnique() {
+    const projectName = this.projectNameControl.value?.trim().toLowerCase();
+    if (!projectName) return;
+    const alreadyExists = this.availableProjects.includes(projectName);
+
+    if (alreadyExists) {
+      this.projectNameControl.setErrors({ uniqueName: true });
+    } else {
+      if (this.projectNameControl.hasError('uniqueName')) {
+        const errors = { ...this.projectNameControl.errors };
+        delete errors['uniqueName'];
+        this.projectNameControl.setErrors(Object.keys(errors).length ? errors : null);
+      }
     }
   }
 }
