@@ -36,6 +36,7 @@ import { ProjectsService } from '../../projects/projects.service';
 import { SHARED_IMPORTS } from '../../../shared/shared-imports';
 import { DEPLOY_OPTIONS, DEPLOYMENT_STEPS } from '../../../shared/constants/nimbuz.constant';
 import { VALIDATION_REGEX } from '../../../core/constants/validation-regex.constant';
+import { set } from 'lodash-es';
 @Component({
   selector: 'app-create-deployments',
   standalone: true,
@@ -136,6 +137,7 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
       storage: [null, Validators.pattern('^[0-9]+$')],
       healthEndpoint: [null, Validators.maxLength(250)],
       zipFilename: [{ value: null, disabled: true }],
+      dockerfilePath: [null],
       port: ['', [Validators.maxLength(5), Validators.pattern('^[0-9]+$'),
       Validators.min(1), Validators.max(65535)
       ]],
@@ -488,6 +490,8 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
   }
 
   selectedType(option: any) {
+    this.stepOneForm.get('dockerfilePath')?.setValidators(null);
+        this.stepOneForm.get('dockerfilePath')?.updateValueAndValidity();
     this.selectedVCS = option.value;
     const handlers: any = {
       github: () => this.handleVCS('github'),
@@ -495,6 +499,10 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
       zip: () => {
         this.zipDeploymentModel.open();
         this.zipUploadForm.reset();
+      },
+      docker: () => {
+        this.stepOneForm.get('dockerfilePath')?.setValidators([Validators.required, Validators.maxLength(250)]);
+        this.stepOneForm.get('dockerfilePath')?.updateValueAndValidity();
       }
     };
 
@@ -667,6 +675,7 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
         type: this.selectedVCS === 'zip' ? 'file' : 'vcs',
         gitUrl: this.buildGitUrl(),
         s3FileKey: null,
+        dockerfilePath: this.stepOneForm.value.dockerfilePath || null,
       },
       application: {
         replicas: this.stepOneForm.value.replicas || 0,

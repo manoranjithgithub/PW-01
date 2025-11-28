@@ -27,11 +27,14 @@
               <mat-select formControlName="type" id="deployOptions" class="form-select mt-2">
                 <mat-option value="" disabled selected hidden>Choose a type to continue</mat-option>
                 <mat-option *ngFor="let option of deployOptions" [value]="option.value" (click)="selectedType(option)">
-                  <i class="bi" [ngClass]="option.icon" [style.color]="option.color"></i> {{ option.name }}
+                  <img [src]="option.logo" alt="" width="20" height="20"
+                    style="margin-right: 8px; vertical-align: middle" />
+                  {{ option.name }}
                 </mat-option>
               </mat-select>
+
             </div>
-            <div class="col-md-8" *ngIf=" selectedVCS && selectedVCS !== 'zip'">
+            <div class="col-md-8" *ngIf=" selectedVCS && (selectedVCS === 'github' || selectedVCS === 'gitlab')">
               <div class="d-flex justify-content-between gap-2">
                 <div class="w-100">
                   <label class="form-label">Select {{selectedVCS | lowercase}} repo</label>
@@ -64,10 +67,22 @@
                 </div>
               </div>
             </div>
-            <div class="col-md-8" *ngIf="selectedVCS === 'zip'">
+            <div class="col-md-8" *ngIf="selectedVCS === 'zip' && zipUploadForm.value.zipfileInput">
               <div class="col-md-4">
                 <label class="form-label">Zip Filename</label>
                 <input type="text" class="form-control" formControlName="zipFilename">
+              </div>
+            </div>
+            <div class="col-md-8" *ngIf="selectedVCS === 'docker'">
+              <div class="col-md-4">
+                <label class="form-label">Dockerfile Path</label>
+                <input type="text" class="form-control" formControlName="dockerfilePath">
+                <div class="text-danger my-1" *ngIf="isError('dockerfilePath', 'required')">
+                  This field is required.
+                </div>
+                <div class="text-danger my-1" *ngIf="isError('dockerfilePath', 'maxlength')">
+                  Maximum 250 characters allowed.
+                </div>
               </div>
             </div>
           </div>
@@ -106,7 +121,8 @@
                     <span class="text-gray ml-auto text-nowrap">
                       ( <span class="mx-1"><b>CPU:</b> {{selectedResource?.cpuVcpu}}</span>
                       <span class="mx-1"><b>Memory:</b> {{selectedResource?.memoryGb}}</span>
-                      <span class="mx-1"><b>Price:</b> {{selectedResource?.instanceHourRate | currency : selectedResource?.currency}}</span> )
+                      <span class="mx-1"><b>Price:</b> {{selectedResource?.instanceHourRate | currency :
+                        selectedResource?.currency}}</span> )
                     </span>
                   </div>
                 </label>
@@ -178,7 +194,7 @@
                         <i class="bi bi-exclamation-circle"></i>
                       </span>
                     </span>
-                    
+
                   </div>
                 </label>
                 <div class="input-group">
