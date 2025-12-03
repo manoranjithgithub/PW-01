@@ -94,6 +94,7 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
   messages: any[] = [];
   loading: boolean = true;
   getDeploymentIntervel: any;
+  sseSub: Subscription | null = null;
 
   constructor(
     private deploymentsService: DeploymentsService,
@@ -107,18 +108,22 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
       this.getDeployment(JSON.parse(storedEnvironment));
     }
     this.subscription = this.sharedService.envValueChange$.subscribe(value => {
+      if (this.sseSub) {
+        this.sseSub.unsubscribe();
+        this.sseSub = null;
+      }
       this.getDeployment(value);
     });
-    this.getDeploymentIntervel = setInterval(() => {
-      this.getDeployment(JSON.parse(localStorage.getItem('environment') || '{}'));
-    }, 30000);
+    // this.getDeploymentIntervel = setInterval(() => {
+    //   this.getDeployment(JSON.parse(localStorage.getItem('environment') || '{}'));
+    // }, 30000);
 
   }
-  getDeployment(env: any): void {
+  getDeployment(env: any): any {
     if (env) {
-      this.deploymentsService.getDeployments(env.id).subscribe((res: any) => {
-        if (res.status.toLowerCase() === "success") {
-          this.tableData = res.data;
+      this.sseSub = this.deploymentsService.liveDeploymentData(env.id).subscribe((res: any) => {
+        if (res) {
+          this.tableData = res.deployment;
           localStorage.setItem('availableDeployments', JSON.stringify(res.data?.map((x: any) => x.name)));
           this.loading = false
         }
@@ -138,12 +143,13 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
   gotoAction(params: any) {
     this.router.navigate(['/deployment/deployment-details'], { queryParams: { id: params.id } })
   }
-  goToNewDeployment(){
+  goToNewDeployment() {
     this.router.navigate(['/deployment/create-deployment'])
   }
 
   ngOnDestroy(): void {
     clearInterval(this.getDeploymentIntervel)
     this.subscription?.unsubscribe();
+    this.sseSub?.unsubscribe();
   }
 }

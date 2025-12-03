@@ -29,7 +29,7 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
   selectedTabIndex = 0;
   private destroy$ = new Subject<void>();
   deploymentId: string = '';
-  lastReleaseStatus: string = '';
+  lastReleaseData: any = null;
 
   messages: any[] = [];
   appName: string = '';
@@ -56,8 +56,8 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
         if (data.status.toLowerCase() === 'success') {
           this.deploymentService.getDeploymentById(this.deploymentId, this.envId).subscribe((res: any) => {
             const releaseData = res?.data;
-            this.sharedService.setlastReleaseStatus(releaseData.status);
-            this.lastReleaseStatus = this.sharedService.getlastReleaseStatus() ?? '';
+            this.sharedService.setlastReleaseData(releaseData);
+            this.lastReleaseData = this.sharedService.getlastReleaseData() ?? [];
           });
         }
         this.layoutActionService.setExtraTitle(`${data.data.name} (${data.data.status})`);
@@ -70,7 +70,7 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
     });
 
     this.sharedService.releaseStatus$.subscribe(status => {
-      this.lastReleaseStatus = status ?? '';
+      this.lastReleaseData = status ?? [];
     });
     this.layoutActionService.actionClick$
       .pipe(takeUntil(this.destroy$))
