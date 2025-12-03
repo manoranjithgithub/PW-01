@@ -73,7 +73,7 @@
                 <input type="text" class="form-control" formControlName="zipFilename">
               </div>
             </div>
-            <div class="col-md-8" *ngIf="selectedVCS === 'docker'">
+            <!-- <div class="col-md-8" *ngIf="selectedVCS === 'docker'">
               <div class="col-md-4">
                 <label class="form-label">Dockerfile Path</label>
                 <input type="text" class="form-control" formControlName="dockerfilePath">
@@ -84,7 +84,7 @@
                   Maximum 250 characters allowed.
                 </div>
               </div>
-            </div>
+            </div> -->
           </div>
           <div class="border-bottom mb-4">&nbsp;</div>
           <div class="container">
@@ -179,6 +179,14 @@
                 <input type="text" class="form-control" formControlName="installCommand" placeholder="">
               </div>
               <div class="col-md-4">
+                <label class="form-label">Dockerfile Path
+                  <span [cTooltip]="commandValidation" cTooltipPlacement="top" class="text-warning cursor mx-1">
+                    <i class="bi bi-exclamation-circle"></i>
+                  </span>
+                </label>
+                <input type="text" class="form-control" formControlName="dockerfilePath">
+              </div>
+              <div class="col-md-4">
                 <label class="form-label">Health Endpoint</label>
                 <input type="text" class="form-control" formControlName="healthEndpoint" placeholder="/health">
                 <div *ngIf="isError('healthEndpoint','maxlength')" class="text-danger my-1">
@@ -266,6 +274,8 @@
         [selectedRepoName]="selectedRepoName"></app-review-screen>
     </ng-container>
   </div>
+</div>
+<div style="position: fixed;width: 100%;bottom: 10px;">
   <div class="stepper-footer d-flex gap-3 justify-content-between my-4">
     <div class="">
       <button class="btn button-format-outline" (click)="prev()" [disabled]="currentStep === 0"

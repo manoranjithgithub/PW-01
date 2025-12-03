@@ -28,9 +28,7 @@ export class AuthInterceptor implements HttpInterceptor {
   private readonly skipLoaderUrls = [
     '/status',
     '/deployments?',
-    '/tools/installed',
     '/artificat?fileExtension',
-    '/releases/'
   ];
 
   constructor(

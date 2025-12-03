@@ -140,6 +140,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
       buildCommand: ['', Validators.maxLength(250)],
       startCommand: ['', Validators.maxLength(250)],
       installCommand: ['', Validators.maxLength(250)],
+      dockerfilePath: ['', Validators.maxLength(250)],
     })
 
     this.sourceSettingsForm = this.fb.group({
@@ -149,7 +150,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
       branchName: [{ value: '', disabled: true }],
       fileInput: ['', [Validators.required, this.fileValidator.bind(this)]],
       fileName: [{ value: '', disabled: true }],
-      dockerfilePath: ['', Validators.maxLength(250)],
+      // dockerfilePath: ['', Validators.maxLength(250)],
     });
     this.ac.queryParams.subscribe(params => {
       const depolyementId = params['id'];
@@ -446,7 +447,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
       type: sourceFormValue.type,
       gitUrl: this.buildGitUrl(),
       s3FileKey: fileName ? this.s3FileKey : null,
-      dockerfilePath: sourceFormValue.dockerfilePath
+      dockerfilePath: formValue.dockerfilePath
     }, originalSource);
     const nameChanged = this.getChangedFields({ name: formValue.name }, { name: this.deploymentdetails?.name });
 

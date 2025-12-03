@@ -35,12 +35,13 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
   deploymentId: string = '';
   @ViewChild(EnvironmentVariablesComponent) envVarChild!: EnvironmentVariablesComponent;
   @ViewChild(DeploymentConfigMapsComponent) configMapChild!: DeploymentConfigMapsComponent;
-  lastReleaseStatus: string = '';
+  lastReleaseData: any = null;
 
   private wsSubscription!: Subscription;
   messages: any[] = [];
   appName: string = '';
   private subscription: Subscription | undefined;
+  sseSub!: Subscription;
 
   constructor(private router: Router, private modalService: NgbModal, private sharedService: SharedService,
     private layoutActionService: LayoutActionService, private deploymentService: DeploymentsService, private location: Location,
@@ -60,11 +61,18 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
       .subscribe((data: any) => {
         this.appName = data?.data.name;
         if (data.status.toLowerCase() === 'success') {
-          this.deploymentService.getReleasesByDeploymentId(this.deploymentId).subscribe((res: any) => {
-            const releaseData = res?.data?.releases[0];
-            this.sharedService.setlastReleaseStatus(releaseData.status);
-            this.lastReleaseStatus = this.sharedService.getlastReleaseStatus() ?? '';
-          });
+          this.sseSub = this.deploymentService.liveReleaseStatus(this.deploymentId).subscribe((res: any) => {
+            const releaseData = res?.releases?.releases;
+            // this.sharedService.setlastReleaseStatus(releaseData.status);
+            this.sharedService.setlastReleaseData(releaseData);
+            this.lastReleaseData = this.sharedService.getlastReleaseData() ?? [];
+
+          })
+          // this.deploymentService.getReleasesByDeploymentId(this.deploymentId).subscribe((res: any) => {
+          //   const releaseData = res?.data?.releases[0];
+          //   this.sharedService.setlastReleaseStatus(releaseData.status);
+          //   this.lastReleaseStatus = this.sharedService.getlastReleaseStatus() ?? '';
+          // });
         }
         this.layoutActionService.setExtraTitle(`${data.data.name} (${data.data.status})`);
       });
@@ -75,7 +83,7 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
     });
 
     this.sharedService.releaseStatus$.subscribe(status => {
-      this.lastReleaseStatus = status ?? '';
+      this.lastReleaseData = status ?? [];
     });
     this.layoutActionService.actionClick$
       .pipe(takeUntil(this.destroy$))
@@ -142,5 +150,6 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
     this.layoutActionService.clearExtraTitle();
     this.subscription?.unsubscribe();
+    this.sseSub?.unsubscribe(); 
   }
 }

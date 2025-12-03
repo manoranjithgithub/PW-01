@@ -43,29 +43,29 @@
   </c-nav>
   <c-tab-content #tabContent1="cTabContent" [activeTabPaneIdx]="selectedTabIndex" cRounded="bottom">
     <c-tab-pane class="p-3 preview" role="tabpanel">
-      <app-deployment-releases  [currentStatus]="lastReleaseStatus"></app-deployment-releases>
+      <app-deployment-releases  [currentStatus]="lastReleaseData[0]?.status"></app-deployment-releases>
     </c-tab-pane>
 
     <c-tab-pane class="p-3 preview" role="tabpanel">
       <ng-container *ngIf="selectedTabIndex === 1">
-        <app-environment-variables [canAddVariables]="true" [currentStatus]="lastReleaseStatus"></app-environment-variables>
+        <app-environment-variables [canAddVariables]="true" [currentStatus]="lastReleaseData[0]?.status"></app-environment-variables>
       </ng-container>
     </c-tab-pane>
 
     <c-tab-pane class="p-3 preview" role="tabpanel">
       <ng-container *ngIf="selectedTabIndex === 2">
-        <app-deployment-secrets [canAddVariables]="true" [currentStatus]="lastReleaseStatus"></app-deployment-secrets>
+        <app-deployment-secrets [canAddVariables]="true" [currentStatus]="lastReleaseData[0]?.status"></app-deployment-secrets>
       </ng-container>
     </c-tab-pane>
     <c-tab-pane class="p-3 preview" role="tabpanel">
       <ng-container *ngIf="selectedTabIndex === 3">
-        <app-deployment-config-maps [currentStatus]="lastReleaseStatus"></app-deployment-config-maps>
+        <app-deployment-config-maps [currentStatus]="lastReleaseData[0]?.status"></app-deployment-config-maps>
       </ng-container>
     </c-tab-pane>
 
     <c-tab-pane class="p-3 preview" role="tabpanel">
       <ng-container *ngIf="selectedTabIndex === 4">
-        <app-deployment-settings (closeModalEvent)="closeModalEvent.emit()" [currentStatus]="lastReleaseStatus"></app-deployment-settings>
+        <app-deployment-settings (closeModalEvent)="closeModalEvent.emit()" [currentStatus]="lastReleaseData[0]?.status"></app-deployment-settings>
       </ng-container>
 
     </c-tab-pane>
@@ -83,7 +83,7 @@
     </c-tab-pane>
     <c-tab-pane class="p-3 preview" role="tabpanel">
       <ng-container *ngIf="selectedTabIndex === 7">
-        <app-deployment-networking (closeModalEvent)="closeModalEvent.emit()" [currentStatus]="lastReleaseStatus"></app-deployment-networking>
+        <app-deployment-networking (closeModalEvent)="closeModalEvent.emit()" [currentStatus]="lastReleaseData[0]?.status"></app-deployment-networking>
       </ng-container>
 
     </c-tab-pane>
@@ -92,6 +92,6 @@
   <div class="d-flex justify-content-between ">
     <button class="btn button-format-outline  mt-3" (click)="goBack()"> <i class="bi bi-arrow-left"></i>
       Deployments</button>
-    <button class="btn button-format-solid mt-3" (click)="goToNextTab()" *ngIf="selectedTabIndex < 4" [disabled]="lastReleaseStatus === 'Building' ">Submit</button>
+    <button class="btn button-format-solid mt-3" (click)="goToNextTab()" *ngIf="selectedTabIndex < 4" [disabled]="lastReleaseData[0]?.status === 'Building' ">Submit</button>
   </div>
 </div>

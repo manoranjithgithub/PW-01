@@ -52,11 +52,11 @@ export const DEPLOY_OPTIONS = [
     name: 'Deploy zip/tar',
     value: 'zip',
   },
-  {
-    logo: 'assets/images/logos/docker.png',
-    name: 'Deploy from Docker',
-    value: 'docker',
-  },
+  // {
+  //   logo: 'assets/images/logos/docker.png',
+  //   name: 'Deploy from Docker',
+  //   value: 'docker',
+  // },
 ];
 
 export const DEPLOYMENT_STEPS = [

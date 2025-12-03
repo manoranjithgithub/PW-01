@@ -1,6 +1,6 @@
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
-import { throwError } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { ToastrService } from 'ngx-toastr';
 import { environment } from '../../../environments/environment';
@@ -12,7 +12,7 @@ export class ToolsService {
     private deploymentUrl = environment.deploymentManagement;
     private pricingManagement = environment.pricingManagement;
 
-    constructor(public http: HttpClient, private toastr: ToastrService) { }
+    constructor(public http: HttpClient, private toastr: ToastrService, private zone: NgZone) { }
 
     getToolsList(env: string) {
         return this.http.get(`${this.deploymentUrl}/tools/installed/${env}`).pipe(
@@ -73,7 +73,7 @@ export class ToolsService {
 
     getToolNameValidation(env: string, name: string) {
         return this.http.get(`${this.deploymentUrl}/tools/${env}/${name}`)
-          .pipe(
+            .pipe(
                 catchError(this.handleError)
             );
     }
@@ -82,22 +82,80 @@ export class ToolsService {
         let params = new HttpParams()
         if (toolName) {
             params = params.set('toolName', toolName);
-          }
-          if (envId) {
+        }
+        if (envId) {
             params = params.set('environmentId', envId);
-          }
-        return this.http.get(`${this.deploymentUrl}/deployment/getResourceAllocationDetails`,{ params })
+        }
+        return this.http.get(`${this.deploymentUrl}/deployment/getResourceAllocationDetails`, { params })
             .pipe(
                 catchError(this.handleError)
             );
     }
 
     getInstanceTypes() {
-    return this.http.get(`${this.pricingManagement}/public/pricing-catalog`)
-      .pipe(
-        catchError(this.handleError.bind(this))
-      );
-  }
+        return this.http.get(`${this.pricingManagement}/public/pricing-catalog`)
+            .pipe(
+                catchError(this.handleError.bind(this))
+            );
+    }
+
+    liveToolsData(envId: string) {
+        const token = localStorage.getItem('accessToken');
+        const url = `${this.deploymentUrl}/live/tools/stream?environmentId=${envId}&interval=15`;
+        return new Observable(observer => {
+            const controller = new AbortController();
+            const signal = controller.signal;
+
+            fetch(url, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    Accept: 'text/event-stream',
+                },
+            })
+                .then(response => {
+                    if (!response.body) throw new Error('No response body from SSE endpoint');
+
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder('utf-8');
+                    let buffer = '';
+
+                    const read = () => {
+                        reader.read().then(({ done, value }) => {
+                            if (done) {
+                                observer.complete();
+                                return;
+                            }
+
+                            buffer += decoder.decode(value, { stream: true });
+                            const lines = buffer.split(/\r?\n/);
+                            buffer = lines.pop() || '';
+
+                            for (const line of lines) {
+                                if (line.startsWith('data:')) {
+                                    const dataStr = line.replace(/^data:\s*/, '');
+                                    try {
+                                        const data = JSON.parse(dataStr);
+                                        this.zone.run(() => observer.next(data));
+                                    } catch (e) {
+                                        console.error('Invalid SSE JSON:', e);
+                                    }
+                                }
+                            }
+
+                            read();
+                        }).catch(err => observer.error(err));
+                    };
+
+                    read();
+                })
+                .catch(err => observer.error(err));
+
+            return () => {
+                // console.log(`SSE unsubscribed`);
+                controller.abort();
+            };
+        });
+    }
 
     private handleError(error: HttpErrorResponse) {
         let errorMessage = 'Something went wrong. Please try again later.';
