@@ -19,7 +19,7 @@
   <div class="step-content-section">
 
     <ng-container *ngIf="steps[currentStep].label === 'General'">
-      <form [formGroup]="stepOneForm">
+      <form [formGroup]="stepOneForm" class="stepper-body">
         <div class="container">
           <div class="row">
             <div class="col-md-4" style="margin-top:1px">
@@ -222,50 +222,56 @@
       </form>
     </ng-container>
     <ng-container *ngIf="steps[currentStep].label === 'Environment variable'">
-      <app-environment-variables (envDetails)="getenvironmentList($event)" [deploymentData]="stepOneForm.value"
-        [canAddVariables]="false" [envDataFromParent]="envData" #envDetails></app-environment-variables>
+      <div class="stepper-body">
+        <app-environment-variables (envDetails)="getenvironmentList($event)" [deploymentData]="stepOneForm.value"
+          [canAddVariables]="false" [envDataFromParent]="envData" #envDetails></app-environment-variables>
+      </div>
     </ng-container>
     <ng-container *ngIf="steps[currentStep].label === 'Secrets'">
-      <app-deployment-secrets [deploymentData]="stepOneForm.value" [canAddVariables]="false"
-        [secretDataFromParent]="secretData" (secretDetails)="getSecretList($event)"
-        #secretDetails></app-deployment-secrets>
+      <div class="stepper-body">
+        <app-deployment-secrets [deploymentData]="stepOneForm.value" [canAddVariables]="false"
+          [secretDataFromParent]="secretData" (secretDetails)="getSecretList($event)"
+          #secretDetails></app-deployment-secrets>
+      </div>
     </ng-container>
     <ng-container *ngIf="steps[currentStep].label === 'Config as file'">
-      <div class="container w-50 my-4">
-        <form [formGroup]="fileUploadForm">
-          <div class="form-group">
-            <label for="fileInput" class="form-label">Select a file to upload (in .yml or .json format) :</label>
-            <div class="d-flex align-items-center gap-2">
-              <div class="w-100">
-                <input type="file" id="fileInput" formControlName="fileInput" class="form-control"
-                  accept=".json,.yml,.yaml" (change)="onFileSelected($event)" />
+      <div class="stepper-body">
+        <div class="container w-50 my-4">
+          <form [formGroup]="fileUploadForm">
+            <div class="form-group">
+              <label for="fileInput" class="form-label">Select a file to upload (in .yml or .json format) :</label>
+              <div class="d-flex align-items-center gap-2">
+                <div class="w-100">
+                  <input type="file" id="fileInput" formControlName="fileInput" class="form-control"
+                    accept=".json,.yml,.yaml" (change)="onFileSelected($event)" />
+                </div>
+                <i class="bi bi-x-circle-fill fs-4 text-dark cursor-pointer" (click)="clearFile()"
+                  title="Clear Selected File"></i>
               </div>
-              <i class="bi bi-x-circle-fill fs-4 text-dark cursor-pointer" (click)="clearFile()"
-                title="Clear Selected File"></i>
+              <div
+                *ngIf="fileUploadForm.get('fileInput')?.hasError('invalidFileType') && fileUploadForm.get('fileInput')?.touched"
+                class="text-danger my-2">
+                Invalid file type. Only .yml, .json files are allowed.
+              </div>
+              <div
+                *ngIf="fileUploadForm.get('fileInput')?.hasError('fileSizeExceeded') && fileUploadForm.get('fileInput')?.touched"
+                class="text-danger my-2">
+                File size exceeds the limit of 500MB.
+              </div>
+              <div *ngIf="fileUploadForm.get('fileInput')?.hasError('required')" class="text-danger my-2">
+                File is required.
+              </div>
             </div>
-            <div
-              *ngIf="fileUploadForm.get('fileInput')?.hasError('invalidFileType') && fileUploadForm.get('fileInput')?.touched"
-              class="text-danger my-2">
-              Invalid file type. Only .yml, .json files are allowed.
+            <div class="my-2">
+              <label class="form-label">File Path</label>
+              <input type="text" formControlName="filePath" name="filePath" class="form-control"
+                (blur)="checkFileAvailble()" />
+              <div *ngIf="fileUploadForm.get('filePath')?.hasError('required')" class="text-danger my-2">
+                File path is required when a file is uploaded.
+              </div>
             </div>
-            <div
-              *ngIf="fileUploadForm.get('fileInput')?.hasError('fileSizeExceeded') && fileUploadForm.get('fileInput')?.touched"
-              class="text-danger my-2">
-              File size exceeds the limit of 500MB.
-            </div>
-            <div *ngIf="fileUploadForm.get('fileInput')?.hasError('required')" class="text-danger my-2">
-              File is required.
-            </div>
-          </div>
-          <div class="my-2">
-            <label class="form-label">File Path</label>
-            <input type="text" formControlName="filePath" name="filePath" class="form-control"
-              (blur)="checkFileAvailble()" />
-            <div *ngIf="fileUploadForm.get('filePath')?.hasError('required')" class="text-danger my-2">
-              File path is required when a file is uploaded.
-            </div>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
     </ng-container>
     <ng-container *ngIf="steps[currentStep].label === 'Review'">
@@ -275,7 +281,7 @@
     </ng-container>
   </div>
 </div>
-<div style="position: fixed;width: 100%;bottom: 10px;">
+<div>
   <div class="stepper-footer d-flex gap-3 justify-content-between my-4">
     <div class="">
       <button class="btn button-format-outline" (click)="prev()" [disabled]="currentStep === 0"
