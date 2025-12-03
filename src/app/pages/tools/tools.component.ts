@@ -20,13 +20,15 @@ import { SHARED_IMPORTS } from '../../shared/shared-imports';
 })
 export class ToolsComponent implements OnInit, OnDestroy {
   envId: string = '';
-  rowData = [];
+  rowData: any = [];
 
   private subscription: Subscription | undefined;
   toolName: string = '';
   loading: boolean = true;
   getToolsIntervel: any
   isShowToolDetails: boolean = false;
+  sseSub: Subscription | null = null;
+
 
   constructor(private http: ToolsService,
     private router: Router, private sharedService: SharedService, private modalService: NgbModal,
@@ -48,12 +50,18 @@ export class ToolsComponent implements OnInit, OnDestroy {
       }
       const envObj = JSON.parse(savedEnv);
       const envId = envObj.id;
-      this.envId = envId
+      this.envId = envId;
+
+      if (this.sseSub) {
+        this.sseSub.unsubscribe();
+        this.sseSub = null;
+      }
       this.getAvailableTools(envId);
     });
-    this.getToolsIntervel = setInterval(() => {
-      this.getAvailableTools(JSON.parse(localStorage.getItem('environment') || '{}').id);
-    }, 30000);
+    this.getAvailableTools(JSON.parse(localStorage.getItem('environment') || '{}').id)
+    // this.getToolsIntervel = setInterval(() => {
+    //   this.getAvailableTools(JSON.parse(localStorage.getItem('environment') || '{}').id);
+    // }, 30000);
   }
 
   columnDefs: ColDef[] = [
@@ -185,11 +193,11 @@ export class ToolsComponent implements OnInit, OnDestroy {
     this.router.navigate(['/tools/view-tool'], { queryParams: { selectedView: this.toolName } })
   }
 
-  getAvailableTools(value: any): void {
+  getAvailableTools(value: any): any {
     if (value) {
-      this.http.getToolsList(value).subscribe((res: any) => {
-        if (res.status) {
-          this.rowData = res.data.map((tool: any) => ({
+      this.sseSub = this.http.liveToolsData(value).subscribe((res: any) => {
+        if (res) {
+          this.rowData = Object.values(res.tools)?.map((tool: any) => ({
             ...tool,
             icon: this.getToolIcon(tool.schemaId)
           }));
@@ -249,5 +257,6 @@ export class ToolsComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     clearInterval(this.getToolsIntervel)
     this.subscription?.unsubscribe();
+    this.sseSub?.unsubscribe();
   }
 }

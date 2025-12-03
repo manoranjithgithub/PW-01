@@ -90,15 +90,13 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
     )
       .subscribe((res: any) => {
         this.deploymentdetails = res.data;
-        this.getReleasesByDeploymentId();
+        // this.getReleasesByDeploymentId();
       });
-    // this.sharedService.releaseStatus$
-    //   .pipe(takeUntil(this.destroy$), skip(1))
-    //   .subscribe(status => {
-    //     if (status && status !== this.currentStatus.toLowerCase()) {
-    //       this.getReleasesByDeploymentId();
-    //     }
-    //   });
+    this.sharedService.releaseStatus$.subscribe(res => {
+      if (res) {
+        this.getReleasesByDeploymentId(res);
+      }
+    })
 
   }
 
@@ -110,23 +108,16 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
     this.logsModal.open('right');
   }
 
-  getReleasesByDeploymentId(): void {
-    this.deploymentService.getReleasesByDeploymentId(this.deploymentId).subscribe((res: any) => {
-
-      [this.active, ...this.history] = res.data?.releases || [];
-
-      this.deploymentService.getReleaseDataById(this.active.id)
-        .pipe(take(1))
-        .subscribe((response: any) => {
-
-          this.releaseData = response.data;
-          this.updateSteps(response.data);
-
-          // 👉 Start Live Polling
-          this.pollReleaseStatus();
-        });
-
-    });
+  getReleasesByDeploymentId(res:any): void {
+    this.releaseData = res[0];
+    [this.active, ...this.history] = res || [];
+    this.releaseData = this.active;
+    this.updateSteps(this.active);
+    // this.deploymentService.liveReleaseStatus(this.deploymentId).subscribe((res: any) => {
+    //   [this.active, ...this.history] = res?.releases?.releases || [];
+    //   this.releaseData = this.active;
+    //   this.updateSteps(this.active);
+    // });
   }
   hasFailedStatus(): boolean {
     return this.steps.some(s => s.status === 'failed');
@@ -208,23 +199,6 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
     this.pageSize = event.itemsPerPage;
     this.getLogData(type);
   }
-  pollReleaseStatus() {
-    if (!this.active?.id) return;
-
-    this.pollingSub = interval(3000)
-      .pipe(
-        switchMap(() => this.deploymentService.getReleaseDataById(this.active.id)),
-        tap((response: any) => {
-          this.updateSteps(response.data);
-        }),
-        takeWhile((response: any) => {
-          const s = response.data?.status?.toLowerCase();
-          return !['completed', 'success', 'failed', 'build failed', 'deploy failed', 'paused'].includes(s);
-        }, true)
-      )
-      .subscribe();
-  }
-
   updateSteps(responseData: any) {
     const status = responseData?.status?.toLowerCase();
     this.releaseData = responseData;

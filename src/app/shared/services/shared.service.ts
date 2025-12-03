@@ -38,8 +38,8 @@ export class SharedService {
   private userSubject = new BehaviorSubject<User | null>(null);
   user$ = this.userSubject.asObservable();
 
-  private lastReleaseStatus = new BehaviorSubject<string | null>(null);
-  releaseStatus$ = this.lastReleaseStatus.asObservable();
+  private lastReleaseData = new BehaviorSubject<string | null>(null);
+  releaseStatus$ = this.lastReleaseData.asObservable();
 
   emitEnvDDChange(value: any[]) {
     this.envDDChangeSource.next(value);
@@ -116,12 +116,12 @@ export class SharedService {
     return this.userSubject.getValue();
   }
 
-  setlastReleaseStatus(status: string) {
-    this.lastReleaseStatus.next(status);
+  setlastReleaseData(status: string) {
+    this.lastReleaseData.next(status);
   }
 
-  getlastReleaseStatus(): string | null {
-    return this.lastReleaseStatus.getValue();
+  getlastReleaseData(): string | null {
+    return this.lastReleaseData.getValue();
   }
 
   getStatusMeta(status: string): { icon: string; statusClass: string; label: string } {
