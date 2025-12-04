@@ -86,8 +86,9 @@ body {
   }
 
   .stepper-body {
-    max-height: 300px;
-    min-height: 300px;
+    min-height: 20vh;
+    height: 40vh;
+    max-height: 50vh; 
     overflow-y: auto;
   }
 }

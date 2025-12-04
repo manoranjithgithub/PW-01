@@ -1,3 +1,4 @@
+
 <div class="stepper" *ngIf="currentStep !== 4">
   <div class="step" *ngFor="let step of steps; let i = index" [ngClass]="{
         'completed': i < currentStep,
@@ -282,7 +283,7 @@
   </div>
 </div>
 <div>
-  <div class="stepper-footer d-flex gap-3 justify-content-between my-4">
+  <div class="stepper-footer d-flex gap-3 justify-content-between">
     <div class="">
       <button class="btn button-format-outline" (click)="prev()" [disabled]="currentStep === 0"
         *ngIf="currentStep > 0">Previous</button>
