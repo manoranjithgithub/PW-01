@@ -1,11 +1,15 @@
+body {
+  overflow-y: hidden;
+}
+
 .stepper {
   display: flex;
   justify-content: space-around;
   margin-bottom: 1rem;
-  padding: 1rem 0;
+  // padding: 1rem 0;
   // border-bottom: 1px solid #e0e0e0;
   max-width: 680px;
-  margin: auto auto 20px;
+  margin: auto;
 
   .step {
 
@@ -76,8 +80,15 @@
 .step-content {
   // text-align: center;
 
+
   .stepper-footer {
     text-align: right;
+  }
+
+  .stepper-body {
+    max-height: 300px;
+    min-height: 300px;
+    overflow-y: auto;
   }
 }
 
@@ -125,6 +136,6 @@ fieldset:disabled .btn {
 }
 
 
-.mat-mdc-select-min-line{
+.mat-mdc-select-min-line {
   font-weight: 500;
 }
