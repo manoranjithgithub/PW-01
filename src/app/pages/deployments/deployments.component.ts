@@ -112,6 +112,7 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
         this.sseSub.unsubscribe();
         this.sseSub = null;
       }
+      this.tableData = [];
       this.getDeployment(value);
     });
     // this.getDeploymentIntervel = setInterval(() => {
@@ -123,8 +124,8 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
     if (env) {
       this.sseSub = this.deploymentsService.liveDeploymentData(env.id).subscribe((res: any) => {
         if (res) {
-          this.tableData = res.deployment;
-          localStorage.setItem('availableDeployments', JSON.stringify(res.data?.map((x: any) => x.name)));
+          this.updateTableData(res.deployment);
+          localStorage.setItem('availableDeployments', JSON.stringify(res.deployment?.map((x: any) => x.name)));
           this.loading = false
         }
       },
@@ -145,6 +146,32 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
   }
   goToNewDeployment() {
     this.router.navigate(['/deployment/create-deployment'])
+  }
+
+  updateTableData(newData: any[]) {
+    let changed = false;
+    newData.forEach(newItem => {
+      const index = this.tableData.findIndex(item => item.id === newItem.id);
+
+      if (index > -1) {
+        const existing = this.tableData[index];
+        const hasChanges = Object.keys(newItem).some(
+          key => existing[key] !== newItem[key]
+        );
+
+        if (hasChanges) {
+          this.tableData[index] = { ...existing, ...newItem };
+          changed = true;
+        }
+
+      } else {
+        this.tableData.push(newItem);
+        changed = true;
+      }
+    });
+    if (changed) {
+      this.tableData = [...this.tableData];
+    }
   }
 
   ngOnDestroy(): void {

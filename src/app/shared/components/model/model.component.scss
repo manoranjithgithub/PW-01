@@ -87,3 +87,7 @@
   font-style: normal;
   font-weight: 400;
 }
+::ng-deep .modal-dialog{
+  max-width: 700px !important;
+  margin: auto !important;
+}

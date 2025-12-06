@@ -48,7 +48,10 @@ export class AuthInterceptor implements HttpInterceptor {
     const request = token ? this.addToken(req, token) : req;
     return next.handle(request).pipe(
       catchError(error => this.handleError(error, request, next)),
-      finalize(() => !skipLoader && this.loader.hide())
+      finalize(() => {
+        if (!skipLoader) this.loader.hide();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      })
     );
   }
 
