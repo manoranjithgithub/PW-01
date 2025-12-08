@@ -238,6 +238,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
           buildCommand: res.data.buildConfig?.buildCommand,
           startCommand: res.data.buildConfig?.startCommand,
           installCommand: res.data.buildConfig?.installCommand,
+          dockerfilePath: res.data.sourceCode?.dockerfilePath || '',
         });
 
         const initialValues = this.generalSettingsForm.value;
@@ -251,7 +252,6 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
           repoUrl: repoUrl,
           branchName: branchName,
           fileName: res.data.sourceCode?.s3FileKey ? res.data.sourceCode?.s3FileKey : '',
-          dockerfilePath: res.data.sourceCode?.dockerfilePath || '',
         });
         if (res.data.sourceCode?.type.toLowerCase() === "file") {
           this.s3FileKey = res.data.sourceCode?.s3FileKey;
@@ -443,12 +443,12 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
       port: formValue.port,
     }, originalNetwork);
 
-    const sourceCode = this.getChangedFields({
+    const sourceCode = {
       type: sourceFormValue.type,
       gitUrl: this.buildGitUrl(),
       s3FileKey: fileName ? this.s3FileKey : null,
       dockerfilePath: formValue.dockerfilePath
-    }, originalSource);
+    };
     const nameChanged = this.getChangedFields({ name: formValue.name }, { name: this.deploymentdetails?.name });
 
     const req: any = {};

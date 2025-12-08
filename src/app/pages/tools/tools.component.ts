@@ -56,6 +56,7 @@ export class ToolsComponent implements OnInit, OnDestroy {
         this.sseSub.unsubscribe();
         this.sseSub = null;
       }
+      this.rowData = [];
       this.getAvailableTools(envId);
     });
     this.getAvailableTools(JSON.parse(localStorage.getItem('environment') || '{}').id)
@@ -75,7 +76,7 @@ export class ToolsComponent implements OnInit, OnDestroy {
         this.gotoAction(event.data)
     },
     {
-      headerName: 'Name', field: 'name', sortable: true, filter: true, flex: 1,
+      headerName: 'Name', field: 'name', sortable: true, filter: true, flex: 1,maxWidth:250,
       cellStyle: { cursor: 'pointer', color: '#181d1f' },
       onCellClicked: (event: CellClickedEvent) =>
         this.gotoAction(event.data)
@@ -85,7 +86,8 @@ export class ToolsComponent implements OnInit, OnDestroy {
       field: 'status',
       sortable: true,
       filter: true,
-      flex: 1,
+      width:150,
+      // flex: 1,
       cellRenderer: (params: any) => {
         const status = params.value;
         const meta = this.sharedService.getStatusMeta(status);
@@ -171,11 +173,13 @@ export class ToolsComponent implements OnInit, OnDestroy {
       field: 'publicPort',
       sortable: true,
       filter: true,
-      flex: 1,
+      width:100,
+      // flex: 1,
     },
     {
       headerName: "Actions",
       field: "actions",
+      width:100,
       cellStyle: { cursor: 'pointer' },
       cellRenderer: ActionCellRendererComponent,
       cellRendererParams: {
@@ -197,11 +201,12 @@ export class ToolsComponent implements OnInit, OnDestroy {
     if (value) {
       this.sseSub = this.http.liveToolsData(value).subscribe((res: any) => {
         if (res) {
-          this.rowData = Object.values(res.tools)?.map((tool: any) => ({
+          const newTools = Object.values(res.tools)?.map((tool: any) => ({
             ...tool,
             icon: this.getToolIcon(tool.schemaId)
           }));
-          localStorage.setItem('availableTools', JSON.stringify(res.data?.map((tool: any) => tool.name)));
+          this.updateTools(newTools);
+          localStorage.setItem('availableTools', JSON.stringify(newTools?.map((tool: any) => tool.name)));
           this.loading = false
         }
       }, error => {
@@ -252,6 +257,33 @@ export class ToolsComponent implements OnInit, OnDestroy {
       return 'assets/images/icons/mongodb.svg';
     }
     return 'assets/images/icons/default-tool.png';
+  }
+
+  updateTools(newTools: any[]) {
+    let changed = false;
+    newTools.forEach(newTool => {
+      const index = this.rowData.findIndex((t: any) => t._id === newTool._id);
+
+      if (index > -1) {
+        const existing = this.rowData[index];
+
+        const hasChanges = Object.keys(newTool).some(
+          key => existing[key] !== newTool[key]
+        );
+
+        if (hasChanges) {
+          this.rowData[index] = { ...existing, ...newTool };
+          changed = true;
+        }
+
+      } else {
+        this.rowData.push(newTool);
+        changed = true;
+      }
+    });
+    if (changed) {
+      this.rowData = [...this.rowData];
+    }
   }
 
   ngOnDestroy(): void {
