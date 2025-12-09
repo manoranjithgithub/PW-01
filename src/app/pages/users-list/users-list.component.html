@@ -34,6 +34,38 @@
                         </div>
                     </div>
                 </div>
+                <div class="d-flex gap-2 my-2 justify-content-between">
+                    <div class="form-group w-100">
+                        <label for="email" class="form-label">Select Project</label>
+                        <select formControlName="project" id="project" class="form-select">
+                            <option *ngIf="!projectList || projectList.length === 0" disabled >
+                                No project available
+                            </option>
+                            <option *ngFor="let option of projectList" [value]="option.id">
+                                {{ option.name }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="form-group w-100">
+                        <label for="email" class="form-label">Select Environment</label>
+                        <select formControlName="environment" id="environment" class="form-select">
+                            <option *ngIf="!envList || envList.length === 0" disabled >
+                                No environment available
+                            </option>
+                            <option *ngFor="let option of envList" [value]="option.id">
+                                {{ option.name }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="form-group w-100">
+                        <label for="email" class="form-label">Select Access</label>
+                        <select formControlName="access" id="access" class="form-select">
+                            <option *ngFor="let option of availableAccess" [value]="option.value">
+                                {{ option.text }}
+                            </option>
+                        </select>
+                    </div>
+                </div>
                 <div class="text-right mt-4">
                     <button type="reset" class="btn button-format-outline me-2" (click)="resetForm()">
                         Cancel

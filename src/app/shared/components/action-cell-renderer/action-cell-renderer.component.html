@@ -1,4 +1,4 @@
-<div class="custom-dropdown d-inline-block"  *ngIf="additionalParam === 'tools'">
+<div class="custom-dropdown d-inline-block"  *ngIf="additionalParam === 'tools' || additionalParam === 'user-list'">
   <button #dropdownBtn class="btn btn-icon" type="button" (click)="toggleDropdown($event, dropdownBtn)">
     <i class="bi bi-three-dots-vertical"></i>
   </button>

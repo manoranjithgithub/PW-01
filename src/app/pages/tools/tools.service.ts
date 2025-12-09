@@ -4,7 +4,7 @@ import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { ToastrService } from 'ngx-toastr';
 import { environment } from '../../../environments/environment';
-
+import {createSSEObservable} from '../../shared/utils/sse.utils'; 
 @Injectable({
     providedIn: 'root'
 })
@@ -100,61 +100,9 @@ export class ToolsService {
     }
 
     liveToolsData(envId: string) {
-        const token = localStorage.getItem('accessToken');
+        const token = localStorage.getItem("accessToken")!;
         const url = `${this.deploymentUrl}/live/tools/stream?environmentId=${envId}&interval=15`;
-        return new Observable(observer => {
-            const controller = new AbortController();
-            const signal = controller.signal;
-
-            fetch(url, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    Accept: 'text/event-stream',
-                },
-            })
-                .then(response => {
-                    if (!response.body) throw new Error('No response body from SSE endpoint');
-
-                    const reader = response.body.getReader();
-                    const decoder = new TextDecoder('utf-8');
-                    let buffer = '';
-
-                    const read = () => {
-                        reader.read().then(({ done, value }) => {
-                            if (done) {
-                                observer.complete();
-                                return;
-                            }
-
-                            buffer += decoder.decode(value, { stream: true });
-                            const lines = buffer.split(/\r?\n/);
-                            buffer = lines.pop() || '';
-
-                            for (const line of lines) {
-                                if (line.startsWith('data:')) {
-                                    const dataStr = line.replace(/^data:\s*/, '');
-                                    try {
-                                        const data = JSON.parse(dataStr);
-                                        this.zone.run(() => observer.next(data));
-                                    } catch (e) {
-                                        console.error('Invalid SSE JSON:', e);
-                                    }
-                                }
-                            }
-
-                            read();
-                        }).catch(err => observer.error(err));
-                    };
-
-                    read();
-                })
-                .catch(err => observer.error(err));
-
-            return () => {
-                // console.log(`SSE unsubscribed`);
-                controller.abort();
-            };
-        });
+        return createSSEObservable(url, token, this.zone);
     }
 
     private handleError(error: HttpErrorResponse) {

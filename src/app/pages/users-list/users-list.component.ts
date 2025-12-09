@@ -28,11 +28,11 @@ export class UsersListComponent implements OnInit {
       },
     },
     {
-      field: 'name', headerName: 'Name', tooltipField: 'name', sortable: true, flex: 1,
+      field: 'name', headerName: 'Name', tooltipField: 'name', sortable: true, width: 150,
       cellStyle: { 'white-space': 'nowrap', 'overflow': 'hidden !important', 'text-overflow': 'ellipsis' },
     },
     {
-      field: 'email', headerName: 'Email', tooltipField: 'email', flex: 1,
+      field: 'email', headerName: 'Email', tooltipField: 'email', width: 250,
       cellStyle: { 'white-space': 'nowrap', 'overflow': 'hidden !important', 'text-overflow': 'ellipsis' }
     },
     {
@@ -68,9 +68,23 @@ export class UsersListComponent implements OnInit {
           ? date.toLocaleDateString()
           : '';
       }
+    },
+    {
+      headerName: "Actions",
+      field: "",
+      flex:1,
+      // cellRenderer: ActionCellRendererComponent,
+      // cellRendererParams: {
+      //   additionalParam: 'user-list',
+      // },
+
     }
   ];
   orgName: string = '';
+  projectList: any = [];
+  envList: any = [];
+  availableAccess = [{ text: 'Read', value: 'read' }, { text: 'Write', value: 'write' }, { text: 'Delete', value: 'delete' }]
+
   constructor(
     private http: UsersListService,
     private fb: FormBuilder,
@@ -78,16 +92,34 @@ export class UsersListComponent implements OnInit {
   ) {
     this.addUserForm = this.fb.group({
       username: ['', [Validators.required, Validators.pattern(VALIDATION_REGEX.USERNAME)]],
-      email: ['', [Validators.required, Validators.email]]
+      email: ['', [Validators.required, Validators.email]],
+      project: [''],
+      environment: [''],
+      access: ['']
     });
   }
 
   ngOnInit(): void {
     this.getAllUsers();
+    this.http.getAllProjects().subscribe((res: any) => {
+      if (res && res.status.toLowerCase() == 'success') {
+        this.projectList = res.data
+      }
+    });
+
+    this.addUserForm.get('project')?.valueChanges.subscribe(value => {
+      if (value) {
+        this.http.getEnvironmentsByProject(value).subscribe((res: any) => {
+          if (res && res.status.toLowerCase() == 'success') {
+            this.envList = res.data
+          }
+        })
+      }
+    })
   }
 
   addnewUser(value: boolean) {
-    this.showAddUserSection = value;   
+    this.showAddUserSection = value;
   }
 
   onSubmitAddUser() {

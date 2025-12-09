@@ -26,8 +26,6 @@ export class AuthInterceptor implements HttpInterceptor {
   private refreshTokenSubject = new BehaviorSubject<string | null>(null);
 
   private readonly skipLoaderUrls = [
-    '/status',
-    '/deployments?',
     '/artificat?fileExtension',
   ];
 
@@ -49,7 +47,9 @@ export class AuthInterceptor implements HttpInterceptor {
     return next.handle(request).pipe(
       catchError(error => this.handleError(error, request, next)),
       finalize(() => {
-        if (!skipLoader) this.loader.hide();
+        if (!skipLoader) {
+          setTimeout(() => this.loader.hide(), 300);
+        }
         window.scrollTo({ top: 0, behavior: 'smooth' });
       })
     );

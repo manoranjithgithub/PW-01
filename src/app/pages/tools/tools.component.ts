@@ -24,7 +24,6 @@ export class ToolsComponent implements OnInit, OnDestroy {
 
   private subscription: Subscription | undefined;
   toolName: string = '';
-  loading: boolean = true;
   getToolsIntervel: any
   isShowToolDetails: boolean = false;
   sseSub: Subscription | null = null;
@@ -207,11 +206,9 @@ export class ToolsComponent implements OnInit, OnDestroy {
           }));
           this.updateTools(newTools);
           localStorage.setItem('availableTools', JSON.stringify(newTools?.map((tool: any) => tool.name)));
-          this.loading = false
         }
       }, error => {
         this.rowData = [];
-        this.loading = false
       })
     }
   }

@@ -10,7 +10,7 @@ import { environment } from '../../../environments/environment';
 })
 export class UsersListService {
   private userApiUrl = environment.usermanagementApiUrl;
-  private userBaseUrl = environment.usermanagementBaseUrl;
+  private projectUrl = environment.projectsBaseUrl;
 
   constructor(public http: HttpClient, private toastr: ToastrService) { }
 
@@ -26,7 +26,18 @@ export class UsersListService {
         catchError(this.handleError.bind(this))
       );
   }
-
+  getAllProjects() {
+    return this.http.get(`${this.projectUrl}/projects`)
+      .pipe(
+        catchError(this.handleError.bind(this))
+      );
+  }
+  getEnvironmentsByProject(projectId: string) {
+    return this.http.get(`${this.projectUrl}/environments?projectId=${projectId}`)
+      .pipe(
+        catchError(this.handleError.bind(this))
+      );
+  }
 
   private handleError(error: HttpErrorResponse) {
     if (error.error instanceof ErrorEvent) {

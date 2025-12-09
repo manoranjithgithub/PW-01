@@ -275,6 +275,9 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
     if (this.additionalParam === "tools") {
       this.route.navigate(['/tools/view-tool'], { queryParams: { selectedView: data.name } });
     }
+    if(this.additionalParam === 'user-list'){
+      alert('user-list')
+    }
   }
   showDeploymentView(deploymentDetails: any) {
     this.deploymentId = deploymentDetails.id;
