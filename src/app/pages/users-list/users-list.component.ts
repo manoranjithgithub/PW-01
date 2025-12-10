@@ -5,11 +5,14 @@ import { AgGridTableComponent } from '../../shared/components/ag-grid-table/ag-g
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { VALIDATION_REGEX } from '../../core/constants/validation-regex.constant';
+import { TableModule } from 'primeng/table';
+import { ButtonModule } from 'primeng/button';
+import { ActionCellRendererComponent } from '../../shared/components/action-cell-renderer/action-cell-renderer.component';
 
 @Component({
   selector: 'app-users-list',
   standalone: true,
-  imports: [CommonModule, AgGridTableComponent, ReactiveFormsModule],
+  imports: [CommonModule, AgGridTableComponent, ReactiveFormsModule, TableModule, ButtonModule],
   templateUrl: './users-list.component.html',
   styleUrl: './users-list.component.scss',
   providers: [UsersListService]
@@ -18,6 +21,27 @@ export class UsersListComponent implements OnInit {
   tableData: any[] = [];
   showAddUserSection = false;
   addUserForm!: FormGroup;
+  users = [];
+
+  projects: any[] = [
+    {
+      name: 'Project A',
+      environments: [
+        { name: 'Env 1', permissions: [{ name: 'Read' }] }
+      ]
+    },
+    {
+      name: 'Project B',
+      environments: [
+        { name: 'Env 1', permissions: [{ name: 'Read' }, { name: 'Write' }] }
+      ]
+    },
+    {
+      name: 'Project C',
+      permissions: [{ name: 'Read' }]
+    }
+  ];
+  allExpanded = false;
 
   columnDefs = [
     {
@@ -72,11 +96,11 @@ export class UsersListComponent implements OnInit {
     {
       headerName: "Actions",
       field: "",
-      flex:1,
-      // cellRenderer: ActionCellRendererComponent,
-      // cellRendererParams: {
-      //   additionalParam: 'user-list',
-      // },
+      flex: 1,
+      cellRenderer: ActionCellRendererComponent,
+      cellRendererParams: {
+        additionalParam: 'user-list',
+      },
 
     }
   ];
@@ -142,9 +166,25 @@ export class UsersListComponent implements OnInit {
   getAllUsers() {
     this.http.getAllUSers().subscribe((res: any) => {
       if (res.status?.toLowerCase() === 'success') {
-        this.tableData = res.data
+        this.tableData = res.data;
+        this.users = res.data
       }
 
     })
+  }
+
+  toggle(node: any) {
+    node.expanded = !node.expanded;
+  }
+  toggleAll() {
+    this.allExpanded = !this.allExpanded;
+
+    this.projects.forEach(p => {
+      p.expanded = this.allExpanded;
+
+      p.environments?.forEach((e: any) => {
+        e.expanded = this.allExpanded;
+      });
+    });
   }
 }

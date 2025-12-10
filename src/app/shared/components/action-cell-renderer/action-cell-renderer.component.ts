@@ -25,6 +25,23 @@ import {
 } from '@coreui/angular';
 import { DeployConfirmationComponent } from '../deploy-confirmation/deploy-confirmation.component';
 
+interface Permission {
+  name: string;
+}
+
+interface Environment {
+  name: string;
+  expanded?: boolean;
+  permissions: Permission[];
+}
+
+interface Project {
+  name: string;
+  expanded?: boolean;
+  environments?: Environment[];
+  permissions?: Permission[];
+}
+
 @Component({
   selector: 'app-action-cell-renderer',
   imports: [
@@ -72,6 +89,7 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
 
   @ViewChild('scaleDeploymentsModel') private scaleDeploymentsModel!: ModalComponent;
   @ViewChild('logsModal') private logsModal!: ModalComponent;
+  @ViewChild('policyModal') private policyModal!: ModalComponent;
   @ViewChild('scrollContainer') scrollContainer!: ElementRef<HTMLDivElement>;
   // menu viewChild refs not required for positioning; using fixed coords
   dropdownStyle: any = {};
@@ -92,6 +110,32 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
     hideDismissButton: () => true,
     hideCloseButton: () => false
   };
+  public policyModalConfig: any = {
+    modalTitle: 'Policy Details',
+    width: '780px',
+    height: 'auto',
+    hideDismissButton: () => true,
+    hideCloseButton: () => false
+  };
+  projects: any[] = [
+    {
+      name: 'Project A',
+      environments: [
+        { name: 'Env 1', permissions: [{ name: 'Read' }] }
+      ]
+    },
+    {
+      name: 'Project B',
+      environments: [
+        { name: 'Env 1', permissions: [{ name: 'Read' }, { name: 'Write' }] }
+      ]
+    },
+    {
+      name: 'Project C',
+      permissions: [{ name: 'Read' }]
+    }
+  ];
+  allExpanded = false;
 
   constructor(private el: ElementRef, private renderer: Renderer2, private modalService: NgbModal,
     private http: DeploymentsService, private route: Router, private toaster: ToastrService,
@@ -184,7 +228,7 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
       //     replicas: type === 'Pause' ? '0' : '1'
       //   },
       // };
-       const req = {
+      const req = {
         action: type === 'Pause' ? 'pause' : 'resume',
       };
       const modalRef = this.modalService.open(DeployConfirmationComponent);
@@ -275,7 +319,7 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
     if (this.additionalParam === "tools") {
       this.route.navigate(['/tools/view-tool'], { queryParams: { selectedView: data.name } });
     }
-    if(this.additionalParam === 'user-list'){
+    if (this.additionalParam === 'user-list') {
       alert('user-list')
     }
   }
@@ -457,5 +501,26 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
   onCloseActionDropdowns(_: Event) {
     this.isDropdownOpen = false;
     this.lastButtonRef = null;
+  }
+  viewPolicies() {
+    console.log(this.params?.data)
+    this.policyModal.open('right');
+  }
+  editPolicies() {
+
+  }
+  toggle(node: any) {
+    node.expanded = !node.expanded;
+  }
+  toggleAll() {
+    this.allExpanded = !this.allExpanded;
+
+    this.projects.forEach(p => {
+      p.expanded = this.allExpanded;
+
+      p.environments?.forEach((e:any) => {
+        e.expanded = this.allExpanded;
+      });
+    });
   }
 }
