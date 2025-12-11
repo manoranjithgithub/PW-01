@@ -48,7 +48,7 @@
                     </div>
                     <div class="form-group w-100">
                         <label for="email" class="form-label">Select Environment</label>
-                        <select formControlName="environment" id="environment" class="form-select">
+                        <select formControlName="env" id="environment" class="form-select">
                             <option *ngIf="!envList || envList.length === 0" disabled>
                                 No environment available
                             </option>
@@ -59,7 +59,7 @@
                     </div>
                     <div class="form-group w-100">
                         <label for="email" class="form-label">Select Access</label>
-                        <select formControlName="access" id="access" class="form-select">
+                        <select formControlName="action" id="access" class="form-select">
                             <option *ngFor="let option of availableAccess" [value]="option.value">
                                 {{ option.text }}
                             </option>
@@ -79,87 +79,87 @@
     </div>
 </ng-container>
 <div class="container">
-    <!-- <app-ag-grid-table [rowData]="tableData" [columnDefs]="columnDefs" [showProjectButton]="false"
+    <app-ag-grid-table [rowData]="tableData" [columnDefs]="columnDefs" [showProjectButton]="false"
         [showDeployButton]="false" [showAddUser]="!showAddUserSection"
-        (addUuserEvent)="addnewUser($event)"></app-ag-grid-table> -->
-    <div class="user-list-table">
-        <p-table #dt [value]="users" dataKey="name" [tableStyle]="{ 'border': '1px solid #ebf1f6' }">
-            <ng-template pTemplate="header">
-                <tr>
-                    <th style="width: 3rem">S.No</th>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Verified Email</th>
-                    <th>Added on</th>
-                    <th>Updated At</th>
-                    <th>Actions</th>
-                </tr>
-            </ng-template>
-            <ng-template pTemplate="body" let-user let-expanded="expanded" let-rowIndex="rowIndex">
-                <tr>
-                    <td>{{ rowIndex + 1 }}</td>
-                    <td>{{ user.name }}</td>
-                    <td>{{ user.email }}</td>
-                    <td [ngClass]="user.isVerfied ? 'text-success' : 'text-danger'">{{ user.isVerfied ? 'Verified' :
-                        'Unverified' }}</td>
-                    <td>{{ user.createdAt | date:'MM/dd/yyyy' }}</td>
-                    <td>{{ user.updatedAt | date:'MM/dd/yyyy'}}</td>
-                    <td>
-                        <button (click)="dt.toggleRow(user)" class="font-sm btn-sm text-primary border mx-2"><i
-                                class="pi" [ngClass]="expanded ? 'pi-chevron-down' : 'pi pi-chevron-right'"></i>
-                            view</button>
-                        <button class="font-sm btn-sm text-primary border"><i class="pi pi-pencil"></i> edit</button>
-                    </td>
-                </tr>
-            </ng-template>
-            <ng-template pTemplate="rowexpansion" let-user>
-                <tr>
-                    <td colspan="7" style="background-color: #fff;">
-                        <div class="surface-border policies">
-                            <div class="policy-detials">
-                                <div class="actions">
-                                    <button (click)="toggleAll()">
-                                        <i class="bi" [ngClass]="allExpanded ? 'bi-dash' : 'bi-plus'"></i>{{ allExpanded
-                                        ?
-                                        'Collapse All' : 'Expand
-                                        All' }}
-                                    </button>
-                                </div>
-
-                                <ul class="tree  p-4">
-                                    <li *ngFor="let project of projects" class="tree-item">
-                                        <span class="caret" (click)="toggle(project)">
-                                            <span class="toggle-icon square">
-                                                <i class="bi" [ngClass]="project.expanded ? 'bi-dash' : 'bi-plus'"></i>
-                                            </span>
-                                            {{ project.name }}
-                                        </span>
-                                        <ul *ngIf="project.expanded">
-                                            <li *ngFor="let env of project.environments" class="tree-item">
-                                                <span class="caret" (click)="toggle(env)">
-                                                    <span class="toggle-icon square">
-                                                        <i class="bi"
-                                                            [ngClass]="env.expanded ? 'bi-dash' : 'bi-plus'"></i>
-                                                    </span>
-                                                    {{ env.name }}
-                                                </span>
-                                                <ul *ngIf="env.expanded">
-                                                    <li *ngFor="let perm of env.permissions" class="permission">
-                                                        {{ perm.name }}
-                                                    </li>
-                                                </ul>
-                                            </li>
-                                            <li *ngFor="let perm of project.permissions" class="permission">
-                                                {{ perm.name }}
-                                            </li>
-                                        </ul>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </td>
-                </tr>
-            </ng-template>
-        </p-table>
-    </div>
+        (addUuserEvent)="addnewUser($event)"></app-ag-grid-table>
 </div>
+
+<!-- Policy modal -->
+<app-modal #policyModal [modalConfig]="policyModalConfig">
+    <div class="mx-4 " *ngIf="selectedUserDetails">
+        <h6 class="font-bold"><b>Basic Info</b> </h6>
+        <div class="p-4 border shadow-sm">
+            <div class="font-14"><label class="font-bold">Name : </label> <span
+                    class="mx-2 text-capitalize">{{selectedUserDetails.name}}</span></div>
+            <div class="font-14"><label class="font-bold">Email : </label> <span
+                    class="mx-2">{{selectedUserDetails.email}}</span>
+            </div>
+            <div class="font-14"><label class="font-bold">Status : </label> <span
+                    class="mx-2 text-capitalize">{{selectedUserDetails.isVerfied ? 'Verified' : 'Unverified'}}</span>
+            </div>
+        </div>
+    </div>
+    <div class="policies m-4 border-top" *ngIf="selectedUserPolicyInfo">
+        <div class="policy-detials mt-4">
+            <div class="d-flex mt-2 justify-content-between">
+                <h6 class="font-bold"><b>Policy Info</b> </h6>
+                <div class="actions align-items-end">
+                    <button (click)="toggleAll()">
+                        <i class="bi" [ngClass]="allExpanded ? 'bi-dash' : 'bi-plus'"></i>{{ allExpanded ? 'Collapse
+                        All' :
+                        'Expand
+                        All' }}
+                    </button>
+                </div>
+            </div>
+            <ul class="tree shadow-sm border p-4">
+                <li *ngFor="let project of selectedUserPolicyInfo?.projects" class="tree-item">
+                    <span class="caret" (click)="toggle(project)">
+                        <span class="toggle-icon square">
+                            <i class="bi" [ngClass]="project.expanded ? 'bi-dash' : 'bi-plus'"></i>
+                        </span>
+                        {{ project.name }}
+                    </span>
+                    <ul *ngIf="project.expanded">
+                        <li *ngFor="let env of project.environments" class="tree-item">
+                            <span class="caret" (click)="toggle(env)">
+                                <span class="toggle-icon square">
+                                    <i class="bi" [ngClass]="env.expanded ? 'bi-dash' : 'bi-plus'"></i>
+                                </span>
+                                {{ env.name }}
+                            </span>
+                            <ul *ngIf="env.expanded">
+                                <li *ngFor="let perm of env.permissions" class="permission">
+                                    {{ perm.name }}
+                                </li>
+                            </ul>
+                        </li>
+                        <li *ngFor="let perm of project.permissions" class="permission">
+                            {{ perm.name }}
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</app-modal>
+
+<!-- Edit policy -->
+<app-modal #editPolicyModal [modalConfig]="editPolicyModalConfig">
+    <!-- <div class="" *ngIf="params && params?.data">
+    <h6 class="font-bold"><b>Policy Info</b> </h6>
+    <div class="p-4 border shadow-sm">
+      <div class="font-14"><label class="font-bold">Name : </label> <span
+          class="mx-2 text-capitalize">{{params?.data?.name}}</span></div>
+      <div class="font-14"><label class="font-bold">Email : </label> <span class="mx-2">{{params?.data?.email}}</span>
+      </div>
+      <div class="font-14"><label class="font-bold">Status : </label> <span
+          class="mx-2 text-capitalize">{{params?.data?.isVerfied ? 'Verified' : 'Unverified'}}</span></div>
+    </div>
+  </div> -->
+    <div>
+        <!-- <form >
+      
+    </form> -->
+    </div>
+</app-modal>

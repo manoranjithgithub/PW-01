@@ -15,9 +15,9 @@
   </ul>
 </div>
 <div class="custom-dropdown d-inline-block" *ngIf="additionalParam === 'user-list'">
-  <a class="text-primary mx-2 cursor-pointer" (click)="viewPolicies()" title="View Policies"><i
+  <a class="mx-2 cursor-pointer" (click)="viewPolicies()" title="View Policies"><i
       class="bi bi-eye-fill"></i></a>
-  <a class="text-primary mx-2 cursor-pointer" (click)="editPolicies()" title="Edit Policies"><i
+  <a class="mx-2 cursor-pointer" (click)="editPolicies()" title="Edit Policies"><i
       class="bi bi-pencil-square"></i></a>
   <!-- <a class="text-danger mx-1" (click)="onOptionSelected('view')"><i class="bi bi-trash3-fill"></i></a> -->
 </div>
@@ -153,58 +153,4 @@
       </div>
     </c-tab-pane>
   </c-tab-content>
-</app-modal>
-
-<app-modal #policyModal [modalConfig]="policyModalConfig">
-  <div class="" *ngIf="params && params?.data">
-    <h6 class="font-bold"><b>Basic Info</b> </h6>
-    <div class="p-4 border shadow-sm">
-      <div class="font-14"><label class="font-bold">Name : </label> <span
-          class="mx-2 text-capitalize">{{params?.data?.name}}</span></div>
-      <div class="font-14"><label class="font-bold">Email : </label> <span class="mx-2">{{params?.data?.email}}</span>
-      </div>
-      <div class="font-14"><label class="font-bold">Status : </label> <span
-          class="mx-2 text-capitalize">{{params?.data?.isVerfied ? 'Verified' : 'Unverified'}}</span></div>
-    </div>
-  </div>
-  <div class="policies" *ngIf="params && params?.data">
-    <h6 class="font-bold"><b>Policy Info</b> </h6>
-    <div class="policy-detials">
-      <div class="actions">
-        <button (click)="toggleAll()">
-          <i class="bi" [ngClass]="allExpanded ? 'bi-dash' : 'bi-plus'"></i>{{ allExpanded ? 'Collapse All' : 'Expand
-          All' }}
-        </button>
-      </div>
-
-      <ul class="tree shadow-sm border p-4">
-        <li *ngFor="let project of projects" class="tree-item">
-          <span class="caret" (click)="toggle(project)">
-            <span class="toggle-icon square">
-              <i class="bi" [ngClass]="project.expanded ? 'bi-dash' : 'bi-plus'"></i>
-            </span>
-            {{ project.name }}
-          </span>
-          <ul *ngIf="project.expanded">
-            <li *ngFor="let env of project.environments" class="tree-item">
-              <span class="caret" (click)="toggle(env)">
-                <span class="toggle-icon square">
-                  <i class="bi" [ngClass]="env.expanded ? 'bi-dash' : 'bi-plus'"></i>
-                </span>
-                {{ env.name }}
-              </span>
-              <ul *ngIf="env.expanded">
-                <li *ngFor="let perm of env.permissions" class="permission">
-                  {{ perm.name }}
-                </li>
-              </ul>
-            </li>
-            <li *ngFor="let perm of project.permissions" class="permission">
-              {{ perm.name }}
-            </li>
-          </ul>
-        </li>
-      </ul>
-    </div>
-  </div>
 </app-modal>

@@ -12,6 +12,7 @@ export class DeploymentsService {
   private deploymentManagement = environment.deploymentManagement;
   private jobExecutorUrl = environment.jobExecutorBaseUrl;
   private projectsBaseUrl = environment.projectsBaseUrl;
+  private userApiUrl = environment.usermanagementBaseUrl
 
   constructor(public http: HttpClient, private toastr: ToastrService) { }
   updateDeployment(deploymentId: string, req: any) {
@@ -51,6 +52,14 @@ export class DeploymentsService {
       .set('deploymentId', deploymentId);
     return this.http.get(`${this.jobExecutorUrl}/releases`, { params })
   }
+
+  getPolicies() {
+    return this.http.get(`${this.userApiUrl}/policies/org`)
+      .pipe(
+        catchError(this.handleError.bind(this))
+      );
+  }
+
 
   private handleError(error: HttpErrorResponse) {
     if (error.error instanceof ErrorEvent) {

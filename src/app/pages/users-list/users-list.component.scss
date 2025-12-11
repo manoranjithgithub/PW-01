@@ -43,8 +43,6 @@
 }
 
 .policies {
-    margin: auto;
-
     .policy-detials {
         // max-width: 400px;
         margin: auto;
@@ -125,4 +123,16 @@
             color: #555;
         }
     }
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.font-bold {
+  font-weight: bold;
+}
+
+.font-14 {
+  font-size: 14px;
 }

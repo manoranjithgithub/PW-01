@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Renderer2, Component, ElementRef, ViewChild, HostListener } from '@angular/core';
+import { Renderer2, Component, ElementRef, ViewChild, HostListener, Output, EventEmitter } from '@angular/core';
 import { ICellRendererAngularComp } from 'ag-grid-angular';
 import { ConfirmationModalComponent } from '../modal/confirmation-modal/confirmation-modal.component';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
@@ -25,22 +25,6 @@ import {
 } from '@coreui/angular';
 import { DeployConfirmationComponent } from '../deploy-confirmation/deploy-confirmation.component';
 
-interface Permission {
-  name: string;
-}
-
-interface Environment {
-  name: string;
-  expanded?: boolean;
-  permissions: Permission[];
-}
-
-interface Project {
-  name: string;
-  expanded?: boolean;
-  environments?: Environment[];
-  permissions?: Permission[];
-}
 
 @Component({
   selector: 'app-action-cell-renderer',
@@ -89,7 +73,6 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
 
   @ViewChild('scaleDeploymentsModel') private scaleDeploymentsModel!: ModalComponent;
   @ViewChild('logsModal') private logsModal!: ModalComponent;
-  @ViewChild('policyModal') private policyModal!: ModalComponent;
   @ViewChild('scrollContainer') scrollContainer!: ElementRef<HTMLDivElement>;
   // menu viewChild refs not required for positioning; using fixed coords
   dropdownStyle: any = {};
@@ -110,31 +93,8 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
     hideDismissButton: () => true,
     hideCloseButton: () => false
   };
-  public policyModalConfig: any = {
-    modalTitle: 'Policy Details',
-    width: '780px',
-    height: 'auto',
-    hideDismissButton: () => true,
-    hideCloseButton: () => false
-  };
-  projects: any[] = [
-    {
-      name: 'Project A',
-      environments: [
-        { name: 'Env 1', permissions: [{ name: 'Read' }] }
-      ]
-    },
-    {
-      name: 'Project B',
-      environments: [
-        { name: 'Env 1', permissions: [{ name: 'Read' }, { name: 'Write' }] }
-      ]
-    },
-    {
-      name: 'Project C',
-      permissions: [{ name: 'Read' }]
-    }
-  ];
+  
+  projects: any[] = [];
   allExpanded = false;
 
   constructor(private el: ElementRef, private renderer: Renderer2, private modalService: NgbModal,
@@ -433,10 +393,8 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
     event.stopPropagation();
     const btn = (btnRef as HTMLElement) || (event.target as HTMLElement);
     const rect = btn.getBoundingClientRect();
-    // prefer placing menu under the button; adjust if near bottom
-    const top = rect.bottom + 8; // 8px gap from viewport
-    // align menu so its right edge aligns near button's right edge
-    const left = rect.right - 160; // 160 is approx menu width
+    const top = rect.bottom + 8;
+    const left = rect.right - 160;
 
     this.dropdownStyle = {
       position: 'fixed',
@@ -448,12 +406,9 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
 
     const willOpen = !this.isDropdownOpen;
     if (willOpen) {
-      // ask other instances to close first
       window.dispatchEvent(new Event('close-action-dropdowns'));
     }
-
     this.isDropdownOpen = willOpen;
-    // store button ref so we can recompute position on scroll/resize
     this.lastButtonRef = willOpen ? (btn as HTMLElement) : null;
   }
 
@@ -488,39 +443,21 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
   @HostListener('document:click', ['$event'])
   onOutsideClick(event: MouseEvent): void {
     const target = event.target as HTMLElement;
-    // close when click outside the floating menu or button
     const clickedInsideMenu = !!target.closest('.floating-dropdown');
     const clickedInsideBtn = !!target.closest('.btn-icon');
     if (!clickedInsideMenu && !clickedInsideBtn) {
       this.isDropdownOpen = false;
     }
   }
-
-  // Close when another instance asks to close (only one open at a time)
   @HostListener('window:close-action-dropdowns', ['$event'])
   onCloseActionDropdowns(_: Event) {
     this.isDropdownOpen = false;
     this.lastButtonRef = null;
   }
   viewPolicies() {
-    console.log(this.params?.data)
-    this.policyModal.open('right');
+     this.params.onActionClick('view', this.params?.data);
   }
   editPolicies() {
-
-  }
-  toggle(node: any) {
-    node.expanded = !node.expanded;
-  }
-  toggleAll() {
-    this.allExpanded = !this.allExpanded;
-
-    this.projects.forEach(p => {
-      p.expanded = this.allExpanded;
-
-      p.environments?.forEach((e:any) => {
-        e.expanded = this.allExpanded;
-      });
-    });
+     this.params.onActionClick('edit', this.params?.data);
   }
 }
