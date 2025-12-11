@@ -34,6 +34,38 @@
                         </div>
                     </div>
                 </div>
+                <div class="d-flex gap-2 my-2 justify-content-between">
+                    <div class="form-group w-100">
+                        <label for="email" class="form-label">Select Project</label>
+                        <select formControlName="project" id="project" class="form-select">
+                            <option *ngIf="!projectList || projectList.length === 0" disabled>
+                                No project available
+                            </option>
+                            <option *ngFor="let option of projectList" [value]="option.id">
+                                {{ option.name }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="form-group w-100">
+                        <label for="email" class="form-label">Select Environment</label>
+                        <select formControlName="env" id="environment" class="form-select">
+                            <option *ngIf="!envList || envList.length === 0" disabled>
+                                No environment available
+                            </option>
+                            <option *ngFor="let option of envList" [value]="option.id">
+                                {{ option.name }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="form-group w-100">
+                        <label for="email" class="form-label">Select Access</label>
+                        <select formControlName="action" id="access" class="form-select">
+                            <option *ngFor="let option of availableAccess" [value]="option.value">
+                                {{ option.text }}
+                            </option>
+                        </select>
+                    </div>
+                </div>
                 <div class="text-right mt-4">
                     <button type="reset" class="btn button-format-outline me-2" (click)="resetForm()">
                         Cancel
@@ -51,3 +83,83 @@
         [showDeployButton]="false" [showAddUser]="!showAddUserSection"
         (addUuserEvent)="addnewUser($event)"></app-ag-grid-table>
 </div>
+
+<!-- Policy modal -->
+<app-modal #policyModal [modalConfig]="policyModalConfig">
+    <div class="mx-4 " *ngIf="selectedUserDetails">
+        <h6 class="font-bold"><b>Basic Info</b> </h6>
+        <div class="p-4 border shadow-sm">
+            <div class="font-14"><label class="font-bold">Name : </label> <span
+                    class="mx-2 text-capitalize">{{selectedUserDetails.name}}</span></div>
+            <div class="font-14"><label class="font-bold">Email : </label> <span
+                    class="mx-2">{{selectedUserDetails.email}}</span>
+            </div>
+            <div class="font-14"><label class="font-bold">Status : </label> <span
+                    class="mx-2 text-capitalize">{{selectedUserDetails.isVerfied ? 'Verified' : 'Unverified'}}</span>
+            </div>
+        </div>
+    </div>
+    <div class="policies m-4 border-top" *ngIf="selectedUserPolicyInfo">
+        <div class="policy-detials mt-4">
+            <div class="d-flex mt-2 justify-content-between">
+                <h6 class="font-bold"><b>Policy Info</b> </h6>
+                <div class="actions align-items-end">
+                    <button (click)="toggleAll()">
+                        <i class="bi" [ngClass]="allExpanded ? 'bi-dash' : 'bi-plus'"></i>{{ allExpanded ? 'Collapse
+                        All' :
+                        'Expand
+                        All' }}
+                    </button>
+                </div>
+            </div>
+            <ul class="tree shadow-sm border p-4">
+                <li *ngFor="let project of selectedUserPolicyInfo?.projects" class="tree-item">
+                    <span class="caret" (click)="toggle(project)">
+                        <span class="toggle-icon square">
+                            <i class="bi" [ngClass]="project.expanded ? 'bi-dash' : 'bi-plus'"></i>
+                        </span>
+                        {{ project.name }}
+                    </span>
+                    <ul *ngIf="project.expanded">
+                        <li *ngFor="let env of project.environments" class="tree-item">
+                            <span class="caret" (click)="toggle(env)">
+                                <span class="toggle-icon square">
+                                    <i class="bi" [ngClass]="env.expanded ? 'bi-dash' : 'bi-plus'"></i>
+                                </span>
+                                {{ env.name }}
+                            </span>
+                            <ul *ngIf="env.expanded">
+                                <li *ngFor="let perm of env.permissions" class="permission">
+                                    {{ perm.name }}
+                                </li>
+                            </ul>
+                        </li>
+                        <li *ngFor="let perm of project.permissions" class="permission">
+                            {{ perm.name }}
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</app-modal>
+
+<!-- Edit policy -->
+<app-modal #editPolicyModal [modalConfig]="editPolicyModalConfig">
+    <!-- <div class="" *ngIf="params && params?.data">
+    <h6 class="font-bold"><b>Policy Info</b> </h6>
+    <div class="p-4 border shadow-sm">
+      <div class="font-14"><label class="font-bold">Name : </label> <span
+          class="mx-2 text-capitalize">{{params?.data?.name}}</span></div>
+      <div class="font-14"><label class="font-bold">Email : </label> <span class="mx-2">{{params?.data?.email}}</span>
+      </div>
+      <div class="font-14"><label class="font-bold">Status : </label> <span
+          class="mx-2 text-capitalize">{{params?.data?.isVerfied ? 'Verified' : 'Unverified'}}</span></div>
+    </div>
+  </div> -->
+    <div>
+        <!-- <form >
+      
+    </form> -->
+    </div>
+</app-modal>

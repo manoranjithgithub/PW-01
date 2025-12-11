@@ -4,3 +4,135 @@
     font-size: 18px;
     font-family: "plusFont", sans-serif;
 }
+
+.user-list-table {
+   
+    th {
+        border-bottom: 1px solid #babfc7;
+        background-color: #f8f8f8;
+        font-size: 13px !important;
+        font-weight: 600 !important;
+        font-family: "plusFont", sans-serif !important;
+        // border-right: 1px solid #babfc7;
+    }
+
+    td {
+        padding: 10px;
+        line-height: 1.3;
+        font-family: "plusFont", sans-serif !important;
+        border-bottom: 1px solid #dde2eb;
+        font-size: 14px;
+    }
+
+    tr:nth-child(odd) {
+        background: #fff;
+    }
+
+    tr:nth-child(even) {
+        background: #FFF6F0;
+    }
+}
+
+.pi {
+    font-size: 10px;
+}
+
+.btn:focus {
+    outline: none;
+    box-shadow: none
+}
+
+.policies {
+    .policy-detials {
+        // max-width: 400px;
+        margin: auto;
+    }
+
+    .actions {
+        margin-bottom: 2px;
+        text-align: right;
+    }
+
+    .actions button {
+        margin-right: 10px;
+        padding: 6px 12px 6px 0;
+        border: 0;
+        background: white;
+        cursor: pointer;
+        border-radius: 4px;
+        font-size: 14px;
+        // border: 1px solid #555;
+
+        i {
+            padding: 0 5px;
+        }
+    }
+
+    .actions button:hover {
+        background: #f0f0f0;
+    }
+
+    .tree {
+        list-style-type: none;
+        padding-left: 0;
+        font-family: Arial, sans-serif;
+        font-size: 14px;
+    }
+
+    // .tree>.tree-item {
+    //   margin-bottom: 12px;
+    // }
+
+    .caret {
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        user-select: none;
+        padding: 5px;
+    }
+
+    .square {
+        width: 15px;
+        height: 15px;
+        border: 1px solid #c0c3ca;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 6px;
+        font-weight: bold;
+        // font-size: 13px;
+        color: #212121;
+        padding-top: 2px;
+    }
+
+    .tree ul {
+        padding-left: 24px;
+        list-style-type: none;
+
+        .tree li {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .permission {
+            list-style-type: disc;
+            margin-left: 28px;
+            padding-left: 4px;
+            font-style: italic;
+            color: #555;
+        }
+    }
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.font-bold {
+  font-weight: bold;
+}
+
+.font-14 {
+  font-size: 14px;
+}

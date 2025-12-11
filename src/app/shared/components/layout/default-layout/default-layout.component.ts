@@ -118,18 +118,10 @@ export class DefaultLayoutComponent implements OnInit {
             '/users-list',
           ];
           const publicRoutes = ['/', '/login', '/create-account', '/logout', '/login', '/forgot-password'];
-          if (this.currentUser !== 'nimbuz') {
+          if (this.currentUser !== 'localhost') {
             allowedRoutes.push('/users-list');
           }
 
-          // const cookies = document.cookie.split(';').reduce((acc, cookie) => {
-          //   const [name, value] = cookie.split('=').map(c => c.trim());
-          //   acc[name] = decodeURIComponent(value);
-          //   return acc;
-          // }, {} as Record<string, string>);
-
-          // const environment = cookies['environment'];
-          // const project = cookies['project'];
           const environment = localStorage.getItem('environment');
           const project = localStorage.getItem('project');
 
@@ -181,40 +173,8 @@ export class DefaultLayoutComponent implements OnInit {
 
   ngOnInit(): void {
     this.savedTheme = localStorage.getItem('theme-default') || 'light';
-    // console.log('Saved theme:', this.savedTheme);
     this.colorMode.set(this.savedTheme);
-    // if (this.router.url.includes('/projects') && window.location.href.includes('code')) {
-    //   this.ac.queryParams.subscribe(params => {
-    //     if (params['code']) {
-    //       this.casdoorService.getCasdoorToken(params['code'], params['state']).subscribe((res: any) => {
-    //         if (res.status === 'success') {
-    //           this.authService.setAccessToken(res.data);
-    //         } else {
-    //           this.authService.logout();
-    //         }
-    //       });
-    //     }
-
-    //   });
-    // } else {
-    //   const token = this.authService.getAccessToken();
-    //   if (!token) {
-    //     this.authService.logout();
-    //   }
-    // }
-    // if (this.authService.isTokenReady()) {
-    //   this.initApp();
-    // } else {
-    //   this.authService.tokenReady$.subscribe((ready) => {
-    //     if (ready) {
-    //       this.initApp();
-    //     }
-    //   });
-
-
-    // }
-
-
+    
     this.sidebarService.sidebarToggle$.subscribe((visible) => {
       const sidebarEl = this.sidebarRef.nativeElement;
 
@@ -235,7 +195,7 @@ export class DefaultLayoutComponent implements OnInit {
       if (environment.production) {
         baseItems = baseItems.filter(item => item.name !== 'LLM Deployments');
       }
-      if (user?.owner !== 'nimbuz') {
+      if (user?.owner !== 'localhost') {
         baseItems.push({ name: 'Users', url: '/users-list', icon: 'bi bi-people-fill' });
       }
 

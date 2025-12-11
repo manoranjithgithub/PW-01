@@ -1,4 +1,4 @@
-<div class="custom-dropdown d-inline-block"  *ngIf="additionalParam === 'tools'">
+<div class="custom-dropdown d-inline-block" *ngIf="additionalParam === 'tools'">
   <button #dropdownBtn class="btn btn-icon" type="button" (click)="toggleDropdown($event, dropdownBtn)">
     <i class="bi bi-three-dots-vertical"></i>
   </button>
@@ -14,8 +14,15 @@
     </li>
   </ul>
 </div>
+<div class="custom-dropdown d-inline-block" *ngIf="additionalParam === 'user-list'">
+  <a class="mx-2 cursor-pointer" (click)="viewPolicies()" title="View Policies"><i
+      class="bi bi-eye-fill"></i></a>
+  <a class="mx-2 cursor-pointer" (click)="editPolicies()" title="Edit Policies"><i
+      class="bi bi-pencil-square"></i></a>
+  <!-- <a class="text-danger mx-1" (click)="onOptionSelected('view')"><i class="bi bi-trash3-fill"></i></a> -->
+</div>
 
-<div class="custom-dropdown d-inline-block"  *ngIf="additionalParam === 'deployment' || additionalParam === 'llm'">
+<div class="custom-dropdown d-inline-block" *ngIf="additionalParam === 'deployment' || additionalParam === 'llm'">
   <button #dropdownBtnDep class="btn btn-icon" type="button" (click)="toggleDropdown($event, dropdownBtnDep)">
     <i class="bi bi-three-dots-vertical"></i>
   </button>
@@ -27,7 +34,9 @@
       <a class="custom-dropdown-item" (click)="onOptionSelected('redeploy')">Redeploy</a>
     </li>
     <li>
-      <a class="custom-dropdown-item" (click)="onOptionSelected(params?.data?.status.toLowerCase() === 'stopped' ? 'Resume' : 'Pause')">{{ params?.data?.status.toLowerCase() === 'stopped' ? 'Resume' : 'Pause'}}</a>
+      <a class="custom-dropdown-item"
+        (click)="onOptionSelected(params?.data?.status.toLowerCase() === 'stopped' ? 'Resume' : 'Pause')">{{
+        params?.data?.status.toLowerCase() === 'stopped' ? 'Resume' : 'Pause'}}</a>
     </li>
   </ul>
 </div>

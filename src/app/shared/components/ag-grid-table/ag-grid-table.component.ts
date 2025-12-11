@@ -6,8 +6,6 @@ import { LoaderComponent } from '../loader/loader.component';
 import { SharedService } from '../../services/shared.service';
 import { ActionCellRendererComponent } from '../action-cell-renderer/action-cell-renderer.component';
 import { Router } from '@angular/router';
-import { map } from 'rxjs';
-
 @Component({
   selector: 'app-ag-grid-table',
   standalone: true,
@@ -32,16 +30,12 @@ export class AgGridTableComponent implements OnInit {
   tablebtn: string = '';
   overlayMessage: string = '';
 
-
   private gridApi!: GridApi;
 
   onGridReady(params: GridReadyEvent) {
     this.gridApi = params.api;
     this.overlayMessage = `You do not have  ${this.tableName}${this.tableName === 'invoice-list' ? '.' : `, please click 'New ${this.tablebtn}' to create one.`}`;
 
-    //    setTimeout(() => {
-    //   this.gridApi.sizeColumnsToFit(); 
-    // }, 0);
   }
 
   defaultColDef =

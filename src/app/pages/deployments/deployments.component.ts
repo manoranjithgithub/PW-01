@@ -92,7 +92,6 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
 
   ];
   messages: any[] = [];
-  loading: boolean = true;
   getDeploymentIntervel: any;
   sseSub: Subscription | null = null;
 
@@ -126,12 +125,10 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
         if (res) {
           this.updateTableData(res.deployment);
           localStorage.setItem('availableDeployments', JSON.stringify(res.deployment?.map((x: any) => x.name)));
-          this.loading = false
         }
       },
         err => {
           this.tableData = [];
-          this.loading = false
         });
     }
   }

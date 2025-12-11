@@ -443,12 +443,16 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
       port: formValue.port,
     }, originalNetwork);
 
-    const sourceCode = {
+    const baseData = {
       type: sourceFormValue.type,
       gitUrl: this.buildGitUrl(),
       s3FileKey: fileName ? this.s3FileKey : null,
       dockerfilePath: formValue.dockerfilePath
     };
+
+    const sourceCode = formValue.dockerfilePath
+      ? baseData
+      : this.getChangedFields(baseData, originalSource);
     const nameChanged = this.getChangedFields({ name: formValue.name }, { name: this.deploymentdetails?.name });
 
     const req: any = {};

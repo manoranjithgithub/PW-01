@@ -93,29 +93,29 @@ export class InvoiceComponent implements OnInit {
         }
       }
     },
-{
-      field: '', headerName: 'Issue Month', flex: 1,
-      filter: 'agTextColumnFilter',
-      valueGetter: (params: any) => {
-        if (!params.data || !params.data.updated_at) return '';
-        const date = new Date(params.data.updated_at);
-        return isNaN(date.getTime()) ? '' : date.toLocaleDateString('en-US', {
-          month: 'long',
-        });
-      },
-      valueFormatter: (params: any) => {
-        return params.value || '';
-      },
-    },
+// {
+//       field: '', headerName: 'Issue Month', flex: 1,
+//       filter: 'agTextColumnFilter',
+//       valueGetter: (params: any) => {
+//         if (!params.data || !params.data.updated_at) return '';
+//         const date = new Date(params.data.updated_at);
+//         return isNaN(date.getTime()) ? '' : date.toLocaleDateString('en-US', {
+//           month: 'long',
+//         });
+//       },
+//       valueFormatter: (params: any) => {
+//         return params.value || '';
+//       },
+//     },
     {
-      field: 'updated_at', headerName: 'Issue Date', flex: 1,
+      field: 'period', headerName: 'Invoice Period', flex: 1,
       filter: 'agTextColumnFilter',
       valueGetter: (params: any) => {
         if (!params.data || !params.data.updated_at) return '';
         const date = new Date(params.data.updated_at);
         return isNaN(date.getTime()) ? '' : date.toLocaleDateString('en-US', {
           year: 'numeric',
-          month: '2-digit',
+          month: 'short',
           day: '2-digit'
         });
       },
