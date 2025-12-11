@@ -5,15 +5,13 @@ import { AgGridTableComponent } from '../../shared/components/ag-grid-table/ag-g
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { VALIDATION_REGEX } from '../../core/constants/validation-regex.constant';
-import { TableModule } from 'primeng/table';
-import { ButtonModule } from 'primeng/button';
 import { ActionCellRendererComponent } from '../../shared/components/action-cell-renderer/action-cell-renderer.component';
 import { ModalComponent } from '../../shared/components/model/model.component';
 
 @Component({
   selector: 'app-users-list',
   standalone: true,
-  imports: [CommonModule, AgGridTableComponent, ReactiveFormsModule, TableModule, ButtonModule, ModalComponent],
+  imports: [CommonModule, AgGridTableComponent, ReactiveFormsModule, ModalComponent],
   templateUrl: './users-list.component.html',
   styleUrl: './users-list.component.scss',
   providers: [UsersListService]
