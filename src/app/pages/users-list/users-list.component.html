@@ -37,28 +37,22 @@
                 <div class="d-flex gap-2 my-2 justify-content-between">
                     <div class="form-group w-100">
                         <label for="email" class="form-label">Select Project</label>
-                        <select formControlName="project" id="project" class="form-select">
-                            <option *ngIf="!projectList || projectList.length === 0" disabled>
-                                No project available
-                            </option>
-                            <option *ngFor="let option of projectList" [value]="option.id">
-                                {{ option.name }}
-                            </option>
+                        <select formControlName="project" class="form-select">
+                            <option *ngFor="let p of availableProjectList" [value]="p.id">{{ p.name }}</option>
                         </select>
+
+
                     </div>
                     <div class="form-group w-100">
                         <label for="email" class="form-label">Select Environment</label>
-                        <select formControlName="env" id="environment" class="form-select">
-                            <option *ngIf="!envList || envList.length === 0" disabled>
-                                No environment available
-                            </option>
-                            <option *ngFor="let option of envList" [value]="option.id">
-                                {{ option.name }}
-                            </option>
+                        <select formControlName="env" class="form-select">
+                            <option *ngFor="let e of (envList$ | async)" [value]="e.id">{{ e.name }}</option>
                         </select>
+
+
                     </div>
                     <div class="form-group w-100">
-                        <label for="email" class="form-label">Select Access</label>
+                        <label for="action" class="form-label">Select Access</label>
                         <select formControlName="action" id="access" class="form-select">
                             <option *ngFor="let option of availableAccess" [value]="option.value">
                                 {{ option.text }}
@@ -86,7 +80,7 @@
 
 <!-- Policy modal -->
 <app-modal #policyModal [modalConfig]="policyModalConfig">
-    <div class="mx-4 " *ngIf="selectedUserDetails">
+    <!-- <div class="mx-4 " *ngIf="selectedUserDetails">
         <h6 class="font-bold"><b>Basic Info</b> </h6>
         <div class="p-4 border shadow-sm">
             <div class="font-14"><label class="font-bold">Name : </label> <span
@@ -98,9 +92,24 @@
                     class="mx-2 text-capitalize">{{selectedUserDetails.isVerfied ? 'Verified' : 'Unverified'}}</span>
             </div>
         </div>
-    </div>
-    <div class="policies m-4 border-top" *ngIf="selectedUserPolicyInfo">
-        <div class="policy-detials mt-4">
+    </div> -->
+    <div class="policies m-4" *ngIf="selectedUserPolicyInfo">
+        <h6 class="font-bold mt-4"><b>Access Details</b> </h6>
+        <table class="policy-table">
+            <tr>
+                <th>S.No</th>
+                <th>Projects</th>
+                <th>Environments</th>
+                <th>Permission</th>
+            </tr>
+            <tr *ngFor="let policy of selectedUserPolicyDisplay; let i = index">
+                <td>{{i + 1}}</td>
+                <td *ngIf="policy.showProjectCell" [attr.rowspan]="policy.projectRowSpan">{{policy.projectname}}</td>
+                <td>{{policy.envname}}</td>
+                <td *ngIf="policy.showPermissionCell" [attr.rowspan]="policy.permissionRowSpan">{{policy.permissions}}</td>
+            </tr>
+        </table>
+        <!-- <div class="policy-detials mt-4">
             <div class="d-flex mt-2 justify-content-between">
                 <h6 class="font-bold"><b>Policy Info</b> </h6>
                 <div class="actions align-items-end">
@@ -113,12 +122,12 @@
                 </div>
             </div>
             <ul class="tree shadow-sm border p-4">
-                <li *ngFor="let project of selectedUserPolicyInfo?.projects" class="tree-item">
+                <li *ngFor="let project of selectedUserPolicytoggle" class="tree-item">
                     <span class="caret" (click)="toggle(project)">
                         <span class="toggle-icon square">
                             <i class="bi" [ngClass]="project.expanded ? 'bi-dash' : 'bi-plus'"></i>
                         </span>
-                        {{ project.name }}
+                        <span> <b> Project : </b> {{project.name}}</span>
                     </span>
                     <ul *ngIf="project.expanded">
                         <li *ngFor="let env of project.environments" class="tree-item">
@@ -126,7 +135,7 @@
                                 <span class="toggle-icon square">
                                     <i class="bi" [ngClass]="env.expanded ? 'bi-dash' : 'bi-plus'"></i>
                                 </span>
-                                {{ env.name }}
+                                <span><b>Environment : </b> {{env.name}}</span>
                             </span>
                             <ul *ngIf="env.expanded">
                                 <li *ngFor="let perm of env.permissions" class="permission">
@@ -140,26 +149,89 @@
                     </ul>
                 </li>
             </ul>
-        </div>
+        </div> -->
     </div>
 </app-modal>
 
 <!-- Edit policy -->
 <app-modal #editPolicyModal [modalConfig]="editPolicyModalConfig">
-    <!-- <div class="" *ngIf="params && params?.data">
-    <h6 class="font-bold"><b>Policy Info</b> </h6>
-    <div class="p-4 border shadow-sm">
-      <div class="font-14"><label class="font-bold">Name : </label> <span
-          class="mx-2 text-capitalize">{{params?.data?.name}}</span></div>
-      <div class="font-14"><label class="font-bold">Email : </label> <span class="mx-2">{{params?.data?.email}}</span>
-      </div>
-      <div class="font-14"><label class="font-bold">Status : </label> <span
-          class="mx-2 text-capitalize">{{params?.data?.isVerfied ? 'Verified' : 'Unverified'}}</span></div>
+    <div *ngIf="isAddPolicy" class="my-4 ">
+        <h6 class="font-bold"><b>{{ editingPolicy ? 'Edit policy' : 'Add new policy' }}</b></h6>
+        <form [formGroup]="editPolicyForm" class="shadow-sm border px-4 py-2">
+            <div class="d-flex gap-2 my-2 justify-content-between">
+                <div class="form-group w-100">
+                    <label for="email" class="form-label">Select Project</label>
+                    <select formControlName="project" class="form-select">
+                        <option *ngFor="let p of availableProjectList" [value]="p.id">{{ p.name }}</option>
+                    </select>
+                    <div *ngIf="editPolicyForm.get('project')?.invalid && (editPolicyForm.get('project')?.touched || editPolicyForm.get('project')?.dirty)"
+                        class="text-danger">
+                        Project is required.
+                    </div>
+                </div>
+                <div class="form-group w-100">
+                    <label for="email" class="form-label">Select Environment</label>
+                    <select formControlName="env" class="form-select">
+                        <option *ngFor="let e of (editEnvList$ | async)" [value]="e.id">{{ e.name }}</option>
+                    </select>
+                </div>
+                <div class="form-group w-100">
+                    <label for="email" class="form-label">Select Access</label>
+                    <select formControlName="action" id="access" class="form-select">
+                        <option *ngFor="let option of availableAccess" [value]="option.value">
+                            {{ option.text }}
+                        </option>
+                    </select>
+                </div>
+            </div>
+                <div class="text-right mt-4">
+                <button type="reset" class="btn button-format-outline me-2" (click)="resetEditForm()">
+                    Cancel
+                </button>
+                <button type="submit" class="btn button-format-solid" [disabled]="editPolicyForm.invalid"
+                    (click)="createPolicy()">
+                    {{ editingPolicy ? 'Update Policy' : 'Add Policy' }}
+                </button>
+            </div>
+        </form>
     </div>
-  </div> -->
-    <div>
-        <!-- <form >
-      
-    </form> -->
+    <div class="" *ngIf="selectedUserDetails">
+        <div class="d-flex my-2 justify-content-between align-items-center">
+            <h6 class="font-bold mb-0"><b>Access Details</b>
+                <!-- <small class="text-muted">Permissions by Project and Environment</small>  -->
+            </h6>
+            <div class="actions align-items-end">
+                <button (click)="enableAddPolicy()" class="btn button-format-solid">
+                    <i class="bi bi-plus"></i>Add new policy
+                </button>
+            </div>
+        </div>
+
+        <table class="policy-table">
+            <tr>
+                <th>S.No</th>
+                <th>Projects</th>
+                <th>Environments</th>
+                <th>Permission</th>
+                <th>Action</th>
+            </tr>
+            <tr *ngFor="let policy of selectedUserPolicyDisplay; let i = index">
+                <td>{{i + 1}}</td>
+                <td *ngIf="policy.showProjectCell" [attr.rowspan]="policy.projectRowSpan">{{policy.projectname}}</td>
+                <td>{{policy.envname}}</td>
+                <td *ngIf="policy.showPermissionCell" [attr.rowspan]="policy.permissionRowSpan">{{ policy.permissions }}</td>
+                <td *ngIf="policy.showActionCell" [attr.rowspan]="policy.actionRowSpan">
+                    <button class="flat-btn edit" (click)="editPolicy(i, policy)">
+                        <i class="bi bi-pencil-square"></i>
+                        Edit
+                    </button>
+                    <button class="flat-btn delete" (click)="deletePolicy(i, policy)">
+                        <i class="bi bi-trash"></i>
+                        Delete
+                    </button>
+                </td>
+            </tr>
+        </table>
     </div>
+
 </app-modal>

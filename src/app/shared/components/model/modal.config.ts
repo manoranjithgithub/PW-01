@@ -11,4 +11,5 @@ export interface ModalConfig {
     hideCloseButton?(): boolean;
     hideDismissButton?(): boolean;
     width:string;
+    modalSubtitle?:string;
 }

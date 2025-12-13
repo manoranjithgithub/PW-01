@@ -25,19 +25,13 @@ export class AppComponent implements OnInit {
   ) {
     this.titleService.setTitle(this.title);
     this.iconSetService.icons = { ...iconSubset };
+    // Show the global loader on navigation start. Do not hide it here —
+    // the HTTP interceptor will hide the loader when network requests complete.
     this.router.events.subscribe(event => {
-    if (event instanceof NavigationStart) {
-      this.loader.show(); 
-    }
-
-    if (
-      event instanceof NavigationEnd ||
-      event instanceof NavigationCancel ||
-      event instanceof NavigationError
-    ) {
-      setTimeout(() => this.loader.hide(), 300);
-    }
-  });
+      if (event instanceof NavigationStart) {
+        this.loader.show();
+      }
+    });
   }
 
   ngOnInit(): void {

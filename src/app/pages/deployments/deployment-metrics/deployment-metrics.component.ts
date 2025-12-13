@@ -51,6 +51,7 @@ export class DeploymentMetricsComponent implements OnInit, AfterViewInit {
   storageChart!: Chart;
   cpuUsageData: any[] = [];
   ramUsageData: any[] = [];
+  private pendingMetricsRequests = 0;
 
   filterForm!: FormGroup;
   podList: string[] = [];
@@ -335,11 +336,21 @@ export class DeploymentMetricsComponent implements OnInit, AfterViewInit {
   }
 
   onFilter(): void {
-    let duration = this.filterForm.get('duration')?.value;
+    const params = this.computeFilterParams();
+    if (!params) return;
 
+    // show loader immediately and expect two requests (cpu + memory)
+    this.loading = true;
+    this.pendingMetricsRequests = 2;
+
+    this.onFilterCpu(params);
+    this.onFilterMem(params);
+  }
+
+  private computeFilterParams(): { fromISO: string; toISO: string; timeIntervalSeconds: number } | null {
+    let duration = this.filterForm.get('duration')?.value;
     let fromISO: string = '';
     let toISO: string = '';
-
     if (duration === 'custom') {
       const fromTimestamp = this.filterForm.get('fromTimestamp')?.value;
       const toTimestamp = this.filterForm.get('toTimestamp')?.value;
@@ -354,7 +365,7 @@ export class DeploymentMetricsComponent implements OnInit, AfterViewInit {
         duration = Math.floor((toTs - fromTs) / (1000 * 60));
       } else {
         console.error('Please provide both From and To timestamps.');
-        return;
+        return null;
       }
     }
     else {
@@ -375,61 +386,63 @@ export class DeploymentMetricsComponent implements OnInit, AfterViewInit {
     };
     const timeIntervalMinutes = formInterval || timeIntervalMap[duration.toString()] || '15';
     const timeIntervalSeconds = parseInt(timeIntervalMinutes, 10) * 60;
+
+    return { fromISO, toISO, timeIntervalSeconds };
+  }
+
+  private onFilterCpu(params: { fromISO: string; toISO: string; timeIntervalSeconds: number }): void {
     const environmentId = JSON.parse(localStorage.getItem('environment') || '{}').id || '';
-    this.deploymentService.getDeploymentMetricsByTime(environmentId, fromISO, toISO, timeIntervalSeconds).subscribe((res: any) => {
-      const cpuValues: [number | string, number | null][] =
-        res.data.cpu?.usageRange?.data?.result?.[0]?.values || [];
-      const memValues: [number | string, number | null][] =
-        res.data.memory?.usageRange?.data?.result?.[0]?.values || [];
+    const deploymentId = JSON.parse(localStorage.getItem('deployment') || '{}').id || '';
 
-      const aggregatedData: Record<string, { cpu: number; mem: number; count: number }> = {};
-      const timestampSet = new Set<string>();
-      let hasData = false;
+    this.deploymentService.getDeploymentMetricsByTime(environmentId, params.fromISO, params.toISO, params.timeIntervalSeconds, 'cpu', deploymentId).subscribe((res: any) => {
+      const cpuValues: [number | string, number | null][] = res.data?.cpu?.usageRange?.data?.result?.[0]?.values || [];
 
-      const processValues = (values: [number | string, number | null][], key: 'cpu' | 'mem') => {
-        values.forEach(([ts, value]) => {
-          hasData = true;
-          const tsStr = ts.toString();
-          timestampSet.add(tsStr);
-
-          if (!aggregatedData[tsStr]) {
-            aggregatedData[tsStr] = { cpu: 0, mem: 0, count: 0 };
-          }
-          aggregatedData[tsStr][key] += Number(value) || 0;
-          aggregatedData[tsStr].count += 1;
-        });
-      };
-
-      processValues(cpuValues, 'cpu');
-      processValues(memValues, 'mem');
-
-      if (!hasData) {
-        this.showNoDataMessage = true;
+      if (!cpuValues || cpuValues.length === 0) {
         this.cpuUsageData = [];
-        this.ramUsageData = [];
-        // this.storageUsageData = [];
-        return;
+      } else {
+        this.cpuUsageData = cpuValues.map(([ts, value]) => ({ _id: ts.toString(), cpuAverage: +Number(value || 0).toFixed(2) }));
       }
 
-      this.showNoDataMessage = false;
-
-      const timestamps = Array.from(timestampSet).sort();
-
-      this.cpuUsageData = timestamps.map(ts => ({
-        _id: ts,
-        cpuAverage: +Number(aggregatedData[ts]?.cpu || 0).toFixed(2)
-      }));
-
-      this.ramUsageData = timestamps.map(ts => ({
-        _id: ts,
-        ramAverage: +Number(aggregatedData[ts]?.mem || 0).toFixed(2)
-      }));
-
       this.renderCpuChart();
+      this.decrementPendingRequests();
+    }, (err) => {
+      console.error('Failed to fetch CPU metrics', err);
+      this.cpuUsageData = [];
+      this.decrementPendingRequests();
+    });
+  }
+
+  private onFilterMem(params: { fromISO: string; toISO: string; timeIntervalSeconds: number }): void {
+    const environmentId = JSON.parse(localStorage.getItem('environment') || '{}').id || '';
+    const deploymentId = JSON.parse(localStorage.getItem('deployment') || '{}').id || '';
+
+    this.deploymentService.getDeploymentMetricsByTime(environmentId, params.fromISO, params.toISO, params.timeIntervalSeconds, 'memory', deploymentId).subscribe((res: any) => {
+      const memValues: [number | string, number | null][] = res.data?.memory?.usageRange?.data?.result?.[0]?.values || [];
+
+      if (!memValues || memValues.length === 0) {
+        this.ramUsageData = [];
+      } else {
+        this.ramUsageData = memValues.map(([ts, value]) => ({ _id: ts.toString(), ramAverage: +Number(value || 0).toFixed(2) }));
+      }
+
       this.renderRamChart();
       this.renderStorageChart();
-      this.loading = false;
+      this.decrementPendingRequests();
+    }, (err) => {
+      console.error('Failed to fetch Memory metrics', err);
+      this.ramUsageData = [];
+      this.decrementPendingRequests();
     });
+  }
+
+  private decrementPendingRequests(): void {
+    if (this.pendingMetricsRequests > 0) {
+      this.pendingMetricsRequests -= 1;
+    }
+    if (this.pendingMetricsRequests <= 0) {
+      this.loading = false;
+      this.pendingMetricsRequests = 0;
+    }
   }
 
   @HostListener('document:click', ['$event'])

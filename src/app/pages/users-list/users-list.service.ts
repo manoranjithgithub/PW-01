@@ -33,6 +33,25 @@ export class UsersListService {
       );
   }
 
+  createPolicy(req: any) {
+    return this.http.post(`${this.userApiUrl}/policies`, req)
+      .pipe(
+        catchError(this.handleError.bind(this))
+      );
+  }
+  updatePolicy(req: any) {
+    return this.http.put(`${this.userApiUrl}/policies`, req)
+      .pipe(
+        catchError(this.handleError.bind(this))
+      );
+  }
+  deletePolicy(req: any) {
+    return this.http.delete(`${this.userApiUrl}/policies`, { body: req })
+      .pipe(
+        catchError(this.handleError.bind(this))
+      );
+  }
+
   getAllProjects() {
     return this.http.get(`${this.projectUrl}/projects`)
       .pipe(

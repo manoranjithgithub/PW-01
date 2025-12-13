@@ -118,7 +118,7 @@ export class DefaultLayoutComponent implements OnInit {
             '/users-list',
           ];
           const publicRoutes = ['/', '/login', '/create-account', '/logout', '/login', '/forgot-password'];
-          if (this.currentUser !== 'nimbuz') {
+          if (this.currentUser !== 'localhost') {
             allowedRoutes.push('/users-list');
           }
 
@@ -195,7 +195,7 @@ export class DefaultLayoutComponent implements OnInit {
       if (environment.production) {
         baseItems = baseItems.filter(item => item.name !== 'LLM Deployments');
       }
-      if (user?.owner !== 'nimbuz') {
+      if (user?.owner !== 'localhost') {
         baseItems.push({ name: 'Users', url: '/users-list', icon: 'bi bi-people-fill' });
       }
 
