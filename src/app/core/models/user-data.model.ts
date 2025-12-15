@@ -24,3 +24,42 @@ export interface ResetPasswordData {
     orgName: string;
     username: string;
 }
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  isVerfied: string | boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface Project {
+  id: string;
+  name: string;
+  description?: string;
+  environments: Environment[];
+}
+
+export interface Environment {
+  id: string;
+  name: string;
+}
+
+export interface PolicyRaw {
+  V0: string;
+  V1: string;
+  V2: string;
+  V3: string;
+  V4: string;
+}
+
+export interface PolicyMapped {
+  userid: string;
+  accountid?: string;
+  projectid: string;
+  envid: string;
+  projectname: string;
+  envname: string;
+  permissions: string[];
+}

@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { ProjectsService } from '../projects.service';
 import { SharedService } from '../../../shared/services/shared.service';
+import { PermissionService } from '../../../shared/services/permission.service';
 import {
   CardGroupComponent, CardComponent, CardBodyComponent, AccordionButtonDirective,
   AccordionComponent,
@@ -45,7 +46,8 @@ export class CreateProjectComponent implements OnInit {
     private route: Router,
     private toastr: ToastrService,
     private shared: SharedService,
-    private project: ProjectsService) {
+    private project: ProjectsService,
+    public permissionService: PermissionService) {
     // this.tableTheme = this.shared.getCookie('theme');
     this.tableTheme = localStorage.getItem('theme-default') || 'ag-theme-alpine';
   }

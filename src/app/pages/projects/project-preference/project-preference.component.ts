@@ -26,6 +26,7 @@ import { ModalComponent } from '../../../shared/components/model/model.component
 import { SharedService } from '../../../shared/services/shared.service';
 import { DeploymentsService } from '../../../shared/services/deployments.service';
 import { LayoutActionService } from '../../../shared/services/layout-action.service';
+import { PermissionService } from '../../../shared/services/permission.service';
 import { Subject, takeUntil } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 
@@ -113,7 +114,8 @@ export class ProjectPreferenceComponent implements OnInit, OnDestroy {
   constructor(private fb: FormBuilder, private projectService: ProjectsService, private route: ActivatedRoute,
     private shared: SharedService, private deploymentsService: DeploymentsService,
     private toastr: ToastrService, private modalService: NgbModal, private router: Router,
-    private layoutActionService: LayoutActionService) { }
+    private layoutActionService: LayoutActionService,
+    public permissionService: PermissionService) { }
 
   ngOnInit() {
     this.route.queryParams.subscribe(params => {

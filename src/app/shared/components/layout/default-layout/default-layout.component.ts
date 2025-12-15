@@ -33,6 +33,7 @@ import { delay, filter, tap } from 'rxjs/operators';
 import { SharedService } from '../../../services/shared.service';
 import { SidebarService } from '../../../services/sidebar.service';
 import { SwitchProjectComponent } from "../switch-project/switch-project.component";
+import { PermissionService } from '../../../services/permission.service';
 import { ToastrService } from 'ngx-toastr';
 import { LoaderComponent } from '../../loader/loader.component';
 import { ProjectsService } from '../../../../pages/projects/projects.service';
@@ -99,7 +100,8 @@ export class DefaultLayoutComponent implements OnInit {
     private router: Router, private titleService: Title, private ac: ActivatedRoute,
     private sharedService: SharedService, private sidebarService: SidebarService, private renderer: Renderer2,
     private toastr: ToastrService, private projectService: ProjectsService,
-    private layoutActionService: LayoutActionService
+    private layoutActionService: LayoutActionService,
+    public permissionService: PermissionService
   ) {
     this.#colorModeService.localStorageItemName.set('theme-default');
 
@@ -152,6 +154,29 @@ export class DefaultLayoutComponent implements OnInit {
       this.selectedItemFromCom = title;
     });
 
+  }
+
+  getCurrentProjectId(): string | undefined {
+    const p = localStorage.getItem('project');
+    if (!p || p === 'undefined') return undefined;
+    try {
+      const parsed = JSON.parse(p);
+      return parsed?.id || undefined;
+    } catch {
+      // stored value may already be a plain id string
+      return p || undefined;
+    }
+  }
+
+  getCurrentEnvId(): string | undefined {
+    const e = localStorage.getItem('environment');
+    if (!e || e === 'undefined') return undefined;
+    try {
+      const parsed = JSON.parse(e);
+      return parsed?.id || undefined;
+    } catch {
+      return e || undefined;
+    }
   }
 
   @HostListener('window:scroll', [])

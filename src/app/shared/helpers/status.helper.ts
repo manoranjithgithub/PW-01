@@ -20,6 +20,7 @@ export const ICON_MAP: Record<string, string> = {
   'starting': 'bi-check-circle',
   'updating': 'bi-box-arrow-in-up',
   'degraded': 'bi-arrow-90deg-down',
+  'deleted': 'bi-x-circle-fill',
 };
 
 export const STATUS_CLASS_MAP: Record<string, string> = {
@@ -43,6 +44,7 @@ export const STATUS_CLASS_MAP: Record<string, string> = {
   'starting': 'warning',
   'updating': 'warning',
   'degraded': 'warning',
+  'deleted': 'danger',
 };
 
 export function getStatusMeta(status: string): { icon: string; statusClass: string; label: string } {

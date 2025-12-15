@@ -9,6 +9,7 @@ import { ToastrService } from 'ngx-toastr';
 import { SharedService } from '../../services/shared.service';
 import { ModalComponent } from '../model/model.component';
 import { FormsModule, NgModel } from '@angular/forms';
+import { PermissionService } from '../../services/permission.service';
 import {
   CalloutComponent,
   DropdownComponent,
@@ -96,15 +97,25 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
   
   projects: any[] = [];
   allExpanded = false;
+  currentProjectId: string | undefined = undefined;
 
   constructor(private el: ElementRef, private renderer: Renderer2, private modalService: NgbModal,
     private http: DeploymentsService, private route: Router, private toaster: ToastrService,
     private sharedService: SharedService,
+    public permissionService: PermissionService,
   ) {
     // const storedValue = this.sharedService.getCookie('environment');
     const storedValue = localStorage.getItem('environment');
     if (storedValue) {
       this.envId = JSON.parse(storedValue).id;
+    }
+    const storedProject = localStorage.getItem('project');
+    if (storedProject) {
+      try {
+        this.currentProjectId = JSON.parse(storedProject).id;
+      } catch {
+        this.currentProjectId = storedProject || undefined;
+      }
     }
   }
 
