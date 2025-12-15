@@ -34,6 +34,13 @@ export class DeploymentObservabilityComponent implements OnInit {
     { label: 'Past 1 month', value: '30d' },
     { label: 'Custom', value: 'custom' }
   ];
+  timeZones = [
+    { label: 'IST (Asia/Kolkata)', value: 'IST'},
+    { label: 'UTC', value: 'UTC' },
+    { label: 'PST (America/Los_Angeles)', value: 'PST' },
+    { label: 'EST (America/New_York)', value: 'EST' },
+    { label: 'CET (Europe/Paris)', value: 'CET' }
+  ];
   deploymentLogs: any;
   isAutoRefresh: boolean = false;
   deploymentId: any;
@@ -65,6 +72,7 @@ export class DeploymentObservabilityComponent implements OnInit {
       duration: ['15m'],
       fromTimestamp: [fromTimestamp],
       toTimestamp: [toTimestamp],
+      timeZone: ['IST']
     });
 
     this.filterForm.get('duration')?.valueChanges.subscribe(value => {
@@ -94,6 +102,17 @@ export class DeploymentObservabilityComponent implements OnInit {
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
   }
 
+  private getTimezoneOffset(tz: string): string {
+    const map: { [key: string]: string } = {
+      'IST': '+05:30',
+      'UTC': '+00:00',
+      'PST': '-08:00',
+      'EST': '-05:00',
+      'CET': '+01:00'
+    };
+    return map[tz] || '+05:30';
+  }
+
   // ngAfterViewChecked() {
   //   this.scrollToBottom();
   // }
@@ -107,8 +126,9 @@ export class DeploymentObservabilityComponent implements OnInit {
   getApplicationLogs(deploymentId: string, duration?: string) {
     const environmentStr = localStorage.getItem('environment');
     const environmentId = environmentStr ? JSON.parse(environmentStr).id : '';
-    const fromDate = new Date(this.filterForm.value.fromTimestamp + ":00+05:30");
-    const toDate = new Date(this.filterForm.value.toTimestamp + ":00+05:30");
+    const timeZone = this.getTimezoneOffset(this.filterForm.value.timeZone || 'IST');
+    const fromDate = new Date(this.filterForm.value.fromTimestamp + ":00");
+    const toDate = new Date(this.filterForm.value.toTimestamp + ":00");
 
     const req = {
       environmentId: environmentId,
@@ -119,7 +139,8 @@ export class DeploymentObservabilityComponent implements OnInit {
       timeRange: duration,
       keyword: "",
       fromTimestamp: this.filterForm.value.fromTimestamp ? fromDate : '',
-      toTimestamp: this.filterForm.value.toTimestamp ? toDate : ''
+      toTimestamp: this.filterForm.value.toTimestamp ? toDate : '',
+      timeZone: timeZone
     };
 
     this.deploymentService.getSelectedDeploymentLogs(req).subscribe(
@@ -169,8 +190,9 @@ export class DeploymentObservabilityComponent implements OnInit {
 
     const environmentStr = localStorage.getItem('environment');
     const environmentId = environmentStr ? JSON.parse(environmentStr).id : '';
-    const fromDate = new Date(this.filterForm.value.fromTimestamp + ":00+05:30");
-    const toDate = new Date(this.filterForm.value.toTimestamp + ":00+05:30");
+    const timeZone = this.getTimezoneOffset(this.filterForm.value.timeZone || 'IST');
+    const fromDate = new Date(this.filterForm.value.fromTimestamp + ":00");
+    const toDate = new Date(this.filterForm.value.toTimestamp + ":00");
     const req = {
       environmentId: environmentId,
       logType: 'application',
@@ -181,6 +203,7 @@ export class DeploymentObservabilityComponent implements OnInit {
       keyword: keyword,
       fromTimestamp: this.filterForm.value.fromTimestamp ? fromDate : '',
       toTimestamp: this.filterForm.value.toTimestamp ? toDate : '',
+      timeZone: timeZone,
     };
 
     this.deploymentService.getSelectedDeploymentLogs(req).subscribe(

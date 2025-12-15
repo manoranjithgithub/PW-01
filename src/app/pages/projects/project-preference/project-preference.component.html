@@ -42,13 +42,15 @@
                 </div>
 
               </div>
-
               <div class="col-md-2 text-end">
-                <button *ngIf="!isGeneralEditMode" class="btn btn-edit p-0" (click)="isGeneralEditMode = true">
+                <button *ngIf="!isGeneralEditMode" class="btn btn-edit p-0"
+                  [class.disabled]="!permissionService.canWriteForCurrentUser(currentProjectId, '')"
+                  [attr.aria-disabled]="!permissionService.canWriteForCurrentUser(currentProjectId, '')"
+                  (click)="isGeneralEditMode = true">
                   <i class="bi bi-pencil-square edit-icon"></i> edit
                 </button>
                 <button *ngIf="isGeneralEditMode" class="btn btn-sm border border-2 border-black text-black"
-                  (click)="saveGeneralChanges()" [disabled]="generalSettingForm.invalid">
+                  (click)="saveGeneralChanges()" [disabled]="generalSettingForm.invalid || !permissionService.canWriteForCurrentUser(currentProjectId, '')">
                   Save
                 </button>
               </div>
@@ -92,8 +94,16 @@
                       <li (click)="onActionSelected('view', env)">
                         <a class="custom-dropdown-item">View / Edit</a>
                       </li>
-                      <li (click)="onActionSelected('delete', env)">
-                        <a class="custom-dropdown-item">Delete</a>
+                      <li>
+                        <a
+                          class="custom-dropdown-item"
+                          role="button"
+                          (click)="permissionService.canDeleteForCurrentUser(currentProjectId, env.id) && onActionSelected('delete', env)"
+                          [class.disabled]="!permissionService.canDeleteForCurrentUser(currentProjectId, env.id)"
+                          [attr.aria-disabled]="!permissionService.canDeleteForCurrentUser(currentProjectId, env.id)"
+                        >
+                          Delete
+                        </a>
                       </li>
                     </ul>
                   </div>

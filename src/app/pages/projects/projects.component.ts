@@ -8,6 +8,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { SidebarService } from '../../shared/services/sidebar.service';
 import { ToastrService } from 'ngx-toastr';
 import { AlertComponent } from '@coreui/angular';
+import { PermissionService } from '../../shared/services/permission.service';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -36,7 +37,8 @@ export class ProjectsComponent implements OnInit, OnDestroy {
 
   constructor(private projectService: ProjectsService, private sharedService: SharedService,
     private authService: AuthService, private router: Router, private sideNavService: SidebarService,
-    private toastr: ToastrService, private location: Location
+    private toastr: ToastrService, private location: Location,
+    public permissionService: PermissionService
   ) { }
 
   ngOnInit(): void {

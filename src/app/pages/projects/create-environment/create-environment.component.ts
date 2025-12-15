@@ -12,6 +12,7 @@ import { SharedService } from '../../../shared/services/shared.service';
 import { ToastrService } from 'ngx-toastr';
 import { ProjectsService } from '../projects.service';
 import { Router } from '@angular/router';
+import { PermissionService } from '../../../shared/services/permission.service';
 import { RegionOptions } from '../../../core/constants/app.constants';
 
 @Component({
@@ -42,6 +43,7 @@ export class CreateEnvironmentComponent implements OnInit {
   constructor(
     private fb: FormBuilder, private project: ProjectsService, private shared: SharedService,
     private toaster: ToastrService, private router: Router
+      , public permissionService: PermissionService
   ) {
     // this.tableTheme = this.shared.getCookie('theme');
     this.tableTheme = localStorage.getItem('theme-default') || 'ag-theme-alpine';

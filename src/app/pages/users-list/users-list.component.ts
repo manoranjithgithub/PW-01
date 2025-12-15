@@ -14,6 +14,7 @@ import { AgGridTableComponent } from '../../shared/components/ag-grid-table/ag-g
 import { ActionCellRendererComponent } from '../../shared/components/action-cell-renderer/action-cell-renderer.component';
 import { ModalComponent } from '../../shared/components/model/model.component';
 import { User, Environment, PolicyMapped, PolicyRaw, Project } from '../../core/models/user-data.model';
+import { PermissionService } from 'src/app/shared/services/permission.service';
 
 @Component({
   selector: 'app-users-list',
@@ -136,7 +137,8 @@ export class UsersListComponent implements OnInit, OnDestroy {
     private http: UsersListService,
     private fb: FormBuilder,
     private toastr: ToastrService,
-    private modalService: NgbModal
+    private modalService: NgbModal,
+    public permissionService: PermissionService
   ) {
     this.addUserForm = this.fb.group({
       username: ['', [Validators.required, Validators.pattern(VALIDATION_REGEX.USERNAME)]],

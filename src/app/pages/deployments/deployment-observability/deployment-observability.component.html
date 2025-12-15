@@ -24,6 +24,13 @@
     </select>
   </div>
 
+  <div class="form-group mb-0">
+    <label for="timeZone" class="custom-label">Time Zone:</label>
+    <select id="timeZone" formControlName="timeZone" class="form-select custom-values">
+      <option *ngFor="let tz of timeZones" [value]="tz.value">{{ tz.label }}</option>
+    </select>
+  </div>
+
   <ng-container *ngIf="filterForm.get('duration')?.value === 'custom'">
     <div class="d-flex align-items-end gap-3">
       <div class="form-group mb-0">

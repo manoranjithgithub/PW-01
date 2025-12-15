@@ -64,7 +64,7 @@
                     <button type="reset" class="btn button-format-outline me-2" (click)="resetForm()">
                         Cancel
                     </button>
-                    <button type="submit" class="btn button-format-solid" [disabled]="addUserForm.invalid">
+                    <button type="submit" class="btn button-format-solid" [disabled]="addUserForm.invalid || !permissionService.canWriteGlobal()">
                         Add User
                     </button>
                 </div>
@@ -200,8 +200,9 @@
             <h6 class="font-bold mb-0"><b>Access Details</b>
                 <!-- <small class="text-muted">Permissions by Project and Environment</small>  -->
             </h6>
-            <div class="actions align-items-end">
-                <button (click)="enableAddPolicy()" class="btn button-format-solid">
+                <div class="actions align-items-end">
+                <button (click)="enableAddPolicy()" class="btn button-format-solid"
+                    [disabled]="!permissionService.canAdminGlobal()">
                     <i class="bi bi-plus"></i>Add new policy
                 </button>
             </div>
@@ -221,11 +222,17 @@
                 <td>{{policy.envname}}</td>
                 <td *ngIf="policy.showPermissionCell" [attr.rowspan]="policy.permissionRowSpan">{{ policy.permissions }}</td>
                 <td *ngIf="policy.showActionCell" [attr.rowspan]="policy.actionRowSpan">
-                    <button class="flat-btn edit" (click)="editPolicy(i, policy)">
+                    <button class="flat-btn edit"
+                        (click)="permissionService.canAdminGlobal() && editPolicy(i, policy)"
+                        [class.disabled]="!permissionService.canAdminGlobal()"
+                        [attr.aria-disabled]="!permissionService.canAdminGlobal()">
                         <i class="bi bi-pencil-square"></i>
                         Edit
                     </button>
-                    <button class="flat-btn delete" (click)="deletePolicy(i, policy)">
+                    <button class="flat-btn delete"
+                        (click)="permissionService.canAdminGlobal() && deletePolicy(i, policy)"
+                        [class.disabled]="!permissionService.canAdminGlobal()"
+                        [attr.aria-disabled]="!permissionService.canAdminGlobal()">
                         <i class="bi bi-trash"></i>
                         Delete
                     </button>
