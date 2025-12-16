@@ -7,18 +7,34 @@
       <a class="custom-dropdown-item" (click)="onOptionSelected('view')">View</a>
     </li>
     <li>
-      <a class="custom-dropdown-item" (click)="onOptionSelected('edit')">Edit</a>
+      <a class="custom-dropdown-item"
+        role="button"
+        (click)="permissionService.canWriteForCurrentUser(currentProjectId, envId) && onOptionSelected('edit')"
+        [class.disabled]="!permissionService.canWriteForCurrentUser(currentProjectId, envId)"
+        [attr.aria-disabled]="!permissionService.canWriteForCurrentUser(currentProjectId, envId)"
+      >Edit</a>
     </li>
     <li>
-      <a class="custom-dropdown-item" (click)="onOptionSelected('delete')">Delete</a>
+      <a class="custom-dropdown-item"
+        role="button"
+        (click)="permissionService.canDeleteForCurrentUser(currentProjectId, envId) && onOptionSelected('delete')"
+        [class.disabled]="!permissionService.canDeleteForCurrentUser(currentProjectId, envId)"
+        [attr.aria-disabled]="!permissionService.canDeleteForCurrentUser(currentProjectId, envId)"
+      >Delete</a>
     </li>
   </ul>
 </div>
 <div class="custom-dropdown d-inline-block" *ngIf="additionalParam === 'user-list'">
   <a class="mx-2 cursor-pointer" (click)="viewPolicies()" title="View Policies"><i
       class="bi bi-eye-fill"></i></a>
-  <a class="mx-2 cursor-pointer" (click)="editPolicies()" title="Edit Policies"><i
-      class="bi bi-pencil-square"></i></a>
+  <a class="mx-2 cursor-pointer"
+    role="button"
+    (click)="permissionService.canAdminGlobal() && editPolicies()"
+    [class.disabled]="!permissionService.canAdminGlobal()"
+    [attr.aria-disabled]="!permissionService.canAdminGlobal()"
+    title="Edit Policies">
+    <i class="bi bi-pencil-square"></i>
+  </a>
   <!-- <a class="text-danger mx-1" (click)="onOptionSelected('view')"><i class="bi bi-trash3-fill"></i></a> -->
 </div>
 

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink, RouterOutlet, Router } from '@angular/router';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
+import { PermissionService } from '../../shared/services/permission.service';
 import { UserService } from '../../core/services/user.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ColorModeService } from '@coreui/angular';
@@ -30,7 +31,8 @@ export class LoginComponent implements OnInit {
     private router: Router,
     private toaster: ToastrService,
     private http: UserService,
-    private authService: AuthService
+    private authService: AuthService,
+    private permissionService: PermissionService
   ) {
     this.loginForm = this.fb.group({
       orgName: [''],
@@ -55,9 +57,20 @@ export class LoginComponent implements OnInit {
       next: (response) => {
         this.toaster.success('Login successful');
         localStorage.setItem('accessToken', response.data.token);
-        if (this.authService.isTokenReady()) {
-          this.router.navigate(['/projects']);
-        }
+        // load policies via PermissionService (service will fetch policies for the user)
+        this.permissionService.loadPolicies().subscribe({
+          next: () => {
+            if (this.authService.isTokenReady()) {
+              this.router.navigate(['/projects']);
+            }
+          },
+          error: () => {
+            // even if policies fetch fails, continue to navigate if token is ready
+            if (this.authService.isTokenReady()) {
+              this.router.navigate(['/projects']);
+            }
+          }
+        });
       },
       error: (error) => {
         this.loading = false;

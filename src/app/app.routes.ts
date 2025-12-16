@@ -6,7 +6,7 @@ import '@angular/localize/init';
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: 'login',
+    redirectTo: 'projects',
     pathMatch: 'full',
   },
   {

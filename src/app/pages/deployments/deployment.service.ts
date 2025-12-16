@@ -167,8 +167,8 @@ export class DeploymentsService {
       })
     );
   }
-  getDeploymentMetricsByTime(envId: string, from: string, to: string, timeInterval: number) {
-    return this.http.get(`${this.metricsApiUrl}/namespace?cluster=prod&namespace=${envId}&from=${from}&to=${to}&step=${timeInterval}`)
+  getDeploymentMetricsByTime(envId: string, from: string, to: string, timeInterval: number, resourceType: 'cpu' | 'memory', deploymentId: string) {
+    return this.http.get(`${this.metricsApiUrl}/namespace?cluster=prod&namespace=${envId}&resourceType=${resourceType}&deploymentId=${deploymentId}&from=${from}&to=${to}&step=${timeInterval}`)
       .pipe(
         catchError(this.handleError.bind(this))
       );

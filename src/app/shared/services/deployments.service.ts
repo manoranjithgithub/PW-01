@@ -60,7 +60,16 @@ export class DeploymentsService {
       );
   }
 
-
+  getPolicyByUser() {
+    const headers = { 'Content-Type': 'application/json',
+      'Cache-Control': 'no-cache',
+      'authorization': `Bearer ${localStorage.getItem('accessToken')}`
+     };
+    return this.http.get(`${this.userApiUrl}/policies`, { headers })
+      .pipe(
+        catchError(this.handleError.bind(this))
+      );
+  }
   private handleError(error: HttpErrorResponse) {
     if (error.error instanceof ErrorEvent) {
       console.error('An error occurred:', error.error.message);
