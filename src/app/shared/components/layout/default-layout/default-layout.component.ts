@@ -120,11 +120,11 @@ export class DefaultLayoutComponent implements OnInit {
             '/users-list',
           ];
           const publicRoutes = ['/', '/login', '/create-account', '/logout', '/login', '/forgot-password'];
-          if (this.currentUser !== 'nimbuz') {
+          if (this.currentUser !== 'nimbuz' && permissionService.canAdminGlobal()) {
             allowedRoutes.push('/users-list');
           }
 
-          const environment = localStorage.getItem('environment');
+          const environment = localStorage.getItem('environment'); 
           const project = localStorage.getItem('project');
 
           const isProjectMissing = !project || project === 'undefined';
@@ -220,7 +220,7 @@ export class DefaultLayoutComponent implements OnInit {
       if (environment.production) {
         baseItems = baseItems.filter(item => item.name !== 'LLM Deployments');
       }
-      if (user?.owner !== 'nimbuz') {
+      if (user?.owner !== 'nimbuz' && this.permissionService.canAdminGlobal()) {
         baseItems.push({ name: 'Users', url: '/users-list', icon: 'bi bi-people-fill' });
       }
 
