@@ -75,13 +75,8 @@
               (click)="permissionService.canWriteForCurrentUser(projectId, envId) && toggleGeneralEditMode()">
               <i class="bi bi-pencil-square edit-icon"></i> edit
             </button>
-<<<<<<< HEAD
             <button *ngIf="isGeneralEditMode" class="btn btn-edit p-0"
-              (click)="saveEnvChanges()">
-=======
-            <button *ngIf="isGeneralEditMode" class="btn btn-sm border border-2 border-black text-black"
               (click)="saveEnvChanges()" [disabled]="!permissionService.canWriteForCurrentUser(projectId, envId)">
->>>>>>> dev
               Save
             </button>
           </div>
