@@ -40,13 +40,13 @@
               </div>
 
               <div class="col-md-2 text-end">
-                <button *ngIf="!isGeneralEditMode" class="btn  p-0"
+                <button *ngIf="!isGeneralEditMode" class="btn btn-edit p-0"
                   [class.disabled]="!permissionService.canWriteForCurrentUser(projectId, envId)"
                   [attr.aria-disabled]="!permissionService.canWriteForCurrentUser(projectId, envId)"
                   (click)="permissionService.canWriteForCurrentUser(projectId, envId) && toggleGeneralEditMode()">
                   <i class="bi bi-pencil-square edit-icon"></i> edit
                 </button>
-                <button *ngIf="isGeneralEditMode" class="btn btn-sm border border-2 border-black text-black"
+                <button *ngIf="isGeneralEditMode" class="btn btn-edit p-0"
                   (click)="saveEnvChanges()" [disabled]="!permissionService.canWriteForCurrentUser(projectId, envId)">
                   Save
                 </button>
@@ -75,7 +75,7 @@
               (click)="permissionService.canWriteForCurrentUser(projectId, envId) && toggleGeneralEditMode()">
               <i class="bi bi-pencil-square edit-icon"></i> edit
             </button>
-            <button *ngIf="isGeneralEditMode" class="btn btn-sm border border-2 border-black text-black"
+            <button *ngIf="isGeneralEditMode" class="btn btn-edit p-0"
               (click)="saveEnvChanges()" [disabled]="!permissionService.canWriteForCurrentUser(projectId, envId)">
               Save
             </button>

@@ -14,7 +14,7 @@ import { AgGridTableComponent } from '../../shared/components/ag-grid-table/ag-g
 import { ActionCellRendererComponent } from '../../shared/components/action-cell-renderer/action-cell-renderer.component';
 import { ModalComponent } from '../../shared/components/model/model.component';
 import { User, Environment, PolicyMapped, PolicyRaw, Project } from '../../core/models/user-data.model';
-import { PermissionService } from 'src/app/shared/services/permission.service';
+import { PermissionService } from '../../shared/services/permission.service';
 
 @Component({
   selector: 'app-users-list',
