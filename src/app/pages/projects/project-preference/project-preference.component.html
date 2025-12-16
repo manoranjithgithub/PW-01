@@ -47,7 +47,7 @@
                 <button *ngIf="!isGeneralEditMode" class="btn btn-edit p-0" (click)="isGeneralEditMode = true">
                   <i class="bi bi-pencil-square edit-icon"></i> edit
                 </button>
-                <button *ngIf="isGeneralEditMode" class="btn btn-sm border border-2 border-black text-black"
+                <button *ngIf="isGeneralEditMode" class="btn btn-edit p-0"
                   (click)="saveGeneralChanges()" [disabled]="generalSettingForm.invalid">
                   Save
                 </button>

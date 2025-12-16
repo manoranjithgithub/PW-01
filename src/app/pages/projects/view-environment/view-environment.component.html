@@ -40,10 +40,10 @@
               </div>
 
               <div class="col-md-2 text-end">
-                <button *ngIf="!isGeneralEditMode" class="btn  p-0" (click)="toggleGeneralEditMode()">
+                <button *ngIf="!isGeneralEditMode" class="btn btn-edit p-0" (click)="toggleGeneralEditMode()">
                   <i class="bi bi-pencil-square edit-icon"></i> edit
                 </button>
-                <button *ngIf="isGeneralEditMode" class="btn btn-sm border border-2 border-black text-black"
+                <button *ngIf="isGeneralEditMode" class="btn btn-edit p-0"
                   (click)="saveEnvChanges()">
                   Save
                 </button>
@@ -69,7 +69,7 @@
             <button *ngIf="!isGeneralEditMode" class="btn btn-edit p-0" (click)="toggleGeneralEditMode()">
               <i class="bi bi-pencil-square edit-icon"></i> edit
             </button>
-            <button *ngIf="isGeneralEditMode" class="btn btn-sm border border-2 border-black text-black"
+            <button *ngIf="isGeneralEditMode" class="btn btn-edit p-0"
               (click)="saveEnvChanges()">
               Save
             </button>
