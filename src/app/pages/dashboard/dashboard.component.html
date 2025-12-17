@@ -13,7 +13,7 @@
             </app-utilization-chart>
         </div>
     </div>
-    <div class="endpoint-list my-4 py-4 overflow-hidden">
+        <div class="endpoint-list my-4 py-4" [class.overflow-hidden]="!isDropdownOpen" [class.dropdown-open]="isDropdownOpen">
         <div class="row">
             <div class="col-md-12">
                 <h3 class="">Endpoint list</h3>
@@ -34,13 +34,14 @@
                                     <a href="{{ endpoint.host }}" target="_blank">
                                         {{ endpoint.host }}
                                     </a>
+                                </td>
                                 <td class="text-center text-info">
-                                    <c-dropdown class="action-dropdown">
+                                    <!-- <c-dropdown class="action-dropdown">
                                         <button class="btn btn-icon" type="button" data-bs-toggle="dropdown"
                                             aria-expanded="false">
                                             <i class="bi bi-three-dots-vertical"></i>
                                         </button>
-                                        <ul cDropdownMenu class="dropdown-menu dropdown-menu-end" style="position: relative;">
+                                        <ul class="dropdown-menu dropdown-menu-end">
                                             <li>
                                                 <a class="dropdown-item" (click)="viewEndpoint(endpoint)">View</a>
                                             </li>
@@ -48,7 +49,19 @@
                                                 <a class="dropdown-item" (click)="deleteEndpoint(endpoint)">Delete</a>
                                             </li>
                                         </ul>
-                                    </c-dropdown>
+                                    </c-dropdown> -->
+                                    <div class="custom-dropdown d-inline-block">
+                                        <button #dropdownBtn class="btn btn-icon" type="button"
+                                            (click)="toggleDropdown($event, dropdownBtn)">
+                                            <i class="bi bi-three-dots-vertical"></i>
+                                        </button>
+                                        <ul *ngIf="isDropdownOpen" #menu class="custom-dropdown-menu floating-dropdown"
+                                            [ngStyle]="dropdownStyle">
+                                            <li><a class="custom-dropdown-item" (click)="viewEndpoint(endpoint)">View</a> </li>
+                                            <li><a class="custom-dropdown-item" (click)="deleteEndpoint(endpoint)">Delete</a>
+                                            </li>
+                                        </ul>
+                                    </div>
                                 </td>
                             </tr>
                             <tr *ngIf="endpoints.length === 0">
