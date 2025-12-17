@@ -77,6 +77,11 @@
   overflow: visible !important;
 }
 
+.endpoint-list.dropdown-open {
+  padding-bottom: 60px !important;
+  overflow: visible !important;
+}
+
 @media (min-width: 800px) and (max-width: 1199.98px) {
     .custom-col {
         flex: 0 0 50%;
@@ -95,4 +100,30 @@
   .card-title {
     font-size: 27px !important;
     font-family: "plusFont", sans-serif !important;
+}
+
+.custom-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  width: 160px;
+  z-index: 1000;
+}
+
+.floating-dropdown {
+  position: absolute;
+  transform: none;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+  border-radius: 8px;
+  background: #fff;
+  padding: 6px 0;
+  min-width: 140px;
+  z-index: 3000;
+  color: #000;
 }

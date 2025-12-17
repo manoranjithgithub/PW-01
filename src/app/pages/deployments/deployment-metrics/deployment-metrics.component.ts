@@ -392,9 +392,9 @@ export class DeploymentMetricsComponent implements OnInit, AfterViewInit {
 
   private onFilterCpu(params: { fromISO: string; toISO: string; timeIntervalSeconds: number }): void {
     const environmentId = JSON.parse(localStorage.getItem('environment') || '{}').id || '';
-    const deploymentId = JSON.parse(localStorage.getItem('deployment') || '{}').id || '';
+    // const deploymentId = JSON.parse(localStorage.getItem('deployment') || '{}').id || '';
 
-    this.deploymentService.getDeploymentMetricsByTime(environmentId, params.fromISO, params.toISO, params.timeIntervalSeconds, 'cpu', deploymentId).subscribe((res: any) => {
+    this.deploymentService.getDeploymentMetricsByTime(environmentId, params.fromISO, params.toISO, params.timeIntervalSeconds, 'cpu', this.deploymentId).subscribe((res: any) => {
       const cpuValues: [number | string, number | null][] = res.data?.cpu?.usageRange?.data?.result?.[0]?.values || [];
 
       if (!cpuValues || cpuValues.length === 0) {
@@ -414,9 +414,9 @@ export class DeploymentMetricsComponent implements OnInit, AfterViewInit {
 
   private onFilterMem(params: { fromISO: string; toISO: string; timeIntervalSeconds: number }): void {
     const environmentId = JSON.parse(localStorage.getItem('environment') || '{}').id || '';
-    const deploymentId = JSON.parse(localStorage.getItem('deployment') || '{}').id || '';
+    // const deploymentId = JSON.parse(localStorage.getItem('deployment') || '{}').id || '';
 
-    this.deploymentService.getDeploymentMetricsByTime(environmentId, params.fromISO, params.toISO, params.timeIntervalSeconds, 'memory', deploymentId).subscribe((res: any) => {
+    this.deploymentService.getDeploymentMetricsByTime(environmentId, params.fromISO, params.toISO, params.timeIntervalSeconds, 'memory', this.deploymentId).subscribe((res: any) => {
       const memValues: [number | string, number | null][] = res.data?.memory?.usageRange?.data?.result?.[0]?.values || [];
 
       if (!memValues || memValues.length === 0) {
