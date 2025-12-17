@@ -35,7 +35,7 @@
               <div class="d-flex justify-content-center align-items-center w-100 h-100">
                 <span [routerLink]="(projectExhausted || environmentExhausted || !permissionService.canAdminGlobal()) ? null : ['/projects/create-project']"
                   class="cursor text-decoration-none"
-                  [class.disabled]="projectExhausted || environmentExhausted || permissionService.canAdminGlobal()">+ Create project</span>
+                  [class.disabled]="projectExhausted || environmentExhausted || !permissionService.canAdminGlobal()">+ Create project</span>
               </div>
             </div>
           </div>
