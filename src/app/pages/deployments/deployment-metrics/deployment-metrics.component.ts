@@ -46,9 +46,9 @@ export class DeploymentMetricsComponent implements OnInit, AfterViewInit {
   selectedPods: string[] = [];
   deploymentId: string = '';
 
-  cpuChart!: Chart;
-  ramChart!: Chart;
-  storageChart!: Chart;
+  cpuChart!: Chart<any>;
+  ramChart!: Chart<any>;
+  storageChart!: Chart<any>;
   cpuUsageData: any[] = [];
   ramUsageData: any[] = [];
   private pendingMetricsRequests = 0;
@@ -137,72 +137,44 @@ export class DeploymentMetricsComponent implements OnInit, AfterViewInit {
   ngAfterViewInit(): void {
     this.loading = true;
   }
-
   renderCpuChart(): void {
     if (!this.chartRef || !this.chartRef.nativeElement) {
       console.warn('chartRef not ready, retrying...');
       setTimeout(() => this.renderCpuChart(), 500);
       return;
     }
-    if (this.cpuChart) {
-      this.cpuChart.destroy();
-    }
-    const data = this.cpuUsageData.map(item => Number(item.cpuAverage) || 0);
-    const labels = data.map((_, index) => index);
-    if (labels.length === 1) {
-      labels.push(labels[0] + 1);
-      data.push(data[0]);
-    }
+    if (this.cpuChart) this.cpuChart.destroy();
+
+    const points = this.cpuUsageData.map(item => ({ x: this.parseTimestampToDate(item._id), y: Number(item.cpuAverage) || 0 }));
+    if (points.length === 1) points.push({ x: new Date(points[0].x.getTime() + 1000), y: points[0].y });
+
+    const timeConfig = this.getTimeScaleConfig();
+
     this.cpuChart = new Chart(this.chartRef.nativeElement, {
       type: 'line',
-      data: {
-        labels,
-        datasets: [
-          {
-            label: `CPU Usage (${this.formatCpuForLabel(this.average(this.cpuUsageData.map(item => Number(item.cpuAverage) || 0)))})`,
-            data,
-            borderColor: 'rgba(54, 162, 235, 1)',
-            backgroundColor: 'rgba(54, 162, 235, 0.2)',
-            fill: true,
-            tension: 0.4,
-            pointBackgroundColor: '#1e88e5'
-          },
-          {
-            label: `Max CPU Limit (${this.maxCpuLimit} mCPU)`,
-            data: labels.map(() => this.maxCpuLimit),
-            borderColor: 'red',
-            borderWidth: 1,
-            pointRadius: 0,
-            fill: false
-          }
-        ]
-      },
+      data: { datasets: [
+        {
+          label: `CPU Usage (${this.formatCpuForLabel(this.average(points.map(p => p.y)))})`,
+          data: points,
+          borderColor: 'rgba(54, 162, 235, 1)',
+          backgroundColor: 'rgba(54, 162, 235, 0.2)',
+          fill: true,
+          tension: 0.4,
+          pointBackgroundColor: '#1e88e5'
+        },
+        {
+          label: `Max CPU Limit (${this.maxCpuLimit} mCPU)`,
+          data: points.map(p => ({ x: p.x, y: this.maxCpuLimit })),
+          borderColor: 'red', borderWidth: 1, pointRadius: 0, fill: false, parsing: false
+        }
+      ] },
       options: {
         responsive: true,
-        plugins: {
-          legend: { display: true },
-          tooltip: { enabled: true },
-          title: { display: true, text: 'CPU Usage Over Time' }
-        },
-        scales: {
-          x: {
-            type: 'linear',
-            title: { display: true, text: 'Data Point Index' },
-            ticks: {
-              autoSkip: true,
-              maxRotation: 45,
-              minRotation: 0
-            }
-          },
-          y: {
-            title: { display: true, text: 'CPU (mCPU)' },
-            beginAtZero: true
-          }
-        }
-      }
-    });
+        plugins: { legend: { display: true }, tooltip: { enabled: true }, title: { display: true, text: 'CPU Usage Over Time' } },
+        scales: { x: { type: 'time', time: { tooltipFormat: 'PPpp', ...timeConfig }, title: { display: true, text: 'Date &Time' }, ticks: { autoSkip: true, maxRotation: 0, minRotation: 0, callback: (val: any) => { const d = new Date(val); const dateStr = d.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }); const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); return [dateStr, timeStr]; } } }, y: { title: { display: true, text: 'CPU (mCPU)' }, beginAtZero: true } }
+  }});
+  
   }
-
 
   renderRamChart(): void {
     if (!this.ramChartRef || !this.ramChartRef.nativeElement) {
@@ -210,73 +182,23 @@ export class DeploymentMetricsComponent implements OnInit, AfterViewInit {
       setTimeout(() => this.renderRamChart(), 500);
       return;
     }
+    if (this.ramChart) this.ramChart.destroy();
 
-    if (this.ramChart) {
-      this.ramChart.destroy();
-    }
+    const points = this.ramUsageData.map(val => ({ x: this.parseTimestampToDate(val._id), y: Number(val.ramAverage) / (1024 * 1024) }));
+    if (points.length === 1) points.push({ x: new Date(points[0].x.getTime() + 1000), y: points[0].y });
 
-    const ramMiBValues = this.ramUsageData.map(val => val.ramAverage / (1024 * 1024));
-    const labels = ramMiBValues.map((_, i) => i.toString());
-    if (labels.length === 1) {
-      labels.push(labels[0] + 1);
-      ramMiBValues.push(ramMiBValues[0]);
-    }
+    const timeConfig = this.getTimeScaleConfig();
+
     this.ramChart = new Chart(this.ramChartRef.nativeElement, {
       type: 'line',
-      data: {
-        labels,
-        datasets: [
-          {
-            label: `RAM Usage (${Number(this.average(ramMiBValues)).toFixed(2)} MiB)`,
-            data: ramMiBValues,
-            borderColor: 'rgba(75, 192, 192, 1)',
-            backgroundColor: 'rgba(75, 192, 192, 0.2)',
-            fill: true,
-            tension: 0.4
-          },
-          {
-            label: 'Max RAM Limit',
-            data: labels.map(() => this.maxRamLimit),
-            borderColor: 'red',
-            borderWidth: 1,
-            pointRadius: 0,
-            fill: false
-          }
-        ]
-      },
+      data: { datasets: [
+        { label: `RAM Usage (${Number(this.average(points.map(p => p.y))).toFixed(2)} MiB)`, data: points, borderColor: 'rgba(75,192,192,1)', backgroundColor: 'rgba(75,192,192,0.2)', fill: true, tension: 0.4 },
+        { label: 'Max RAM Limit', data: points.map(p => ({ x: p.x, y: this.maxRamLimit })), borderColor: 'red', borderWidth: 1, pointRadius: 0, fill: false, parsing: false }
+      ] },
       options: {
         responsive: true,
-        plugins: {
-          title: { display: true, text: 'RAM Usage Over Time' },
-          legend: {
-            display: true,
-            labels: {
-              generateLabels: (chart) => {
-                const labels = Chart.defaults.plugins.legend.labels.generateLabels(chart);
-
-                labels.forEach((label) => {
-                  if (label.text === "Max RAM Limit") {
-                    label.text = `Max RAM Limit (${this.maxRamLimit} MiB)`;
-                  }
-                });
-
-                return labels;
-              }
-            }
-          },
-          tooltip: { enabled: true }
-        },
-        scales: {
-          x: {
-            type: 'linear',
-            title: { display: true, text: 'Data Point Index' },
-            ticks: { autoSkip: true, maxRotation: 45, minRotation: 0 }
-          },
-          y: {
-            title: { display: true, text: 'RAM (MiB)' },
-            beginAtZero: true
-          }
-        }
+        plugins: { title: { display: true, text: 'RAM Usage Over Time' }, legend: { display: true, labels: { generateLabels: (chart) => { const labels = Chart.defaults.plugins.legend.labels.generateLabels(chart); labels.forEach((label:any) => { if (label.text === 'Max RAM Limit') label.text = `Max RAM Limit (${this.maxRamLimit} MiB)`; }); return labels; } } }, tooltip: { enabled: true } },
+        scales: { x: { type: 'time', time: { tooltipFormat: 'PPpp', ...timeConfig }, title: { display: true, text: 'Date & Time' }, ticks: { autoSkip: true, maxRotation: 0, minRotation: 0, callback: (val: any) => { const d = new Date(val); const dateStr = d.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }); const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); return [dateStr, timeStr]; } } }, y: { title: { display: true, text: 'RAM (MiB)' }, beginAtZero: true } }
       }
     });
   }
@@ -291,19 +213,18 @@ export class DeploymentMetricsComponent implements OnInit, AfterViewInit {
     if (this.storageChart) {
       this.storageChart.destroy();
     }
-    const labels = this.storageUsageData.map((item: any) =>
-      new Date(item._id).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    );
-    const data = this.storageUsageData.map((item: any) => item.storageAverage);
+    const points = this.storageUsageData.map((item: any) => ({ x: this.parseTimestampToDate(item._id), y: item.storageAverage }));
     const maxStorageLimit = 100;
+    if (points.length === 1) points.push({ x: new Date(points[0].x.getTime() + 1000), y: points[0].y });
+
+    const timeConfig = this.getTimeScaleConfig();
 
     this.storageChart = new Chart(this.storageChartRef.nativeElement, {
       type: 'line',
       data: {
-        labels: labels,
         datasets: [{
           label: 'Storage Usage (GB)',
-          data: data,
+          data: points,
           borderColor: 'rgb(240, 157, 48)',
           backgroundColor: 'rgba(250, 127, 66, 0.2)',
           fill: true,
@@ -311,11 +232,12 @@ export class DeploymentMetricsComponent implements OnInit, AfterViewInit {
         },
         {
           label: 'Max Storage Limit',
-          data: labels.map(() => maxStorageLimit),
+          data: points.map(p => ({ x: p.x, y: maxStorageLimit })),
           borderColor: 'red',
           borderWidth: 1,
           pointRadius: 0,
           fill: false,
+          parsing: false
         }]
       },
       options: {
@@ -324,7 +246,7 @@ export class DeploymentMetricsComponent implements OnInit, AfterViewInit {
           title: { display: true, text: 'Storage Usage Over Time' }
         },
         scales: {
-          x: { title: { display: true, text: 'Time' } },
+          x: { type: 'time', time: { tooltipFormat: 'PPpp', ...timeConfig }, title: { display: true, text: 'Time' }, ticks: { autoSkip: true, maxRotation: 0, minRotation: 0, callback: (val: any) => { const d = new Date(val); const dateStr = d.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }); const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); return [dateStr, timeStr]; } } },
           y: { title: { display: true, text: 'Storage (GB)' }, beginAtZero: true }
         }
       }
@@ -454,6 +376,41 @@ export class DeploymentMetricsComponent implements OnInit, AfterViewInit {
 
   toggleDropdown() {
     this.dropdownOpen = !this.dropdownOpen;
+  }
+  private parseTimestampToDate(ts: any): Date {
+    const n = Number(ts);
+    if (!isNaN(n)) {
+      // treat 10-digit numbers as seconds
+      if (String(ts).length <= 10) return new Date(n * 1000);
+      return new Date(n);
+    }
+    const d = new Date(ts);
+    if (!isNaN(d.getTime())) return d;
+    return new Date();
+  }
+
+  private getTimeScaleConfig(): any {
+    const durationVal: any = this.filterForm?.get('duration')?.value;
+    let minutes = 15;
+    if (!durationVal) return { unit: 'minute', displayFormats: { minute: 'MMM d, h:mm a' } };
+    if (durationVal === 'custom') {
+      const from = new Date(this.filterForm.get('fromTimestamp')?.value);
+      const to = new Date(this.filterForm.get('toTimestamp')?.value);
+      minutes = Math.max(1, Math.floor((to.getTime() - from.getTime()) / (1000 * 60)));
+    } else {
+      minutes = Number(durationVal);
+    }
+
+    if (minutes <= 60) {
+      return { unit: 'minute', displayFormats: { minute: 'MMM d, h:mm a', hour: 'MMM d, h a', day: 'MMM d' } };
+    }
+    if (minutes <= 1440) {
+      return { unit: 'hour', displayFormats: { hour: 'MMM d, h a', day: 'MMM d' } };
+    }
+    if (minutes <= 10080) {
+      return { unit: 'day', displayFormats: { day: 'MMM d' } };
+    }
+    return { unit: 'month', displayFormats: { month: 'MMM yyyy' } };
   }
   private formatCpuForLabel(val: number): string {
     return `${Number(val).toFixed(0)} mCPU`;
