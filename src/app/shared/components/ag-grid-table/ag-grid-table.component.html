@@ -5,10 +5,10 @@
       class="form-control" />
   </div>
   <ng-container>
-    <div class="d-flex justify-content-end align-items-center mb-2 btn-section gap-2">
-      <button class="btn button-format-solid" (click)="newDeploy()" *ngIf="showDeployButton"><i class="bi bi-plus"></i>
+      <div class="d-flex justify-content-end align-items-center mb-2 btn-section gap-2">
+      <button class="btn button-format-solid" (click)="newDeploy()" *ngIf="showDeployButton && (permissionService.canAdminGlobal() || permissionService.canWriteForCurrentUser(getCurrentProjectId(), null))"><i class="bi bi-plus"></i>
         New  Deploy</button>
-      <button class="btn button-format-solid" (click)="addNewUser()" *ngIf="showAddUser"><i class="bi bi-plus"></i> New
+      <button class="btn button-format-solid" (click)="addNewUser()" *ngIf="showAddUser && permissionService.canAdminGlobal()"><i class="bi bi-plus"></i> New
         User</button>
     </div>
   </ng-container>

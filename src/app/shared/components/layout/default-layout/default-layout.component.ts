@@ -120,7 +120,8 @@ export class DefaultLayoutComponent implements OnInit {
             '/users-list',
           ];
           const publicRoutes = ['/', '/login', '/create-account', '/logout', '/login', '/forgot-password'];
-          if (this.currentUser !== 'nimbuz' && permissionService.canAdminGlobal()) {
+          // show Users only to nimbuz owner or global admins
+          if (this.currentUser === 'nimbuz' || permissionService.canAdminGlobal()) {
             allowedRoutes.push('/users-list');
           }
 
@@ -131,6 +132,13 @@ export class DefaultLayoutComponent implements OnInit {
           const isEnvironmentMissing = !environment || environment === 'undefined';
 
           const urlWithoutParams = event.url.split('?')[0];
+          // prevent direct navigation to /users-list for unauthorized users
+          const canAccessUsers = (this.currentUser === 'nimbuz' || permissionService.canAdminGlobal());
+          if (urlWithoutParams.startsWith('/users-list') && !canAccessUsers) {
+            this.toastr.warning('You are not authorized to view that page.');
+            this.router.navigateByUrl('/projects', { replaceUrl: true });
+            return;
+          }
           const isAllowed = allowedRoutes.some(route => urlWithoutParams.startsWith(route));
           const isPublicRoute = publicRoutes.includes(urlWithoutParams);
 

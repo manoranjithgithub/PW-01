@@ -45,7 +45,7 @@
               <div class="col-md-2 text-end">
                 <button *ngIf="!isGeneralEditMode" class="btn btn-edit p-0"
                   [class.disabled]="!permissionService.canWriteForCurrentUser(currentProjectId, '')"
-                  [attr.aria-disabled]="!permissionService.canWriteForCurrentUser(currentProjectId, '')"
+                  [disabled]="!permissionService.canWriteForCurrentUser(currentProjectId, '')"
                   (click)="isGeneralEditMode = true">
                   <i class="bi bi-pencil-square edit-icon"></i> edit
                 </button>
@@ -147,12 +147,20 @@
 
                 <ng-container *ngIf="integration.status === 'connected'; else connectBtn">
                   <button class="btn btn-outline-danger btn-sm"
-                    (click)="diconnectProfile(integration.name)">Disconnect</button>
+                    (click)="diconnectProfile(integration.name)"
+                    [disabled]="!(permissionService.canAdminGlobal() || permissionService.canWriteForCurrentUser(currentProjectId, null) || permissionService.canWriteForCurrentUser(currentProjectId, '*'))"
+                    [attr.aria-disabled]="!(permissionService.canAdminGlobal() || permissionService.canWriteForCurrentUser(currentProjectId, null) || permissionService.canWriteForCurrentUser(currentProjectId, '*'))">
+                    Disconnect
+                  </button>
                 </ng-container>
 
                 <ng-template #connectBtn>
                   <button class="btn btn-outline-success btn-sm"
-                    (click)="getProfile(integration.provider)">Connect</button>
+                    (click)="getProfile(integration.provider)"
+                    [disabled]="!(permissionService.canAdminGlobal() || permissionService.canWriteForCurrentUser(currentProjectId, null) || permissionService.canWriteForCurrentUser(currentProjectId, '*'))"
+                    [attr.aria-disabled]="!(permissionService.canAdminGlobal() || permissionService.canWriteForCurrentUser(currentProjectId, null) || permissionService.canWriteForCurrentUser(currentProjectId, '*'))">
+                    Connect
+                  </button>
                 </ng-template>
               </div>
             </div>
