@@ -4,6 +4,7 @@ import { AgGridAngular, AgGridModule } from 'ag-grid-angular';
 import { CommonModule } from '@angular/common';
 import { LoaderComponent } from '../loader/loader.component';
 import { SharedService } from '../../services/shared.service';
+import { PermissionService } from '../../services/permission.service';
 import { ActionCellRendererComponent } from '../action-cell-renderer/action-cell-renderer.component';
 import { Router } from '@angular/router';
 @Component({
@@ -55,7 +56,7 @@ export class AgGridTableComponent implements OnInit {
   };
 
 
-  constructor(private sharedService: SharedService, private router: Router) {
+  constructor(private sharedService: SharedService, private router: Router, public permissionService: PermissionService) {
     // this.tableTheme = this.sharedService.getCookie('theme');
     this.tableTheme = localStorage.getItem('theme-default') || 'ag-theme-alpine';
     const urlSegments = this.router.url.split('/').filter(Boolean);
@@ -64,6 +65,17 @@ export class AgGridTableComponent implements OnInit {
     const lastSegment = urlSegments[urlSegments.length - 1];
     this.tablebtn = this.capitalizeFirstLetter(lastSegment);
 
+  }
+
+  getCurrentProjectId(): string | undefined {
+    const p = localStorage.getItem('project');
+    if (!p || p === 'undefined') return undefined;
+    try {
+      const parsed = JSON.parse(p);
+      return parsed?.id || undefined;
+    } catch {
+      return p || undefined;
+    }
   }
   capitalizeFirstLetter(word: string) {
     return word.charAt(0).toUpperCase() + word.slice(1);

@@ -121,7 +121,7 @@
           <div class="d-flex justify-content-between align-items-start w-100 h-100">
             <div class="d-flex justify-content-center align-items-center w-100 h-100">
               <button class="b-0 cursor env-btn" (click)="gotoEnvironment()"
-                [disabled]="environmentExhausted || !(permissionService.canAdminGlobal() || (selectedProjectId && permissionService.canWriteForCurrentUser(selectedProjectId, null)))">
+                [disabled]="environmentExhausted || !(permissionService.canAdminGlobal() || (selectedProjectId && (permissionService.canWriteForCurrentUser(selectedProjectId, null) || permissionService.canWriteForCurrentUser(selectedProjectId, '*'))))">
                 + Create environment
               </button>
             </div>
