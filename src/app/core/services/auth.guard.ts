@@ -1,7 +1,5 @@
 import { Injectable } from '@angular/core';
 import { ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot } from '@angular/router';
-import { Observable, of } from 'rxjs';
-import { map, tap } from 'rxjs/operators';
 import { AuthService } from './auth.service';
 import { PermissionService } from '../../shared/services/permission.service';
 import { ToastrService } from 'ngx-toastr';
@@ -44,13 +42,11 @@ export class AuthGuard implements CanActivate {
       this.router.navigateByUrl('/projects', { replaceUrl: true });
       return false;
     }
-    // Restrict access to create-project to global admins only
     if (url.startsWith('/projects/create-project') && !this.permissionService.canAdminGlobal()) {
       this.toastr.warning('You are not authorized to access Create Project.');
       this.router.navigateByUrl('/projects', { replaceUrl: true });
       return false;
     }
-    // Restrict access to create-environment to global admins or users with write access on current project
     if (url.startsWith('/projects/create-environment')) {
       const projectStr = localStorage.getItem('project');
       let projectId: string | null = null;
@@ -67,15 +63,18 @@ export class AuthGuard implements CanActivate {
         return false;
       }
     }
-    // Restrict users-list to non-nimbuz owners with global admin
     if (url.startsWith('/users-list')) {
-      const userStr = localStorage.getItem('userInfo');
       let owner: string | undefined;
       try {
-        const parsed = userStr ? JSON.parse(userStr) : null;
-        owner = parsed?.owner;
+        const hostname = window?.location?.hostname || '';
+        const subdomain = hostname.split('.')[0] || '';
+        if (subdomain === 'app') {
+          owner = 'nimbuz';
+        } else {
+          owner = subdomain;
+        }
       } catch {
-        owner = undefined;
+        // ignore and use owner from shared service
       }
       const canAccessUsers = (owner && owner !== 'nimbuz' && this.permissionService.canAdminGlobal());
       if (!canAccessUsers) {
@@ -84,7 +83,6 @@ export class AuthGuard implements CanActivate {
         return false;
       }
     }
-    // Restrict create-tool to global admins or users with write access on current project
     if (url.startsWith('/tools/create-tool')) {
       const projectStr = localStorage.getItem('project');
       let projectId: string | null = null;
@@ -109,7 +107,6 @@ export class AuthGuard implements CanActivate {
         return false;
       }
     }
-    // Restrict create-deployment (any create-deployment route) to global admins or users with write access on current project
     if (url.includes('/create-deployment')) {
       const projectStr = localStorage.getItem('project');
       let projectId: string | null = null;
