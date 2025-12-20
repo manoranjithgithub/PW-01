@@ -3,6 +3,7 @@ import { ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot } from
 import { Observable, of } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
 import { AuthService } from './auth.service';
+import { PermissionService } from '../../shared/services/permission.service';
 import { ToastrService } from 'ngx-toastr';
 import { environment } from '../../../environments/environment';
 
@@ -13,7 +14,8 @@ export class AuthGuard implements CanActivate {
   constructor(
     private authService: AuthService,
     private router: Router,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private permissionService: PermissionService
   ) { }
 
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
@@ -41,6 +43,96 @@ export class AuthGuard implements CanActivate {
       this.toastr.warning('Please select a project and environment before continuing.');
       this.router.navigateByUrl('/projects', { replaceUrl: true });
       return false;
+    }
+    // Restrict access to create-project to global admins only
+    if (url.startsWith('/projects/create-project') && !this.permissionService.canAdminGlobal()) {
+      this.toastr.warning('You are not authorized to access Create Project.');
+      this.router.navigateByUrl('/projects', { replaceUrl: true });
+      return false;
+    }
+    // Restrict access to create-environment to global admins or users with write access on current project
+    if (url.startsWith('/projects/create-environment')) {
+      const projectStr = localStorage.getItem('project');
+      let projectId: string | null = null;
+      try {
+        const parsed = projectStr ? JSON.parse(projectStr) : null;
+        projectId = parsed?.id || null;
+      } catch {
+        projectId = projectStr || null;
+      }
+      const canCreateEnv = this.permissionService.canAdminGlobal() || this.permissionService.canWriteForCurrentUser(projectId, null);
+      if (!canCreateEnv) {
+        this.toastr.warning('You are not authorized to create an environment for the selected project.');
+        this.router.navigateByUrl('/projects', { replaceUrl: true });
+        return false;
+      }
+    }
+    // Restrict users-list to non-nimbuz owners with global admin
+    if (url.startsWith('/users-list')) {
+      const userStr = localStorage.getItem('userInfo');
+      let owner: string | undefined;
+      try {
+        const parsed = userStr ? JSON.parse(userStr) : null;
+        owner = parsed?.owner;
+      } catch {
+        owner = undefined;
+      }
+      const canAccessUsers = (owner && owner !== 'nimbuz' && this.permissionService.canAdminGlobal());
+      if (!canAccessUsers) {
+        this.toastr.warning('You are not authorized to view that page.');
+        this.router.navigateByUrl('/projects', { replaceUrl: true });
+        return false;
+      }
+    }
+    // Restrict create-tool to global admins or users with write access on current project
+    if (url.startsWith('/tools/create-tool')) {
+      const projectStr = localStorage.getItem('project');
+      let projectId: string | null = null;
+      try {
+        const parsed = projectStr ? JSON.parse(projectStr) : null;
+        projectId = parsed?.id || null;
+      } catch {
+        projectId = projectStr || null;
+      }
+      const envStr = localStorage.getItem('environment');
+      let envId: string | null = null;
+      try {
+        const parsedE = envStr ? JSON.parse(envStr) : null;
+        envId = parsedE?.id || null;
+      } catch {
+        envId = envStr || null;
+      }
+      const canCreateTool = this.permissionService.canAdminGlobal() || this.permissionService.canWriteForCurrentUser(projectId, envId);
+      if (!canCreateTool) {
+        this.toastr.warning('You are not authorized to create tools.');
+        this.router.navigateByUrl('/tools', { replaceUrl: true });
+        return false;
+      }
+    }
+    // Restrict create-deployment (any create-deployment route) to global admins or users with write access on current project
+    if (url.includes('/create-deployment')) {
+      const projectStr = localStorage.getItem('project');
+      let projectId: string | null = null;
+      try {
+        const parsed = projectStr ? JSON.parse(projectStr) : null;
+        projectId = parsed?.id || null;
+      } catch {
+        projectId = projectStr || null;
+      }
+      const envStr = localStorage.getItem('environment');
+      let envId: string | null = null;
+      try {
+        const parsedE = envStr ? JSON.parse(envStr) : null;
+        envId = parsedE?.id || null;
+      } catch {
+        envId = envStr || null;
+      }
+      const canCreateDeployment = this.permissionService.canAdminGlobal() || this.permissionService.canWriteForCurrentUser(projectId, envId);
+      if (!canCreateDeployment) {
+        this.toastr.warning('You are not authorized to create deployments.');
+        this.router.navigateByUrl('/deployment', { replaceUrl: true });
+        return false;
+      }
     }
     if (environment.production && route.routeConfig?.path?.includes('llm')) {
       this.router.navigate(['/login']);
