@@ -58,7 +58,7 @@
                                         <ul *ngIf="isDropdownOpen" #menu class="custom-dropdown-menu floating-dropdown"
                                             [ngStyle]="dropdownStyle">
                                             <li><a class="custom-dropdown-item" (click)="viewEndpoint(endpoint)">View</a> </li>
-                                            <li><a class="custom-dropdown-item" (click)="deleteEndpoint(endpoint)">Delete</a>
+                                            <li><a class="custom-dropdown-item" (click)="(permissionService.canDeleteForCurrentUser(currentEnvId, null) || permissionService.canAdminGlobal()) && deleteEndpoint(endpoint)" [class.disabled]="!(permissionService.canDeleteForCurrentUser(currentEnvId, null) || permissionService.canAdminGlobal())" [attr.aria-disabled]="!(permissionService.canDeleteForCurrentUser(currentEnvId, null) || permissionService.canAdminGlobal())">Delete</a>
                                             </li>
                                         </ul>
                                     </div>

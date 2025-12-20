@@ -113,16 +113,23 @@ export class DefaultLayoutComponent implements OnInit {
         if (event instanceof NavigationStart) {
           const allowedRoutes = [
             '/projects',
-            '/projects/create-project',
             '/projects/create-environment',
             '/account-settings',
             '/projects/project-preferences',
-            '/users-list',
           ];
           const publicRoutes = ['/', '/login', '/create-account', '/logout', '/login', '/forgot-password'];
-          // show Users only to nimbuz owner or global admins
-          if (this.currentUser === 'nimbuz' || permissionService.canAdminGlobal()) {
+          // show Users only to non-nimbuz owners who are global admins
+          if (this.currentUser !== 'nimbuz' && this.permissionService.canAdminGlobal()) {
             allowedRoutes.push('/users-list');
+          }
+          // allow create-project route only for global admins
+          if (this.permissionService.canAdminGlobal()) {
+            allowedRoutes.push('/projects/create-project');
+          }
+          // allow create-environment only for global admins or users with write access to current project
+          const currentProjectId = this.getCurrentProjectId();
+          if (this.permissionService.canAdminGlobal() || this.permissionService.canWriteForCurrentUser(currentProjectId, null)) {
+            allowedRoutes.push('/projects/create-environment');
           }
 
           const environment = localStorage.getItem('environment'); 
@@ -133,7 +140,7 @@ export class DefaultLayoutComponent implements OnInit {
 
           const urlWithoutParams = event.url.split('?')[0];
           // prevent direct navigation to /users-list for unauthorized users
-          const canAccessUsers = (this.currentUser === 'nimbuz' || permissionService.canAdminGlobal());
+          const canAccessUsers = (this.currentUser !== 'nimbuz' && this.permissionService.canAdminGlobal());
           if (urlWithoutParams.startsWith('/users-list') && !canAccessUsers) {
             this.toastr.warning('You are not authorized to view that page.');
             this.router.navigateByUrl('/projects', { replaceUrl: true });

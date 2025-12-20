@@ -227,10 +227,15 @@ export class ProjectsComponent implements OnInit, OnDestroy {
   }
 
   gotoEnvironment() {
-    if (this.projectList.length > 0) {
-      this.router.navigate(['/projects/create-environment'])
-    } else {
+    if (this.projectList.length === 0) {
       this.toastr.warning('Please create a project before creating an environment.');
+      return;
+    }
+    const canCreate = this.permissionService.canAdminGlobal() || this.permissionService.canWriteForCurrentUser(this.selectedProjectId, null);
+    if (canCreate) {
+      this.router.navigate(['/projects/create-environment']);
+    } else {
+      this.toastr.warning('You are not authorized to create an environment for the selected project.');
     }
   }
 

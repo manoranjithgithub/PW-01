@@ -1,6 +1,6 @@
 <div class="container">
   <div class="d-flex justify-content-end align-items-center">
-    <button class="btn button-format-solid px-4 btn-align" (click)="addTools()"><i class="bi bi-plus"></i> New Tool
+    <button class="btn button-format-solid px-4 btn-align" (click)="addTools()" [disabled]="!(permissionService.canAdminGlobal() || permissionService.canWriteForCurrentUser(getCurrentProjectId(), null))"><i class="bi bi-plus"></i> New Tool
     </button>
   </div>
   <app-ag-grid-table [columnDefs]="columnDefs" [rowData]="rowData"></app-ag-grid-table>

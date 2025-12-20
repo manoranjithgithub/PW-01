@@ -9,6 +9,7 @@ import { ConfirmationModalComponent } from '../../../shared/components/modal/con
 import { ActivatedRoute } from '@angular/router';
 import { LLMDeploymentsService } from '../llm-deployment.service';
 import { SHARED_IMPORTS } from '../../../shared/shared-imports';
+import { PermissionService } from '../../../shared/services/permission.service';
 @Component({
   selector: 'app-deployment-networking',
   standalone: true,
@@ -34,7 +35,7 @@ export class DeploymentNetworkingComponent implements OnInit {
   envId = '';
 
   constructor(private fb: FormBuilder, private deploymentService: LLMDeploymentsService,
-    private modalService: NgbModal, private ac: ActivatedRoute
+    private modalService: NgbModal, private ac: ActivatedRoute, public permissionService: PermissionService
   ) { }
 
   ngOnInit(): void {
