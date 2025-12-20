@@ -12,6 +12,7 @@ import {
 } from '@coreui/angular';
 import { CommonModule, ViewportScroller } from '@angular/common';
 import { SharedService } from '../../../shared/services/shared.service';
+import { PermissionService } from '../../../shared/services/permission.service';
 import { ToastrService } from 'ngx-toastr';
 import { DEPLOYMENT_TYPES } from '../../../shared/constants/nimbuz.constant';
 import { ModalComponent } from '../../../shared/components/model/model.component';
@@ -101,8 +102,8 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
   envId: string = '';
   constructor(private fb: FormBuilder, private sharedService: SharedService, private deploymentService: LLMDeploymentsService,
     private toaster: ToastrService, private modalService: NgbModal, private route: Router, private ac: ActivatedRoute,
-    private viewportScroller: ViewportScroller
-  ) { }
+    private viewportScroller: ViewportScroller,
+    public permissionService: PermissionService) { }
 
   ngAfterViewInit() {
     setTimeout(() => {
@@ -132,7 +133,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
       name: ['', [Validators.required]],
       modelId: ['', Validators.required],
       replicas: [1, [Validators.required]],
-      instanceType: ['Nvidia L2', Validators.required ],
+      instanceType: ['Nvidia L2', Validators.required],
       contextLength: [512, [Validators.required]],
       storageSize: [10, [Validators.required]],
       ephemeralStorageSize: [10, [Validators.required]],
@@ -208,7 +209,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
 
 
   getDeploymentById(): void {
-    
+
     this.deploymentService.getDeploymentById(this.deploymentdetails?.name, this.envId).subscribe((res: any) => {
       if (res.status.toLowerCase() === "success") {
         // this.ingressDomain = res.data?.app_ingress_domain;

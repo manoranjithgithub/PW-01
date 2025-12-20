@@ -5,6 +5,7 @@ import { SummaryCardComponent } from './summary-card/summary-card.component';
 import { UtilizationChartComponent } from './utilization-chart/utilization-chart.component';
 import { CommonModule } from '@angular/common';
 import { SharedService } from '../../shared/services/shared.service';
+import { PermissionService } from '../../shared/services/permission.service';
 import { Router } from '@angular/router';
 import { DropdownComponent, DropdownItemDirective, DropdownMenuDirective, DropdownToggleDirective } from '@coreui/angular';
 import { ConfirmationModalComponent } from '../../shared/components/modal/confirmation-modal/confirmation-modal.component';
@@ -40,7 +41,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   lastButtonRef: HTMLElement | null = null;
 
   constructor(private http: DashboardsService, private sharedService: SharedService,
-    private router: Router, private modalService: NgbModal, private toastr: ToastrService
+    private router: Router, private modalService: NgbModal, private toastr: ToastrService,
+    public permissionService: PermissionService
   ) { }
 
   ngOnInit(): void {

@@ -7,7 +7,7 @@
 <form [formGroup]="newVariableForm">
   <div class="card-child">
     <fieldset [disabled]="freezeAddNewData" class="mb-2">
-      <div class="d-flex justify-content-end mb-2 gap-3" *ngIf="!showNewVariableForm && !deploymentResourceExhausted">
+      <div class="d-flex justify-content-end mb-2 gap-3" *ngIf="!showNewVariableForm && !deploymentResourceExhausted && (permissionService.canWriteGlobal() || permissionService.canAdminGlobal() || permissionService.canDeleteForCurrentUser(null, null))">
         <button class="btn button-format-solid custom-label mt-2" (click)="cancelVariableForm()">
           <i class="bi bi-plus mx-1"></i> New Variables
         </button>
@@ -57,8 +57,8 @@
           </div>
         </div>
 
-        <div class="d-flex justify-content-end gap-3 add-variables mt-3">
-          <button type="button" class="btn button-format-solid custom-label" (click)="addVariable()" [disabled]="!newVariableForm.valid">Add Env to
+          <div class="d-flex justify-content-end gap-3 add-variables mt-3">
+          <button type="button" class="btn button-format-solid custom-label" (click)="(permissionService.canWriteGlobal() || permissionService.canAdminGlobal()) && addVariable()" [disabled]="!newVariableForm.valid || !(permissionService.canWriteGlobal() || permissionService.canAdminGlobal())">Add Env to
             List</button>
           <button type="button" class="btn btn-light btn-sm" (click)="cancelVariableForm()">Cancel</button>
         </div>
@@ -83,10 +83,10 @@
                 </button>
                 <ul cDropdownMenu class="dropdown-menu dropdown-menu-end">
                   <li>
-                    <a class="dropdown-item" (click)="editDetails(i)">Edit</a>
+                    <a class="dropdown-item" (click)="(permissionService.canWriteGlobal() || permissionService.canAdminGlobal()) && editDetails(i)" [class.disabled]="!(permissionService.canWriteGlobal() || permissionService.canAdminGlobal())" [attr.aria-disabled]="!(permissionService.canWriteGlobal() || permissionService.canAdminGlobal())">Edit</a>
                   </li>
                   <li>
-                    <a class="dropdown-item" (click)="deleteDetails(i)">Delete</a>
+                    <a class="dropdown-item" (click)="(permissionService.canDeleteForCurrentUser(null, null) || permissionService.canAdminGlobal()) && deleteDetails(i)" [class.disabled]="!(permissionService.canDeleteForCurrentUser(null, null) || permissionService.canAdminGlobal())" [attr.aria-disabled]="!(permissionService.canDeleteForCurrentUser(null, null) || permissionService.canAdminGlobal())">Delete</a>
                   </li>
                 </ul>
               </c-dropdown>

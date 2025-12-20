@@ -123,7 +123,9 @@ export class AgGridTableComponent implements OnInit {
     this.rowClicked.emit(data.data)
   }
   newProject() {
-    this.router.navigate(['/projects/create-project'])
+    if (this.permissionService.canAdminGlobal()) {
+      this.router.navigate(['/projects/create-project']);
+    }
   }
   addNewUser() {
     this.addUuserEvent.emit(true);

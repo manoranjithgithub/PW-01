@@ -10,6 +10,7 @@ import { ActionCellRendererComponent } from '../../shared/components/action-cell
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
 import { SHARED_IMPORTS } from '../../shared/shared-imports';
+import { PermissionService } from '../../shared/services/permission.service';
 @Component({
   selector: 'app-tools',
   standalone: true,
@@ -31,12 +32,23 @@ export class ToolsComponent implements OnInit, OnDestroy {
 
   constructor(private http: ToolsService,
     private router: Router, private sharedService: SharedService, private modalService: NgbModal,
-    private toaster: ToastrService
+    private toaster: ToastrService, public permissionService: PermissionService
   ) {
     const storedValue = localStorage.getItem('environment');
     if (storedValue && storedValue !== "undefined") {
       this.envId = JSON.parse(storedValue).id
       this.getAvailableTools(JSON.parse(storedValue).id);
+    }
+  }
+
+  getCurrentProjectId(): string | undefined {
+    const p = localStorage.getItem('project');
+    if (!p || p === 'undefined') return undefined;
+    try {
+      const parsed = JSON.parse(p);
+      return parsed?.id || undefined;
+    } catch {
+      return p || undefined;
     }
   }
 
@@ -100,7 +112,7 @@ export class ToolsComponent implements OnInit, OnDestroy {
     },
     {
       headerName: 'Host',
-      field: 'publicHost',
+      field: 'privateHost',
       cellStyle: {
         'white-space': 'nowrap',
         'overflow': 'hidden !important',

@@ -4,6 +4,7 @@ import { CommonModule, Location } from '@angular/common';
 import { Router } from '@angular/router';
 import { SharedService } from '../../../shared/services/shared.service';
 import { ToastrService } from 'ngx-toastr';
+import { PermissionService } from '../../../shared/services/permission.service';
 @Component({
   selector: 'app-review-screen',
   standalone: true,
@@ -24,7 +25,8 @@ export class ReviewScreenComponent implements OnInit {
   @Input() selectedRepoName: string = '';
 
   constructor(private deploymentsService: DeploymentsService, private router: Router,
-    private location: Location, private shared: SharedService, private toaster: ToastrService) { }
+    private location: Location, private shared: SharedService, private toaster: ToastrService,
+    public permissionService: PermissionService) { }
 
   ngOnInit() {
     console.log('ReviewScreenComponent')

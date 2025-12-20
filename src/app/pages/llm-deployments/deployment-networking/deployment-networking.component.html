@@ -12,8 +12,8 @@
           (click)="copyDomain('https://' + networkSettingsForm.get('host')?.value)">
           <i class="bi bi-clipboard"></i>
         </button>
-        <button class="btn" title="Delete endpoint" (click)="deleteEndpoint()"> <i
-            class="bi bi-x-circle-fill"></i></button>
+        <button *ngIf="permissionService.canDeleteForCurrentUser(null, null) || permissionService.canAdminGlobal()" class="btn" title="Delete endpoint" (click)="deleteEndpoint()"> <i
+          class="bi bi-x-circle-fill"></i></button>
       </div>
       <div class="text-secondary small" *ngIf="endpointStatus">This domain is {{endpointStatus}}.</div>
     </div>

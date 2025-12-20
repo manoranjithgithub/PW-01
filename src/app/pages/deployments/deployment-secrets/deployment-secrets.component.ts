@@ -9,6 +9,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ConfirmationModalComponent } from '../../../shared/components/modal/confirmation-modal/confirmation-modal.component';
 import { ActivatedRoute } from '@angular/router';
 import { SHARED_IMPORTS } from '../../../shared/shared-imports';
+import { PermissionService } from '../../../shared/services/permission.service';
 
 @Component({
   selector: 'app-deployment-secrets',
@@ -52,7 +53,7 @@ export class DeploymentSecretsComponent implements OnInit {
 
   constructor(private fb: FormBuilder, private deploymentsService: DeploymentsService, 
     private toaster: ToastrService, private modalService: NgbModal,
-    private ac: ActivatedRoute
+    private ac: ActivatedRoute, public permissionService: PermissionService
   ) {
     this.storedEnvironment = JSON.parse(localStorage.getItem('environment') || '{}');
   }
