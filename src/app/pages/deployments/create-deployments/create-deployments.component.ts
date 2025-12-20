@@ -36,6 +36,7 @@ import { ProjectsService } from '../../projects/projects.service';
 import { SHARED_IMPORTS } from '../../../shared/shared-imports';
 import { DEPLOY_OPTIONS, DEPLOYMENT_STEPS } from '../../../shared/constants/nimbuz.constant';
 import { VALIDATION_REGEX } from '../../../core/constants/validation-regex.constant';
+import { PermissionService } from '../../../shared/services/permission.service';
 @Component({
   selector: 'app-create-deployments',
   standalone: true,
@@ -114,6 +115,7 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
     private deploymentsService: DeploymentsService,
     private toaster: ToastrService,
     private projectService: ProjectsService
+    , public permissionService: PermissionService
   ) {
     this.stepOneForm = this._fb.group({
       type: ['', Validators.required],

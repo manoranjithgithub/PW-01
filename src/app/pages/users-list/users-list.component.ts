@@ -53,7 +53,7 @@ export class UsersListComponent implements OnInit, OnDestroy {
   availableAccess = [
     { text: 'Read', value: 'read' },
     { text: 'Write', value: 'write' },
-    { text: 'Delete', value: 'delete' }
+    { text: 'All', value: 'delete' }
   ];
 
   // Modal configs

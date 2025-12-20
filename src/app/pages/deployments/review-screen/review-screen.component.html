@@ -4,7 +4,7 @@
     <hr class="mb-4">
     <div class="d-flex justify-content-between">
         <h6 class="fw-bold mb-3">General</h6>
-        <button (click)="edit(0)" class="btn"><i class="bi bi-pencil-square edit-icon"></i></button>
+        <button *ngIf="permissionService.canWriteGlobal() || permissionService.canAdminGlobal()" (click)="edit(0)" class="btn"><i class="bi bi-pencil-square edit-icon"></i></button>
     </div>
     <div class="row mb-4">
         <div class="col-md-6">
@@ -27,7 +27,7 @@
     <hr class="mb-4">
     <div class="d-flex justify-content-between">
         <h6 class="fw-bold mb-3">Configuration</h6>
-        <button (click)="edit(0)" class="btn"><i class="bi bi-pencil-square edit-icon"></i></button>
+        <button *ngIf="permissionService.canWriteGlobal() || permissionService.canAdminGlobal()" (click)="edit(0)" class="btn"><i class="bi bi-pencil-square edit-icon"></i></button>
     </div>
     <div class="row mb-4">
         <div class="col-md-6">
@@ -87,7 +87,7 @@
     <div class="">
         <div class="d-flex justify-content-between">
             <h6 class="fw-bold mb-3">Environment variables</h6>
-            <button (click)="edit(1)" class="btn"><i class="bi bi-pencil-square edit-icon"></i></button>
+            <button *ngIf="permissionService.canWriteGlobal() || permissionService.canAdminGlobal()" (click)="edit(1)" class="btn"><i class="bi bi-pencil-square edit-icon"></i></button>
         </div>
         <div class="row mb-4" *ngIf="hasData(envData.data);else noEnv">
             <!-- <div class="col-md-6">
@@ -115,7 +115,7 @@
     <div class="" *ngIf="secretData">
         <div class="d-flex justify-content-between">
             <h6 class="fw-bold mb-3">Secrets</h6>
-            <button (click)="edit(2)" class="btn"><i class="bi bi-pencil-square edit-icon"></i></button>
+            <button *ngIf="permissionService.canWriteGlobal() || permissionService.canAdminGlobal()" (click)="edit(2)" class="btn"><i class="bi bi-pencil-square edit-icon"></i></button>
         </div>
         <div class="row mb-4" *ngIf="hasData(secretData?.data);else noSecrets">
             <!-- <div class="col-md-6">
@@ -140,7 +140,7 @@
     <div class="">
         <div class="d-flex justify-content-between">
             <h6 class="fw-bold mb-3">Config as file</h6>
-            <button (click)="edit(3)" class="btn"><i class="bi bi-pencil-square edit-icon"></i></button>
+            <button *ngIf="permissionService.canWriteGlobal() || permissionService.canAdminGlobal()" (click)="edit(3)" class="btn"><i class="bi bi-pencil-square edit-icon"></i></button>
         </div>
         <div class="row mb-4" *ngIf="hasData(configFileData);else noFiles">
             <div class="col-md-6">

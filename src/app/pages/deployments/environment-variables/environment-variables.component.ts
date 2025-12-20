@@ -9,6 +9,7 @@ import { ConfirmationModalComponent } from '../../../shared/components/modal/con
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ActivatedRoute } from '@angular/router';
 import { SHARED_IMPORTS } from '../../../shared/shared-imports';
+import { PermissionService } from '../../../shared/services/permission.service';
 
 @Component({
   selector: 'app-environment-variables',
@@ -50,7 +51,7 @@ export class EnvironmentVariablesComponent implements OnInit {
 
   constructor(private fb: FormBuilder, private deploymentsService: DeploymentsService,
    private toaster: ToastrService, private modalService: NgbModal,
-    private ac: ActivatedRoute
+    private ac: ActivatedRoute, public permissionService: PermissionService
   ) {
     this.storedEnvironment = JSON.parse(localStorage.getItem('environment') || '{}');
   }
