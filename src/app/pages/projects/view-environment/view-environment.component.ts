@@ -19,6 +19,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { LayoutActionService } from '../../../shared/services/layout-action.service';
 import { ConfirmationModalComponent } from '../../../shared/components/modal/confirmation-modal/confirmation-modal.component';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { PermissionService } from '../../../shared/services/permission.service';
 import { currentUsageFields, estimatedUsageFields, RegionOptions, userList } from '../../../core/constants/app.constants';
 
 @Component({
@@ -91,7 +92,8 @@ export class ViewEnvironmentComponent implements OnInit, OnDestroy {
   constructor(
     private fb: FormBuilder, private project: ProjectsService, private shared: SharedService,
     private toaster: ToastrService, private router: Router, private route: ActivatedRoute,
-    private layoutActionService: LayoutActionService, private modalService: NgbModal) {
+    private layoutActionService: LayoutActionService, private modalService: NgbModal,
+    public permissionService: PermissionService) {
 
     //this.tableTheme = this.shared.getCookie('theme');
     this.tableTheme = localStorage.getItem('theme-default') || 'ag-theme-alpine';

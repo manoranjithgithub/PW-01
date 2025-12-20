@@ -33,6 +33,7 @@ import { delay, filter, tap } from 'rxjs/operators';
 import { SharedService } from '../../../services/shared.service';
 import { SidebarService } from '../../../services/sidebar.service';
 import { SwitchProjectComponent } from "../switch-project/switch-project.component";
+import { PermissionService } from '../../../services/permission.service';
 import { ToastrService } from 'ngx-toastr';
 import { LoaderComponent } from '../../loader/loader.component';
 import { ProjectsService } from '../../../../pages/projects/projects.service';
@@ -99,7 +100,8 @@ export class DefaultLayoutComponent implements OnInit {
     private router: Router, private titleService: Title, private ac: ActivatedRoute,
     private sharedService: SharedService, private sidebarService: SidebarService, private renderer: Renderer2,
     private toastr: ToastrService, private projectService: ProjectsService,
-    private layoutActionService: LayoutActionService
+    private layoutActionService: LayoutActionService,
+    public permissionService: PermissionService
   ) {
     this.#colorModeService.localStorageItemName.set('theme-default');
 
@@ -118,25 +120,25 @@ export class DefaultLayoutComponent implements OnInit {
             '/users-list',
           ];
           const publicRoutes = ['/', '/login', '/create-account', '/logout', '/login', '/forgot-password'];
-          if (this.currentUser !== 'nimbuz') {
+          // show Users only to nimbuz owner or global admins
+          if (this.currentUser === 'nimbuz' || permissionService.canAdminGlobal()) {
             allowedRoutes.push('/users-list');
           }
 
-          // const cookies = document.cookie.split(';').reduce((acc, cookie) => {
-          //   const [name, value] = cookie.split('=').map(c => c.trim());
-          //   acc[name] = decodeURIComponent(value);
-          //   return acc;
-          // }, {} as Record<string, string>);
-
-          // const environment = cookies['environment'];
-          // const project = cookies['project'];
-          const environment = localStorage.getItem('environment');
+          const environment = localStorage.getItem('environment'); 
           const project = localStorage.getItem('project');
 
           const isProjectMissing = !project || project === 'undefined';
           const isEnvironmentMissing = !environment || environment === 'undefined';
 
           const urlWithoutParams = event.url.split('?')[0];
+          // prevent direct navigation to /users-list for unauthorized users
+          const canAccessUsers = (this.currentUser === 'nimbuz' || permissionService.canAdminGlobal());
+          if (urlWithoutParams.startsWith('/users-list') && !canAccessUsers) {
+            this.toastr.warning('You are not authorized to view that page.');
+            this.router.navigateByUrl('/projects', { replaceUrl: true });
+            return;
+          }
           const isAllowed = allowedRoutes.some(route => urlWithoutParams.startsWith(route));
           const isPublicRoute = publicRoutes.includes(urlWithoutParams);
 
@@ -162,6 +164,29 @@ export class DefaultLayoutComponent implements OnInit {
 
   }
 
+  getCurrentProjectId(): string | undefined {
+    const p = localStorage.getItem('project');
+    if (!p || p === 'undefined') return undefined;
+    try {
+      const parsed = JSON.parse(p);
+      return parsed?.id || undefined;
+    } catch {
+      // stored value may already be a plain id string
+      return p || undefined;
+    }
+  }
+
+  getCurrentEnvId(): string | undefined {
+    const e = localStorage.getItem('environment');
+    if (!e || e === 'undefined') return undefined;
+    try {
+      const parsed = JSON.parse(e);
+      return parsed?.id || undefined;
+    } catch {
+      return e || undefined;
+    }
+  }
+
   @HostListener('window:scroll', [])
   onScroll() {
     this.isScrolled = window.scrollY > 50;
@@ -181,40 +206,8 @@ export class DefaultLayoutComponent implements OnInit {
 
   ngOnInit(): void {
     this.savedTheme = localStorage.getItem('theme-default') || 'light';
-    // console.log('Saved theme:', this.savedTheme);
     this.colorMode.set(this.savedTheme);
-    // if (this.router.url.includes('/projects') && window.location.href.includes('code')) {
-    //   this.ac.queryParams.subscribe(params => {
-    //     if (params['code']) {
-    //       this.casdoorService.getCasdoorToken(params['code'], params['state']).subscribe((res: any) => {
-    //         if (res.status === 'success') {
-    //           this.authService.setAccessToken(res.data);
-    //         } else {
-    //           this.authService.logout();
-    //         }
-    //       });
-    //     }
-
-    //   });
-    // } else {
-    //   const token = this.authService.getAccessToken();
-    //   if (!token) {
-    //     this.authService.logout();
-    //   }
-    // }
-    // if (this.authService.isTokenReady()) {
-    //   this.initApp();
-    // } else {
-    //   this.authService.tokenReady$.subscribe((ready) => {
-    //     if (ready) {
-    //       this.initApp();
-    //     }
-    //   });
-
-
-    // }
-
-
+    
     this.sidebarService.sidebarToggle$.subscribe((visible) => {
       const sidebarEl = this.sidebarRef.nativeElement;
 
@@ -235,7 +228,7 @@ export class DefaultLayoutComponent implements OnInit {
       if (environment.production) {
         baseItems = baseItems.filter(item => item.name !== 'LLM Deployments');
       }
-      if (user?.owner !== 'nimbuz') {
+      if (user?.owner !== 'nimbuz' && this.permissionService.canAdminGlobal()) {
         baseItems.push({ name: 'Users', url: '/users-list', icon: 'bi bi-people-fill' });
       }
 

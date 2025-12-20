@@ -6,7 +6,7 @@ import '@angular/localize/init';
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: 'login',
+    redirectTo: 'projects',
     pathMatch: 'full',
   },
   {
@@ -64,20 +64,6 @@ export const routes: Routes = [
           import('./pages/llm-deployments/routes').then((m) => m.routes),
       }
     ],
-  },
-  {
-    path: '404',
-    loadComponent: () =>
-      import('./pages/page404/page404.component').then(
-        (m) => m.Page404Component
-      )
-  },
-  {
-    path: '500',
-    loadComponent: () =>
-      import('./pages/page500/page500.component').then(
-        (m) => m.Page500Component
-      )
   },
   {
     path: 'callback',

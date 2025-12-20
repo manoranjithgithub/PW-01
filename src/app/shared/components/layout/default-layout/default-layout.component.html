@@ -72,7 +72,17 @@
               <i class="bi bi-three-dots-vertical"></i>
             </button>
             <ul cDropdownMenu class="dropdown-menu dropdown-menu-end" style="padding: 0;">
-              <li><a class="dropdown-item" (click)="onPageActionClick()">Delete</a></li>
+              <li>
+                <a
+                  class="dropdown-item"
+                  role="button"
+                  (click)="permissionService.canDeleteForCurrentUser(getCurrentProjectId(), getCurrentEnvId()) && onPageActionClick()"
+                  [class.disabled]="!permissionService.canDeleteForCurrentUser(getCurrentProjectId(), getCurrentEnvId())"
+                  [attr.aria-disabled]="!permissionService.canDeleteForCurrentUser(getCurrentProjectId(), getCurrentEnvId())"
+                >
+                  Delete
+                </a>
+              </li>
             </ul>
           </c-dropdown>
         </div>

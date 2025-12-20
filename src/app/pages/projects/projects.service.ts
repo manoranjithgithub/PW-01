@@ -86,7 +86,7 @@ export class ProjectsService {
   }
 
   deleteEnvironment(projectId: string, id: string) {
-    return this.http.delete(`${this.projectsApiUrl}/environments/${id}`)
+    return this.http.delete(`${this.projectsApiUrl}/environments?id=${id}`)
       .pipe(
         catchError(this.handleError.bind(this))
       );

@@ -12,6 +12,7 @@ export class DeploymentsService {
   private deploymentManagement = environment.deploymentManagement;
   private jobExecutorUrl = environment.jobExecutorBaseUrl;
   private projectsBaseUrl = environment.projectsBaseUrl;
+  private userApiUrl = environment.usermanagementBaseUrl
 
   constructor(public http: HttpClient, private toastr: ToastrService) { }
   updateDeployment(deploymentId: string, req: any) {
@@ -52,6 +53,23 @@ export class DeploymentsService {
     return this.http.get(`${this.jobExecutorUrl}/releases`, { params })
   }
 
+  getPolicies() {
+    return this.http.get(`${this.userApiUrl}/policies/org`)
+      .pipe(
+        catchError(this.handleError.bind(this))
+      );
+  }
+
+  getPolicyByUser() {
+    const headers = { 'Content-Type': 'application/json',
+      'Cache-Control': 'no-cache',
+      'authorization': `Bearer ${localStorage.getItem('accessToken')}`
+     };
+    return this.http.get(`${this.userApiUrl}/policies`, { headers })
+      .pipe(
+        catchError(this.handleError.bind(this))
+      );
+  }
   private handleError(error: HttpErrorResponse) {
     if (error.error instanceof ErrorEvent) {
       console.error('An error occurred:', error.error.message);

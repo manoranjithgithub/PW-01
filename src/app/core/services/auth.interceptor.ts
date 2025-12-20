@@ -18,6 +18,7 @@ import { AuthService } from './auth.service';
 import { ToastrService } from 'ngx-toastr';
 import { Router } from '@angular/router';
 import { SharedService } from '../../shared/services/shared.service';
+let activeRequests = 0;
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
@@ -26,8 +27,6 @@ export class AuthInterceptor implements HttpInterceptor {
   private refreshTokenSubject = new BehaviorSubject<string | null>(null);
 
   private readonly skipLoaderUrls = [
-    '/status',
-    '/deployments?',
     '/artificat?fileExtension',
   ];
 
@@ -39,8 +38,13 @@ export class AuthInterceptor implements HttpInterceptor {
   ) { }
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+    activeRequests++;
+
     const skipLoader = this.shouldSkipLoader(req.url);
-    if (!skipLoader) this.loader.show();
+    // Only show loader when the first non-skipped request starts to avoid repeated show/hide churn
+    if (!skipLoader && activeRequests === 1) {
+      this.loader.show();
+    }
     if (req.url.includes('/user-uploads')) {
       return next.handle(req).pipe(finalize(() => !skipLoader && this.loader.hide()));
     }
@@ -49,8 +53,13 @@ export class AuthInterceptor implements HttpInterceptor {
     return next.handle(request).pipe(
       catchError(error => this.handleError(error, request, next)),
       finalize(() => {
-        if (!skipLoader) this.loader.hide();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        activeRequests--;
+
+        if (!skipLoader && activeRequests === 0) {
+          // keep a short delay so extremely fast requests don't cause flicker; hide quickly otherwise
+          setTimeout(() => this.loader.hide(), 150);
+        }
+        // avoid scrolling on every request finalize to prevent janky UX
       })
     );
   }

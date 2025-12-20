@@ -4,3 +4,238 @@
     font-size: 18px;
     font-family: "plusFont", sans-serif;
 }
+
+
+
+.btn:focus {
+    outline: none;
+    box-shadow: none
+}
+
+.button-format-solid,
+.button-format-outline {
+    font-size: 13px;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.policies {
+
+    .policy-detials {
+        // max-width: 400px;
+        margin: auto;
+    }
+
+    .actions {
+        margin-bottom: 2px;
+        text-align: right;
+    }
+
+    .actions button {
+        margin-right: 10px;
+        padding: 6px 12px 6px 0;
+        border: 0;
+        background: white;
+        cursor: pointer;
+        border-radius: 4px;
+        font-size: 14px;
+        // border: 1px solid #555;
+
+        i {
+            padding: 0 5px;
+        }
+    }
+
+    .actions button:hover {
+        background: #f0f0f0;
+    }
+
+    .tree {
+        list-style-type: none;
+        padding-left: 0;
+        font-family: Arial, sans-serif;
+        font-size: 14px;
+    }
+
+    // .tree>.tree-item {
+    //   margin-bottom: 12px;
+    // }
+
+    .caret {
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        user-select: none;
+        padding: 5px;
+    }
+
+    .square {
+        width: 15px;
+        height: 15px;
+        border: 1px solid #c0c3ca;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 6px;
+        font-weight: bold;
+        // font-size: 13px;
+        color: #212121;
+        padding-top: 2px;
+    }
+
+    .tree ul {
+        padding-left: 24px;
+        list-style-type: none;
+
+        .tree li {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .permission {
+            list-style-type: disc;
+            margin-left: 28px;
+            padding-left: 4px;
+            font-style: italic;
+            color: #555;
+        }
+    }
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.font-bold {
+    font-weight: bold;
+}
+
+.font-14 {
+    font-size: 14px;
+}
+
+.policy-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+
+    th {
+        border-top: 1px solid #babfc7;
+        background: #F0F0F0;
+    }
+
+    th,
+    td {
+        font-size: 13px;
+        vertical-align: middle;
+        text-align: left;
+        padding: 12px;
+        font-family: "plusFont", sans-serif;
+        border-left: 1px solid #babfc7;
+        border-bottom: 1px solid #babfc7;
+    }
+
+    td:first-child,
+    th:first-child {
+        width: 68px;
+        white-space: nowrap;
+    }
+
+    td:nth-child(2),
+    th:nth-child(2) {
+        width: 220px;
+    }
+
+    td:nth-child(3),
+    th:nth-child(3) {
+        width: 260px;
+    }
+
+    td:nth-child(4),
+    th:nth-child(4) {
+        width: 100px;
+    }
+
+    td[rowspan] {
+        vertical-align: middle;
+        // border-left: 1px solid #babfc7;
+        // border-right: 1px solid #babfc7;
+        text-align: center;
+    }
+
+    td:nth-child(4) {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    td:last-child,
+    th:last-child {
+        border-right: 1px solid #babfc7;
+    }
+
+    th {
+        font-weight: 600;
+        // border-bottom: 1px solid #9fa6ad;
+    }
+
+    td:last-child {
+        width:200px
+    }
+}
+
+.truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.flat-btn {
+    color: #fff;
+    border: none;
+    border-radius: 20px;
+    padding: 6px 10px;
+    font-size: 12px;
+    // font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    margin: auto 2px;
+
+    i {
+        font-size: 12px;
+    }
+
+    &.edit {
+        background-color: #ff9800;
+
+        &:hover {
+            background-color: #e68900;
+        }
+
+        &:active {
+            background-color: #cc7a00;
+        }
+    }
+
+    &.delete {
+        background-color: #f44336;
+
+        &:hover {
+            background-color: #d7372a;
+        }
+
+        &:active {
+            background-color: #b32e22;
+        }
+    }
+}
+
+.form-select {
+    padding: 7px 10px;
+    border-radius: 5px;
+}

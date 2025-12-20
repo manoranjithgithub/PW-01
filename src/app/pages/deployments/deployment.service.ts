@@ -4,6 +4,7 @@ import { Observable, throwError } from 'rxjs';
 import { catchError, finalize, map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { SharedService } from '../../shared/services/shared.service';
+import { createSSEObservable } from '../../shared/utils/sse.utils';
 
 @Injectable({
   providedIn: 'root'
@@ -166,129 +167,23 @@ export class DeploymentsService {
       })
     );
   }
-  getDeploymentMetricsByTime(envId: string, from: string, to: string, timeInterval: number) {
-    return this.http.get(`${this.metricsApiUrl}/namespace?cluster=prod&namespace=${envId}&from=${from}&to=${to}&step=${timeInterval}`)
+  getDeploymentMetricsByTime(envId: string, from: string, to: string, timeInterval: number, resourceType: 'cpu' | 'memory', deploymentId: string) {
+    return this.http.get(`${this.metricsApiUrl}/resources?cluster=prod&namespace=${envId}&resourceType=${resourceType}&deploymentId=${deploymentId}&from=${from}&to=${to}&step=${timeInterval}`)
       .pipe(
         catchError(this.handleError.bind(this))
       );
   }
   liveReleaseStatus(deploymentId: string) {
-    const token = localStorage.getItem('accessToken');
+    const token = localStorage.getItem("accessToken")!;
     const url = `${this.deploymentManagement}/live/release/stream?deploymentId=${deploymentId}`;
-    return new Observable(observer => {
-      const controller = new AbortController();
-      const signal = controller.signal;
-
-      fetch(url, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: 'text/event-stream',
-        },
-      })
-        .then(response => {
-          if (!response.body) throw new Error('No response body from SSE endpoint');
-
-          const reader = response.body.getReader();
-          const decoder = new TextDecoder('utf-8');
-          let buffer = '';
-
-          const read = () => {
-            reader.read().then(({ done, value }) => {
-              if (done) {
-                observer.complete();
-                return;
-              }
-
-              buffer += decoder.decode(value, { stream: true });
-              const lines = buffer.split(/\r?\n/);
-              buffer = lines.pop() || '';
-
-              for (const line of lines) {
-                if (line.startsWith('data:')) {
-                  const dataStr = line.replace(/^data:\s*/, '');
-                  try {
-                    const data = JSON.parse(dataStr);
-                    this.zone.run(() => observer.next(data));
-                  } catch (e) {
-                    console.error('Invalid SSE JSON:', e);
-                  }
-                }
-              }
-
-              read();
-            }).catch(err => observer.error(err));
-          };
-
-          read();
-        })
-        .catch(err => observer.error(err));
-
-      return () => {
-        // console.log(`SSE unsubscribed`);
-        controller.abort(); 
-      };
-    });
+    return createSSEObservable(url, token, this.zone);
   }
 
-   liveDeploymentData(envId: string) {
-    const token = localStorage.getItem('accessToken');
+  liveDeploymentData(envId: string) {
+    const token = localStorage.getItem("accessToken")!;
     const url = `${this.deploymentManagement}/live/deployment/stream?environmentId=${envId}&interval=15`;
-    return new Observable(observer => {
-      const controller = new AbortController();
-      const signal = controller.signal;
-
-      fetch(url, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: 'text/event-stream',
-        },
-      })
-        .then(response => {
-          if (!response.body) throw new Error('No response body from SSE endpoint');
-
-          const reader = response.body.getReader();
-          const decoder = new TextDecoder('utf-8');
-          let buffer = '';
-
-          const read = () => {
-            reader.read().then(({ done, value }) => {
-              if (done) {
-                observer.complete();
-                return;
-              }
-
-              buffer += decoder.decode(value, { stream: true });
-              const lines = buffer.split(/\r?\n/);
-              buffer = lines.pop() || '';
-
-              for (const line of lines) {
-                if (line.startsWith('data:')) {
-                  const dataStr = line.replace(/^data:\s*/, '');
-                  try {
-                    const data = JSON.parse(dataStr);
-                    this.zone.run(() => observer.next(data));
-                  } catch (e) {
-                    console.error('Invalid SSE JSON:', e);
-                  }
-                }
-              }
-
-              read();
-            }).catch(err => observer.error(err));
-          };
-
-          read();
-        })
-        .catch(err => observer.error(err));
-
-      return () => {
-        // console.log(`SSE unsubscribed`);
-        controller.abort(); 
-      };
-    });
+    return createSSEObservable(url, token, this.zone);
   }
-
-
 
   private handleError(error: HttpErrorResponse) {
     let errorMessage = 'Something went wrong. Please try again later.';

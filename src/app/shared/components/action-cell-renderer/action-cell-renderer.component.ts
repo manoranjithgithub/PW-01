@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Renderer2, Component, ElementRef, ViewChild, HostListener } from '@angular/core';
+import { Renderer2, Component, ElementRef, ViewChild, HostListener, Output, EventEmitter } from '@angular/core';
 import { ICellRendererAngularComp } from 'ag-grid-angular';
 import { ConfirmationModalComponent } from '../modal/confirmation-modal/confirmation-modal.component';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
@@ -9,6 +9,7 @@ import { ToastrService } from 'ngx-toastr';
 import { SharedService } from '../../services/shared.service';
 import { ModalComponent } from '../model/model.component';
 import { FormsModule, NgModel } from '@angular/forms';
+import { PermissionService } from '../../services/permission.service';
 import {
   CalloutComponent,
   DropdownComponent,
@@ -24,6 +25,7 @@ import {
   TabsModule
 } from '@coreui/angular';
 import { DeployConfirmationComponent } from '../deploy-confirmation/deploy-confirmation.component';
+
 
 @Component({
   selector: 'app-action-cell-renderer',
@@ -92,15 +94,28 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
     hideDismissButton: () => true,
     hideCloseButton: () => false
   };
+  
+  projects: any[] = [];
+  allExpanded = false;
+  currentProjectId: string | undefined = undefined;
 
   constructor(private el: ElementRef, private renderer: Renderer2, private modalService: NgbModal,
     private http: DeploymentsService, private route: Router, private toaster: ToastrService,
     private sharedService: SharedService,
+    public permissionService: PermissionService,
   ) {
     // const storedValue = this.sharedService.getCookie('environment');
     const storedValue = localStorage.getItem('environment');
     if (storedValue) {
       this.envId = JSON.parse(storedValue).id;
+    }
+    const storedProject = localStorage.getItem('project');
+    if (storedProject) {
+      try {
+        this.currentProjectId = JSON.parse(storedProject).id;
+      } catch {
+        this.currentProjectId = storedProject || undefined;
+      }
     }
   }
 
@@ -184,7 +199,7 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
       //     replicas: type === 'Pause' ? '0' : '1'
       //   },
       // };
-       const req = {
+      const req = {
         action: type === 'Pause' ? 'pause' : 'resume',
       };
       const modalRef = this.modalService.open(DeployConfirmationComponent);
@@ -274,6 +289,9 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
   view(data: any) {
     if (this.additionalParam === "tools") {
       this.route.navigate(['/tools/view-tool'], { queryParams: { selectedView: data.name } });
+    }
+    if (this.additionalParam === 'user-list') {
+      alert('user-list')
     }
   }
   showDeploymentView(deploymentDetails: any) {
@@ -386,10 +404,8 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
     event.stopPropagation();
     const btn = (btnRef as HTMLElement) || (event.target as HTMLElement);
     const rect = btn.getBoundingClientRect();
-    // prefer placing menu under the button; adjust if near bottom
-    const top = rect.bottom + 8; // 8px gap from viewport
-    // align menu so its right edge aligns near button's right edge
-    const left = rect.right - 160; // 160 is approx menu width
+    const top = rect.bottom + 8;
+    const left = rect.right - 160;
 
     this.dropdownStyle = {
       position: 'fixed',
@@ -401,12 +417,9 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
 
     const willOpen = !this.isDropdownOpen;
     if (willOpen) {
-      // ask other instances to close first
       window.dispatchEvent(new Event('close-action-dropdowns'));
     }
-
     this.isDropdownOpen = willOpen;
-    // store button ref so we can recompute position on scroll/resize
     this.lastButtonRef = willOpen ? (btn as HTMLElement) : null;
   }
 
@@ -441,18 +454,21 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
   @HostListener('document:click', ['$event'])
   onOutsideClick(event: MouseEvent): void {
     const target = event.target as HTMLElement;
-    // close when click outside the floating menu or button
     const clickedInsideMenu = !!target.closest('.floating-dropdown');
     const clickedInsideBtn = !!target.closest('.btn-icon');
     if (!clickedInsideMenu && !clickedInsideBtn) {
       this.isDropdownOpen = false;
     }
   }
-
-  // Close when another instance asks to close (only one open at a time)
   @HostListener('window:close-action-dropdowns', ['$event'])
   onCloseActionDropdowns(_: Event) {
     this.isDropdownOpen = false;
     this.lastButtonRef = null;
+  }
+  viewPolicies() {
+     this.params.onActionClick('view', this.params?.data);
+  }
+  editPolicies() {
+     this.params.onActionClick('edit', this.params?.data);
   }
 }

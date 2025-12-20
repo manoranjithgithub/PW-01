@@ -9,24 +9,61 @@ import { environment } from '../../../environments/environment';
   providedIn: 'root'
 })
 export class UsersListService {
-  private userApiUrl = environment.usermanagementApiUrl;
-  private userBaseUrl = environment.usermanagementBaseUrl;
+  private userApiUrl = environment.usermanagementBaseUrl;
+  private projectUrl = environment.projectsBaseUrl;
 
   constructor(public http: HttpClient, private toastr: ToastrService) { }
 
   getAllUSers() {
-    return this.http.get(`${this.userApiUrl}/list-user`)
+    return this.http.get(`${this.userApiUrl}/user/list-user`)
       .pipe(
         catchError(this.handleError.bind(this))
       );
   }
   inviteNewUser(req: any) {
-    return this.http.post(`${this.userApiUrl}/invite-user`, req)
+    return this.http.post(`${this.userApiUrl}/user/invite-user`, req)
+      .pipe(
+        catchError(this.handleError.bind(this))
+      );
+  }
+  getPolicies() {
+    return this.http.get(`${this.userApiUrl}/policies/org`)
       .pipe(
         catchError(this.handleError.bind(this))
       );
   }
 
+  createPolicy(req: any) {
+    return this.http.post(`${this.userApiUrl}/policies`, req)
+      .pipe(
+        catchError(this.handleError.bind(this))
+      );
+  }
+  updatePolicy(req: any) {
+    return this.http.put(`${this.userApiUrl}/policies`, req)
+      .pipe(
+        catchError(this.handleError.bind(this))
+      );
+  }
+  deletePolicy(req: any) {
+    return this.http.delete(`${this.userApiUrl}/policies`, { body: req })
+      .pipe(
+        catchError(this.handleError.bind(this))
+      );
+  }
+
+  getAllProjects() {
+    return this.http.get(`${this.projectUrl}/projects`)
+      .pipe(
+        catchError(this.handleError.bind(this))
+      );
+  }
+  getEnvironmentsByProject(projectId: string) {
+    return this.http.get(`${this.projectUrl}/environments?projectId=${projectId}`)
+      .pipe(
+        catchError(this.handleError.bind(this))
+      );
+  }
 
   private handleError(error: HttpErrorResponse) {
     if (error.error instanceof ErrorEvent) {

@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
 
 import { DashboardsService } from './dashboard.service';
 import { SummaryCardComponent } from './summary-card/summary-card.component';
@@ -35,6 +35,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private subscriptions: Subscription[] = [];
 
   private envValueSubscription: Subscription | undefined;
+  dropdownStyle: any = {};
+  isDropdownOpen: boolean = false;
+  lastButtonRef: HTMLElement | null = null;
 
   constructor(private http: DashboardsService, private sharedService: SharedService,
     private router: Router, private modalService: NgbModal, private toastr: ToastrService
@@ -188,6 +191,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.subscriptions.forEach(sub => sub.unsubscribe());
     this.envValueSubscription?.unsubscribe();
+    //  document.removeEventListener('click', this.handleDocClick);
   }
 
   getStatusCount() {
@@ -210,5 +214,69 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.cards[2].value = `${statusCount.running} / ${statusCount.paused}`;
       this.cards[3].value = `${statusCount.failed} / ${statusCount.pending}`;
     });
+  }
+  toggleDropdown(event: MouseEvent, btnRef?: HTMLElement): void {
+    event.stopPropagation();
+    const btn = (btnRef as HTMLElement) || (event.target as HTMLElement);
+    const rect = btn.getBoundingClientRect();
+    const top = rect.bottom + 0;
+    const left = rect.right - 160;
+
+    this.dropdownStyle = {
+      position: 'fixed',
+      top: `${top}px`,
+      left: `${left}px`,
+      'z-index': 9999,
+      'pointer-events': 'auto'
+    };
+
+    const willOpen = !this.isDropdownOpen;
+    if (willOpen) {
+      window.dispatchEvent(new Event('close-action-dropdowns'));
+    }
+    this.isDropdownOpen = willOpen;
+    this.lastButtonRef = willOpen ? (btn as HTMLElement) : null;
+  }
+
+  @HostListener('window:scroll', ['$event'])
+  onWindowScroll() {
+    if (this.isDropdownOpen && this.lastButtonRef) {
+      this.updateDropdownPosition(this.lastButtonRef);
+    }
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onWindowResize() {
+    if (this.isDropdownOpen && this.lastButtonRef) {
+      this.updateDropdownPosition(this.lastButtonRef);
+    }
+  }
+
+  @HostListener('document:click', ['$event'])
+  onOutsideClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    const clickedInsideMenu = !!target.closest('.floating-dropdown');
+    const clickedInsideBtn = !!target.closest('.btn-icon');
+    if (!clickedInsideMenu && !clickedInsideBtn) {
+      this.isDropdownOpen = false;
+    }
+  }
+  @HostListener('window:close-action-dropdowns', ['$event'])
+  onCloseActionDropdowns(_: Event) {
+    this.isDropdownOpen = false;
+    this.lastButtonRef = null;
+  }
+  updateDropdownPosition(btn: HTMLElement | undefined | null) {
+    if (!btn) return;
+    const rect = btn.getBoundingClientRect();
+    const top = rect.bottom + 8;
+    const left = rect.right - 160;
+    this.dropdownStyle = {
+      position: 'fixed',
+      top: `${top}px`,
+      left: `${left}px`,
+      'z-index': 9999,
+      'pointer-events': 'auto'
+    };
   }
 }
