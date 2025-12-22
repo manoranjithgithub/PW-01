@@ -4,6 +4,7 @@ import { AgGridTableComponent } from '../../shared/components/ag-grid-table/ag-g
 import { PricingsService } from './pricing.service';
 import { CellClickedEvent, ColDef } from 'ag-grid-community';
 import { ToastrService } from 'ngx-toastr';
+import { SharedService } from '../../shared/services/shared.service';
 import { environment } from '../../../environments/environment';
 declare const Cashfree: any;
 
@@ -18,130 +19,118 @@ declare const Cashfree: any;
 export class InvoiceComponent implements OnInit {
 
   tableData: any[] = [];
-  columnDefs: ColDef[] = [
-    {
-      field: '', headerName: 'S.NO', width: 80,
-      valueGetter: (params) => {
-        const a = params.node;
-        if(!a || a.rowIndex === null) return 0;
-        return a.rowIndex +1
+  columnDefs: ColDef[] = [];
+  
+  buildColumnDefs(): ColDef[] {
+    const fmt = (value: number, from: string | undefined) => {
+      const target = this.sharedService.getCurrency() || 'USD';
+      const converted = this.sharedService.convertAmount(Number(value), from || 'USD', target);
+      try {
+        return new Intl.NumberFormat('en-US', {
+          style: 'currency',
+          currency: target,
+          minimumFractionDigits: 2,
+        }).format(converted);
+      } catch (e) {
+        return String(converted);
       }
-    },
-    {
-      field: 'id', headerName: 'Invoice Number', flex: 2, tooltipField: 'invoiceNumber',
-      cellStyle: { 'white-space': 'nowrap', 'overflow': 'hidden !important', 'text-overflow': 'ellipsis' },
-    },
-    {
-      field: 'subtotal', headerName: 'Amount Payable', flex: 1,
-      valueFormatter: params =>
-        new Intl.NumberFormat('en-US', {
-          style: 'currency',
-          currency: params.data.currency || 'USD',
-          minimumFractionDigits: 2,
-        }).format(params.value),
-    },
-    {
-      field: 'total', headerName: 'Outstanding Amount', flex: 1,
-      valueFormatter: params =>
-        new Intl.NumberFormat('en-US', {
-          style: 'currency',
-          currency: params.data.currency || 'USD',
-          minimumFractionDigits: 2,
-        }).format(params.value)
-    },
-    {
-      field: 'tax_amount', headerName: 'Tax Amount', flex: 1,
-      valueFormatter: params =>
-        new Intl.NumberFormat('en-US', {
-          style: 'currency',
-          currency: params.data.currency || 'USD',
-          minimumFractionDigits: 2,
-        }).format(params.value),
-    },
-    { field: 'currency', headerName: 'Currency', width:100 },
-    {
-      field: 'status',
-      headerName: 'Status',
-      flex: 1,
-      cellRenderer: (params: any) => {
-        const wrapper = document.createElement('div');
-        wrapper.style.textAlign = 'left';
-        wrapper.style.color = '#659711';
-        wrapper.style.textTransform = 'capitalize';
+    };
 
-        if (params.value === 'draft') {
-          const link = document.createElement('a');
-          link.className = 'pay-now-link';
-          link.textContent = 'Pay now';
-          link.style.textDecoration = 'underline';
-          link.style.color = '#F60';
-          link.style.cursor = 'pointer';
-
-          wrapper.appendChild(link);
-        } else {
-          wrapper.textContent = params.value;
+    return [
+      {
+        field: '', headerName: 'S.NO', width: 80,
+        valueGetter: (params) => {
+          const a = params.node;
+          if (!a || a.rowIndex === null) return 0;
+          return a.rowIndex + 1;
         }
-
-        return wrapper;
       },
-      onCellClicked: (event: CellClickedEvent) => {
-        if (
-          event.colDef.field === 'status' &&
-          event.value === 'draft'
-        ) {
-          this.openPayNow(event.data);
+      {
+        field: 'id', headerName: 'Invoice Number', flex: 2, tooltipField: 'invoiceNumber',
+        cellStyle: { 'white-space': 'nowrap', 'overflow': 'hidden !important', 'text-overflow': 'ellipsis' },
+      },
+      {
+        field: 'subtotal', headerName: 'Amount Payable', flex: 1,
+        valueFormatter: (params: any) => fmt(params.value, params.data?.currency)
+      },
+      {
+        field: 'total', headerName: 'Outstanding Amount', flex: 1,
+        valueFormatter: (params: any) => fmt(params.value, params.data?.currency)
+      },
+      {
+        field: 'tax_amount', headerName: 'Tax Amount', flex: 1,
+        valueFormatter: (params: any) => fmt(params.value, params.data?.currency)
+      },
+      {
+        field: 'currency', headerName: 'Currency', width: 120,
+        valueGetter: (params: any) => {
+          // const target = this.sharedService.getCurrency() || 'USD';
+          // const src = params.data?.currency || '';
+          return this.sharedService.getCurrency() || 'USD';
         }
+      },
+      {
+        field: 'status',
+        headerName: 'Status',
+        flex: 1,
+        cellRenderer: (params: any) => {
+          const wrapper = document.createElement('div');
+          wrapper.style.textAlign = 'left';
+          wrapper.style.color = '#659711';
+          wrapper.style.textTransform = 'capitalize';
+
+          if (params.value === 'draft') {
+            const link = document.createElement('a');
+            link.className = 'pay-now-link';
+            link.textContent = 'Pay now';
+            link.style.textDecoration = 'underline';
+            link.style.color = '#F60';
+            link.style.cursor = 'pointer';
+
+            wrapper.appendChild(link);
+          } else {
+            wrapper.textContent = params.value;
+          }
+
+          return wrapper;
+        },
+        onCellClicked: (event: CellClickedEvent) => {
+          if (event.colDef.field === 'status' && event.value === 'draft') {
+            this.openPayNow(event.data);
+          }
+        }
+      },
+      {
+        field: 'period', headerName: 'Invoice Period', flex: 1,
+        filter: 'agTextColumnFilter',
+        valueGetter: (params: any) => {
+          if (!params.data || !params.data.updated_at) return '';
+          const date = new Date(params.data.updated_at);
+          return isNaN(date.getTime()) ? '' : date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: '2-digit'
+          });
+        },
+        valueFormatter: (params: any) => {
+          return params.value || '';
+        },
       }
-    },
-// {
-//       field: '', headerName: 'Issue Month', flex: 1,
-//       filter: 'agTextColumnFilter',
-//       valueGetter: (params: any) => {
-//         if (!params.data || !params.data.updated_at) return '';
-//         const date = new Date(params.data.updated_at);
-//         return isNaN(date.getTime()) ? '' : date.toLocaleDateString('en-US', {
-//           month: 'long',
-//         });
-//       },
-//       valueFormatter: (params: any) => {
-//         return params.value || '';
-//       },
-//     },
-    {
-      field: 'period', headerName: 'Invoice Period', flex: 1,
-      filter: 'agTextColumnFilter',
-      valueGetter: (params: any) => {
-        if (!params.data || !params.data.updated_at) return '';
-        const date = new Date(params.data.updated_at);
-        return isNaN(date.getTime()) ? '' : date.toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'short',
-          day: '2-digit'
-        });
-      },
-      valueFormatter: (params: any) => {
-        return params.value || '';
-      },
-    },
-    // {
-    //   field: 'dueDate', headerName: 'Due Date',
-    //   flex: 1, valueFormatter: params => {
-    //     return new Date(params.value).toLocaleDateString('en-US', {
-    //       year: 'numeric',
-    //       month: '2-digit',
-    //       day: '2-digit'
-    //     });
-    //   }
-    // }
-  ];
+    ];
+  }
   cashfree: any;
   limit = 10;
   offset = 0;
 
-  constructor(private http: PricingsService, private toastr: ToastrService) { }
+  constructor(private http: PricingsService, private toastr: ToastrService, private sharedService: SharedService) { }
 
   ngOnInit(): void {
-    this.getInvoiceList()
+    this.getInvoiceList();
+    this.columnDefs = this.buildColumnDefs();
+    // refresh table when currency changes by reassigning the data array
+    this.sharedService.currencyChange$.subscribe(() => {
+      this.tableData = Array.isArray(this.tableData) ? [...this.tableData] : this.tableData;
+    });
     this.cashfree = Cashfree({ mode: environment.cashFree });
     // this.cashfree.on('payment.success', (event: any) => {
     //   console.log('Payment Success:', event);

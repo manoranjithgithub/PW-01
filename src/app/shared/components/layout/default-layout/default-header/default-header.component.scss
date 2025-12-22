@@ -70,6 +70,173 @@
 .btn:first-child:active {
     border: 0;
 }
-.user-name{
-    padding-top:2px ;
+
+.user-name {
+    padding-top: 2px;
+}
+
+/* Avatar initials styling */
+/* Avatar wrapper */
+.c-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 35px;
+    height: 35px;
+    font-size: 15px;
+    font-weight: 700;
+    // line-height: 1;
+    color: #0b2540;
+    /* dark text for initials */
+    background-color: #ffffff;
+    /* white circle */
+    border-radius: 50%;
+    overflow: hidden;
+    border: 1px solid rgba(11, 37, 64, 0.06);
+    letter-spacing: 1;
+    margin-left: 5px;
+}
+
+.profile-btn {
+    border: 1px solid #fff;
+    border-radius: 25px;
+    padding: 0 20px;
+}
+
+.user-name {
+    margin-right: 8px;
+}
+
+/* Dropdown menu styling to match screenshot */
+.user-dropdown .user-dropdown-menu {
+    background: #fff;
+    /* dark navy */
+    border-radius: 10px;
+    min-width: 220px;
+    padding: 8px 0;
+    box-shadow: 0 6px 18px rgba(2, 6, 23, 0.6);
+    border: 0;
+}
+
+.user-dropdown .user-dropdown-menu li a[cDropdownItem] {
+    color: rgba(37, 43, 54, 0.95);
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+}
+
+.user-dropdown .user-dropdown-menu li a[cDropdownItem] i {
+    color: rgba(37, 43, 54, 0.95);
+}
+
+.user-dropdown .user-dropdown-menu li a[cDropdownItem]:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.user-dropdown .user-dropdown-menu li+li {
+    margin-top: 6px;
+}
+
+/* Header block inside dropdown */
+.user-dropdown .dropdown-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.user-dropdown .header-block {
+    text-decoration: none;
+    color: rgba(37, 43, 54, 0.95);
+}
+
+.user-dropdown .header-lines {
+    display: flex;
+    flex-direction: column;
+}
+
+.user-dropdown .header-name {
+    font-weight: 700;
+    color: rgba(37, 43, 54, 0.95);
+}
+
+.user-dropdown .header-email {
+    font-size: 12px;
+    color: rgba(37, 43, 54, 0.95);
+}
+
+.user-dropdown .header-action {
+    font-size: 12px;
+    color: rgba(37, 43, 54, 0.95);
+    margin-top: 4px;
+}
+
+/* Three-line indicator before avatar */
+.avatar-lines {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-right: 8px;
+}
+
+.avatar-lines span {
+    display: block;
+    width: 18px;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 2px;
+}
+.nav-text{
+    font-size: 22px;
+    margin: 10px 15px 5px 0;
+    cursor: pointer;
+}
+
+.support-link {
+    color: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    font-size: 14px;
+    padding-right: 12px;
+    margin-right: 8px;
+    border-right: 1px solid #6c757d;
+}
+
+.support-link i {
+    font-size: 20px;
+}
+
+/* Currency switcher */
+.currency-switcher .currency-select {
+    background: transparent;
+    color: #ffffff;
+    border: 1px solid rgba(255,255,255,0.08);
+    padding: 4px 8px;
+    border-radius: 6px;
+    height: 32px;
+    min-width: 80px;
+}
+.currency-select option { color: #000; }
+
+/* Toggle buttons for currency */
+.currency-toggle {
+    display: inline-flex;
+    border-radius: 6px;
+    overflow: hidden;
+    background: rgba(255,255,255,0.06);
+}
+.currency-btn {
+    appearance: none;
+    border: none;
+    background: transparent;
+    color: #ffffff;
+    margin: 6px 0 0;
+    font-size: 16px;
+    cursor: pointer;
+}
+.currency-btn.active {
+    background: #ffffff;
+    color: #05203a;
+    font-weight: 700;
 }

@@ -36,6 +36,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private subscriptions: Subscription[] = [];
 
   private envValueSubscription: Subscription | undefined;
+  private currencySubscription: Subscription | undefined;
+  private lastCostResponse: any = null;
   dropdownStyle: any = {};
   isDropdownOpen: boolean = false;
   lastButtonRef: HTMLElement | null = null;
@@ -48,6 +50,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.envValueSubscription = this.sharedService.envValueChange$.subscribe(value => {
       this.initializeDashboard();
+    });
+    this.currencySubscription = this.sharedService.currencyChange$.subscribe(() => {
+      // when currency toggles, recompute displayed amounts from last response
+      if (this.lastCostResponse) this.applyCostsToCards(this.lastCostResponse);
     });
     this.initializeDashboard()
   }
@@ -62,43 +68,51 @@ export class DashboardComponent implements OnInit, OnDestroy {
     const accountId = localStorage.getItem('accountId');
     const project = JSON.parse(localStorage.getItem('project') || '{}');
     this.http.getCostDetails(accountId, project?.id, env?.id).subscribe((res: any) => {
-      if (res.success) {
-        const totalCostSum = res.data?.totals?.reduce(
-          (acc: number, item: any) => acc + (item.total_cost || 0),
-          0
-        ) ?? 0;
-        const roundedTotalCost = Math.round(totalCostSum * 100) / 100;
-
-        this.cards[0].value = totalCostSum === 0
-          ? '0'
-          : roundedTotalCost.toLocaleString('en-US', {
-            style: 'currency',
-            currency: res?.data?.totals[0].currency,
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-          });
-
-        const estimatedCostSum = res.data?.projection_mtd_simple?.reduce(
-          (acc: number, item: any) => acc + (Number(item.projected_total) || 0),
-          0
-        ) ?? 0;
-        const roundedEstimatedCost = Math.round(estimatedCostSum * 100) / 100;
-
-        this.cards[1].value = estimatedCostSum === 0
-          ? '0'
-          : roundedEstimatedCost.toLocaleString('en-US', {
-            style: 'currency',
-            currency: res?.data?.projection_mtd_simple[0].currency,
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-          });
+      if (res && res.success) {
+        this.lastCostResponse = res.data;
+        this.applyCostsToCards(res.data);
       }
-    })
+    });
     this.currentEnvId = env?.id;
     this.getEndpointsList(env?.id);
     this.getStatusCount();
     this.startCpuStream();
     this.startMemoryStream();
+  }
+
+  private applyCostsToCards(data: any) {
+    try {
+      const target = this.sharedService.getCurrency();
+      const totalCostSum = data?.totals?.reduce((acc: number, item: any) => acc + (item.total_cost || 0), 0) ?? 0;
+      const roundedTotalCost = Math.round(totalCostSum * 100) / 100;
+      const srcCurrency = data?.totals && data.totals.length ? data.totals[0].currency : 'USD';
+      const convertedTotal = this.sharedService.convertAmount(roundedTotalCost, srcCurrency, target);
+
+      this.cards[0].value = totalCostSum === 0
+        ? '0'
+        : convertedTotal.toLocaleString('en-US', {
+          style: 'currency',
+          currency: target,
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        });
+
+      const estimatedCostSum = data?.projection_mtd_simple?.reduce((acc: number, item: any) => acc + (Number(item.projected_total) || 0), 0) ?? 0;
+      const roundedEstimatedCost = Math.round(estimatedCostSum * 100) / 100;
+      const srcEstCurrency = data?.projection_mtd_simple && data.projection_mtd_simple.length ? data.projection_mtd_simple[0].currency : srcCurrency;
+      const convertedEstimate = this.sharedService.convertAmount(roundedEstimatedCost, srcEstCurrency, target);
+
+      this.cards[1].value = estimatedCostSum === 0
+        ? '0'
+        : convertedEstimate.toLocaleString('en-US', {
+          style: 'currency',
+          currency: target,
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        });
+    } catch (e) {
+      console.error('Error applying currency conversion', e);
+    }
   }
   getEndpointsList(envId: string) {
     this.http.getEndpoints(envId).subscribe((res: any) => {

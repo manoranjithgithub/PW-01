@@ -74,10 +74,35 @@ export class DefaultHeaderComponent extends HeaderComponent implements OnInit, O
   userInfo: any
 
 
+  selectedCurrency: string = localStorage.getItem('currency') || 'USD';
 
   ngOnInit(): void {
     this.authService.processDecodedToken(localStorage.getItem('accessToken') || '');
     this.userData = this.sharedService.getUser();
+  }
+
+  currencyOptions = [
+    { code: 'USD', label: '$ USD' },
+    { code: 'INR', label: '₹ INR' }
+  ];
+
+
+  changeCurrency(code: string) {
+    this.selectedCurrency = code;
+    this.sharedService.setCurrency(code);
+  }
+
+  getInitials(): string {
+    const name = this.userData?.name || this.userData?.userName || '';
+    if (!name) return '';
+    const parts = name.trim().split(/\s+/);
+    if (parts.length === 1) {
+      const s = parts[0];
+      return (s.charAt(0) + (s.charAt(1) || '')).toUpperCase();
+    }
+    const first = parts[0].charAt(0) || '';
+    const last = parts[parts.length - 1].charAt(0) || '';
+    return (first + last).toUpperCase();
   }
 
   getSelectedRegion(region: any) {

@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, of } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
+import { filter } from 'rxjs/operators';
+import { Router, NavigationEnd } from '@angular/router';
 import { SharedService } from './shared.service';
 import { PERM } from '../constants/permissions.constant';
 import { DeploymentsService } from './deployments.service';
@@ -9,7 +11,10 @@ import { DeploymentsService } from './deployments.service';
 export class PermissionService {
   private rawPolicies$ = new BehaviorSubject<any[]>([]);
 
-  constructor(private http: DeploymentsService, private shared: SharedService) {
+  private lastLoadedAt = 0;
+  private reloadIntervalMs = 5000; // don't reload more often than this on navigation
+
+  constructor(private http: DeploymentsService, private shared: SharedService, private router: Router) {
     try {
       const cached = localStorage.getItem('policies');
       if (cached) {
@@ -20,6 +25,21 @@ export class PermissionService {
       }
     } catch (e) {
       // ignore storage errors
+    }
+
+    // Auto-refresh policies on navigation end, but throttle by reloadIntervalMs
+    try {
+      this.router.events.pipe(filter(e => e instanceof NavigationEnd)).subscribe(() => {
+        const now = Date.now();
+        if (now - this.lastLoadedAt > this.reloadIntervalMs) {
+          this.loadPolicies().subscribe({
+            next: () => { this.lastLoadedAt = Date.now(); },
+            error: () => { /* ignore */ }
+          });
+        }
+      });
+    } catch (e) {
+      // router might not be available in some test contexts
     }
   }
 
@@ -35,6 +55,26 @@ export class PermissionService {
         }
       })
     );
+  }
+
+  /**
+   * Ensure the latest policies are loaded. If policies were loaded recently this will
+   * return the current in-memory value, otherwise it will fetch from server.
+   */
+  ensureLatestPolicies(force: boolean = false): Observable<any[]> {
+    const now = Date.now();
+    const hasCached = (this.getRawPolicies() || []).length > 0;
+    if (!force && hasCached && (now - this.lastLoadedAt) < this.reloadIntervalMs) {
+      return of(this.getRawPolicies());
+    }
+    return this.loadPolicies().pipe(tap(() => { this.lastLoadedAt = Date.now(); }));
+  }
+
+  /**
+   * Immediate refresh from server.
+   */
+  refreshPoliciesNow(): Observable<any[]> {
+    return this.loadPolicies().pipe(tap(() => { this.lastLoadedAt = Date.now(); }));
   }
 
   loadPoliciesFromArray(policies: any[] = []): void {
