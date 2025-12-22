@@ -81,9 +81,9 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 35px;
-    height: 35px;
-    font-size: 15px;
+    width: 30px;
+    height: 30px;
+    font-size: 13px;
     font-weight: 700;
     // line-height: 1;
     color: #0b2540;
@@ -94,13 +94,14 @@
     overflow: hidden;
     border: 1px solid rgba(11, 37, 64, 0.06);
     letter-spacing: 1;
-    margin-left: 5px;
+    // margin-left: 5px;
 }
 
 .profile-btn {
     border: 1px solid #fff;
     border-radius: 25px;
-    padding: 0 20px;
+    padding: 0 15px;
+    margin-top: 5px;
 }
 
 .user-name {
@@ -120,7 +121,7 @@
 
 .user-dropdown .user-dropdown-menu li a[cDropdownItem] {
     color: rgba(37, 43, 54, 0.95);
-    padding: 10px 16px;
+    padding: 5px 16px;
     display: flex;
     align-items: center;
     gap: 10px;
