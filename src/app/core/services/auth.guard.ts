@@ -56,7 +56,7 @@ export class AuthGuard implements CanActivate {
       } catch {
         projectId = projectStr || null;
       }
-      const canCreateEnv = this.permissionService.canAdminGlobal() || this.permissionService.canWriteForCurrentUser(projectId, null);
+      const canCreateEnv = this.permissionService.canAdminGlobal();
       if (!canCreateEnv) {
         this.toastr.warning('You are not authorized to create an environment for the selected project.');
         this.router.navigateByUrl('/projects', { replaceUrl: true });

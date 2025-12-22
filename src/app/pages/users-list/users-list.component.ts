@@ -65,7 +65,7 @@ export class UsersListComponent implements OnInit, OnDestroy {
     hideCloseButton: () => false
   };
   public editPolicyModalConfig: any = {
-    modalTitle: 'Edit Policy',
+    modalTitle: 'Edit Permissions',
     width: '780px',
     height: 'auto',
     hideDismissButton: () => true,

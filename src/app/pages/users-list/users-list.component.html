@@ -156,7 +156,7 @@
 <!-- Edit policy -->
 <app-modal #editPolicyModal [modalConfig]="editPolicyModalConfig">
     <div *ngIf="isAddPolicy" class="my-4 ">
-        <h6 class="font-bold"><b>{{ editingPolicy ? 'Edit policy' : 'Add new policy' }}</b></h6>
+        <h6 class="font-bold"><b>{{ editingPolicy ? 'Edit policy' : 'Add new permission' }}</b></h6>
         <form [formGroup]="editPolicyForm" class="shadow-sm border px-4 py-2">
             <div class="d-flex gap-2 my-2 justify-content-between">
                 <div class="form-group w-100">
@@ -203,7 +203,7 @@
                 <div class="actions align-items-end">
                 <button (click)="enableAddPolicy()" class="btn button-format-solid"
                     [disabled]="!permissionService.canAdminGlobal()">
-                    <i class="bi bi-plus"></i>Add new policy
+                    <i class="bi bi-plus"></i>Add new Permission
                 </button>
             </div>
         </div>

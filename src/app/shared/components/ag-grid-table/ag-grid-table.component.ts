@@ -77,6 +77,16 @@ export class AgGridTableComponent implements OnInit {
       return p || undefined;
     }
   }
+  getCurrentEnvId(): string | undefined {
+    const e = localStorage.getItem('environment');
+    if (!e || e === 'undefined') return undefined;
+    try {
+      const parsed = JSON.parse(e);
+      return parsed?.id || undefined;
+    } catch {
+      return e || undefined;
+    }
+  }
   capitalizeFirstLetter(word: string) {
     return word.charAt(0).toUpperCase() + word.slice(1);
   }
