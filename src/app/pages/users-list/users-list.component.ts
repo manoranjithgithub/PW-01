@@ -120,7 +120,7 @@ export class UsersListComponent implements OnInit, OnDestroy {
       valueFormatter: (params: any) => this.formatDate(params.value)
     },
     {
-      headerName: 'Actions',
+      headerName: 'Manage Policies',
       field: '',
       flex: 1,
       cellRenderer: ActionCellRendererComponent,

@@ -284,14 +284,17 @@
 </div>
 <div>
   <div class="stepper-footer d-flex gap-3 justify-content-between">
-    <div class="">
-      <button class="btn button-format-outline" (click)="prev()" [disabled]="currentStep === 0"
+      <div class="">
+      <button class="btn button-format-outline" (click)="prev()" [disabled]="currentStep === 0" 
+        [attr.title]="(currentStep === 0) ? 'You are not authorized to view that page.' : null"
         *ngIf="currentStep > 0">Previous</button>
     </div>
     <div class="">
+    <div class="">
       <button class="btn button-format-solid"
         (click)="next(currentStep === 4 ? 'Submit' : (currentStep === 3 ? 'Review' : 'Save & Continue'))"
-        [disabled]="stepOneForm.invalid || submitted || !(permissionService.canWriteGlobal() || permissionService.canAdminGlobal())">
+        [disabled]="stepOneForm.invalid || submitted || !(permissionService.canWriteGlobal() || permissionService.canAdminGlobal())" 
+        [attr.title]="(stepOneForm.invalid || submitted || !(permissionService.canWriteGlobal() || permissionService.canAdminGlobal())) ? 'You are not authorized to view that page.' : null">
         {{ currentStep === 4 ? 'Submit' : (currentStep === 3 ? 'Review' : 'Save & Continue') }}
       </button>
     </div>
@@ -312,7 +315,7 @@
         </div>
       </div>
       <div class="d-flex justify-content-center mt-2">
-        <button class="btn btn-primary btn-visible-disabled" [disabled]="zipUploadForm.invalid"
+        <button class="btn btn-primary btn-visible-disabled" [disabled]="zipUploadForm.invalid" [attr.title]="zipUploadForm.invalid ? 'You are not authorized to view that page.' : null"
           (click)="onZipUpload()">Submit</button>
       </div>
     </form>

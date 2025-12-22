@@ -64,7 +64,7 @@
                     <button type="reset" class="btn button-format-outline me-2" (click)="resetForm()">
                         Cancel
                     </button>
-                    <button type="submit" class="btn button-format-solid" [disabled]="addUserForm.invalid || !permissionService.canWriteGlobal()">
+                    <button type="submit" class="btn button-format-solid" [disabled]="addUserForm.invalid || !permissionService.canWriteGlobal()" [attr.title]="(addUserForm.invalid || !permissionService.canWriteGlobal()) ? 'You are not authorized to view that page.' : null">
                         Add User
                     </button>
                 </div>
@@ -188,7 +188,7 @@
                 <button type="reset" class="btn button-format-outline me-2" (click)="resetEditForm()">
                     Cancel
                 </button>
-                <button type="submit" class="btn button-format-solid" [disabled]="editPolicyForm.invalid"
+                <button type="submit" class="btn button-format-solid" [disabled]="editPolicyForm.invalid" [attr.title]="editPolicyForm.invalid ? 'You are not authorized to view that page.' : null"
                     (click)="createPolicy()">
                     {{ editingPolicy ? 'Update Policy' : 'Add Policy' }}
                 </button>
