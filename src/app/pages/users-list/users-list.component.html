@@ -220,7 +220,7 @@
                 <td>{{i + 1}}</td>
                 <td *ngIf="policy.showProjectCell" [attr.rowspan]="policy.projectRowSpan">{{policy.projectname}}</td>
                 <td>{{policy.envname}}</td>
-                <td *ngIf="policy.showPermissionCell" [attr.rowspan]="policy.permissionRowSpan">{{ policy.permissions }}</td>
+                <td *ngIf="policy.showPermissionCell" [attr.rowspan]="policy.permissionRowSpan">{{ formatPermissionDisplay(policy.permissions) }}</td>
                 <td *ngIf="policy.showActionCell" [attr.rowspan]="policy.actionRowSpan">
                     <button class="flat-btn edit"
                         (click)="permissionService.canAdminGlobal() && editPolicy(i, policy)"

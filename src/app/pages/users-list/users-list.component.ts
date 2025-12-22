@@ -122,7 +122,8 @@ export class UsersListComponent implements OnInit, OnDestroy {
     {
       headerName: 'Manage Policies',
       field: '',
-      flex: 1,
+      // flex: 1,
+      width: 200,
       cellRenderer: ActionCellRendererComponent,
       cellRendererParams: {
         additionalParam: 'user-list',
@@ -330,6 +331,14 @@ export class UsersListComponent implements OnInit, OnDestroy {
     if (!value) return '';
     const date = new Date(value);
     return date instanceof Date && !isNaN(date.getTime()) ? date.toLocaleDateString() : '';
+  }
+
+  public formatPermissionDisplay(permissions: any): string {
+    if (!permissions) return '';
+    const perms = Array.isArray(permissions) ? permissions : String(permissions).split(',').map(p => p.trim());
+    const lower = perms.map(p => String(p).toLowerCase());
+    if (lower.includes('delete')) return 'all';
+    return perms.join(', ');
   }
 
   private mapPolicies(policies: PolicyRaw[] = [], projects: Project[] = []): PolicyMapped[] {

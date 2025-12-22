@@ -55,6 +55,7 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
 
   params: any;
   additionalParam: string = '';
+  public isUserVerified: boolean = true;
   envId: string = '';
   replicaCount: number = 0;
   toolName: any;
@@ -122,10 +123,14 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
   agInit(params: any): void {
     this.params = params;
     this.additionalParam = params.additionalParam;
+    const isVer = params?.data?.isVerfied;
+    this.isUserVerified = (isVer === true || isVer === 'true');
   }
 
   refresh(params: any): boolean {
     this.params = params;
+    const isVer = params?.data?.isVerfied;
+    this.isUserVerified = (isVer === true || isVer === 'true');
     return true;
   }
 
