@@ -65,7 +65,7 @@ export class UsersListComponent implements OnInit, OnDestroy {
     hideCloseButton: () => false
   };
   public editPolicyModalConfig: any = {
-    modalTitle: 'Edit Policy',
+    modalTitle: 'Edit Permissions',
     width: '780px',
     height: 'auto',
     hideDismissButton: () => true,
@@ -112,17 +112,20 @@ export class UsersListComponent implements OnInit, OnDestroy {
     {
       field: 'createdAt',
       headerName: 'Added on',
+      flex: 1,
       valueFormatter: (params: any) => this.formatDate(params.value)
     },
     {
       field: 'updatedAt',
       headerName: 'Updated At',
+      flex: 1,
       valueFormatter: (params: any) => this.formatDate(params.value)
     },
     {
-      headerName: 'Actions',
+      headerName: 'Manage Policies',
       field: '',
-      flex: 1,
+      // flex: 1,
+      width: 150,
       cellRenderer: ActionCellRendererComponent,
       cellRendererParams: {
         additionalParam: 'user-list',
@@ -330,6 +333,14 @@ export class UsersListComponent implements OnInit, OnDestroy {
     if (!value) return '';
     const date = new Date(value);
     return date instanceof Date && !isNaN(date.getTime()) ? date.toLocaleDateString() : '';
+  }
+
+  public formatPermissionDisplay(permissions: any): string {
+    if (!permissions) return '';
+    const perms = Array.isArray(permissions) ? permissions : String(permissions).split(',').map(p => p.trim());
+    const lower = perms.map(p => String(p).toLowerCase());
+    if (lower.includes('delete')) return 'all';
+    return perms.join(', ');
   }
 
   private mapPolicies(policies: PolicyRaw[] = [], projects: Project[] = []): PolicyMapped[] {

@@ -25,13 +25,18 @@
   </ul>
 </div>
 <div class="custom-dropdown d-inline-block" *ngIf="additionalParam === 'user-list'">
-  <a class="mx-2 cursor-pointer" (click)="viewPolicies()" title="View Policies"><i
-      class="bi bi-eye-fill"></i></a>
+  <a class="mx-2 cursor-pointer"
+    (click)="isUserVerified && viewPolicies()"
+    [class.disabled]="!isUserVerified"
+    [attr.aria-disabled]="!isUserVerified"
+    title="View Policies">
+    <i class="bi bi-eye-fill"></i>
+  </a>
   <a class="mx-2 cursor-pointer"
     role="button"
-    (click)="permissionService.canAdminGlobal() && editPolicies()"
-    [class.disabled]="!permissionService.canAdminGlobal()"
-    [attr.aria-disabled]="!permissionService.canAdminGlobal()"
+    (click)="(isUserVerified && permissionService.canAdminGlobal()) && editPolicies()"
+    [class.disabled]="!isUserVerified || !permissionService.canAdminGlobal()"
+    [attr.aria-disabled]="!isUserVerified || !permissionService.canAdminGlobal()"
     title="Edit Policies">
     <i class="bi bi-pencil-square"></i>
   </a>
