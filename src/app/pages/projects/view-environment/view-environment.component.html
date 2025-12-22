@@ -43,6 +43,7 @@
                 <button *ngIf="!isGeneralEditMode" class="btn btn-edit p-0"
                   [class.disabled]="!permissionService.canWriteForCurrentUser(projectId, envId)"
                   [attr.aria-disabled]="!permissionService.canWriteForCurrentUser(projectId, envId)"
+                  [attr.title]="!permissionService.canWriteForCurrentUser(projectId, envId) ? 'You are not authorized to perform this action.' : null"
                   (click)="permissionService.canWriteForCurrentUser(projectId, envId) && toggleGeneralEditMode()">
                   <i class="bi bi-pencil-square edit-icon"></i> edit
                 </button>
@@ -72,7 +73,8 @@
             <button *ngIf="!isGeneralEditMode" class="btn btn-edit p-0"
               [class.disabled]="!permissionService.canWriteForCurrentUser(projectId, envId)"
               [attr.aria-disabled]="!permissionService.canWriteForCurrentUser(projectId, envId)"
-              (click)="permissionService.canWriteForCurrentUser(projectId, envId) && toggleGeneralEditMode()">
+              (click)="permissionService.canWriteForCurrentUser(projectId, envId) && toggleGeneralEditMode()"
+              [attr.title]="!permissionService.canWriteForCurrentUser(projectId, envId) ? 'You are not authorized to perform this action.' : null">
               <i class="bi bi-pencil-square edit-icon"></i> edit
             </button>
             <button *ngIf="isGeneralEditMode" class="btn btn-edit p-0"

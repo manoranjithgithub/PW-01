@@ -72,13 +72,14 @@
               <i class="bi bi-three-dots-vertical"></i>
             </button>
             <ul cDropdownMenu class="dropdown-menu dropdown-menu-end" style="padding: 0;">
-              <li>
+              <li [attr.title]="!canPerformPageDelete() ? 'You are not authorized to perform this action.' : null">
                 <a
                   class="dropdown-item"
                   role="button"
-                  (click)="permissionService.canDeleteForCurrentUser(getCurrentProjectId(), getCurrentEnvId()) && onPageActionClick()"
-                  [class.disabled]="!permissionService.canDeleteForCurrentUser(getCurrentProjectId(), getCurrentEnvId())"
-                  [attr.aria-disabled]="!permissionService.canDeleteForCurrentUser(getCurrentProjectId(), getCurrentEnvId())"
+                  (click)="canPerformPageDelete() && onPageActionClick()"
+                  [class.disabled]="!canPerformPageDelete()"
+                  [attr.aria-disabled]="!canPerformPageDelete()"
+                  [attr.title]="!canPerformPageDelete() ? 'You are not authorized to perform this action.' : null"
                 >
                   Delete
                 </a>
