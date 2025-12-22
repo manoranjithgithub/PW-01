@@ -419,7 +419,7 @@ export class UsersListComponent implements OnInit, OnDestroy {
     this.editingPolicy = null;
   }
   createPolicy() {
-    console.log(this.selectedUserPolicyInfo)
+    // console.log(this.selectedUserPolicyInfo)
     this.isAddPolicy = false;
     if (this.editPolicyForm.invalid) {
       return;

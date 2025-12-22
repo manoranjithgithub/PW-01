@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Subject } from 'rxjs';
+import { BehaviorSubject, Subject, firstValueFrom } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
 import { CookieService } from 'ngx-cookie-service';
 import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { getStatusMeta as helperGetStatusMeta } from '../helpers/status.helper';
@@ -41,6 +42,14 @@ export class SharedService {
   private lastReleaseData = new BehaviorSubject<string | null>(null);
   releaseStatus$ = this.lastReleaseData.asObservable();
 
+  private currencyChangeSource = new BehaviorSubject<string>(this.getCurrencyFromStorage());
+  currencyChange$ = this.currencyChangeSource.asObservable();
+
+  private rates: { [k: string]: number } = {};
+  private ratesLoadedAt = 0;
+  private ratesTtlMs = 12 * 60 * 60 * 1000; // 12 hours
+  private frankfurterUrl = 'https://api.frankfurter.dev/v1/latest';
+
   emitEnvDDChange(value: any[]) {
     this.envDDChangeSource.next(value);
   }
@@ -52,7 +61,9 @@ export class SharedService {
   private isLoading = new BehaviorSubject<boolean>(false);
   public isLoading$ = this.isLoading.asObservable();
 
-  constructor(private cookieService: CookieService,) { }
+  constructor(private cookieService: CookieService, private http: HttpClient) {
+    this.ensureRatesFor(['INR']).catch(() => { /* ignore */ });
+  }
 
   emitValueChange(value: string) {
     this.valueChangeSource.next(value);
@@ -63,6 +74,84 @@ export class SharedService {
 
   emitProjectValueChange(value: string) {
     this.projectValueChangeSource.next(value);
+  }
+
+  setCurrency(code: string) {
+    try {
+      localStorage.setItem('currency', code);
+    } catch (e) { 
+      // ignore storage errors
+    }
+    this.currencyChangeSource.next(code);
+    const upper = (code || 'USD').toUpperCase();
+    if (upper !== 'USD') {
+      this.ensureRatesFor([upper]).then(() => {
+        this.currencyChangeSource.next(code);
+      }).catch(() => { /* ignore */ });
+    }
+  }
+
+  getCurrency(): string {
+    return this.currencyChangeSource.getValue() || this.getCurrencyFromStorage() || 'USD';
+  }
+
+  private getCurrencyFromStorage(): string {
+    try {
+      const c = localStorage.getItem('currency');
+      return c || 'USD';
+    } catch (e) {
+      return 'USD';
+    }
+  }
+
+  convertAmount(value: number, from: string | undefined, to: string | undefined): number {
+    if (value == null || isNaN(value)) return 0;
+    const src = (from || 'USD').toUpperCase();
+    const dst = (to || this.getCurrency()).toUpperCase();
+    if (src === dst) return value;
+
+    const now = Date.now();
+    const cacheValid = (now - this.ratesLoadedAt) < this.ratesTtlMs;
+    if (cacheValid && this.rates && (this.rates[src] || src === 'USD') && (this.rates[dst] || dst === 'USD')) {
+      const srcRate = src === 'USD' ? 1 : this.rates[src];
+      const dstRate = dst === 'USD' ? 1 : this.rates[dst];
+      const inUsd = value / srcRate;
+      return inUsd * dstRate;
+    }
+
+    this.ensureRatesFor([src === 'USD' ? undefined : src, dst === 'USD' ? undefined : dst].filter(Boolean) as string[])
+      .catch(() => { /* ignore */ });
+
+    const fallbackRates: { [k: string]: number } = { USD: 1, INR: 89.62 };
+    const srcRate = fallbackRates[src] || 1;
+    const dstRate = fallbackRates[dst] || 1;
+    const inUsd = value / srcRate;
+    return inUsd * dstRate;
+  }
+
+  async ensureRatesFor(symbols: string[]): Promise<void> {
+    if (!symbols || symbols.length === 0) return;
+    const symbolsToFetch = symbols.map(s => s.toUpperCase()).filter(s => s !== 'USD');
+    const now = Date.now();
+    if ((now - this.ratesLoadedAt) < this.ratesTtlMs) {
+      const missing = symbolsToFetch.filter(s => !this.rates[s]);
+      if (missing.length === 0) return;
+    }
+
+    try {
+      const url = `${this.frankfurterUrl}?base=USD&symbols=${symbolsToFetch.join(',')}`;
+      const resp = await firstValueFrom(this.http.get<any>(url));
+      if (resp && resp.rates) {
+        Object.keys(resp.rates).forEach(k => this.rates[k.toUpperCase()] = Number(resp.rates[k]));
+        this.ratesLoadedAt = Date.now();
+      }
+    } catch (e) {
+      // ignore failures; callers will use fallback rates
+    }
+  }
+
+  async refreshRatesNow(symbols: string[] = ['INR']): Promise<void> {
+    await this.ensureRatesFor(symbols);
   }
 
   show() {

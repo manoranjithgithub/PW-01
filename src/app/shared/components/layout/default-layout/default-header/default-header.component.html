@@ -76,22 +76,61 @@
 </ng-container>
 
 <ng-template #userDropdown>
-  <span class="text-white user-name">{{userData?.name}}</span>
-  <c-dropdown [popperOptions]="{ placement: 'bottom-start' }" variant="nav-item">
-    <button [caret]="false" cDropdownToggle class="py-0 pe-0">
-      <c-avatar shape="rounded-1" [size]="'s'" [src]="userData?.avatar  || './assets/images/avatars/avatar.jpg'"
-        textColor="primary" />
+    <div class="header-controls d-flex align-items-center">
+    <a href="https://docs.nimbuz.tech/" target="_blank" class="text-white nav-text me-3 support-link">
+      <i class="bi bi-info-circle"></i>
+      Documentation
+    </a>
+    <div class="currency-toggle me-3" role="tablist" aria-label="Currency selector">
+      <button type="button" *ngIf="selectedCurrency === 'USD'" class="currency-btn" [class.active]="selectedCurrency === 'USD'" (click)="changeCurrency('INR')" title="Convert to INR">$</button>
+      <button type="button" *ngIf="selectedCurrency === 'INR'" class="currency-btn" [class.active]="selectedCurrency === 'INR'" (click)="changeCurrency('USD')" title="Convert to USD">₹</button>
+    </div>
+    <span (click)="logout()" class="text-white nav-text"><i class="bi bi-power"></i></span>
+  </div>
+  <!-- <span class="text-white user-name">{{userData?.name}}</span> -->
+    <c-dropdown class="user-dropdown" [popperOptions]="{ placement: 'bottom-start' }" variant="nav-item">
+    <button [caret]="false" cDropdownToggle class="py-0 pe-0 d-flex align-items-center profile-btn">
+      <div class="avatar-lines" aria-hidden="true">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+      <span class="c-avatar">{{ getInitials() }}</span>
+      <!-- <c-avatar shape="rounded" [size]="'s'" [attr.title]="userData?.name || 'User'">
+        <ng-container *ngIf="userData?.avatar; else initials">
+          <img [src]="userData?.avatar" alt="{{ userData?.name }}" />
+        </ng-container>
+        <ng-template #initials>{{ getInitials() }}</ng-template>
+      </c-avatar> -->
     </button>
-    <ul cDropdownMenu class="pt-0 w-auto">
+    <ul cDropdownMenu class="pt-0 w-auto user-dropdown-menu">
+      <li class="dropdown-header p-2">
+        <a cDropdownItem routerLink="/account-settings" class="d-flex align-items-center header-block">
+          <!-- <c-avatar shape="rounded" [size]="'md'" class="me-2">
+            <ng-container *ngIf="userData?.avatar; else headerInitials">
+              <img [src]="userData?.avatar" alt="{{ userData?.name }}" />
+            </ng-container>
+            <ng-template #headerInitials>{{ getInitials() }}</ng-template>
+          </c-avatar> -->
+          <div class="header-lines">
+            <div class="header-name">{{ userData?.name }}</div>
+            <div class="header-email">{{ userData?.email }}</div>
+            <!-- <div class="header-action">My Profile</div> -->
+          </div>
+        </a>
+      </li>
+      
       <li>
-        <a cDropdownItem routerLink="/account-settings">
-          <svg cIcon class="me-2" name="cilSettings"></svg>
-          Account Settings
+        <a cDropdownItem (click)="logout()">
+          <!-- <svg cIcon class="me-2" name="cilAccountLogout"></svg> -->
+           <i class="bi bi-gear"></i>
+           Account Settings 
         </a>
       </li>
       <li>
         <a cDropdownItem (click)="logout()">
-          <svg cIcon class="me-2" name="cilAccountLogout"></svg>
+          <!-- <svg cIcon class="me-2" name="cilAccountLogout"></svg> -->
+           <i class="bi bi-power"></i>
           Logout
         </a>
       </li>

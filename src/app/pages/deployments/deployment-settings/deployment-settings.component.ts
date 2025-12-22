@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, EventEmitter, Input, OnInit, Output, ViewChild, ViewEncapsulation } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, ViewChild, ViewEncapsulation } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import {
   AccordionButtonDirective,
@@ -22,6 +22,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { NgbPopoverModule } from '@ng-bootstrap/ng-bootstrap';
 import { concatMap, tap } from 'rxjs';
+import { PermissionService } from '../../../shared/services/permission.service';
 @Component({
   selector: 'app-deployment-settings',
   standalone: true,
@@ -101,7 +102,8 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
 
   constructor(private fb: FormBuilder, private sharedService: SharedService, private deploymentService: DeploymentsService,
     private toaster: ToastrService, private modalService: NgbModal, private route: Router, private ac: ActivatedRoute,
-    private viewportScroller: ViewportScroller
+    private cdr: ChangeDetectorRef,
+    private viewportScroller: ViewportScroller, public permissionService: PermissionService
   ) { }
 
   ngAfterViewInit() {
@@ -111,6 +113,21 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
         this.viewportScroller.scrollToAnchor(fragment);
       }
     }, 100);
+  }
+
+  formatCurrency(value: number | undefined, fromCurrency?: string): string {
+    if (value == null || isNaN(Number(value))) return '';
+    const target = this.sharedService.getCurrency() || 'USD';
+    const converted = this.sharedService.convertAmount(Number(value), fromCurrency, target);
+    try {
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: target,
+        minimumFractionDigits: 2,
+      }).format(converted);
+    } catch (e) {
+      return String(converted);
+    }
   }
 
   ngOnInit(): void {
@@ -181,6 +198,11 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
     this.deploymentService.getInstanceTypes().subscribe((res: any) => {
       // this.configForm.patchValue(res.data)
       this.resources = res.data
+    });
+
+    // update view when currency changes
+    this.sharedService.currencyChange$.subscribe(() => {
+      this.cdr.detectChanges();
     });
 
     this.generalSettingsForm.get('instanceType')?.valueChanges.subscribe(selectedValue => {
@@ -660,5 +682,27 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
       return `https://${repo}:token@gitlab.com/${repo}.git -b ${branch}`;
     }
     return '';
+  }
+
+  public getCurrentProjectId(): string | undefined {
+    const p = localStorage.getItem('project');
+    if (!p || p === 'undefined') return undefined;
+    try {
+      const parsed = JSON.parse(p);
+      return parsed?.id || undefined;
+    } catch {
+      return p || undefined;
+    }
+  }
+
+  public getCurrentEnvId(): string | undefined {
+    const e = localStorage.getItem('environment');
+    if (!e || e === 'undefined') return undefined;
+    try {
+      const parsed = JSON.parse(e);
+      return parsed?.id || undefined;
+    } catch {
+      return e || undefined;
+    }
   }
 }
