@@ -157,7 +157,7 @@ export class PermissionService {
   }
 
   canWriteForCurrentUser(projectId: string | null | undefined, envId: string | null | undefined): boolean {
-    return this.hasCapabilityForCurrentUser(projectId, envId, PERM.WRITE);
+    return this.hasCapabilityForCurrentUser(projectId, envId, PERM.WRITE) || this.hasCapabilityForCurrentUser(projectId, envId, PERM.DELETE);
   }
 
   canDeleteForCurrentUser(projectId: string | null | undefined, envId: string | null | undefined): boolean {
