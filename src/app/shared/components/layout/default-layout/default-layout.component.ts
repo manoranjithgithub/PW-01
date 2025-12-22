@@ -258,6 +258,16 @@ export class DefaultLayoutComponent implements OnInit {
     const project = localStorage.getItem('project');
     this.showSwitchProject = !!project && project !== 'undefined';
   }
+
+  public canPerformPageDelete(): boolean {
+    const url = this.router.url.split('?')[0];
+    const prefRoutes = ['/projects/project-preferences', '/projects/project-preference'];
+    const isPref = prefRoutes.some(r => url.startsWith(r));
+    if (isPref) {
+      return this.permissionService.canAdminGlobal();
+    }
+    return this.permissionService.canDeleteForCurrentUser(this.getCurrentProjectId(), this.getCurrentEnvId());
+  }
   setTheme(event: Event) {
     const color = (event.target as HTMLInputElement).checked ? 'light' : 'dark';
     // this.sharedService.setCookie('theme', color, 10)\

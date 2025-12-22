@@ -44,13 +44,15 @@
               </div>
               <div class="col-md-2 text-end">
                 <button *ngIf="!isGeneralEditMode" class="btn btn-edit p-0"
-                  [class.disabled]="!permissionService.canWriteForCurrentUser(currentProjectId, '')"
-                  [disabled]="!permissionService.canWriteForCurrentUser(currentProjectId, '')"
+                  [class.disabled]="!permissionService.canAdminGlobal()"
+                  [disabled]="!permissionService.canAdminGlobal()"
+                  [attr.aria-disabled]="!permissionService.canAdminGlobal()"
+                  [attr.title]="!permissionService.canAdminGlobal() ? 'You are not authorized to perform this action.' : null"
                   (click)="isGeneralEditMode = true">
                   <i class="bi bi-pencil-square edit-icon"></i> edit
                 </button>
                 <button *ngIf="isGeneralEditMode" class="btn btn-edit p-0"
-                  (click)="saveGeneralChanges()" [disabled]="generalSettingForm.invalid || !permissionService.canWriteForCurrentUser(currentProjectId, '')">
+                  (click)="saveGeneralChanges()" [disabled]="generalSettingForm.invalid || !permissionService.canAdminGlobal()">
                   Save
                 </button>
               </div>
@@ -148,8 +150,9 @@
                 <ng-container *ngIf="integration.status === 'connected'; else connectBtn">
                   <button class="btn btn-outline-danger btn-sm"
                     (click)="diconnectProfile(integration.name)"
-                    [disabled]="!(permissionService.canAdminGlobal() || permissionService.canWriteForCurrentUser(currentProjectId, null) || permissionService.canWriteForCurrentUser(currentProjectId, '*'))"
-                    [attr.aria-disabled]="!(permissionService.canAdminGlobal() || permissionService.canWriteForCurrentUser(currentProjectId, null) || permissionService.canWriteForCurrentUser(currentProjectId, '*'))">
+                    [disabled]="!(permissionService.canAdminGlobal() || permissionService.canAdminGlobal() || permissionService.canWriteForCurrentUser(currentProjectId, '*'))"
+                    [attr.aria-disabled]="!(permissionService.canAdminGlobal() || permissionService.canWriteForCurrentUser(currentProjectId, '*'))"
+                    [attr.title]="!(permissionService.canAdminGlobal() || permissionService.canWriteForCurrentUser(currentProjectId, '*')) ? 'You are not authorized to perform this action.' : null">
                     Disconnect
                   </button>
                 </ng-container>
@@ -157,8 +160,9 @@
                 <ng-template #connectBtn>
                   <button class="btn btn-outline-success btn-sm"
                     (click)="getProfile(integration.provider)"
-                    [disabled]="!(permissionService.canAdminGlobal() || permissionService.canWriteForCurrentUser(currentProjectId, null) || permissionService.canWriteForCurrentUser(currentProjectId, '*'))"
-                    [attr.aria-disabled]="!(permissionService.canAdminGlobal() || permissionService.canWriteForCurrentUser(currentProjectId, null) || permissionService.canWriteForCurrentUser(currentProjectId, '*'))">
+                    [disabled]="!(permissionService.canAdminGlobal() || permissionService.canWriteForCurrentUser(currentProjectId, '*'))"
+                    [attr.aria-disabled]="!(permissionService.canAdminGlobal() || permissionService.canWriteForCurrentUser(currentProjectId, '*'))"
+                    [attr.title]="!(permissionService.canAdminGlobal() || permissionService.canWriteForCurrentUser(currentProjectId, '*')) ? 'You are not authorized to perform this action.' : null">
                     Connect
                   </button>
                 </ng-template>

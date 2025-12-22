@@ -112,18 +112,20 @@ export class UsersListComponent implements OnInit, OnDestroy {
     {
       field: 'createdAt',
       headerName: 'Added on',
+      flex: 1,
       valueFormatter: (params: any) => this.formatDate(params.value)
     },
     {
       field: 'updatedAt',
       headerName: 'Updated At',
+      flex: 1,
       valueFormatter: (params: any) => this.formatDate(params.value)
     },
     {
       headerName: 'Manage Policies',
       field: '',
       // flex: 1,
-      width: 200,
+      width: 150,
       cellRenderer: ActionCellRendererComponent,
       cellRendererParams: {
         additionalParam: 'user-list',
