@@ -35,6 +35,14 @@ export class EditToolComponent implements OnInit, OnDestroy {
   selectedResource: ResourceInfo = { cpuVcpu: '', memoryGb: '', instanceHourRate: 0 };
   resources: any[] = [];
 
+  get hourlyInstanceRate(): number {
+    return Number(this.selectedResource?.instanceHourRate ?? 0);
+  }
+
+  get monthlyInstanceRate(): number {
+    return this.hourlyInstanceRate * 730;
+  }
+
   constructor(private http: ToolsService, private ac: ActivatedRoute,
     private route: Router, private fb: FormBuilder, private toastr: ToastrService,
     private sharedService: SharedService
@@ -225,6 +233,20 @@ export class EditToolComponent implements OnInit, OnDestroy {
     const value = (event.target as HTMLSelectElement).value;
     if (field === 'Instance Type') {
       this.selectedResource = this.resources.find(resource => resource.instanceType === value);
+    }
+  }
+  formatCurrency(value: any | undefined, fromCurrency?: string): string {
+    if (value == null || isNaN(Number(value))) return '';
+    const target = this.sharedService.getCurrency() || 'USD';
+    const converted = this.sharedService.convertAmount(Number(value), fromCurrency, target);
+    try {
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: target,
+        minimumFractionDigits: 2
+      }).format(converted);
+    } catch (e) {
+      return String(converted);
     }
   }
 }

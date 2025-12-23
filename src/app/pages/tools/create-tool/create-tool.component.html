@@ -31,6 +31,7 @@
         <form [formGroup]="form" *ngIf="isShowForm">
             <div class="d-flex align-items-center">
                 <div class="tool-text me-3">{{ selectedTool }}</div>
+
             </div>
             <hr class="mb-2" />
             <div class="row mt-4">
@@ -41,8 +42,10 @@
                             *ngIf="field.label === 'Instance Type' && selectedResource">
                             ( <span class="mx-1"><b>CPU:</b> {{selectedResource.cpuVcpu}}</span>
                             <span class="mx-1"><b>Memory:</b> {{selectedResource.memoryGb}}</span>
-                            <span class="mx-1"><b>Price:</b> {{selectedResource.instanceHourRate | currency :
-                                selectedResource.currency}}</span> )
+                            )
+                            <!-- <span class="mx-1"><b>Price:</b> {{selectedResource.instanceHourRate | currency :
+                                selectedResource.currency}}</span> -->
+
                         </span>
                     </label>
                     <ng-container [ngSwitch]="field.type">
@@ -67,6 +70,15 @@
                                 (change)="onFieldChange($event,field.label)">
                                 <option *ngFor="let option of field.options" [value]="option">{{option}}</option>
                             </select>
+                            <span class=" d-flex  justify-content-end align-items-end" style="font-size: 12px;"
+                                *ngIf="field.label === 'Instance Type' && selectedResource">
+                                <span class="me-2"><b>Instance Price :</b></span>
+                                <span>{{ formatCurrency(hourlyInstanceRate, selectedResource.currency) }} /
+                                    hr<br>
+                                    {{ formatCurrency(monthlyInstanceRate,
+                                    selectedResource.currency)
+                                    }} /mo</span>
+                            </span>
                         </div>
                     </ng-container>
                     <div *ngIf="form.get([field.key])?.errors?.['uniqueName']" class="text-danger mt-1">

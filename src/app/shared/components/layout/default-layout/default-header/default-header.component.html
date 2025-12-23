@@ -78,14 +78,13 @@
 <ng-template #userDropdown>
     <div class="header-controls d-flex align-items-center">
     <a href="https://docs.nimbuz.tech/" target="_blank" class="text-white nav-text me-3 support-link">
-      <i class="bi bi-info-circle"></i>
-      Documentation
+      Docs <i class="bi bi-box-arrow-up-right"></i>
     </a>
     <div class="currency-toggle me-3" role="tablist" aria-label="Currency selector">
       <button type="button" *ngIf="selectedCurrency === 'USD'" class="currency-btn" [class.active]="selectedCurrency === 'USD'" (click)="changeCurrency('INR')" title="Convert to INR">$</button>
       <button type="button" *ngIf="selectedCurrency === 'INR'" class="currency-btn" [class.active]="selectedCurrency === 'INR'" (click)="changeCurrency('USD')" title="Convert to USD">₹</button>
     </div>
-    <span (click)="logout()" class="text-white nav-text" title="Logout"><i class="bi bi-power"></i></span>
+    <!-- <span (click)="logout()" class="text-white nav-text" title="Logout"><i class="bi bi-power"></i></span> -->
   </div>
   <!-- <span class="text-white user-name">{{userData?.name}}</span> -->
     <c-dropdown class="user-dropdown" [popperOptions]="{ placement: 'bottom-start' }" variant="nav-item">
