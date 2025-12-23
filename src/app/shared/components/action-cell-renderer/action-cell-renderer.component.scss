@@ -272,7 +272,7 @@ pre {
 }
 
 .log-container {
-  max-height: 500px;
+  // max-height: 500px;
   overflow: hidden;
   font-family: "Courier New", Courier, monospace;
 
@@ -286,7 +286,7 @@ pre {
 }
 
 .log-body {
-  max-height: 70%;
+  max-height: 400px;
   overflow-y: auto;
 }
 
