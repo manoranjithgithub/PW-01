@@ -565,7 +565,7 @@ export class UsersListComponent implements OnInit, OnDestroy {
           ptype: 'p',
           v0: this.editingPolicy.userid,
           v1: this.editingPolicy.accountid,
-          v2: this.editingPolicy.projectid,
+          v2: this.editingPolicy.projectid === '*' || (this.editingPolicy as any).projectWildcardKey ? '*' : this.editingPolicy.projectid,
           v3: (this.editingPolicy.envid === '*' || (this.editingPolicy as any).projectWildcardKey || (this.editingPolicy as any).envWildcardKey) ? '*' : this.editingPolicy.envid,
           v4: this.editingPolicy.permissions[0]
         },
