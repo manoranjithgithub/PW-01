@@ -87,7 +87,15 @@
           </div>
           <hr>
           <div>
-            <div class="sub-header">Settings</div>
+            <div class="sub-header d-flex justify-content-between">Settings
+              <div class=" d-flex  justify-content-end align-items-end" style="font-size: 12px;">
+                <span class="me-2"><b>Instance Price :</b></span>
+                <span>
+                  {{ formatCurrency(selectedResource?.instanceHourRate, selectedResource?.currency) }} / hr<br>
+                  {{ formatCurrency((selectedResource?.instanceHourRate || 0) * 730, selectedResource?.currency) }} /mo
+                </span>
+              </div>
+            </div>
             <form cForm [formGroup]="generalSettingsForm" (ngSubmit)="onGeneralSubmit()">
               <div class="d-flex flex-wrap gap-2">
                 <div class="w-50 mb-3 mt-2">
@@ -100,16 +108,18 @@
                   </div>
                 </div>
                 <div class="flex-grow-1 mb-3" style="min-width: 0;">
-                  <label class="form-label w-100">
+
+                  <label class="form-label w-100 mb-0">
                     <div class="d-flex custom-label justify-content-between align-items-center text-nowrap">
                       <span>
                         Instance Type <span class="required text-danger">*</span>
                       </span>
+
                       <span class="text-gray ml-auto text-nowrap custom-label">
+
                         ( <span class="mx-1"><b>CPU:</b> {{selectedResource?.cpuVcpu}}</span>
                         <span class="mx-1"><b>Memory:</b> {{selectedResource?.memoryGb}}</span>
-                        <span class="mx-1"><b>Price:</b> {{selectedResource?.instanceHourRate | currency :
-                          selectedResource?.currency}}</span> )
+                        )
                       </span>
                     </div>
                   </label>
@@ -246,7 +256,9 @@
     <div class="custom-content">Deleting this application will permanently delete all its deployments and remove it from
       this environment. This cannot be undone.</div>
     <div class="mt-2">
-      <button class="btn button-format-solid custom-label" (click)="deleteDeployment()">
+      <button class="btn button-format-solid custom-label" (click)="deleteDeployment()"
+        [disabled]="!permissionService.canDeleteForCurrentUser(getCurrentProjectId(), getCurrentEnvId())"
+        [attr.title]="!permissionService.canDeleteForCurrentUser(getCurrentProjectId(), getCurrentEnvId()) ? 'You are not authorized to view that page.' : null">
         <i class="bi bi-trash"></i> Delete Application
       </button>
     </div>

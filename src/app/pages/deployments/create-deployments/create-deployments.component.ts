@@ -1,5 +1,6 @@
 import {
   AfterViewInit,
+  ChangeDetectorRef,
   Component,
   OnInit,
   ViewChild,
@@ -37,6 +38,7 @@ import { SHARED_IMPORTS } from '../../../shared/shared-imports';
 import { DEPLOY_OPTIONS, DEPLOYMENT_STEPS } from '../../../shared/constants/nimbuz.constant';
 import { VALIDATION_REGEX } from '../../../core/constants/validation-regex.constant';
 import { PermissionService } from '../../../shared/services/permission.service';
+import { SharedService } from '../../../shared/services/shared.service';
 @Component({
   selector: 'app-create-deployments',
   standalone: true,
@@ -114,8 +116,10 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
     private router: Router,
     private deploymentsService: DeploymentsService,
     private toaster: ToastrService,
-    private projectService: ProjectsService
-    , public permissionService: PermissionService
+    private projectService: ProjectsService,
+    public permissionService: PermissionService,
+    private sharedService: SharedService,
+    private cdr:ChangeDetectorRef
   ) {
     this.stepOneForm = this._fb.group({
       type: ['', Validators.required],
@@ -165,7 +169,9 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
         }
       });
     }
-
+    this.sharedService.currencyChange$.subscribe(() => {
+      this.cdr.detectChanges();
+    });
 
     this.stepOneForm
       .get('instanceType')
@@ -724,5 +730,19 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
     filePath?.updateValueAndValidity();
 
     fileReader.readAsDataURL(file);
+  }
+  formatCurrency(value: number | undefined, fromCurrency?: string): string {
+    if (value == null || isNaN(Number(value))) return '';
+    const target = this.sharedService.getCurrency() || 'USD';
+    const converted = this.sharedService.convertAmount(Number(value), fromCurrency, target);
+    try {
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: target,
+        minimumFractionDigits: 2,
+      }).format(converted);
+    } catch (e) {
+      return String(converted);
+    }
   }
 }

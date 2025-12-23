@@ -284,5 +284,28 @@ export class CreateToolComponent implements OnInit, OnDestroy {
       return nameExists ? { uniqueName: true } : null;
     };
   }
+
+  get hourlyInstanceRate(): number {
+    return Number(this.selectedResource?.instanceHourRate ?? 0);
+  }
+
+  get monthlyInstanceRate(): number {
+    return this.hourlyInstanceRate * 730;
+  }
+  formatCurrency(value: any | undefined, fromCurrency?: string): string {
+      if (value == null || isNaN(Number(value))) return '';
+      const target = this.sharedService.getCurrency() || 'USD';
+      const converted = this.sharedService.convertAmount(Number(value), fromCurrency, target);
+      try {
+        return new Intl.NumberFormat('en-US', {
+          style: 'currency',
+          currency: target,
+          minimumFractionDigits: 2,
+        }).format(converted);
+      } catch (e) {
+        return String(converted);
+      }
+    }
 }
+
 

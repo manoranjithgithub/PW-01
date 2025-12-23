@@ -34,10 +34,18 @@ export class ViewToolComponent implements OnInit, OnDestroy {
   viewdata: any;
   toolViewName: any;
   hide: { [key: string]: boolean } = {};
-  selectedResource: ResourceInfo = { cpuVcpu: '', memoryGb: '', instanceHourRate: 0 };
+  selectedResource: ResourceInfo = { cpuVcpu: '', memoryGb: '', instanceHourRate: 0, currency: '' };
   resources: any[] = [];
 
 
+  get hourlyInstanceRate(): number {
+    return Number(this.selectedResource?.instanceHourRate ?? 0);
+  }
+
+  get monthlyInstanceRate(): number {
+    return this.hourlyInstanceRate * 730;
+  }
+  
   constructor(private http: ToolsService, private ac: ActivatedRoute,
     private route: Router, private fb: FormBuilder,
     private sharedService: SharedService
@@ -101,7 +109,7 @@ export class ViewToolComponent implements OnInit, OnDestroy {
         depends_on: null,
         default_value: '',
         value: this.toolDetails.name,
-        ui:true
+        ui: true
       },
       ...schema
     };
@@ -140,7 +148,7 @@ export class ViewToolComponent implements OnInit, OnDestroy {
         depends_on: null,
         default_value: '',
         value: this.toolDetails.data.name,
-        ui:true
+        ui: true
       },
       ...schema
     };
@@ -149,5 +157,18 @@ export class ViewToolComponent implements OnInit, OnDestroy {
   toggleVisibility(key: string): void {
     this.hide[key] = !this.hide[key];
   }
-
+  formatCurrency(value: any | undefined, fromCurrency?: string): string {
+    if (value == null || isNaN(Number(value))) return '';
+    const target = this.sharedService.getCurrency() || 'USD';
+    const converted = this.sharedService.convertAmount(Number(value), fromCurrency, target);
+    try {
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: target,
+        minimumFractionDigits: 2
+      }).format(converted);
+    } catch (e) {
+      return String(converted);
+    }
+  }
 }

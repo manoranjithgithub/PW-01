@@ -3,6 +3,7 @@
   background-color: #f26a1b;
   border: none;
   color: #fff;
+  z-index: 999;
 
   &:hover {
     box-shadow: 0 0 1px 1px #f26a1b;
@@ -37,10 +38,13 @@ p {
   transform: rotate(286deg);
   z-index: 0;
 }
-.form-check{
-  position: relative;z-index: 999;
-  .form-check-input{
-  cursor: pointer;
+
+.form-check {
+  position: relative;
+  z-index: 999;
+
+  .form-check-input {
+    cursor: pointer;
   }
 }
 
@@ -76,12 +80,30 @@ p {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .loader-box p {
   font-size: 14px;
   color: #333;
   margin: 0;
+}
+
+@media only screen and (max-width: 500px) {
+  .section::before {
+    content: '';
+  }
+}
+
+/* Responsive helper: apply full viewport height only on md and larger screens */
+@media (min-width: 768px) {
+  .full-height-md {
+    height: 100vh;
+  }
 }
