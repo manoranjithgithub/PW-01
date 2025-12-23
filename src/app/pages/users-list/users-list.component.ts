@@ -314,6 +314,7 @@ export class UsersListComponent implements OnInit, OnDestroy {
         pItems.forEach((item, idx) => {
           display.push({
             ...item,
+            __permKey: (item.permissions || []).slice().sort().join(',') || '',
             showProjectCell: !firstProjectRowEmitted,
             projectRowSpan: !firstProjectRowEmitted ? projectTotal : 0,
             showPermissionCell: idx === 0,
@@ -326,6 +327,24 @@ export class UsersListComponent implements OnInit, OnDestroy {
       }
     }
 
+    for (let i = 0; i < display.length; ) {
+      const key = display[i].__permKey || '';
+      let j = i + 1;
+      while (j < display.length && display[j].__permKey === key) j++;
+      const runLength = j - i;
+      display[i].showPermissionCell = true;
+      display[i].permissionRowSpan = runLength;
+      display[i].showActionCell = true;
+      display[i].actionRowSpan = runLength;
+      for (let k = i + 1; k < j; k++) {
+        display[k].showPermissionCell = false;
+        display[k].permissionRowSpan = 0;
+        display[k].showActionCell = false;
+        display[k].actionRowSpan = 0;
+      }
+      i = j;
+    }
+    display.forEach(d => delete d.__permKey);
     return display;
   }
 
@@ -343,13 +362,55 @@ export class UsersListComponent implements OnInit, OnDestroy {
     return perms.join(', ');
   }
 
+  public isAdminPolicy(policy: any): boolean {
+    if (!policy) return false;
+    const permissions = policy.permissions;
+    if (!permissions) return false;
+    const perms = Array.isArray(permissions) ? permissions : String(permissions).split(',').map((p: string) => p.trim());
+    return perms.map((p: string) => p.toLowerCase()).includes('admin');
+  }
+
   private mapPolicies(policies: PolicyRaw[] = [], projects: Project[] = []): PolicyMapped[] {
     const combined: PolicyMapped[] = [];
 
-    policies.forEach((p) => {
-      const matchedProjects = p.V2 === '*'
-        ? projects
-        : projects.filter((proj) => proj.id === p.V2);
+    policies.forEach((p, pIndex) => {
+      if (p.V2 === '*') {
+        const wildcardKey = `wild_${pIndex}_${p.V0}`;
+        const matchedProjects = projects;
+
+        matchedProjects.forEach((project) => {
+          const matchedEnvs = p.V3 === '*'
+            ? project.environments
+            : project.environments.filter((env) => env.id === p.V3);
+
+          matchedEnvs.forEach((env) => {
+            const existing = combined.find((c) =>
+              c.userid === p.V0 && c.projectid === project.id && c.envid === env.id
+            );
+
+            if (existing) {
+              if (!existing.permissions.includes(p.V4)) {
+                existing.permissions.push(p.V4);
+              }
+            } else {
+              combined.push({
+                userid: p.V0,
+                accountid: p.V1,
+                projectid: project.id,
+                envid: env.id,
+                projectname: project.name,
+                envname: env.name,
+                permissions: [p.V4],
+                wildcardKey
+              } as any);
+            }
+          });
+        });
+
+        return;
+      }
+
+      const matchedProjects = projects.filter((proj) => proj.id === p.V2);
 
       matchedProjects.forEach((project) => {
         const matchedEnvs = p.V3 === '*'
@@ -401,11 +462,19 @@ export class UsersListComponent implements OnInit, OnDestroy {
     this.isAddPolicy = true;
     this.editingPolicy = policy;
 
-    this.editPolicyForm.setValue({
-      project: policy.projectid,
-      env: policy.envid,
-      action: policy.permissions[0]
-    });
+    if ((policy as any).wildcardKey) {
+      this.editPolicyForm.setValue({
+        project: '*',
+        env: '*',
+        action: policy.permissions[0]
+      });
+    } else {
+      this.editPolicyForm.setValue({
+        project: policy.projectid,
+        env: policy.envid,
+        action: policy.permissions[0]
+      });
+    }
 
   }
   enableAddPolicy() {
@@ -419,7 +488,6 @@ export class UsersListComponent implements OnInit, OnDestroy {
     this.editingPolicy = null;
   }
   createPolicy() {
-    // console.log(this.selectedUserPolicyInfo)
     this.isAddPolicy = false;
     if (this.editPolicyForm.invalid) {
       return;
