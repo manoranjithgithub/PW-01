@@ -89,8 +89,11 @@
           <div class="border-bottom mb-4">&nbsp;</div>
           <div class="container">
             <div class=" d-flex  justify-content-end align-items-end" style="font-size: 12px;">
-              {{ formatCurrency(selectedResource?.instanceHourRate, selectedResource?.currency) }} / hr<br>
-              {{ formatCurrency((selectedResource?.instanceHourRate || 0) * 730, selectedResource?.currency) }} /mo
+              <span class="me-2"><b>Instance Price :</b></span> 
+              <span>
+                {{ formatCurrency(selectedResource?.instanceHourRate, selectedResource?.currency) }} / hr<br>
+                {{ formatCurrency((selectedResource?.instanceHourRate || 0) * 730, selectedResource?.currency) }} /mo
+              </span>
             </div>
             <div class="row g-3">
               <div class="col-md-4">

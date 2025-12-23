@@ -55,4 +55,5 @@ export interface ResourceInfo {
   memoryGb: string | number;
   instanceHourRate: string | number;
   currency?: string;
+  monthlyInstanceRate?: string | number;
 }
