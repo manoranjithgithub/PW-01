@@ -553,7 +553,7 @@ export class UsersListComponent implements OnInit, OnDestroy {
     this.editingPolicy = null;
   }
   createPolicy() {
-    console.log(this.selectedUserPolicyInfo)
+    // console.log(this.selectedUserPolicyInfo)
     this.isAddPolicy = false;
     if (this.editPolicyForm.invalid) {
       return;
@@ -626,14 +626,15 @@ export class UsersListComponent implements OnInit, OnDestroy {
           ptype: "p",
           v0: policy.userid,
           v1: policy.accountid,
-          v2: policy.projectid,
-          v3: policy.envid,
+          v2: policy.projectid === '*' || (policy as any).projectWildcardKey ? '*' : policy.projectid,
+          v3: policy.envid === '*' || (policy as any).projectWildcardKey || (policy as any).envWildcardKey ? '*' : policy.envid,
           v4: policy.permissions[0]
         }];
         this.http.deletePolicy(res).pipe(takeUntil(this.destroy$)).subscribe((deleteRes: any) => {
           if (deleteRes.status?.toLowerCase() === 'success') {
             this.editIndex = null;
             this.refreshPolicies();
+            this.editPolicyModal.close();
           } else {
             this.toastr.error(deleteRes?.message || 'Failed to delete policy');
           }
