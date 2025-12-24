@@ -272,7 +272,7 @@ pre {
 }
 
 .log-container {
-  max-height: 500px;
+  // max-height: 500px;
   overflow: hidden;
   font-family: "Courier New", Courier, monospace;
 
@@ -286,7 +286,7 @@ pre {
 }
 
 .log-body {
-  max-height: 70%;
+  max-height: 400px;
   overflow-y: auto;
 }
 
@@ -575,4 +575,10 @@ li.disabled {
 .log-table th:first-child,
 .log-table td:first-child {
   width: 35%
+}
+
+.disabled{
+  pointer-events: none;
+  opacity: 0.6;
+  cursor: not-allowed;
 }

@@ -64,7 +64,9 @@
                     <button type="reset" class="btn button-format-outline me-2" (click)="resetForm()">
                         Cancel
                     </button>
-                    <button type="submit" class="btn button-format-solid" [disabled]="addUserForm.invalid || !permissionService.canWriteGlobal()" [attr.title]="(addUserForm.invalid || !permissionService.canWriteGlobal()) ? 'You are not authorized to view that page.' : null">
+                    <button type="submit" class="btn button-format-solid"
+                        [disabled]="addUserForm.invalid || !permissionService.canWriteGlobal()"
+                        [attr.title]="(addUserForm.invalid || !permissionService.canWriteGlobal()) ? 'You are not authorized to view that page.' : null">
                         Add User
                     </button>
                 </div>
@@ -80,19 +82,6 @@
 
 <!-- Policy modal -->
 <app-modal #policyModal [modalConfig]="policyModalConfig">
-    <!-- <div class="mx-4 " *ngIf="selectedUserDetails">
-        <h6 class="font-bold"><b>Basic Info</b> </h6>
-        <div class="p-4 border shadow-sm">
-            <div class="font-14"><label class="font-bold">Name : </label> <span
-                    class="mx-2 text-capitalize">{{selectedUserDetails.name}}</span></div>
-            <div class="font-14"><label class="font-bold">Email : </label> <span
-                    class="mx-2">{{selectedUserDetails.email}}</span>
-            </div>
-            <div class="font-14"><label class="font-bold">Status : </label> <span
-                    class="mx-2 text-capitalize">{{selectedUserDetails.isVerfied ? 'Verified' : 'Unverified'}}</span>
-            </div>
-        </div>
-    </div> -->
     <div class="policies m-4" *ngIf="selectedUserPolicyInfo">
         <h6 class="font-bold mt-4"><b>Access Details</b> </h6>
         <table class="policy-table">
@@ -106,50 +95,11 @@
                 <td>{{i + 1}}</td>
                 <td *ngIf="policy.showProjectCell" [attr.rowspan]="policy.projectRowSpan">{{policy.projectname}}</td>
                 <td>{{policy.envname}}</td>
-                <td *ngIf="policy.showPermissionCell" [attr.rowspan]="policy.permissionRowSpan">{{policy.permissions}}</td>
+                <td *ngIf="policy.showPermissionCell" [attr.rowspan]="policy.permissionRowSpan">{{ formatPermissionDisplay(policy.permissions)}}
+                </td>
             </tr>
         </table>
-        <!-- <div class="policy-detials mt-4">
-            <div class="d-flex mt-2 justify-content-between">
-                <h6 class="font-bold"><b>Policy Info</b> </h6>
-                <div class="actions align-items-end">
-                    <button (click)="toggleAll()">
-                        <i class="bi" [ngClass]="allExpanded ? 'bi-dash' : 'bi-plus'"></i>{{ allExpanded ? 'Collapse
-                        All' :
-                        'Expand
-                        All' }}
-                    </button>
-                </div>
-            </div>
-            <ul class="tree shadow-sm border p-4">
-                <li *ngFor="let project of selectedUserPolicytoggle" class="tree-item">
-                    <span class="caret" (click)="toggle(project)">
-                        <span class="toggle-icon square">
-                            <i class="bi" [ngClass]="project.expanded ? 'bi-dash' : 'bi-plus'"></i>
-                        </span>
-                        <span> <b> Project : </b> {{project.name}}</span>
-                    </span>
-                    <ul *ngIf="project.expanded">
-                        <li *ngFor="let env of project.environments" class="tree-item">
-                            <span class="caret" (click)="toggle(env)">
-                                <span class="toggle-icon square">
-                                    <i class="bi" [ngClass]="env.expanded ? 'bi-dash' : 'bi-plus'"></i>
-                                </span>
-                                <span><b>Environment : </b> {{env.name}}</span>
-                            </span>
-                            <ul *ngIf="env.expanded">
-                                <li *ngFor="let perm of env.permissions" class="permission">
-                                    {{ perm.name }}
-                                </li>
-                            </ul>
-                        </li>
-                        <li *ngFor="let perm of project.permissions" class="permission">
-                            {{ perm.name }}
-                        </li>
-                    </ul>
-                </li>
-            </ul>
-        </div> -->
+
     </div>
 </app-modal>
 
@@ -184,11 +134,12 @@
                     </select>
                 </div>
             </div>
-                <div class="text-right mt-4">
+            <div class="text-right mt-4">
                 <button type="reset" class="btn button-format-outline me-2" (click)="resetEditForm()">
                     Cancel
                 </button>
-                <button type="submit" class="btn button-format-solid" [disabled]="editPolicyForm.invalid" [attr.title]="editPolicyForm.invalid ? 'You are not authorized to view that page.' : null"
+                <button type="submit" class="btn button-format-solid" [disabled]="editPolicyForm.invalid"
+                    [attr.title]="editPolicyForm.invalid ? 'You are not authorized to view that page.' : null"
                     (click)="createPolicy()">
                     {{ editingPolicy ? 'Update Policy' : 'Add Policy' }}
                 </button>
@@ -200,7 +151,7 @@
             <h6 class="font-bold mb-0"><b>Access Details</b>
                 <!-- <small class="text-muted">Permissions by Project and Environment</small>  -->
             </h6>
-                <div class="actions align-items-end">
+            <div class="actions align-items-end">
                 <button (click)="enableAddPolicy()" class="btn button-format-solid"
                     [disabled]="!permissionService.canAdminGlobal()">
                     <i class="bi bi-plus"></i>Add new Permission
@@ -220,19 +171,19 @@
                 <td>{{i + 1}}</td>
                 <td *ngIf="policy.showProjectCell" [attr.rowspan]="policy.projectRowSpan">{{policy.projectname}}</td>
                 <td>{{policy.envname}}</td>
-                <td *ngIf="policy.showPermissionCell" [attr.rowspan]="policy.permissionRowSpan">{{ formatPermissionDisplay(policy.permissions) }}</td>
+                <td *ngIf="policy.showPermissionCell" [attr.rowspan]="policy.permissionRowSpan">{{
+                    formatPermissionDisplay(policy.permissions) }}</td>
                 <td *ngIf="policy.showActionCell" [attr.rowspan]="policy.actionRowSpan">
-                    <button class="flat-btn edit"
-                        (click)="permissionService.canAdminGlobal() && editPolicy(i, policy)"
-                        [class.disabled]="!permissionService.canAdminGlobal()"
-                        [attr.aria-disabled]="!permissionService.canAdminGlobal()">
+                    <button class="flat-btn edit" (click)="permissionService.canAdminGlobal() && !isAdminPolicy(policy) && editPolicy(i, policy)"
+                        [class.disabled]="!permissionService.canAdminGlobal() || isAdminPolicy(policy)"
+                        [disabled]="!permissionService.canAdminGlobal() || isAdminPolicy(policy)">
                         <i class="bi bi-pencil-square"></i>
                         Edit
                     </button>
                     <button class="flat-btn delete"
-                        (click)="permissionService.canAdminGlobal() && deletePolicy(i, policy)"
-                        [class.disabled]="!permissionService.canAdminGlobal()"
-                        [attr.aria-disabled]="!permissionService.canAdminGlobal()">
+                        (click)="permissionService.canAdminGlobal() && !isAdminPolicy(policy) && deletePolicy(i, policy)"
+                        [class.disabled]="!permissionService.canAdminGlobal() || isAdminPolicy(policy)"
+                        [disabled]="!permissionService.canAdminGlobal() || isAdminPolicy(policy)">
                         <i class="bi bi-trash"></i>
                         Delete
                     </button>

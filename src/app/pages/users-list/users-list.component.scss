@@ -239,3 +239,8 @@
     padding: 7px 10px;
     border-radius: 5px;
 }
+.disabled{
+    pointer-events: none;
+    opacity: 0.6;
+    cursor: not-allowed;
+}

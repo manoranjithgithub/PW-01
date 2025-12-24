@@ -271,6 +271,17 @@ export class UsersListComponent implements OnInit, OnDestroy {
     this.selectedUserDetails = params;
     this.selectedUserPolicyInfo = this.policyList.filter((x: PolicyMapped) => x.userid === params?.id);
     this.selectedUserPolicyDisplay = this.computeMergedPolicies(this.selectedUserPolicyInfo);
+    if (this.selectedUserPolicyInfo.length === 0) {
+      this.selectedUserPolicyInfo.push({
+        userid: params?.id,
+        accountid: localStorage.getItem('accountId') || '',
+        projectid: '',
+        envid: '',
+        projectname: '',
+        envname: '',
+        permissions: []
+      })
+    }
 
     const isVerified = params?.isVerfied === 'true' || params?.isVerfied === true;
     const iconClass = isVerified ? 'bi-patch-check-fill' : '';
@@ -314,6 +325,7 @@ export class UsersListComponent implements OnInit, OnDestroy {
         pItems.forEach((item, idx) => {
           display.push({
             ...item,
+            __permKey: (item.permissions || []).slice().sort().join(',') || '',
             showProjectCell: !firstProjectRowEmitted,
             projectRowSpan: !firstProjectRowEmitted ? projectTotal : 0,
             showPermissionCell: idx === 0,
@@ -326,6 +338,24 @@ export class UsersListComponent implements OnInit, OnDestroy {
       }
     }
 
+    for (let i = 0; i < display.length;) {
+      const key = display[i].__permKey || '';
+      let j = i + 1;
+      while (j < display.length && display[j].__permKey === key) j++;
+      const runLength = j - i;
+      display[i].showPermissionCell = true;
+      display[i].permissionRowSpan = runLength;
+      display[i].showActionCell = true;
+      display[i].actionRowSpan = runLength;
+      for (let k = i + 1; k < j; k++) {
+        display[k].showPermissionCell = false;
+        display[k].permissionRowSpan = 0;
+        display[k].showActionCell = false;
+        display[k].actionRowSpan = 0;
+      }
+      i = j;
+    }
+    display.forEach(d => delete d.__permKey);
     return display;
   }
 
@@ -343,16 +373,60 @@ export class UsersListComponent implements OnInit, OnDestroy {
     return perms.join(', ');
   }
 
+  public isAdminPolicy(policy: any): boolean {
+    if (!policy) return false;
+    const permissions = policy.permissions;
+    if (!permissions) return false;
+    const perms = Array.isArray(permissions) ? permissions : String(permissions).split(',').map((p: string) => p.trim());
+    return perms.map((p: string) => p.toLowerCase()).includes('admin');
+  }
+
   private mapPolicies(policies: PolicyRaw[] = [], projects: Project[] = []): PolicyMapped[] {
     const combined: PolicyMapped[] = [];
 
-    policies.forEach((p) => {
-      const matchedProjects = p.V2 === '*'
-        ? projects
-        : projects.filter((proj) => proj.id === p.V2);
+    policies.forEach((p, pIndex) => {
+      if (p.V2 === '*') {
+        const projectWildcardKey = `proj_wild_${pIndex}_${p.V0}`;
+        const matchedProjects = projects;
+
+        matchedProjects.forEach((project) => {
+          const matchedEnvs = p.V3 === '*'
+            ? project.environments
+            : project.environments.filter((env) => env.id === p.V3);
+
+          matchedEnvs.forEach((env) => {
+            const existing = combined.find((c) =>
+              c.userid === p.V0 && c.projectid === project.id && c.envid === env.id
+            );
+
+            if (existing) {
+              if (!existing.permissions.includes(p.V4)) {
+                existing.permissions.push(p.V4);
+              }
+            } else {
+              combined.push({
+                userid: p.V0,
+                accountid: p.V1,
+                projectid: project.id,
+                envid: env.id,
+                projectname: project.name,
+                envname: env.name,
+                permissions: [p.V4],
+                projectWildcardKey
+              } as any);
+            }
+          });
+        });
+
+        return;
+      }
+
+      const matchedProjects = projects.filter((proj) => proj.id === p.V2);
 
       matchedProjects.forEach((project) => {
-        const matchedEnvs = p.V3 === '*'
+        const isEnvWildcard = p.V3 === '*';
+        const envWildcardKey = isEnvWildcard ? `env_wild_${pIndex}_${p.V0}_${project.id}` : undefined;
+        const matchedEnvs = isEnvWildcard
           ? project.environments
           : project.environments.filter((env) => env.id === p.V3);
 
@@ -365,8 +439,12 @@ export class UsersListComponent implements OnInit, OnDestroy {
             if (!existing.permissions.includes(p.V4)) {
               existing.permissions.push(p.V4);
             }
+            // if this policy originated from an env wildcard, ensure existing entry records that
+            if (envWildcardKey && !(existing as any).envWildcardKey) {
+              (existing as any).envWildcardKey = envWildcardKey;
+            }
           } else {
-            combined.push({
+            const entry: any = {
               userid: p.V0,
               accountid: p.V1,
               projectid: project.id,
@@ -374,7 +452,9 @@ export class UsersListComponent implements OnInit, OnDestroy {
               projectname: project.name,
               envname: env.name,
               permissions: [p.V4]
-            });
+            };
+            if (envWildcardKey) entry.envWildcardKey = envWildcardKey;
+            combined.push(entry);
           }
         });
       });
@@ -399,13 +479,67 @@ export class UsersListComponent implements OnInit, OnDestroy {
   editPolicy(index: number, policy: any) {
     this.editIndex = index;
     this.isAddPolicy = true;
-    this.editingPolicy = policy;
+    let targetPolicy = policy as PolicyMapped;
+    if (policy && policy.envid !== '*') {
+      const foundWildcard = (this.selectedUserPolicyInfo || []).find((p: any) => {
+        if (p.projectWildcardKey && p.userid === policy.userid) return true;
+        if (p.envWildcardKey && p.projectid === policy.projectid && p.userid === policy.userid) return true;
+        return false;
+      });
+      if (foundWildcard) targetPolicy = foundWildcard as PolicyMapped;
+    }
 
-    this.editPolicyForm.setValue({
-      project: policy.projectid,
-      env: policy.envid,
-      action: policy.permissions[0]
-    });
+    this.editingPolicy = targetPolicy;
+
+    const projectControl = this.editPolicyForm.get('project');
+    const envControl = this.editPolicyForm.get('env');
+    const actionControl = this.editPolicyForm.get('action');
+    const allOption = [{ name: 'all', id: '*' } as Environment];
+
+    const setFormValues = (proj: string, env: string, action: string) => {
+      if (projectControl) projectControl.setValue(proj, { emitEvent: false });
+      if (envControl) envControl.setValue(env, { emitEvent: false });
+      if (actionControl) actionControl.setValue(action, { emitEvent: false });
+    };
+
+    if ((targetPolicy as any).projectWildcardKey || targetPolicy.projectid === '*') {
+      this.editEnvListSubject.next(allOption);
+      setFormValues('*', '*', targetPolicy.permissions[0]);
+      return;
+    }
+    if ((targetPolicy as any).envWildcardKey || targetPolicy.envid === '*') {
+      const proj = (this.projectList || []).find((p: any) => p.id === targetPolicy.projectid || p.name === targetPolicy.projectid);
+      if (proj) {
+        this.editEnvListSubject.next(allOption.concat(proj.environments || []));
+        setFormValues(targetPolicy.projectid, '*', targetPolicy.permissions[0]);
+      } else {
+        this.http.getEnvironmentsByProject(targetPolicy.projectid).pipe(takeUntil(this.destroy$)).subscribe((res: any) => {
+          const envs = res?.status?.toLowerCase() === 'success' ? res.data : [];
+          this.editEnvListSubject.next(allOption.concat(envs));
+          setFormValues(targetPolicy.projectid, '*', targetPolicy.permissions[0]);
+        }, (err) => {
+          console.error('Failed to load environments for project', err);
+          setFormValues(targetPolicy.projectid, '*', targetPolicy.permissions[0]);
+        });
+      }
+      return;
+    }
+
+    // Default: specific project + env
+    const proj = (this.projectList || []).find((p: any) => p.id === targetPolicy.projectid || p.name === targetPolicy.projectid);
+    if (proj) {
+      this.editEnvListSubject.next([{ name: 'all', id: '*' } as Environment].concat(proj.environments || []));
+      setFormValues(targetPolicy.projectid, targetPolicy.envid, targetPolicy.permissions[0]);
+    } else {
+      this.http.getEnvironmentsByProject(targetPolicy.projectid).pipe(takeUntil(this.destroy$)).subscribe((res: any) => {
+        const envs = res?.status?.toLowerCase() === 'success' ? res.data : [];
+        this.editEnvListSubject.next([{ name: 'all', id: '*' } as Environment].concat(envs));
+        setFormValues(targetPolicy.projectid, targetPolicy.envid, targetPolicy.permissions[0]);
+      }, (err) => {
+        console.error('Failed to load environments for project', err);
+        setFormValues(targetPolicy.projectid, targetPolicy.envid, targetPolicy.permissions[0]);
+      });
+    }
 
   }
   enableAddPolicy() {
@@ -431,8 +565,8 @@ export class UsersListComponent implements OnInit, OnDestroy {
           ptype: 'p',
           v0: this.editingPolicy.userid,
           v1: this.editingPolicy.accountid,
-          v2: this.editingPolicy.projectid,
-          v3: this.editingPolicy.envid,
+          v2: this.editingPolicy.projectid === '*' || (this.editingPolicy as any).projectWildcardKey ? '*' : this.editingPolicy.projectid,
+          v3: (this.editingPolicy.envid === '*' || (this.editingPolicy as any).projectWildcardKey || (this.editingPolicy as any).envWildcardKey) ? '*' : this.editingPolicy.envid,
           v4: this.editingPolicy.permissions[0]
         },
         newPolicy: {
@@ -492,14 +626,15 @@ export class UsersListComponent implements OnInit, OnDestroy {
           ptype: "p",
           v0: policy.userid,
           v1: policy.accountid,
-          v2: policy.projectid,
-          v3: policy.envid,
+          v2: policy.projectid === '*' || (policy as any).projectWildcardKey ? '*' : policy.projectid,
+          v3: policy.envid === '*' || (policy as any).projectWildcardKey || (policy as any).envWildcardKey ? '*' : policy.envid,
           v4: policy.permissions[0]
         }];
         this.http.deletePolicy(res).pipe(takeUntil(this.destroy$)).subscribe((deleteRes: any) => {
           if (deleteRes.status?.toLowerCase() === 'success') {
             this.editIndex = null;
             this.refreshPolicies();
+            this.editPolicyModal.close();
           } else {
             this.toastr.error(deleteRes?.message || 'Failed to delete policy');
           }
