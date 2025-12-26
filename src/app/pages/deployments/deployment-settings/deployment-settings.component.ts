@@ -97,6 +97,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
   ingressDomain: string = '';
   @Input() currentStatus: string = '';
   freezeAddNewData: boolean = false;
+  public formDisabled: boolean = false;
   endpointStatus: string = '';
   s3FileKey: string = '';
 
@@ -169,6 +170,16 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
       fileName: [{ value: '', disabled: true }],
       // dockerfilePath: ['', Validators.maxLength(250)],
     });
+    // compute form disabled state based on freeze flag and permissions
+    const shouldDisable = this.freezeAddNewData || !(this.permissionService.canWriteGlobal() || this.permissionService.canAdminGlobal() || this.permissionService.canDeleteForCurrentUser(null, null));
+    this.formDisabled = shouldDisable;
+    if (shouldDisable) {
+      this.generalSettingsForm?.disable?.();
+      this.sourceSettingsForm?.disable?.();
+    } else {
+      this.generalSettingsForm?.enable?.();
+      this.sourceSettingsForm?.enable?.();
+    }
     this.ac.queryParams.subscribe(params => {
       const depolyementId = params['id'];
       this.deploymentService.getDeploymentById(depolyementId).subscribe((res: any) => {

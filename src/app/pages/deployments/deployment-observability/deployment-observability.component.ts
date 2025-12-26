@@ -113,6 +113,38 @@ export class DeploymentObservabilityComponent implements OnInit {
     return map[tz] || '+05:30';
   }
 
+  private convertTimestampToTZ(timestamp: string, tzLabel: string): string {
+    if (!timestamp) return '';
+    let date: Date;
+    const numeric = /^\d+$/.test(timestamp);
+    if (numeric) {
+      if (timestamp.length <= 10) {
+        date = new Date(parseInt(timestamp, 10) * 1000);
+      } else {
+        date = new Date(parseInt(timestamp, 10));
+      }
+    } else {
+      date = new Date(timestamp);
+      if (isNaN(date.getTime())) {
+        const iso = timestamp.replace(' ', 'T') + 'Z';
+        date = new Date(iso);
+      }
+    }
+    if (isNaN(date.getTime())) return timestamp;
+
+    const offsetStr = this.getTimezoneOffset(tzLabel || 'IST');
+    const sign = offsetStr.startsWith('-') ? -1 : 1;
+    const parts = offsetStr.replace(/^[+-]/, '').split(':');
+    const offsetMinutes = sign * (parseInt(parts[0], 10) * 60 + (parseInt(parts[1] || '0', 10)));
+
+    const targetMs = date.getTime() + offsetMinutes * 60_000;
+    const d = new Date(targetMs);
+
+    const pad = (n: number) => n < 10 ? '0' + n : n;
+    const formatted = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())} ${tzLabel}`;
+    return formatted;
+  }
+
   // ngAfterViewChecked() {
   //   this.scrollToBottom();
   // }
@@ -151,9 +183,11 @@ export class DeploymentObservabilityComponent implements OnInit {
             console.warn('No logs available for this deployment.');
             return;
           }
+          const tzLabel = this.filterForm?.value?.timeZone || 'IST';
           this.parsedLogs = this.deploymentLogs.logs.map((log: string) => {
             const [timestamp, ...messageParts] = log.split(' ');
-            return { timestamp, message: messageParts.join(' ') };
+            const converted = this.convertTimestampToTZ(timestamp, tzLabel);
+            return { timestamp: converted, message: messageParts.join(' ') };
           });
           this.filteredLogs = [...this.parsedLogs];
           this.totalItems = this.deploymentLogs.totalPages;
@@ -216,9 +250,11 @@ export class DeploymentObservabilityComponent implements OnInit {
             this.parsedLogs = [];
             return;
           }
+          const tzLabel = this.filterForm?.value?.timeZone || 'IST';
           this.parsedLogs = this.deploymentLogs.logs.map((log: string) => {
             const [timestamp, ...messageParts] = log.split(' ');
-            return { timestamp, message: messageParts.join(' ') };
+            const converted = this.convertTimestampToTZ(timestamp, tzLabel);
+            return { timestamp: converted, message: messageParts.join(' ') };
           });
           this.filteredLogs = [...this.parsedLogs];
           this.totalItems = this.deploymentLogs.totalPages;

@@ -4,6 +4,7 @@ import { DeploymentsService } from '../deployment.service';
 import { ActivatedRoute } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { SHARED_IMPORTS } from '../../../shared/shared-imports';
+import { PermissionService } from '../../../shared/services/permission.service';
 
 @Component({
   selector: 'app-deployment-config-maps',
@@ -23,7 +24,8 @@ export class DeploymentConfigMapsComponent implements OnInit {
   parsedConfigData: any;
 
   constructor(private fb: FormBuilder,
-    private deploymentsService: DeploymentsService, private ac: ActivatedRoute, private toaster: ToastrService
+    private deploymentsService: DeploymentsService, private ac: ActivatedRoute, private toaster: ToastrService,
+    public permissionService: PermissionService
   ) { }
 
   ngOnInit(): void {
@@ -33,6 +35,13 @@ export class DeploymentConfigMapsComponent implements OnInit {
       filePath: [''],
       fileName: ['']
     });
+
+    const shouldDisableForm = this.freezeAddNewData || !(this.permissionService.canWriteGlobal() || this.permissionService.canAdminGlobal() || this.permissionService.canDeleteForCurrentUser(null, null));
+    if (shouldDisableForm) {
+      this.fileUploadForm.disable();
+    } else {
+      this.fileUploadForm.enable();
+    }
 
     this.ac.queryParams.subscribe(params => {
       const depolyementId = params['id'];
