@@ -100,6 +100,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
   endpointStatus: string = '';
   s3FileKey: string = '';
   envId: string = '';
+  public formDisabled: boolean = false;
   constructor(private fb: FormBuilder, private sharedService: SharedService, private deploymentService: LLMDeploymentsService,
     private toaster: ToastrService, private modalService: NgbModal, private route: Router, private ac: ActivatedRoute,
     private viewportScroller: ViewportScroller,
@@ -139,6 +140,14 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
       ephemeralStorageSize: [10, [Validators.required]],
       environmentId: [''],
     })
+    // compute form disabled state based on freeze flag and permissions
+    const shouldDisable = this.freezeAddNewData || !(this.permissionService.canWriteGlobal() || this.permissionService.canAdminGlobal() || this.permissionService.canDeleteForCurrentUser(null, null));
+    this.formDisabled = shouldDisable;
+    if (shouldDisable) {
+      this.generalSettingsForm?.disable?.();
+    } else {
+      this.generalSettingsForm?.enable?.();
+    }
     this.ac.queryParams.subscribe(params => {
       const deploymentId = params['id'];
       this.deploymentService.getDeploymentById(deploymentId, this.envId).subscribe((res: any) => {

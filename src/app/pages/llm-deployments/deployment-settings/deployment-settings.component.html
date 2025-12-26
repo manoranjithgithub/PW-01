@@ -1,4 +1,4 @@
-<fieldset [disabled]="freezeAddNewData" class="card-child">
+<fieldset [disabled]="formDisabled" class="card-child">
   <div class="mt-4">
     <form cForm [formGroup]="generalSettingsForm" (ngSubmit)="onGeneralSubmit()">
       <div class="d-flex flex-wrap gap-2">

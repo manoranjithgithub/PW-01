@@ -7,6 +7,7 @@ import { ConfirmationModalComponent } from '../../../shared/components/modal/con
 import { ActivatedRoute } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { SHARED_IMPORTS } from '../../../shared/shared-imports';
+import { PermissionService } from '../../../shared/services/permission.service';
 @Component({
   selector: 'app-deployment-networking',
   standalone: true,
@@ -22,6 +23,8 @@ export class DeploymentNetworkingComponent implements OnInit {
   @Output() closeModalEvent = new EventEmitter<void>();
   @Input() currentStatus: string = '';
   networkSettingsForm !: FormGroup;
+  public formDisabled: boolean = false;
+  freezeAddNewData: boolean = false;
   isGenerateDomain: boolean = false;
   showAuthenticationData: any;
   endpointStatus: string = '';
@@ -45,7 +48,8 @@ export class DeploymentNetworkingComponent implements OnInit {
   };
 
   constructor(private fb: FormBuilder, private deploymentService: DeploymentsService,
-    private toaster: ToastrService, private modalService: NgbModal, private ac: ActivatedRoute
+    private toaster: ToastrService, private modalService: NgbModal, private ac: ActivatedRoute,
+    public permissionService: PermissionService
   ) { }
 
   ngOnInit(): void {
@@ -61,6 +65,18 @@ export class DeploymentNetworkingComponent implements OnInit {
       customDns: [false],
       customDnsHost: ['']
     });
+
+    // freeze flag from input status
+    this.freezeAddNewData = this.currentStatus && this.currentStatus === 'Building' ? true : false;
+
+    // compute and apply form disabled state based on freeze flag and permissions
+    const shouldDisable = this.freezeAddNewData || !(this.permissionService.canWriteGlobal() || this.permissionService.canAdminGlobal() || this.permissionService.canDeleteForCurrentUser(null, null));
+    this.formDisabled = shouldDisable;
+    if (shouldDisable) {
+      this.networkSettingsForm.disable();
+    } else {
+      this.networkSettingsForm.enable();
+    }
 
     this.ac.queryParams.subscribe(params => {
       const depolyementId = params['id'];
