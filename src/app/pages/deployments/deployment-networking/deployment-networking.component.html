@@ -12,7 +12,7 @@
           <div class="custom-content">Access to this service publicly through HTTP/TCP.</div>
 
           <div class="my-4" *ngIf="!isGenerateDomain && !ingressDomain">
-            <button class="btn button-format-outline custom-label mt-2" (click)="onNetworkingSubmit()">
+            <button class="btn button-format-outline custom-label mt-2" (click)="onNetworkingSubmit()" [disabled]="formDisabled">
               <i class="bi bi-lightning-charge mx-1"></i> Generate domain
             </button>
 
@@ -26,13 +26,14 @@
                 (click)="copyDomain('https://' + ingressDomain)">
                 <i class="bi bi-clipboard"></i>
               </button>
-              <button class="btn" title="Delete endpoint" (click)="deleteEndpoint()"> <i
+              <button class="btn" title="Delete endpoint" (click)="deleteEndpoint()" [disabled]="formDisabled"> <i
                   class="bi bi-x-circle-fill"></i></button>
             </div>
             <div class="text-secondary small" *ngIf="endpointStatus">This domain is {{endpointStatus}}.</div>
           </div>
 
-          <form cForm [formGroup]="networkSettingsForm">
+          <fieldset [disabled]="formDisabled">
+            <form cForm [formGroup]="networkSettingsForm">
             <div class="d-flex gap-4 mb-4">
               <div class="w-100">
                 <div class="d-flex align-items-center toggle-bar my-2">
@@ -144,7 +145,8 @@
                 Cancel
               </button>
             </div>
-          </form>
+            </form>
+          </fieldset>
         </div>
         <div class="my-4">
           <div class="custom-heading">Private Networking</div>

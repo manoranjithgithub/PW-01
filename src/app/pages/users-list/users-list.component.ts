@@ -245,7 +245,7 @@ export class UsersListComponent implements OnInit, OnDestroy {
 
   onSubmitAddUser() {
     if (this.addUserForm.valid) {
-      const formValue = this.addUserForm.value;
+      const formValue = this.addUserForm.getRawValue();
       this.http.inviteNewUser(formValue).pipe(takeUntil(this.destroy$)).subscribe((res: any) => {
         if (res.status.toLowerCase() === 'success') {
           this.http.getAllUSers().subscribe((usersRes: any) => {
@@ -478,6 +478,8 @@ export class UsersListComponent implements OnInit, OnDestroy {
   }
   editPolicy(index: number, policy: any) {
     this.editIndex = index;
+    this.editPolicyForm.get('project')?.disable();
+    this.editPolicyForm.get('env')?.disable();
     this.isAddPolicy = true;
     let targetPolicy = policy as PolicyMapped;
     if (policy && policy.envid !== '*') {
@@ -543,6 +545,8 @@ export class UsersListComponent implements OnInit, OnDestroy {
 
   }
   enableAddPolicy() {
+    this.editPolicyForm.get('project')?.enable();
+    this.editPolicyForm.get('env')?.enable();
     this.editPolicyForm.reset();
     this.isAddPolicy = true;
     this.editingPolicy = null;
@@ -558,7 +562,7 @@ export class UsersListComponent implements OnInit, OnDestroy {
     if (this.editPolicyForm.invalid) {
       return;
     }
-    const formValue = this.editPolicyForm.value;
+    const formValue = this.editPolicyForm.getRawValue();
     if (this.editingPolicy) {
       const res = {
         oldPolicy: {

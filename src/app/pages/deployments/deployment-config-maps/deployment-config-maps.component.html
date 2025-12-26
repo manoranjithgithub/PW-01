@@ -15,8 +15,8 @@
           </ng-template>
           <ng-template cTemplateId="accordionBodyTemplate">
             <div class="accordion-body">
-              <fieldset [disabled]="freezeAddNewData">
-                <form [formGroup]="fileUploadForm">
+              <fieldset [disabled]="fileUploadForm.disabled">
+                <form [formGroup]="fileUploadForm" >
                   <div class=" d-flex justify-content-between gap-2">
                     <div class="my-2 w-100">
                       <label class="custom-label my-1"><b>File Path</b></label>

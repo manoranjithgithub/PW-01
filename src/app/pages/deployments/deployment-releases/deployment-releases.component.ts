@@ -232,8 +232,8 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
     ];
 
     if (!isPaused) {
-      const buildTime = new Date(this.active.buildStartedAt).toLocaleString();
-      const initiatedTime = new Date(this.active.createdAt).toLocaleString();
+      const buildTime = this.active.buildStartedAt;
+      const initiatedTime = this.active.createdAt;
 
       this.steps.push({
         title: isPending
