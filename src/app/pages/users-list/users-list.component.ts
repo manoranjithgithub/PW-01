@@ -245,7 +245,7 @@ export class UsersListComponent implements OnInit, OnDestroy {
 
   onSubmitAddUser() {
     if (this.addUserForm.valid) {
-      const formValue = this.addUserForm.value;
+      const formValue = this.addUserForm.getRawValue();
       this.http.inviteNewUser(formValue).pipe(takeUntil(this.destroy$)).subscribe((res: any) => {
         if (res.status.toLowerCase() === 'success') {
           this.http.getAllUSers().subscribe((usersRes: any) => {
@@ -562,7 +562,7 @@ export class UsersListComponent implements OnInit, OnDestroy {
     if (this.editPolicyForm.invalid) {
       return;
     }
-    const formValue = this.editPolicyForm.value;
+    const formValue = this.editPolicyForm.getRawValue();
     if (this.editingPolicy) {
       const res = {
         oldPolicy: {
