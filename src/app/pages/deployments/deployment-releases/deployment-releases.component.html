@@ -30,7 +30,7 @@
                       <div class="title">
                         <span>{{ step.title }}</span>
                       </div>
-                      <div class="time">{{ step.time}}</div>
+                      <div class="time">{{ step.time | date: 'short'}}</div>
                       <div *ngIf="step.status" class="title" [innerHTML]="step.message"></div>
                     </div>
                   </div>
