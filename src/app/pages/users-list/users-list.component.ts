@@ -478,6 +478,8 @@ export class UsersListComponent implements OnInit, OnDestroy {
   }
   editPolicy(index: number, policy: any) {
     this.editIndex = index;
+    this.editPolicyForm.get('project')?.disable();
+    this.editPolicyForm.get('env')?.disable();
     this.isAddPolicy = true;
     let targetPolicy = policy as PolicyMapped;
     if (policy && policy.envid !== '*') {
@@ -543,6 +545,8 @@ export class UsersListComponent implements OnInit, OnDestroy {
 
   }
   enableAddPolicy() {
+    this.editPolicyForm.get('project')?.enable();
+    this.editPolicyForm.get('env')?.enable();
     this.editPolicyForm.reset();
     this.isAddPolicy = true;
     this.editingPolicy = null;
