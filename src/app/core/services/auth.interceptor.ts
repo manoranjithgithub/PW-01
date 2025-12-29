@@ -26,9 +26,10 @@ export class AuthInterceptor implements HttpInterceptor {
   private isRefreshing = false;
   private refreshTokenSubject = new BehaviorSubject<string | null>(null);
 
-  private readonly skipLoaderUrls = [
-    '/artificat?fileExtension',
-  ];
+  // private readonly skipLoaderUrls = [
+  //   '/artificat?fileExtension',
+  // ];
+  private readonly skipLoaderUrls = [];
 
   constructor(
     private loader: SharedService,

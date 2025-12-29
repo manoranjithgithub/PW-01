@@ -508,13 +508,24 @@ $app-dark-theme: mat.define-dark-theme((
   box-shadow: var(--bs-card-box-shadow);
   padding: 15px;
 }
-
+// .toast-success,
+// .toast-error,
+// .toast-info,
+// .toast-warning {
+//   background-image: none !important;
+// }
+.toast-container .ngx-toastr {
+  border-radius: 10px !important;
+  box-shadow: 0 6px 18px rgba(2, 6, 23, 0.6) !important;
+  font-size: 14px !important;
+}
 .toast-error {
-  background-color: #dc3545 !important;
+  background-color: #dc3546 !important;
+  border: 1px solid #dc3545
 }
 
 .toast-success {
-  background-color: #28a745 !important;
+  background-color: #34C759 !important;
 }
 
 .toast-title {
