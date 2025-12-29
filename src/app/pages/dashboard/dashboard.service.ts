@@ -4,7 +4,7 @@ import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { ToastrService } from 'ngx-toastr';
 import { environment } from '../../../environments/environment';
-import {createSSEObservable} from '../../shared/utils/sse.utils';
+import { createSSEObservable } from '../../shared/utils/sse.utils';
 
 @Injectable({
   providedIn: 'root'
@@ -28,19 +28,22 @@ export class DashboardsService {
         catchError(this.handleError.bind(this))
       );
   }
-  
+
   getEndpoints(envId: any) {
-    return this.http.get(`${this.deploymentManagement}/endpoints?environmentId=${envId}`)
+    const projectId = JSON.parse(localStorage.getItem('project') || '{}').id;
+    return this.http.get(`${this.deploymentManagement}/endpoints?environmentId=${envId}&projectId=${projectId}`)
       .pipe(
         catchError(this.handleError.bind(this))
       );
   }
 
   deleteEndpoint(environmentId: string, name: string) {
+    const projectId = JSON.parse(localStorage.getItem('project') || '{}').id;
     return this.http.delete(`${this.deploymentManagement}/endpoints`, {
       body: {
         name,
-        environmentId
+        environmentId,
+        projectId
       }
     })
       .pipe(
@@ -49,13 +52,15 @@ export class DashboardsService {
   }
 
   getDeploymentUtilizationSSE(namespace: string, resourceType: 'cpu' | 'memory') {
-  const token = localStorage.getItem("accessToken")!;
-  const interval = resourceType === 'cpu' ? 15 : 20;
+    const token = localStorage.getItem("accessToken")!;
+    const interval = resourceType === 'cpu' ? 15 : 20;
+    const projectId = JSON.parse(localStorage.getItem('project') || '{}').id;
+    const envId = JSON.parse(localStorage.getItem('environment') || '{}').id;
 
-  const url = `${this.metricsApiUrl}/namespace/live?namespace=${namespace}&resourceType=${resourceType}&interval=${interval}`;
+    const url = `${this.metricsApiUrl}/namespace/live?namespace=${namespace}&resourceType=${resourceType}&interval=${interval}`;
 
-  return createSSEObservable(url, token, this.zone);
-}
+    return createSSEObservable(url, token, this.zone);
+  }
 
   getCostDetails(accountId: any, projectId: any, envId: string) {
     return this.http.get(`${this.pricingManagement}/costs/forecast?account_id=${accountId}&project_id=${projectId}&environment_id=${envId}&group_by=none`)

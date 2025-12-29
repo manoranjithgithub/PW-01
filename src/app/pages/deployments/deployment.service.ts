@@ -33,7 +33,10 @@ export class DeploymentsService {
   }
 
   getDeploymentById(deploymentId: string) {
-    return this.http.get(`${this.deploymentManagement}/deployments/${deploymentId}`)
+    const envId = JSON.parse(localStorage.getItem('environment') || '{}').id;
+    const projectId = JSON.parse(localStorage.getItem('project') || '{}').id;
+    
+    return this.http.get(`${this.deploymentManagement}/deployments?deploymentId=${deploymentId}&environmentId=${envId}&projectId=${projectId}`)
       .pipe(
         catchError(this.handleError.bind(this))
       );
@@ -57,28 +60,37 @@ export class DeploymentsService {
   }
 
   createDeployement(req: any) {
-    return this.http.post(`${this.deploymentManagement}/deployments`, req)
+    const envId = JSON.parse(localStorage.getItem('environment') || '{}').id;
+    const projectId = JSON.parse(localStorage.getItem('project') || '{}').id;
+    const body = { ...req, environmentId: envId, projectId: projectId };
+    return this.http.post(`${this.deploymentManagement}/deployments`, body)
       .pipe(
         catchError(this.handleError.bind(this))
       );
   }
 
   deleteDeployment(deploymentId: string) {
-    return this.http.delete(`${this.deploymentManagement}/deployments/${deploymentId}`)
+    const envId = JSON.parse(localStorage.getItem('environment') || '{}').id;
+    const projectId = JSON.parse(localStorage.getItem('project') || '{}').id;
+    return this.http.delete(`${this.deploymentManagement}/deployments?deploymentId=${deploymentId}&environmentId=${envId}&projectId=${projectId}`)
       .pipe(
         catchError(this.handleError.bind(this))
       );
   }
 
   updateDeployment(deploymentId: string, req: any) {
-    return this.http.put(`${this.deploymentManagement}/deployments/${deploymentId}`, req)
+    const envId = JSON.parse(localStorage.getItem('environment') || '{}').id;
+    const projectId = JSON.parse(localStorage.getItem('project') || '{}').id;
+    const body = { ...req, environmentId: envId, projectId: projectId };
+    return this.http.put(`${this.deploymentManagement}/deployments/${deploymentId}`, body)
       .pipe(
         catchError(this.handleError.bind(this))
       );
   }
 
   createEndpoint(environmentId: string, req: any) {
-    return this.http.post(`${this.deploymentManagement}/endpoints`, { environmentId, ...req })
+    const projectId = JSON.parse(localStorage.getItem('project') || '{}').id;
+    return this.http.post(`${this.deploymentManagement}/endpoints`, { environmentId, projectId, ...req })
       .pipe(
         catchError(this.handleError.bind(this))
       );
@@ -105,10 +117,12 @@ export class DeploymentsService {
   }
 
   deleteEndpoint(environmentId: string, name: string) {
+    const projectId = JSON.parse(localStorage.getItem('project') || '{}').id;
     return this.http.delete(`${this.deploymentManagement}/endpoints`, {
       body: {
         name,
-        environmentId
+        environmentId,
+        projectId
       }
     }
     )
@@ -150,7 +164,9 @@ export class DeploymentsService {
 
 
   getS3Details(fileExtension: string) {
-    return this.http.get(`${this.deploymentManagement}/artificat?fileExtension=${fileExtension}`)
+    const projectId = JSON.parse(localStorage.getItem('project') || '{}').id;
+    const envId = JSON.parse(localStorage.getItem('environment') || '{}').id;
+    return this.http.get(`${this.deploymentManagement}/artificat?fileExtension=${fileExtension}&environmentId=${envId}&projectId=${projectId}`)
       .pipe(
         catchError(this.handleError.bind(this))
       );
@@ -175,13 +191,16 @@ export class DeploymentsService {
   }
   liveReleaseStatus(deploymentId: string) {
     const token = localStorage.getItem("accessToken")!;
-    const url = `${this.deploymentManagement}/live/release/stream?deploymentId=${deploymentId}`;
+    const projectId = JSON.parse(localStorage.getItem('project') || '{}').id;
+    const envId = JSON.parse(localStorage.getItem('environment') || '{}').id;
+    const url = `${this.deploymentManagement}/live/release/stream?deploymentId=${deploymentId}&projectId=${projectId}&environmentId=${envId}&interval=5`;
     return createSSEObservable(url, token, this.zone);
   }
 
   liveDeploymentData(envId: string) {
     const token = localStorage.getItem("accessToken")!;
-    const url = `${this.deploymentManagement}/live/deployment/stream?environmentId=${envId}&interval=15`;
+    const projectId = JSON.parse(localStorage.getItem('project') || '{}').id;
+    const url = `${this.deploymentManagement}/live/deployment/stream?environmentId=${envId}&projectId=${projectId}&interval=15`;
     return createSSEObservable(url, token, this.zone);
   }
 
