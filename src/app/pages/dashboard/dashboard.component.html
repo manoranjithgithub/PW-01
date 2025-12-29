@@ -64,7 +64,7 @@
                                     </div>
                                 </td>
                             </tr>
-                            <tr *ngIf="endpoints.length === 0">
+                            <tr *ngIf="!endpoints || endpoints.length === 0">
                                 <td colspan="4">
                                     <p class="text-center">No data found.</p>
                                 </td>

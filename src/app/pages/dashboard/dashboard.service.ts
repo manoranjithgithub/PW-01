@@ -17,7 +17,8 @@ export class DashboardsService {
   constructor(public http: HttpClient, private toastr: ToastrService, private zone: NgZone) { }
 
   getDeployments(env: string) {
-    return this.http.get(`${this.deploymentManagement}/deployments?environmentId=${env}`)
+    const projectId = JSON.parse(localStorage.getItem('project') || '{}').id;
+    return this.http.get(`${this.deploymentManagement}/deployments/list?environmentId=${env}&projectId=${projectId}`)
       .pipe(
         catchError(this.handleError.bind(this))
       );
@@ -31,7 +32,7 @@ export class DashboardsService {
 
   getEndpoints(envId: any) {
     const projectId = JSON.parse(localStorage.getItem('project') || '{}').id;
-    return this.http.get(`${this.deploymentManagement}/endpoints?environmentId=${envId}&projectId=${projectId}`)
+    return this.http.get(`${this.deploymentManagement}/endpoints/list?environmentId=${envId}&projectId=${projectId}`)
       .pipe(
         catchError(this.handleError.bind(this))
       );
@@ -70,7 +71,8 @@ export class DashboardsService {
   }
 
   getToolsList(env: string) {
-    return this.http.get(`${this.deploymentManagement}/tools/installed/${env}`).pipe(
+    const projectId = JSON.parse(localStorage.getItem('project') || '{}').id;
+    return this.http.get(`${this.deploymentManagement}/tools/installed?environmentId=${env}&projectId=${projectId}`).pipe(
       catchError(this.handleError.bind(this))
     );
   }
