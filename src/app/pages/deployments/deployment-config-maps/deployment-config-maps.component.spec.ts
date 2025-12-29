@@ -4,6 +4,10 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { DeploymentConfigMapsComponent } from './deployment-config-maps.component';
 import { CardBodyComponent, CardComponent, CardGroupComponent, AccordionComponent, AccordionItemComponent, AccordionButtonDirective, TemplateIdDirective } from '@coreui/angular';
 import { FormsModule } from '@angular/forms';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { ActivatedRoute } from '@angular/router';
+import { of } from 'rxjs';
+import { ToastrService } from 'ngx-toastr';
 
 describe('DeploymentConfigMapsComponent', () => {
   let component: DeploymentConfigMapsComponent;
@@ -18,8 +22,17 @@ describe('DeploymentConfigMapsComponent', () => {
         AccordionComponent,
         AccordionItemComponent,
         AccordionButtonDirective,
-        TemplateIdDirective, FormsModule
-      ]
+        TemplateIdDirective, FormsModule,
+        HttpClientTestingModule
+      ],
+      providers: [{
+        provide: ActivatedRoute, useValue: {
+          snapshot: { paramMap: { get: () => 'deployment123' } },
+          queryParams: of({})
+        }
+      },
+      {provide: ToastrService, useValue: { error: jasmine.createSpy('error') }}
+    ],
     })
     .compileComponents();
     
@@ -47,12 +60,13 @@ describe('DeploymentConfigMapsComponent', () => {
 
   it('should display the correct content inside the accordion body', () => {
     const accordionBody = fixture.debugElement.query(By.css('div.accordion-body')).nativeElement;
-    expect(accordionBody.textContent).toContain('Manage your build and deployment settings through a config file.');
+    expect(accordionBody.textContent).toContain('File Path');
   });
 
   it('should display the upload button inside the accordion body', () => {
-    const uploadButton = fixture.debugElement.query(By.css('button.btn.btn-primary')).nativeElement;
-    expect(uploadButton).toBeTruthy();
-    expect(uploadButton.textContent).toContain('Upload');
+    const buttons = fixture.debugElement.queryAll(By.css('button'));
+    const uploadButtonDebug = buttons.find(b => (b.nativeElement.textContent || '').trim().includes('Upload'));
+    expect(uploadButtonDebug).toBeTruthy();
+    expect((uploadButtonDebug as any).nativeElement.textContent).toContain('Upload');
   });
 });

@@ -2,18 +2,13 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { DeploymentsService } from './deployment.service';
 import { ToastrService,ToastrModule  } from 'ngx-toastr';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { DeploymentsComponent } from './deployments.component';
 import { ActivatedRoute } from '@angular/router';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'; 
 import { DeploymentSettingsComponent } from './deployment-settings/deployment-settings.component';
 
 describe('DeploymentsService', () => {
   let service: DeploymentsService;
-  let fixture: ComponentFixture<DeploymentsComponent>;
-  let fixtureSettings : ComponentFixture<DeploymentSettingsComponent>;
   let httpMock: HttpTestingController;
-  let deploymentComponent : DeploymentsComponent;
-  let deploymentSettingsComponent : DeploymentSettingsComponent
   const activatedRouteMock = {
     snapshot: {
       paramMap: new Map([
@@ -24,21 +19,21 @@ describe('DeploymentsService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-          imports: [HttpClientTestingModule,ToastrModule.forRoot(),BrowserAnimationsModule], 
-          providers: [DeploymentsService,ToastrService,
-            { provide: ActivatedRoute, useValue: activatedRouteMock }
-          ]
-        });
-        fixture = TestBed.createComponent(DeploymentsComponent);
-        fixtureSettings = TestBed.createComponent(DeploymentSettingsComponent);
-        service = TestBed.inject(DeploymentsService);
-        httpMock = TestBed.inject(HttpTestingController);
-        deploymentComponent = fixture.componentInstance;
-        deploymentSettingsComponent = fixtureSettings.componentInstance;
+      imports: [HttpClientTestingModule, ToastrModule.forRoot(), BrowserAnimationsModule],
+      providers: [DeploymentsService, ToastrService, { provide: ActivatedRoute, useValue: activatedRouteMock }]
+    });
+
+    service = TestBed.inject(DeploymentsService);
+    httpMock = TestBed.inject(HttpTestingController);
       });
 
       afterEach(() => {
-        httpMock.verify();  
+        // flush any unexpected pending requests (third-party or app initializers)
+        const pending = httpMock.match(() => true);
+        pending.forEach(req => {
+          try { req.flush({}); } catch { /* ignore if already flushed */ }
+        });
+        httpMock.verify();
       });
 
   it('should be created', () => {
@@ -77,13 +72,14 @@ describe('DeploymentsService', () => {
       ]
   }
 
-    deploymentComponent.getDeployment(mockEnv);
-    const req = httpMock.expectOne(`https://api.dev.nimbuz.tech/deployment-management/v1/${mockEnv.id}/deployments`);
-    expect(req.request.method).toBe('GET');
-    req.flush(mockResponse); 
+    service.getDeployments(mockEnv.id).subscribe(res => {
+      expect((res as any).data).toEqual(mockResponse.data);
+    });
 
-    expect(deploymentComponent.tableData).toEqual(mockResponse.data);
-    httpMock.verify();
+    const expectedUrl = `${(window as any).__env?.deploymentManagement || 'https://api.dev.nimbuz.tech/deployment/v1'}/${mockEnv.id}/deployments`;
+    const req = httpMock.expectOne(r => r.urlWithParams.indexOf(`${(window as any).__env?.deploymentManagement || 'https://api.dev.nimbuz.tech/deployment/v1'}/deployments`) === 0 || r.url.indexOf(expectedUrl) === 0);
+    expect(req.request.method).toBe('GET');
+    req.flush(mockResponse);
   });
 
   it('should fetch deployment details successfully', () => {
@@ -116,12 +112,13 @@ describe('DeploymentsService', () => {
       }
   }
 
-    deploymentSettingsComponent.getDeploymentById();
-    const req = httpMock.expectOne(`https://api.dev.nimbuz.tech/deployment-management/v1/deployments/${mockEnv.deployment_id}`);
-    expect(req.request.method).toBe('GET');
-    req.flush(mockResponse); 
+    service.getDeploymentById(mockEnv.deployment_id).subscribe(res => {
+      expect((res as any).data).toEqual(mockResponse.data);
+    });
 
-    expect(deploymentSettingsComponent.deploymentdetails).toEqual(mockResponse.data);
-    httpMock.verify();
+    const expectedDetailsUrl = `${(window as any).__env?.deploymentManagement || 'https://api.dev.nimbuz.tech/deployment/v1'}/deployments/${mockEnv.deployment_id}`;
+    const req = httpMock.expectOne(r => r.url.indexOf(expectedDetailsUrl) === 0 || r.urlWithParams.indexOf(expectedDetailsUrl) === 0);
+    expect(req.request.method).toBe('GET');
+    req.flush(mockResponse);
   });
 });

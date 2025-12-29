@@ -19,7 +19,7 @@ import { SHARED_IMPORTS } from '../../shared/shared-imports';
 export class DeploymentsComponent implements OnInit, OnDestroy {
   tableData: any[] = [];
 
-  private subscription: Subscription | undefined;
+  subscription: Subscription | undefined;
   statusData: any;
   columnDefs: ColDef[] = [
     {

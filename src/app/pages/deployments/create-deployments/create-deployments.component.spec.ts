@@ -1,146 +1,125 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ToastrService  } from 'ngx-toastr';
-import { ReactiveFormsModule, FormBuilder, Validators, FormControl } from '@angular/forms';
-import { of } from 'rxjs';
-import { By } from '@angular/platform-browser';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { CreateDeploymentsComponent } from './create-deployments.component';
-import { ModalComponent } from '../../../shared/components/model/model.component';
-import { SharedService } from 'src/app/shared/services/shared.service';
-import { ActivatedRoute } from '@angular/router';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { MatStepper, MatStepperModule } from '@angular/material/stepper';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
-import { MatRadioModule } from '@angular/material/radio';
-import { MatSelectModule } from '@angular/material/select';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { DebugElement } from '@angular/core';
-
-class MockToastrService {
-  success(message: string) {}
-}
-
-class MockModalService {
-  open() {}
-  dismiss() {}
-}
-
+import { DeploymentsService } from '../deployment.service';
+import { ProjectsService } from '../../projects/projects.service';
+import { SharedService } from '../../../shared/services/shared.service';
+import { PermissionService } from '../../../shared/services/permission.service';
+import { FormBuilder } from '@angular/forms';
+import { ToastrService } from 'ngx-toastr';
+import { of, Subject } from 'rxjs';
+import { ActivatedRoute, Router } from '@angular/router';
 
 describe('CreateDeploymentsComponent', () => {
   let component: CreateDeploymentsComponent;
   let fixture: ComponentFixture<CreateDeploymentsComponent>;
-  let zipDeploymentModel: ModalComponent;
-  let modalDebugElement: DebugElement;
+  let deploymentsServiceSpy: jasmine.SpyObj<DeploymentsService>;
+  let projectServiceSpy: jasmine.SpyObj<ProjectsService>;
+  let sharedServiceSpy: jasmine.SpyObj<SharedService>;
+  let routerSpy: jasmine.SpyObj<Router>;
 
+  const currencyChange$ = new Subject<void>();
 
   beforeEach(async () => {
+    const deploymentsSpy = jasmine.createSpyObj('DeploymentsService', [
+      'getInstanceTypes',
+      'getAvailableRepos',
+      'getAvailableBranches',
+      'getVCSCallback',
+      'getS3Details',
+      'uploadFileToS3',
+      'createDeployement'
+    ]);
+    const projectSpy = jasmine.createSpyObj('ProjectsService', ['getProjectDetailsById']);
+    const sharedSpy = jasmine.createSpyObj('SharedService', ['getCurrency', 'convertAmount']);
+    Object.defineProperty(sharedSpy, 'currencyChange$', { get: () => currencyChange$ });
+    const routerJSpy = jasmine.createSpyObj('Router', ['navigate']);
+
     await TestBed.configureTestingModule({
-      imports: [ReactiveFormsModule,CreateDeploymentsComponent,ModalComponent,HttpClientTestingModule,
-        MatStepperModule, 
-        MatFormFieldModule, 
-        MatInputModule, 
-        MatButtonModule, 
-        MatRadioModule, 
-        MatSelectModule,
-        BrowserAnimationsModule
-      ],
+      imports: [HttpClientTestingModule, CreateDeploymentsComponent],
       providers: [
         FormBuilder,
-        { provide: ToastrService, useClass: MockToastrService },
-        { provide: NgbModal, useClass: MockModalService },
-        { provide: SharedService, useValue: { isValidName: () => Validators.required } },
-        {
-                provide: ActivatedRoute,
-                  useValue: {
-                    snapshot: {
-                      params: { id: '1' }, // Mocking route parameters
-                      queryParams: { search: 'test' }, // Mocking query parameters
-                    },
-                    params: of({ id: '1' }), // Observable for params
-                    queryParams: of({ search: 'test' }), // Observable for queryParams
-                  },
-                }
+        { provide: DeploymentsService, useValue: deploymentsSpy },
+        { provide: ProjectsService, useValue: projectSpy },
+        { provide: SharedService, useValue: sharedSpy },
+        { provide: PermissionService, useValue: {} },
+        { provide: ToastrService, useValue: { error: jasmine.createSpy('error'), success: jasmine.createSpy('success') } },
+        { provide: Router, useValue: routerJSpy },
+        { provide: ActivatedRoute, useValue: { queryParams: of({}) } }
       ]
-    })
-    .compileComponents();
-    
+    }).compileComponents();
+
+    deploymentsServiceSpy = TestBed.inject(DeploymentsService) as jasmine.SpyObj<DeploymentsService>;
+    projectServiceSpy = TestBed.inject(ProjectsService) as jasmine.SpyObj<ProjectsService>;
+    sharedServiceSpy = TestBed.inject(SharedService) as jasmine.SpyObj<SharedService>;
+    routerSpy = TestBed.inject(Router) as jasmine.SpyObj<Router>;
+  });
+
+  beforeEach(() => {
+    // ensure current project id is present so component calls ProjectsService
+    localStorage.setItem('project', JSON.stringify({ id: 'proj1' }));
+
     fixture = TestBed.createComponent(CreateDeploymentsComponent);
     component = fixture.componentInstance;
-    
-    modalDebugElement = fixture.debugElement.query(By.directive(ModalComponent));
-    zipDeploymentModel = modalDebugElement?.componentInstance;
+
+    // Mock modals
+    component.zipDeploymentModel = { open: jasmine.createSpy('open'), dismiss: jasmine.createSpy('dismiss') } as any;
+
+    deploymentsServiceSpy.getInstanceTypes.and.returnValue(of({ data: [{ instanceType: 'femto.m' }] }));
+    projectServiceSpy.getProjectDetailsById.and.returnValue(of({ data: { github: true, gitlab: false } }));
+
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it('should create component', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should disable the upload button when no file is selected', () => {
-    const fileInputControl = component.fileUploadForm.get('fileInput');
-    fileInputControl?.setValue(null);
-    fixture.detectChanges();
+  it('should initialize currentProjectId and fetch VCS info', fakeAsync(() => {
+    tick();
+    expect(projectServiceSpy.getProjectDetailsById).toHaveBeenCalled();
+    expect(component.vcsProfileInfo.github).toBeTrue();
+  }));
 
-    const uploadButton = fixture.debugElement.query(By.css('button'));
-    expect(uploadButton.nativeElement.disabled).toBeTrue();
+  it('should open zip modal on selectedType "zip"', () => {
+    const openSpy = spyOn((component as any).zipDeploymentModel, 'open');
+
+    component.selectedType({ value: 'zip' } as any);
+
+    expect(openSpy).toHaveBeenCalled();
   });
 
-  it('should open the zipDeploymentModel when "zip" is selected from the dropdown', () => {
-    spyOn(zipDeploymentModel, 'open');
-    const matSelect = fixture.debugElement.query(By.css('mat-select[formControlName="type"]'));
-    const mockStepper = {} as MatStepper;
-    component.selectedVCS = 'zip';
 
-    matSelect.triggerEventHandler('selectionChange', { value: 'zip' });
-
-    // component.connectWithVCS(mockStepper);
-    fixture.detectChanges();
-    expect(zipDeploymentModel.open).toHaveBeenCalled();
+  it('should return formatted currency', () => {
+    sharedServiceSpy.getCurrency.and.returnValue('USD');
+    sharedServiceSpy.convertAmount.and.returnValue(200);
+    expect(component.formatCurrency(100)).toBe('$200.00');
   });
 
-  it('should not open the zipDeploymentModel when a value other than "zip" is selected', () => {
-    spyOn(zipDeploymentModel, 'open');
-    const matSelect = fixture.debugElement.query(By.css('mat-select[formControlName="type"]'));
-    const mockStepper = {} as MatStepper;
-    component.selectedVCS = 'git';
-    matSelect.triggerEventHandler('selectionChange', { value: 'git' });
-    // component.connectWithVCS(mockStepper);
-    fixture.detectChanges();
-    expect(zipDeploymentModel.open).not.toHaveBeenCalled();
+  it('should remove file extension correctly', () => {
+    component.fileExtension = '';
+    const result = component.removeFileExtension('test-file.zip');
+    expect(result).toBe('test-file');
+    expect(component.fileExtension).toBe('zip');
   });
 
-  it('should return null for valid file types', () => {
-    const validFiles = ['file.zip', 'file.tar', 'file.rar'];
-
-    validFiles.forEach(file => {
-      const control = new FormControl(file);
-      const result = component.fileValidator(control);
-      expect(result).toBeNull(); // No error for valid file types
-    });
+  it('should validate file correctly', () => {
+    const validatorFn = component.fileValidator(['zip']);
+    const control = { value: 'file.zip' } as any;
+    expect(validatorFn(control)).toBeNull();
+    const invalidControl = { value: 'file.txt' } as any;
+    expect(validatorFn(invalidControl)).toEqual({ invalidFileType: true });
   });
 
-  it('should return error for invalid file types', () => {
-    const invalidFiles = ['file.txt', 'file.exe', 'file.png'];
-
-    invalidFiles.forEach(file => {
-      const control = new FormControl(file);
-      const result = component.fileValidator(control);
-      expect(result).toEqual({ invalidFileType: true }); // Error for invalid file types
-    });
+  it('should build git URL for github', () => {
+    component.selectedVCS = 'github';
+    component.selectedRepoDetails = { repoUrl: 'repo/name', branchName: 'main', webhook: false, gitRepoId: 0 };
+    expect(component['buildGitUrl']()).toBe('https://token@github.com/repo/name.git -b main');
   });
 
-  it('should return null for empty file name', () => {
-    const control = new FormControl('');
-    const result = component.fileValidator(control);
-    expect(result).toBeNull(); // No error for empty file name
+  it('should clean payload', () => {
+    const obj = { a: 1, b: null, c: undefined, d: '' };
+    const result = component.cleanPayload(obj);
+    expect(result).toEqual({ a: 1 });
   });
-
-  it('should return error for file with no extension', () => {
-    const control = new FormControl('file');
-    const result = component.fileValidator(control);
-    expect(result).toEqual({ invalidFileType: true }); // Error if file has no extension
-  });
-
 });

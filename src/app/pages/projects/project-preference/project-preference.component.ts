@@ -17,8 +17,6 @@ import { currentUsageFields, estimatedUsageFields, userList } from '../../../cor
 import { Integrations } from '../../../core/constants/integrations.constant';
 import { Preferencedata } from '../../../core/constants/preference-data.constant';
 import { ProjectsService } from '../projects.service';
-import { AuthService } from '../../../core/services/auth.service';
-import { SidebarService } from '../../../shared/services/sidebar.service';
 import { ToastrService } from 'ngx-toastr';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ConfirmationModalComponent } from '../../../shared/components/modal/confirmation-modal/confirmation-modal.component';
@@ -394,15 +392,15 @@ export class ProjectPreferenceComponent implements OnInit, OnDestroy {
   }
 
   get projectNameControl(): FormControl {
-    return this.generalSettingForm.get('projectName') as FormControl;
+    return this.generalSettingForm?.get('projectName') as FormControl;
   }
 
   get projectIdControl(): FormControl {
-    return this.generalSettingForm.get('projectId') as FormControl;
+    return this.generalSettingForm?.get('projectId') as FormControl;
   }
 
   get descriptionControl(): FormControl {
-    return this.generalSettingForm.get('description') as FormControl;
+    return this.generalSettingForm?.get('description') as FormControl;
   }
 
   saveChanges() {

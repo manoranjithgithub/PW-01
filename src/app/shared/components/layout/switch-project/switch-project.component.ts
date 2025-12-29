@@ -31,7 +31,7 @@ interface RegionGroup {
   encapsulation: ViewEncapsulation.None
 })
 export class SwitchProjectComponent implements OnInit {
-  @ViewChild('showEnvironmentModel') private showEnvironmentModel!: ModalComponent;
+  @ViewChild('showEnvironmentModel') public showEnvironmentModel!: ModalComponent;
   showSwitchProject = false;
   form!: FormGroup;
   projectId = '';
@@ -86,7 +86,7 @@ export class SwitchProjectComponent implements OnInit {
   }
 
 
-  private getBasicInfo(): void {
+   getBasicInfo(): void {
     const { project, region, environment } = this.getSavedSelections();
     this.showSwitchProject = !!(project && region && environment);
     this.projectService.getAllProjects().subscribe((res: any) => {
@@ -99,7 +99,7 @@ export class SwitchProjectComponent implements OnInit {
     });
   }
 
-  private getRegionsAndEnvironment(): void {
+   getRegionsAndEnvironment(): void {
     const { region } = this.getSavedSelections();
     if (!this.projectId) return;
     this.projectService.getAllEnvironmentsByProject(this.projectId).subscribe((res: any) => {

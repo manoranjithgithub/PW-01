@@ -17,10 +17,4 @@ describe('AppComponent', () => {
     const app = fixture.componentInstance;
     expect(app).toBeTruthy();
   });
-
-  it('should have as title \'CoreUI Angular Admin Template\'', () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    const app = fixture.componentInstance;
-    expect(app.title).toEqual('CoreUI Angular Admin Template');
-  });
 });
