@@ -219,7 +219,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
       const data2 = res2 as any
 
       const combined = [...data.data, ...data2.data];
-
       const statusCount = combined.reduce((acc, item) => {
         if (item.status.toLowerCase() === 'running') acc.running += 1;
         else if (item.status.toLowerCase() === 'pending') acc.pending += 1;

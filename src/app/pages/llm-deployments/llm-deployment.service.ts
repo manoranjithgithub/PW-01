@@ -13,14 +13,16 @@ export class LLMDeploymentsService {
     constructor(public http: HttpClient) { }
 
     getDeployments(envId: string) {
-        return this.http.get(`${this.deploymentManagement}/llm-deployments?environmentId=${envId}`)
+        const projectId = JSON.parse(localStorage.getItem('project') || '{}').id;
+        return this.http.get(`${this.deploymentManagement}/llm-deployments?environmentId=${envId}&projectId=${projectId}`)
             .pipe(
                 catchError(this.handleError.bind(this))
             );
     }
 
     getDeploymentById(deploymentId: string, envId: string) {
-        return this.http.get(`${this.deploymentManagement}/llm-deployments/${deploymentId}?environmentId=${envId}`)
+        const projectId = JSON.parse(localStorage.getItem('project') || '{}').id;
+        return this.http.get(`${this.deploymentManagement}/llm-deployments/${deploymentId}?environmentId=${envId}&projectId=${projectId}`)
             .pipe(
                 catchError(this.handleError.bind(this))
             );
@@ -34,7 +36,10 @@ export class LLMDeploymentsService {
     }
 
     createDeployement(req: any) {
-        return this.http.post(`${this.deploymentManagement}/llm-deployments`, req)
+        const envId = JSON.parse(localStorage.getItem('environment') || '{}').id;
+        const projectId = JSON.parse(localStorage.getItem('project') || '{}').id;
+        const body = { ...req, environmentId: envId, projectId: projectId };
+        return this.http.post(`${this.deploymentManagement}/llm-deployments`, body)
             .pipe(
                 catchError(this.handleError.bind(this))
             );

@@ -36,8 +36,7 @@ export class ToolsComponent implements OnInit, OnDestroy {
   ) {
     const storedValue = localStorage.getItem('environment');
     if (storedValue && storedValue !== "undefined") {
-      this.envId = JSON.parse(storedValue).id
-      this.getAvailableTools(JSON.parse(storedValue).id);
+      this.envId = JSON.parse(storedValue).id;
     }
   }
 
@@ -70,7 +69,18 @@ export class ToolsComponent implements OnInit, OnDestroy {
       this.rowData = [];
       this.getAvailableTools(envId);
     });
-    this.getAvailableTools(JSON.parse(localStorage.getItem('environment') || '{}').id)
+    // ensure we always (re)connect when the component initializes
+    try {
+      const env = localStorage.getItem('environment');
+      if (env && env !== 'undefined') {
+        const envObj = JSON.parse(env);
+        if (envObj?.id) {
+          this.getAvailableTools(envObj.id);
+        }
+      }
+    } catch (e) {
+      console.warn('Could not parse environment from localStorage', e);
+    }
     // this.getToolsIntervel = setInterval(() => {
     //   this.getAvailableTools(JSON.parse(localStorage.getItem('environment') || '{}').id);
     // }, 30000);
@@ -209,20 +219,28 @@ export class ToolsComponent implements OnInit, OnDestroy {
   }
 
   getAvailableTools(value: any): any {
-    if (value) {
-      this.sseSub = this.http.liveToolsData(value).subscribe((res: any) => {
-        if (res) {
-          const newTools = Object.values(res.tools)?.map((tool: any) => ({
-            ...tool,
-            icon: this.getToolIcon(tool.schemaId)
-          }));
-          this.updateTools(newTools);
-          localStorage.setItem('availableTools', JSON.stringify(newTools?.map((tool: any) => tool.name)));
-        }
-      }, error => {
-        this.rowData = [];
-      })
+    if (!value) return;
+
+    // ensure any previous SSE subscription is cleaned up before creating a new one
+    if (this.sseSub) {
+      try { this.sseSub.unsubscribe(); } catch {
+        // ignore any errors during unsubscribe
+       }
+      this.sseSub = null;
     }
+
+    this.sseSub = this.http.liveToolsData(value).subscribe((res: any) => {
+      if (res) {
+        const newTools = Object.values(res.tools)?.map((tool: any) => ({
+          ...tool,
+          icon: this.getToolIcon(tool.schemaId)
+        }));
+        this.updateTools(newTools);
+        localStorage.setItem('availableTools', JSON.stringify(newTools?.map((tool: any) => tool.name)));
+      }
+    }, error => {
+      this.rowData = [];
+    });
   }
 
   openHost(params: any) {

@@ -198,7 +198,8 @@ export class CreateToolComponent implements OnInit, OnDestroy {
         version: this.toolDetails.version,
         repository: this.toolDetails.repository,
         values: formValues,
-        environmentId: this.env
+        environmentId: this.env,
+        projectId: JSON.parse(localStorage.getItem('project') || '{}').id
       }
       if (this.env) {
         this.http.createTools(req).subscribe((res: any) => {

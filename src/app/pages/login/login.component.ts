@@ -72,8 +72,17 @@ export class LoginComponent implements OnInit {
       },
       error: (error) => {
         this.loading = false;
-        if (error.code === 400) {
-          this.toaster.error(`Login failed. ${error.error?.error?.message}`);
+        if (error && error.error) {
+          this.toaster.error(error.error?.error?.message);
+          // this.toaster.info(
+          //   'Server is under maintenance',
+          //   'Notice',
+          //   {
+          //     disableTimeOut: true,
+          //     closeButton: true,
+          //     tapToDismiss: false
+          //   }
+          // );
         } else {
           this.toaster.error(`Login failed. Please check your credentials.`);
         }
