@@ -1,23 +1,105 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { ViewToolComponent } from './view-tool.component';
+import { ToolsService } from '../tools.service';
+import { SharedService } from '../../../shared/services/shared.service';
+import { ActivatedRoute, Router } from '@angular/router';
+import { of, Subject } from 'rxjs';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { ToastrService } from 'ngx-toastr';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('ViewToolComponent', () => {
   let component: ViewToolComponent;
   let fixture: ComponentFixture<ViewToolComponent>;
+  let toolsService: jasmine.SpyObj<ToolsService>;
+  let sharedService: Partial<SharedService>;
+  let router: jasmine.SpyObj<Router>;
+  let activatedRoute: Partial<ActivatedRoute>;
+
+  let queryParamsSubject: Subject<any>;
 
   beforeEach(async () => {
+    localStorage.setItem('environment', JSON.stringify({ id: 'env1' }));
+
+    queryParamsSubject = new Subject<any>();
+
+    toolsService = jasmine.createSpyObj('ToolsService', ['getToolDetailsById', 'getInstanceTypes']);
+    toolsService.getInstanceTypes.and.returnValue(of([
+      { instanceType: 't2.micro', cpuVcpu: '1', memoryGb: '1', instanceHourRate: 1 }
+    ]));
+    toolsService.getToolDetailsById.and.returnValue(of({
+      data: { name: 'tool1', schema: { field1: { ui: true, key: 'field1', type: 'text' } } }
+    }));
+
+    router = jasmine.createSpyObj('Router', ['navigate']);
+    const envChangeSubject = new Subject<any>();
+    sharedService = {
+      envValueChange$: envChangeSubject,
+      getCurrency: () => 'USD',
+      convertAmount: (value: number) => value
+    };
+
+    activatedRoute = { queryParams: queryParamsSubject };
+
     await TestBed.configureTestingModule({
-      imports: [ViewToolComponent]
-    })
-    .compileComponents();
-    
+      imports: [ViewToolComponent, HttpClientTestingModule],
+      providers: [
+        { provide: ToolsService, useValue: toolsService },
+        { provide: SharedService, useValue: sharedService },
+        { provide: Router, useValue: router },
+        { provide: ActivatedRoute, useValue: activatedRoute },
+        { provide: ToastrService, useValue: jasmine.createSpyObj('ToastrService', ['error']) }
+      ],
+      schemas: [NO_ERRORS_SCHEMA]
+    }).compileComponents();
+
     fixture = TestBed.createComponent(ViewToolComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+
+  afterEach(() => {
+    localStorage.clear();
+  });
+
+  it('should create component', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should toggle visibility', () => {
+    const key = 'password';
+    expect(component.hide[key]).toBeUndefined();
+    component.toggleVisibility(key);
+    expect(component.hide[key]).toBeTrue();
+    component.toggleVisibility(key);
+    expect(component.hide[key]).toBeFalse();
+  });
+
+  it('should format currency correctly', () => {
+    const formatted = component.formatCurrency(100);
+    expect(formatted).toContain('$');
+  });
+
+  it('should open modal', () => {
+    component.showToolsModel = jasmine.createSpyObj('ModalComponent', ['open', 'close']);
+    component.showTools();
+    expect(component.showToolsModel.open).toHaveBeenCalled();
+  });
+
+  it('should navigate to tools table', () => {
+    component.showToolsTable();
+    expect(router.navigate).toHaveBeenCalledWith(['/tools']);
+  });
+
+  it('should clean up subscription on destroy', () => {
+    spyOn(component['subscription'], 'unsubscribe');
+    component.ngOnDestroy();
+    expect(component['subscription'].unsubscribe).toHaveBeenCalled();
+  });
+
+  it('should calculate monthlyInstanceRate from hourlyInstanceRate', () => {
+    component.selectedResource.instanceHourRate = 2;
+    expect(component.monthlyInstanceRate).toBe(1460);
   });
 });

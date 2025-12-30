@@ -5,7 +5,7 @@ import { SharedService } from '../../../shared/services/shared.service';
 import { ToastrService } from 'ngx-toastr';
 import { ActivatedRoute, Router } from '@angular/router';
 import { of } from 'rxjs';
-import { FormBuilder } from '@angular/forms';
+import { FormBuilder, Validators } from '@angular/forms';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('EditToolComponent', () => {
@@ -42,11 +42,17 @@ describe('EditToolComponent', () => {
     mockSharedService.getCurrency.and.returnValue('USD');
     mockSharedService.convertAmount.and.callFake((val: number) => val);
 
+    // Ensure the standalone component uses our mock ToolsService instance
+    TestBed.overrideComponent(EditToolComponent, {
+      set: {
+        providers: [{ provide: ToolsService, useValue: mockToolsService }]
+      }
+    });
+
     await TestBed.configureTestingModule({
       imports: [EditToolComponent, HttpClientTestingModule],
       providers: [
         FormBuilder,
-        { provide: ToolsService, useValue: mockToolsService },
         { provide: SharedService, useValue: mockSharedService },
         { provide: ToastrService, useValue: mockToastr },
         { provide: Router, useValue: mockRouter },
@@ -92,7 +98,7 @@ describe('EditToolComponent', () => {
   });
 
   it('should handle field change for instance type', () => {
-    component.resources = [{ cpuVcpu: '1', memoryGb: '2', instanceHourRate: 5 } as any];
+    component.resources = [{ instanceType: 't2.small', cpuVcpu: '1', memoryGb: '2', instanceHourRate: 5 } as any];
     component.onFieldChange({ target: { value: 't2.small' } } as any, 'Instance Type');
     expect(component.selectedResource.cpuVcpu).toBe('1');
   });
@@ -121,9 +127,11 @@ describe('EditToolComponent', () => {
 
   it('should not submit invalid form', () => {
     component.form = component['fb'].group({
-      name: [''],
+      name: ['', Validators.required],
       'mysql.primary.persistance.size': ['10']
     });
+    component.form.get('name')?.setValue('');
+    component.form.get('name')?.markAsTouched();
     component.onSubmit();
     expect(component.submitted).toBeTrue();
     expect(mockToolsService.updateTools).not.toHaveBeenCalled();

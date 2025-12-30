@@ -12,13 +12,14 @@ export class ToolsService {
     private deploymentUrl = environment.deploymentManagement;
     private pricingManagement = environment.pricingManagement;
 
+    // expose a wrapper for createSSEObservable so tests can spyOn the instance method
+    public createSSE = createSSEObservable;
+
     constructor(public http: HttpClient, private toastr: ToastrService, private zone: NgZone) { }
 
     getToolsList(env: string) {
         return this.http.get(`${this.deploymentUrl}/tools/installed/${env}`).pipe(
-            catchError((error: HttpErrorResponse) => {
-                return throwError(() => new Error('Something bad happened; please try again later.'));
-            })
+            catchError(this.handleError.bind(this))
         );
     }
 
@@ -105,7 +106,7 @@ export class ToolsService {
         const token = localStorage.getItem("accessToken")!;
         const projectId = JSON.parse(localStorage.getItem('project') || '{}').id;
         const url = `${this.deploymentUrl}/live/tools/stream?environmentId=${envId}&interval=15&projectId=${projectId}`;
-        return createSSEObservable(url, token, this.zone);
+        return this.createSSE(url, token, this.zone);
     }
 
     private handleError(error: HttpErrorResponse) {
@@ -113,6 +114,8 @@ export class ToolsService {
         if (error.error) {
             if (error.error.error?.details) {
                 errorMessage = error.error.error.details;
+            } else if (error.error.error?.message) {
+                errorMessage = error.error.error.message;
             } else if (error.error.message) {
                 errorMessage = error.error.message;
             }
