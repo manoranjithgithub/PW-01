@@ -250,6 +250,7 @@ describe('DefaultLayoutComponent', () => {
     localStorage.setItem('environment', JSON.stringify({ id: 'e1' }));
     component.currentUser = 'testUser';
     permissionSpy.canAdminGlobal.and.returnValue(true);
+    routerStub.navigateByUrl.calls.reset();
 
     const navStart = new NavigationStart(8, '/users-list');
     routerEvents$.next(navStart);
