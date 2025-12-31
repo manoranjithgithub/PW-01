@@ -67,6 +67,14 @@ describe('DeploymentObservabilityComponent', () => {
   });
 
   beforeEach(() => {
+    // Mock localStorage
+    spyOn(localStorage, 'getItem').and.callFake((key: string) => {
+      if (key === 'environment') {
+        return JSON.stringify({ id: 'env-123' });
+      }
+      return null;
+    });
+
     fixture = TestBed.createComponent(DeploymentObservabilityComponent);
     component = fixture.componentInstance;
     component.appName = 'test-app';

@@ -22,6 +22,17 @@ describe('DeploymentSecretsComponent', () => {
   const queryParamsSubject = new BehaviorSubject<any>({});
 
   beforeEach(async () => {
+    // Mock localStorage
+    spyOn(localStorage, 'getItem').and.callFake((key: string) => {
+      if (key === 'environment') {
+        return JSON.stringify({ id: 'env-123' });
+      }
+      if (key === 'resourceUsage') {
+        return JSON.stringify([{ resource_type: 'secrets', remaining: 5 }]);
+      }
+      return null;
+    });
+
     mockDeploymentsService = jasmine.createSpyObj(['getDeploymentById', 'updateDeployment']);
     mockDeploymentsService.getDeploymentById.and.returnValue(of({ data: {} }));
     mockDeploymentsService.updateDeployment.and.returnValue(of({}));
