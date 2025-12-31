@@ -21,6 +21,17 @@ describe('ActionCellRendererComponent', () => {
   let deploymentServiceSpy: jasmine.SpyObj<DeploymentsService>;
 
   beforeEach(async () => {
+    // Mock localStorage to prevent JSON.parse errors in component constructor
+    spyOn(localStorage, 'getItem').and.callFake((key: string) => {
+      if (key === 'environment') {
+        return JSON.stringify({ id: 'env-123' });
+      }
+      if (key === 'project') {
+        return JSON.stringify({ id: 'proj-123' });
+      }
+      return null;
+    });
+
     routerSpy = jasmine.createSpyObj('Router', ['navigate']);
     modalSpy = jasmine.createSpyObj('NgbModal', ['open']);
     toastrSpy = jasmine.createSpyObj('ToastrService', ['success', 'error']);
