@@ -243,5 +243,33 @@ describe('DeploymentMetricsComponent', () => {
       const date = (component as any).parseTimestampToDate(1700000000);
       expect(date instanceof Date).toBeTrue();
     });
+
+    it('computeMaxLimits should warn when instance type missing and not call onFilter', () => {
+      component.deploymentdetails = {}; // no application.instanceType
+      spyOn(console, 'warn');
+      spyOn(component, 'onFilter');
+
+      deploymentServiceSpy.getInstanceTypes.and.returnValue(of({ data: [] }));
+
+      component.computeMaxLimits();
+
+      expect(console.warn).toHaveBeenCalled();
+      expect(component.onFilter).not.toHaveBeenCalled();
+    });
+
+    it('onFilter should set loading false when both cpu and memory calls fail', fakeAsync(() => {
+      // prepare filter form expected by onFilter
+      component.filterForm = new FormBuilder().group({ duration: ['15'], interval: ['5'], fromTimestamp: [''], toTimestamp: [''] });
+      // mock both metric calls to fail
+      deploymentServiceSpy.getDeploymentMetricsByTime.and.returnValue(throwError(() => new Error('boom')));
+
+      component.onFilter();
+      tick();
+
+      expect(component.loading).toBeFalse();
+      expect((component as any).pendingMetricsRequests).toBe(0);
+      expect(component.cpuUsageData.length).toBe(0);
+      expect(component.ramUsageData.length).toBe(0);
+    }));
   });
 });

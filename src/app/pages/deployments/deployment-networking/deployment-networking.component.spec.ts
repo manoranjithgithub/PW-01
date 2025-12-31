@@ -97,8 +97,19 @@ describe('DeploymentNetworkingComponent', () => {
   });
 
   it('should copy domain to clipboard', () => {
-    const spy = spyOn(navigator.clipboard, 'writeText');
+    // make spying idempotent across specs
+    let writeSpy: any;
+    if (navigator.clipboard && (navigator.clipboard.writeText as any) && (navigator.clipboard.writeText as any).and) {
+      writeSpy = (navigator.clipboard.writeText as any);
+    } else if (navigator.clipboard && typeof (navigator.clipboard.writeText as any) === 'function') {
+      writeSpy = spyOn(navigator.clipboard, 'writeText');
+    } else {
+      // fallback: define clipboard with spy
+      Object.defineProperty(navigator, 'clipboard', { value: { writeText: jasmine.createSpy('writeText') }, configurable: true });
+      writeSpy = (navigator.clipboard as any).writeText;
+    }
+
     component.copyDomain('test.com');
-    expect(spy).toHaveBeenCalledWith('test.com');
+    expect(writeSpy).toHaveBeenCalledWith('test.com');
   });
 });

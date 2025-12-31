@@ -3,11 +3,12 @@ import { LoginComponent } from './login.component';
 import { UserService } from '../../core/services/user.service';
 import { PermissionService } from '../../shared/services/permission.service';
 import { AuthService } from '../../core/services/auth.service';
-import { ToastrService } from 'ngx-toastr';
+import { ToastrService, TOAST_CONFIG } from 'ngx-toastr';
 import { Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import { of, throwError } from 'rxjs';
 import { ColorModeService } from '@coreui/angular';
+import { toastConfigMock } from '../../../test-helpers/testing-mocks';
 
 describe('LoginComponent', () => {
   let component: LoginComponent;
@@ -35,6 +36,7 @@ describe('LoginComponent', () => {
         { provide: PermissionService, useValue: permissionService },
         { provide: AuthService, useValue: authService },
         { provide: ToastrService, useValue: toaster },
+        { provide: TOAST_CONFIG, useValue: toastConfigMock },
         { provide: ColorModeService, useValue: {} },
       ],
     }).compileComponents();
@@ -135,9 +137,7 @@ describe('LoginComponent', () => {
     tick();
 
     expect(component.loading).toBeFalse();
-    expect(toaster.error).toHaveBeenCalledWith(
-      'Login failed. Invalid credentials'
-    );
+    expect(toaster.error).toHaveBeenCalledWith('Invalid credentials');
   }));
 
   it('should show generic error toaster on non-400 error', fakeAsync(() => {

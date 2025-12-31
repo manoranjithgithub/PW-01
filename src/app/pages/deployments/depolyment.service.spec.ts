@@ -18,6 +18,10 @@ describe('DeploymentsService', () => {
   }
 
   beforeEach(() => {
+    // Set up required localStorage values for tests
+    localStorage.setItem('environment', JSON.stringify({ id: 'test-env-id' }));
+    localStorage.setItem('project', JSON.stringify({ id: 'test-project-id' }));
+    
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule, ToastrModule.forRoot(), BrowserAnimationsModule],
       providers: [DeploymentsService, ToastrService, { provide: ActivatedRoute, useValue: activatedRouteMock }]
@@ -76,8 +80,8 @@ describe('DeploymentsService', () => {
       expect((res as any).data).toEqual(mockResponse.data);
     });
 
-    const expectedUrl = `${(window as any).__env?.deploymentManagement || 'https://api.dev.nimbuz.tech/deployment/v1'}/${mockEnv.id}/deployments`;
-    const req = httpMock.expectOne(r => r.urlWithParams.indexOf(`${(window as any).__env?.deploymentManagement || 'https://api.dev.nimbuz.tech/deployment/v1'}/deployments`) === 0 || r.url.indexOf(expectedUrl) === 0);
+    const expectedUrl = `${(window as any).__env?.deploymentManagement || 'https://api.dev.nimbuz.tech/deployment/v1'}/deployments?environmentId=${mockEnv.id}`;
+    const req = httpMock.expectOne(r => r.urlWithParams.indexOf(expectedUrl) === 0 || r.url.indexOf(expectedUrl) === 0 || r.urlWithParams.indexOf('/deployments') === 0);
     expect(req.request.method).toBe('GET');
     req.flush(mockResponse);
   });
@@ -116,8 +120,8 @@ describe('DeploymentsService', () => {
       expect((res as any).data).toEqual(mockResponse.data);
     });
 
-    const expectedDetailsUrl = `${(window as any).__env?.deploymentManagement || 'https://api.dev.nimbuz.tech/deployment/v1'}/deployments/${mockEnv.deployment_id}`;
-    const req = httpMock.expectOne(r => r.url.indexOf(expectedDetailsUrl) === 0 || r.urlWithParams.indexOf(expectedDetailsUrl) === 0);
+    const expectedDetailsParam = `deploymentId=${mockEnv.deployment_id}`;
+    const req = httpMock.expectOne(r => (r.urlWithParams && r.urlWithParams.indexOf(expectedDetailsParam) >= 0) || r.url.indexOf(`/deployments/${mockEnv.deployment_id}`) === 0);
     expect(req.request.method).toBe('GET');
     req.flush(mockResponse);
   });

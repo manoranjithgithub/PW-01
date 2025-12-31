@@ -11,7 +11,7 @@ describe('DeployConfirmationComponent', () => {
     mockActiveModal = jasmine.createSpyObj(['close']);
 
     await TestBed.configureTestingModule({
-      declarations: [DeployConfirmationComponent],
+      imports: [DeployConfirmationComponent],
       providers: [
         { provide: NgbActiveModal, useValue: mockActiveModal }
       ]

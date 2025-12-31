@@ -2,10 +2,12 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CreateDeploymentComponent } from './create-deployment.component';
 import { ReactiveFormsModule } from '@angular/forms';
 import { LLMDeploymentsService } from '../llm-deployment.service';
-import { ToastrService } from 'ngx-toastr';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { ToastrService, TOAST_CONFIG } from 'ngx-toastr';
 import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { toastConfigMock } from '../../../../test-helpers/testing-mocks';
 
 describe('CreateDeploymentComponent', () => {
   let component: CreateDeploymentComponent;
@@ -28,14 +30,26 @@ describe('CreateDeploymentComponent', () => {
     });
 
     await TestBed.configureTestingModule({
-      imports: [CreateDeploymentComponent, ReactiveFormsModule],
+      imports: [CreateDeploymentComponent, ReactiveFormsModule, HttpClientTestingModule],
       providers: [
         { provide: LLMDeploymentsService, useValue: serviceSpy },
         { provide: ToastrService, useValue: toastrSpy },
-        { provide: Router, useValue: routerSpy }
+        { provide: Router, useValue: routerSpy },
+        { provide: TOAST_CONFIG, useValue: toastConfigMock },
       ],
       schemas: [NO_ERRORS_SCHEMA]
-    }).compileComponents();
+    });
+
+    // Ensure component-level provider (if any) uses our spy
+    TestBed.overrideComponent(CreateDeploymentComponent as any, {
+      set: {
+        providers: [
+          { provide: LLMDeploymentsService, useValue: serviceSpy }
+        ]
+      }
+    });
+
+    await TestBed.compileComponents();
 
     fixture = TestBed.createComponent(CreateDeploymentComponent);
     component = fixture.componentInstance;

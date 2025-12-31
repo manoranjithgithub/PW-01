@@ -54,6 +54,7 @@ const projectServiceMock = {
   getEnvironmentsByProject: jasmine.createSpy().and.returnValue(of({ data: [] })),
   updateProject: jasmine.createSpy().and.returnValue(of({ status: 'Success' })),
   updateEnvironment: jasmine.createSpy().and.returnValue(of({ status: 'Success' })),
+  deleteEnvironment: jasmine.createSpy().and.returnValue(of({ status: 'Success', message: 'deleted' })),
   deleteProject: jasmine.createSpy().and.returnValue(of({ status: 'Success' }))
 };
 
@@ -168,5 +169,108 @@ const projectServiceMock = {
     component.saveGeneralChanges();
 
     expect(projectServiceMock.updateProject).toHaveBeenCalled();
+  });
+
+  it('should map environments with resource units from localStorage', () => {
+    const resourceUsage = [
+      { resource_type: 'CPU', unit: 'cores' },
+      { resource_type: 'RAM', unit: 'mb' },
+      { resource_type: 'ephemeral_storage', unit: 'gb' }
+    ];
+    localStorage.setItem('resourceUsage', JSON.stringify(resourceUsage));
+
+    const envData = [{ id: 'e1', name: 'env1', cpuMaxPlatformLimit: 2, memoryMaxPlatformLimit: 1024, ephemeralStorageMaxPlatformLimit: 10, region: 'us' }];
+    const mapped = component['mapEnvironments'](envData as any[]);
+
+    expect(mapped.length).toBe(1);
+    expect(mapped[0].id).toBe('e1');
+    expect(mapped[0].resourceLimit).toContain('CPU');
+    // memory unit is uppercased in the string (MB)
+    expect(mapped[0].resourceLimit).toContain('(MB)');
+    localStorage.removeItem('resourceUsage');
+  });
+
+  it('should open deleteEnvironment modal and call service on confirm', async () => {
+    const modal = {
+      componentInstance: {},
+      result: Promise.resolve(true)
+    } as any;
+    const ngb = TestBed.inject(NgbModal) as any;
+    ngb.open.and.returnValue(modal);
+
+    component.currentProjectId = '1';
+    const env = { id: 'e1', name: 'env1' } as any;
+
+    component.deleteEnvironment(env);
+    await modal.result;
+
+    expect(ngb.open).toHaveBeenCalled();
+    expect(projectServiceMock.deleteEnvironment).toHaveBeenCalledWith('1', 'e1');
+  });
+
+  it('should toggle dropdown and clear on outside click', () => {
+    const env = { id: 'e1' } as any;
+    component.toggleDropdown(env, new MouseEvent('click'));
+    expect(component.activeEnv).toBe(env);
+
+    const fakeEvent = { target: document.createElement('div') } as unknown as MouseEvent;
+    (fakeEvent.target as HTMLElement).className = 'not-custom';
+    component.onOutsideClick(fakeEvent);
+    expect(component.activeEnv).toBeNull();
+  });
+
+  it('should add and cancel add user', () => {
+    component.userForm = new FormBuilder().group({ name: ['n'], email: ['a@b.com'], role: ['r'] });
+    const initial = component.userList.length;
+    component.addUser();
+    expect(component.userList.length).toBeGreaterThanOrEqual(initial);
+
+    component.cancelAddUser();
+    expect(component.showAddUserForm).toBeFalse();
+  });
+
+  it('should delete access when confirmed', async () => {
+    const modal = { componentInstance: {}, result: Promise.resolve(true) } as any;
+    const ngb = TestBed.inject(NgbModal) as any;
+    ngb.open.and.returnValue(modal);
+    component.userList = [{ email: 'a@b.com' } as any];
+    component.deleteAccess({ email: 'a@b.com' });
+    await modal.result;
+    expect(component.userList.find(u => u.email === 'a@b.com')).toBeUndefined();
+  });
+
+  it('should check project name uniqueness', () => {
+    component.availableProjects = ['test project'];
+    // ensure control value is a plain string (trim() exists)
+    component.generalSettingForm = new FormBuilder().group({ projectName: 'Test Project' } as any);
+    component.checkProjectNameUnique();
+    expect(component.projectNameControl.hasError('uniqueName')).toBeTrue();
+
+    component.generalSettingForm.get('projectName')?.setValue('unique');
+    component.availableProjects = [];
+    component.checkProjectNameUnique();
+    expect(component.projectNameControl.hasError('uniqueName')).toBeFalse();
+  });
+
+  it('getState uses subdomain and getProfile logs error for invalid provider', () => {
+    spyOn(console, 'error');
+    spyOn(component as any, 'getSubdomain').and.returnValue('custom');
+    const state = component.getState();
+    expect(state).toBe('custom');
+
+    component.getProfile('invalid');
+    expect((console.error as any)).toHaveBeenCalled();
+  });
+
+  it('onActionSelected routes to view and opens editor for edit', () => {
+    spyOn((component as any).router, 'navigate');
+    const env = { id: 'e1', name: 'env1', region: 'us' } as any;
+
+    component.onActionSelected('view', env);
+    expect((component as any).router.navigate).toHaveBeenCalled();
+
+    (component as any).editEnvironmentsModel = { open: jasmine.createSpy('open') } as any;
+    component.onActionSelected('edit', env);
+    expect((component as any).editEnvironmentsModel.open).toHaveBeenCalled();
   });
 });

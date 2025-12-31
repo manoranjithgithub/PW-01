@@ -174,4 +174,37 @@ describe('ToolsService', () => {
       { status: 400, statusText: 'Bad Request' }
     );
   });
+
+  it('should extract details from nested error object via handleError()', () => {
+    const badResp: any = { error: { error: { details: 'Detailed error' } } };
+    try {
+      service['handleError'](badResp as any).subscribe({
+        error: (err: Error) => expect(err.message).toBe('Detailed error')
+      });
+    } catch (e) {
+      // handleError returns throwError observable; subscribe above will catch
+    }
+  });
+
+  it('should extract inner message from nested error object via handleError()', () => {
+    const badResp: any = { error: { error: { message: 'Inner message' } } };
+    try {
+      service['handleError'](badResp as any).subscribe({
+        error: (err: Error) => expect(err.message).toBe('Inner message')
+      });
+    } catch (e) {
+      // handleError returns throwError observable; subscribe above will catch
+    }
+  });
+
+  it('should fallback to default when handleError receives empty response', () => {
+    const badResp: any = {};
+    try {
+      service['handleError'](badResp as any).subscribe({
+        error: (err: Error) => expect(err.message).toBe('Something went wrong. Please try again later.')
+      });
+    } catch (e) {
+      // handleError returns throwError observable; subscribe above will catch
+    }
+  });
 });

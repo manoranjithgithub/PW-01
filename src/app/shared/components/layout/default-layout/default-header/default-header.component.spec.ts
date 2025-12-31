@@ -74,10 +74,11 @@ describe('DefaultHeaderComponent', () => {
 
   it('should logout and reset color mode', () => {
     const setSpy = jasmine.createSpy('set');
-    (component as any).colorModeService = { colorMode: jasmine.createSpy('colorMode').and.returnValue(setSpy) };
+    (component as any).colorMode = (() => 'light') as any;
+    (component as any).colorMode.set = setSpy;
 
     component.logout();
-    expect(setSpy).toHaveBeenCalledWith('light');
+    expect((component as any).colorMode.set).toHaveBeenCalledWith('light');
     expect(mockSharedService.emitValueChange).toHaveBeenCalledWith('light');
     expect(mockAuthService.logout).toHaveBeenCalled();
   });

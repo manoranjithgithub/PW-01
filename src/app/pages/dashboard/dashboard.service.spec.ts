@@ -28,6 +28,11 @@ describe('DashboardsService', () => {
     zone = TestBed.inject(NgZone);
   });
 
+  beforeEach(() => {
+    // tests expect a project id to be present in localStorage
+    localStorage.setItem('project', JSON.stringify({ id: 'proj-1' }));
+  });
+
   afterEach(() => {
     httpMock.verify();
     localStorage.clear();
@@ -42,7 +47,7 @@ describe('DashboardsService', () => {
     const mockResp = [{ id: 1 }];
     service.getDeployments(env).subscribe(res => expect(res).toEqual(mockResp));
 
-    const req = httpMock.expectOne(`${environment.deploymentManagement}/deployments?environmentId=${env}`);
+    const req = httpMock.expectOne(`${environment.deploymentManagement}/deployments/list?environmentId=${env}&projectId=proj-1`);
     expect(req.request.method).toBe('GET');
     req.flush(mockResp);
   });
@@ -63,7 +68,7 @@ describe('DashboardsService', () => {
     const mockResp = [{ name: 'e' }];
     service.getEndpoints(env).subscribe(res => expect(res).toEqual(mockResp));
 
-    const req = httpMock.expectOne(`${environment.deploymentManagement}/endpoints?environmentId=${env}`);
+    const req = httpMock.expectOne(`${environment.deploymentManagement}/endpoints/list?environmentId=${env}&projectId=proj-1`);
     expect(req.request.method).toBe('GET');
     req.flush(mockResp);
   });
@@ -72,10 +77,9 @@ describe('DashboardsService', () => {
     const envId = 'env-1';
     const name = 'endpoint1';
     service.deleteEndpoint(envId, name).subscribe(res => expect(res).toEqual({ ok: true }));
-
     const req = httpMock.expectOne(`${environment.deploymentManagement}/endpoints`);
     expect(req.request.method).toBe('DELETE');
-    expect(req.request.body).toEqual({ name, environmentId: envId });
+    expect(req.request.body).toEqual({ name, environmentId: envId, projectId: 'proj-1' });
     req.flush({ ok: true });
   });
 
@@ -97,7 +101,7 @@ describe('DashboardsService', () => {
     const mockResp = [{ tool: 't' }];
     service.getToolsList(env).subscribe(res => expect(res).toEqual(mockResp));
 
-    const req = httpMock.expectOne(`${environment.deploymentManagement}/tools/installed/${env}`);
+    const req = httpMock.expectOne(`${environment.deploymentManagement}/tools/installed?environmentId=${env}&projectId=proj-1`);
     expect(req.request.method).toBe('GET');
     req.flush(mockResp);
   });
@@ -148,7 +152,7 @@ describe('DashboardsService', () => {
       error: (err) => expect(err).toBe('Something bad happened; please try again later.')
     });
 
-    const req = httpMock.expectOne(`${environment.deploymentManagement}/deployments?environmentId=${env}`);
+    const req = httpMock.expectOne(`${environment.deploymentManagement}/deployments/list?environmentId=${env}&projectId=proj-1`);
     req.flush({ error: 'server-error' }, { status: 500, statusText: 'Server Error' });
   });
 });

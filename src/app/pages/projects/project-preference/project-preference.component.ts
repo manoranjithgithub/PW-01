@@ -111,7 +111,7 @@ export class ProjectPreferenceComponent implements OnInit, OnDestroy {
 
   constructor(private fb: FormBuilder, private projectService: ProjectsService, private route: ActivatedRoute,
     private shared: SharedService, private deploymentsService: DeploymentsService,
-    private toastr: ToastrService, private modalService: NgbModal, private router: Router,
+    private toastr: ToastrService, private modalService: NgbModal, public router: Router,
     private layoutActionService: LayoutActionService,
     public permissionService: PermissionService) { }
 

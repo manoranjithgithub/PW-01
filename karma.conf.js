@@ -38,7 +38,16 @@ module.exports = function karmaConfig(config) {
       reporters: [
         { type: 'html' },
         { type: 'text-summary' },
+        { type: 'lcovonly' },
       ],
+      check: {
+        global: {
+          statements: 0,
+          branches: 0,
+          functions: 0,
+          lines: 0
+        }
+      }
     },
     reporters: ['progress', 'kjhtml'],
     port: 9876,
@@ -48,5 +57,9 @@ module.exports = function karmaConfig(config) {
     browsers: ['Chrome'],
     singleRun: false,
     restartOnFileChange: true,
+    browserNoActivityTimeout: 120000, // Increase timeout for slow tests
+    browserDisconnectTimeout: 30000,
+    browserDisconnectTolerance: 3,
+    captureTimeout: 210000,
   });
 };

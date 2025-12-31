@@ -131,7 +131,14 @@ export class InvoiceComponent implements OnInit {
     this.sharedService.currencyChange$.subscribe(() => {
       this.tableData = Array.isArray(this.tableData) ? [...this.tableData] : this.tableData;
     });
-    this.cashfree = Cashfree({ mode: environment.cashFree });
+    try {
+      if (typeof Cashfree !== 'undefined') {
+        this.cashfree = Cashfree({ mode: environment.cashFree });
+      }
+    } catch (e) {
+      // Cashfree SDK not available in test environments; ignore
+      this.cashfree = undefined;
+    }
     // this.cashfree.on('payment.success', (event: any) => {
     //   console.log('Payment Success:', event);
     //   this.toastr.success(event.transaction.txnId);

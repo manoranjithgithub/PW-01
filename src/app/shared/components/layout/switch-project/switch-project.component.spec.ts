@@ -4,7 +4,10 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ProjectsService } from '../../../../pages/projects/projects.service';
 import { SharedService } from '../../../services/shared.service';
 import { AuthService } from '../../../../core/services/auth.service';
+import { TOAST_CONFIG, ToastrService } from 'ngx-toastr';
+import { toastConfigMock, createToastrSpy } from '../../../../../test-helpers/testing-mocks';
 import { FormBuilder } from '@angular/forms';
+import { DeploymentsService } from '../../../services/deployments.service';
 import { of, Subject } from 'rxjs';
 import { ModalComponent } from '../../model/model.component';
 
@@ -31,15 +34,32 @@ describe('SwitchProjectComponent', () => {
     Object.defineProperty(sharedSpy, 'envDDChange$', { get: () => envDDChange$ });
 
     await TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
-      declarations: [SwitchProjectComponent, ModalComponent],
+      imports: [HttpClientTestingModule, SwitchProjectComponent, ModalComponent],
       providers: [
         FormBuilder,
         { provide: ProjectsService, useValue: projectSpy },
         { provide: SharedService, useValue: sharedSpy },
+        { provide: TOAST_CONFIG, useValue: toastConfigMock },
+        { provide: ToastrService, useValue: createToastrSpy() },
         { provide: AuthService, useValue: {} }
       ]
-    }).compileComponents();
+    });
+
+    TestBed.overrideComponent(SwitchProjectComponent as any, {
+      set: {
+        providers: [
+          { provide: ProjectsService, useValue: projectSpy },
+          { provide: DeploymentsService, useValue: {} }
+        ]
+      }
+    });
+
+    // Ensure service spies return observables before component initialization
+    projectSpy.getAllProjects.and.returnValue(of({ data: [{ id: '1', name: 'Project1' }] }));
+    projectSpy.getAllEnvironmentsByProject.and.returnValue(of({ data: [{ id: 'env1', name: 'Env1', region: 'ap-south-1' }] }));
+    projectSpy.getProjectDetailsById.and.returnValue(of({ data: { github: 'github', gitlab: 'gitlab' } }));
+
+    await TestBed.compileComponents();
 
     projectServiceSpy = TestBed.inject(ProjectsService) as jasmine.SpyObj<ProjectsService>;
     sharedServiceSpy = TestBed.inject(SharedService) as jasmine.SpyObj<SharedService>;
@@ -49,13 +69,12 @@ describe('SwitchProjectComponent', () => {
     fixture = TestBed.createComponent(SwitchProjectComponent);
     component = fixture.componentInstance;
 
-    // Mock modal methods
+    // Allow component to initialize then replace view child with spies
+    fixture.detectChanges();
+    // Mock modal methods after change detection so ViewChild isn't overwritten
     component.showEnvironmentModel = { open: jasmine.createSpy('open'), close: jasmine.createSpy('close') } as any;
 
-    projectServiceSpy.getAllProjects.and.returnValue(of({ data: [{ id: '1', name: 'Project1' }] }));
-    projectServiceSpy.getAllEnvironmentsByProject.and.returnValue(of({ data: [{ id: 'env1', name: 'Env1', region: 'ap-south-1' }] }));
-    projectServiceSpy.getProjectDetailsById.and.returnValue(of({ data: { github: 'github', gitlab: 'gitlab' } }));
-
+    // ensure latest change detection
     fixture.detectChanges();
   });
 

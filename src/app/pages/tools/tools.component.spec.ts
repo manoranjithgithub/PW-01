@@ -32,7 +32,9 @@ describe('ToolsComponent', () => {
     sharedServiceSpy = jasmine.createSpyObj('SharedService', [
       'getStatusMeta'
     ], {
-      envValueChange$: envChange$.asObservable()
+      envValueChange$: envChange$.asObservable(),
+      valueChange$: of('ag-theme-alpine'),
+      isLoading$: of(false)
     });
 
     routerSpy = jasmine.createSpyObj('Router', ['navigate']);
@@ -88,7 +90,11 @@ describe('ToolsComponent', () => {
   });
 
   it('should navigate to environments if env is missing', () => {
+    // ensure no environment is present in storage
+    localStorage.removeItem('environment');
+
     component.ngOnInit();
+    fixture.detectChanges();
 
     envChange$.next({});
 
