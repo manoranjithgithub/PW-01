@@ -57,7 +57,6 @@ export class LoginComponent implements OnInit {
       next: (response) => {
         this.toaster.success('Login successful');
         localStorage.setItem('accessToken', response.data.token);
-        // load policies via PermissionService (service will fetch policies for the user)
         this.permissionService.loadPolicies().subscribe({
           next: () => {
             if (this.authService.isTokenReady()) {
@@ -65,7 +64,6 @@ export class LoginComponent implements OnInit {
             }
           },
           error: () => {
-            // even if policies fetch fails, continue to navigate if token is ready
             if (this.authService.isTokenReady()) {
               this.router.navigate(['/projects']);
             }
@@ -74,8 +72,17 @@ export class LoginComponent implements OnInit {
       },
       error: (error) => {
         this.loading = false;
-        if (error.code === 400) {
-          this.toaster.error(`Login failed. ${error.error?.error?.message}`);
+        if (error && error.error) {
+          this.toaster.error(error.error?.error?.message);
+          // this.toaster.info(
+          //   'Server is under maintenance',
+          //   'Notice',
+          //   {
+          //     disableTimeOut: true,
+          //     closeButton: true,
+          //     tapToDismiss: false
+          //   }
+          // );
         } else {
           this.toaster.error(`Login failed. Please check your credentials.`);
         }

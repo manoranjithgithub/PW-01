@@ -44,7 +44,8 @@ export class ToolsService {
     }
 
     getToolDetailsById(env: string, id: any) {
-        return this.http.get(`${this.deploymentUrl}/tools/values?environmentId=${env}&name=${id}`)
+        const projectId = JSON.parse(localStorage.getItem('project') || '{}').id;
+        return this.http.get(`${this.deploymentUrl}/tools/values?environmentId=${env}&name=${id}&projectId=${projectId}`)
             .pipe(
                 catchError(this.handleError)
             );
@@ -58,7 +59,8 @@ export class ToolsService {
     }
 
     deleteTools(env: string, name: string) {
-        return this.http.delete(`${this.deploymentUrl}/tools`, { body: { environmentId: env, name } })
+        const projectId = JSON.parse(localStorage.getItem('project') || '{}').id;
+        return this.http.delete(`${this.deploymentUrl}/tools`, { body: { environmentId: env, name, projectId } })
             .pipe(
                 catchError(this.handleError.bind(this))
             );
@@ -101,7 +103,8 @@ export class ToolsService {
 
     liveToolsData(envId: string) {
         const token = localStorage.getItem("accessToken")!;
-        const url = `${this.deploymentUrl}/live/tools/stream?environmentId=${envId}&interval=15`;
+        const projectId = JSON.parse(localStorage.getItem('project') || '{}').id;
+        const url = `${this.deploymentUrl}/live/tools/stream?environmentId=${envId}&interval=15&projectId=${projectId}`;
         return createSSEObservable(url, token, this.zone);
     }
 

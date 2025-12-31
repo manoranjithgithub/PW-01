@@ -114,7 +114,7 @@
     /* dark navy */
     border-radius: 10px;
     min-width: 220px;
-    padding: 8px 0;
+    padding:5px 0;
     box-shadow: 0 6px 18px rgba(2, 6, 23, 0.6);
     border: 0;
 }
@@ -133,7 +133,14 @@
 }
 
 .user-dropdown .user-dropdown-menu li a[cDropdownItem]:hover {
-    background: rgba(255, 255, 255, 0.03);
+    background: #EA7131;
+    color: #fff;
+    i {
+        color: #fff;
+    }
+    .header-lines, .header-name, .header-email, .header-action {
+        color: #fff;
+    }
 }
 
 .user-dropdown .user-dropdown-menu li+li {

@@ -74,7 +74,7 @@ deploy:
     - mv linux-amd64/helm /usr/bin/
     - rm -rf linux-amd64
     - helm repo add --username $HELM_REGISTRY_USER --password $HELM_REGISTRY_TOKEN dt-charts ${CI_API_V4_URL}/projects/34/packages/helm/stable
-    - helm upgrade --install portal dt-charts/microservice --set namespace=paas-dev --set env=dev --set subDomain=app --set appName=portal --set image.repository=096985928716.dkr.ecr.ap-southeast-1.amazonaws.com/microservices/nimbuz-portal-fe --set image.tag=dev --set image.pullPolicy=Always --set service.targetPort=80 --namespace paas-dev
+    - helm upgrade --install portal dt-charts/microservice --set namespace=nimbuz-dev --set env=dev --set subDomain=app --set appName=portal --set image.repository=096985928716.dkr.ecr.ap-southeast-1.amazonaws.com/microservices/nimbuz-portal-fe --set image.tag=dev --set image.pullPolicy=Always --set service.targetPort=80 --namespace nimbuz-dev
   only:
     - dev
 

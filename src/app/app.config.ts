@@ -12,7 +12,7 @@ import { DropdownModule, SidebarModule } from '@coreui/angular';
 import { IconSetService } from '@coreui/icons-angular';
 import { routes } from './app.routes';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-import { HTTP_INTERCEPTORS, provideHttpClient  } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, provideHttpClient } from '@angular/common/http';
 import { AuthInterceptor } from '../app/core/services/auth.interceptor';
 import { ToastrModule } from 'ngx-toastr';
 import { provideMarkdown } from 'ngx-markdown';
@@ -35,7 +35,11 @@ export const appConfig: ApplicationConfig = {
     IconSetService,
     provideAnimations(), provideAnimationsAsync(), provideAnimationsAsync(),
     importProvidersFrom(BrowserAnimationsModule),
-    importProvidersFrom(ToastrModule.forRoot()),
+    importProvidersFrom(ToastrModule.forRoot({
+      positionClass: 'toast-top-right',
+      preventDuplicates: true,
+      closeButton: false
+    })),
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
     provideHttpClient(),
     provideMarkdown()
