@@ -20,6 +20,7 @@ describe('CreateEnvironmentComponent', () => {
   const user$ = of({ owner: 'nimbuz' });
 
   beforeEach(async () => {
+    localStorage.clear(); // Clear localStorage before each test
     projectSpy = jasmine.createSpyObj('ProjectsService', [
       'getAllProjects',
       'getAllEnvironmentsByProject',

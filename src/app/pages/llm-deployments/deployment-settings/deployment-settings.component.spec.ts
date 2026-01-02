@@ -381,6 +381,7 @@ describe('DeploymentSettingsComponent', () => {
     });
 
     it('should handle error response', () => {
+      component.serviceList = undefined; // Reset to undefined before test
       spyOn(localStorage, 'getItem').and.returnValue(JSON.stringify({ id: 'env-123' }));
       mockDeploymentService.getDeployments.and.returnValue(
         of({ status: 'ERROR', data: [] })

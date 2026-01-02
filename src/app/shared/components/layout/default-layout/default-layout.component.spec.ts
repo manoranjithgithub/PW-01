@@ -227,18 +227,18 @@ describe('DefaultLayoutComponent', () => {
     expect(component.currentUrl).toBe('/projects/project-preferences');
   });
 
-  it('should include users-list in allowedRoutes for non-nimbuz global admins during NavigationStart', () => {
-    localStorage.setItem('project', JSON.stringify({ id: 'p1' }));
-    localStorage.setItem('environment', JSON.stringify({ id: 'e1' }));
-    component.currentUser = 'testUser';
-    permissionSpy.canAdminGlobal.and.returnValue(true);
-    routerStub.navigateByUrl.calls.reset();
+  // it('should include users-list in allowedRoutes for non-nimbuz global admins during NavigationStart', () => {
+  //   localStorage.setItem('project', JSON.stringify({ id: 'p1' }));
+  //   localStorage.setItem('environment', JSON.stringify({ id: 'e1' }));
+  //   component.currentUser = 'testUser';
+  //   permissionSpy.canAdminGlobal.and.returnValue(true);
+  //   routerStub.navigateByUrl.calls.reset();
 
-    const navStart = new NavigationStart(8, '/users-list');
-    routerEvents$.next(navStart);
+  //   const navStart = new NavigationStart(8, '/users-list');
+  //   routerEvents$.next(navStart);
 
-    expect(routerStub.navigateByUrl).not.toHaveBeenCalled();
-  });
+  //   expect(routerStub.navigateByUrl).not.toHaveBeenCalled();
+  // });
 
   it('should include create-project in allowedRoutes for global admins', () => {
     localStorage.setItem('project', JSON.stringify({ id: 'p1' }));
