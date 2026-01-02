@@ -54,7 +54,7 @@ export class SwitchProjectComponent implements OnInit {
   private envSubscription?: Subscription;
 
   selectedEnvironmentObj: any;
-  vcsProfileInfo: any = {}  ;
+  vcsProfileInfo: any = {};
 
   constructor(
     private authService: AuthService,
@@ -121,6 +121,7 @@ export class SwitchProjectComponent implements OnInit {
   }
 
   getSelectedRegion(data: any): void {
+    localStorage.setItem('environment', JSON.stringify(this.listOfenvironments[0]));
     const { environment } = this.getSavedSelections();
     if (!data) return;
     this.selectedRegion = data.name;
@@ -133,6 +134,7 @@ export class SwitchProjectComponent implements OnInit {
     this.selectedEnvironmentObj = env;
     this.selectedEnvironment = this.selectedEnvironmentObj?.name;
 
+    localStorage.setItem('environment', JSON.stringify(this.selectedEnvironmentObj));
   }
   showEnvironment(): void {
     this.showEnvironmentModel.open();
