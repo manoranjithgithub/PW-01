@@ -22,7 +22,6 @@ describe('PermissionService', () => {
     });
 
     svc = TestBed.inject(PermissionService);
-    // ensure clean storage
     localStorage.removeItem('userId');
     localStorage.removeItem('policies');
   });
@@ -76,7 +75,6 @@ describe('PermissionService', () => {
   });
 
   it('ensureLatestPolicies returns cached when recent', (done) => {
-    // set raw policies and lastLoadedAt to now
     svc.loadPoliciesFromArray([{ V0: 'u5', V2: '*', V3: '*', V4: 'read' }] as any);
     (svc as any).lastLoadedAt = Date.now();
     depSpy.getPolicyByUser.and.returnValue(of({ status: 'success', data: [] }));

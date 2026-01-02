@@ -55,10 +55,6 @@ describe('UtilizationChartComponent', () => {
     expect((component as any).viewInit).toBeTrue();
     expect(component.renderGauge).toHaveBeenCalled();
   });
-
-  // ------------------------------------------------
-  // ngOnChanges
-  // ------------------------------------------------
   it('should not render gauge if view is not initialized', () => {
     spyOn(component, 'renderGauge');
 

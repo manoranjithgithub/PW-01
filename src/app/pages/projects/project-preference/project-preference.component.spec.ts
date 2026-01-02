@@ -59,7 +59,6 @@ const projectServiceMock = {
 };
 
   beforeEach(async () => {
-    // ensure the component receives our mock service instance (standalone component providers can shadow TestBed providers)
     TestBed.overrideProvider(ProjectsService, { useValue: projectServiceMock });
     await TestBed.configureTestingModule({
       imports: [
@@ -185,7 +184,6 @@ const projectServiceMock = {
     expect(mapped.length).toBe(1);
     expect(mapped[0].id).toBe('e1');
     expect(mapped[0].resourceLimit).toContain('CPU');
-    // memory unit is uppercased in the string (MB)
     expect(mapped[0].resourceLimit).toContain('(MB)');
     localStorage.removeItem('resourceUsage');
   });
@@ -241,7 +239,6 @@ const projectServiceMock = {
 
   it('should check project name uniqueness', () => {
     component.availableProjects = ['test project'];
-    // ensure control value is a plain string (trim() exists)
     component.generalSettingForm = new FormBuilder().group({ projectName: 'Test Project' } as any);
     component.checkProjectNameUnique();
     expect(component.projectNameControl.hasError('uniqueName')).toBeTrue();

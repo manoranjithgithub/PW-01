@@ -89,7 +89,7 @@ describe('ModalComponent', () => {
   describe('open()', () => {
     beforeEach(() => {
       modalServiceSpy.open.and.returnValue(modalRefSpy);
-      fixture.detectChanges(); // Ensure ViewChild is initialized
+      fixture.detectChanges(); 
     });
 
     it('should open modal with centered position by default', () => {

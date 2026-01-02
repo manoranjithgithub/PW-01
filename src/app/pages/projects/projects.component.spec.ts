@@ -32,7 +32,6 @@ describe('ProjectsComponent', () => {
       'getResourceUsage'
     ]);
 
-    // default stubs to avoid undefined subscribe errors when ngOnInit or onProjectChange calls service methods
     projectsServiceSpy.getAllProjects.and.returnValue(of({ data: [] }));
     projectsServiceSpy.getAllEnvironmentsByProject.and.returnValue(of({ data: [] }));
     projectsServiceSpy.getProjectDetailsById.and.returnValue(of({ data: { github: false, gitlab: false } }));
@@ -54,7 +53,6 @@ describe('ProjectsComponent', () => {
     ]);
     locationSpy = jasmine.createSpyObj('Location', ['replaceState']);
 
-    // Ensure the standalone component's provider is overridden by our spy
     TestBed.overrideProvider(ProjectsService, { useValue: projectsServiceSpy });
 
     await TestBed.configureTestingModule({

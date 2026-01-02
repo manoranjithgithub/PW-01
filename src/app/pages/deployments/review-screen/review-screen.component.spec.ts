@@ -10,8 +10,6 @@ import { of, throwError } from 'rxjs';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 
-/* ---------------- MOCKS ---------------- */
-
 class MockDeploymentsService {
   createDeployement = jasmine.createSpy('createDeployement').and.returnValue(
     of({ status: 'success', message: 'Created successfully' })
@@ -36,8 +34,6 @@ class MockToastrService {
 class MockPermissionService {
   canWriteGlobal = jasmine.createSpy('canWriteGlobal').and.returnValue(true);
 }
-
-/* ---------------- TESTS ---------------- */
 
 describe('ReviewScreenComponent', () => {
   let component: ReviewScreenComponent;
@@ -72,13 +68,10 @@ describe('ReviewScreenComponent', () => {
 
     fixture = TestBed.createComponent(ReviewScreenComponent);
     component = fixture.componentInstance;
-
-    // use the component's own service instance (component-level provider)
     deploymentService = (component as any).deploymentsService as any;
     router = TestBed.inject(Router) as any;
     toaster = TestBed.inject(ToastrService) as any;
 
-    // ---- Mock review input ----
     component.review = {
       repoUrl: 'https://repo.git',
       stepOne: {
@@ -97,7 +90,6 @@ describe('ReviewScreenComponent', () => {
       }
     };
 
-    // initialize inputs used by the template to avoid undefined property access
     component.generalDetails = {
       type: 'zip',
       branchName: 'main',
@@ -124,13 +116,9 @@ describe('ReviewScreenComponent', () => {
     fixture.detectChanges();
   });
 
-  /* ---------------- BASIC ---------------- */
-
   it('should create', () => {
     expect(component).toBeTruthy();
   });
-
-  /* ---------------- Navigation ---------------- */
 
   it('should navigate back on goBack()', () => {
     const location = TestBed.inject(Location) as any;
@@ -139,9 +127,6 @@ describe('ReviewScreenComponent', () => {
 
     expect(location.back).toHaveBeenCalled();
   });
-
-  /* ---------------- Submit ---------------- */
-
   it('should submit changes and navigate on success', () => {
     component.submitChanges();
 
@@ -159,8 +144,6 @@ describe('ReviewScreenComponent', () => {
 
     expect(toaster.error).toHaveBeenCalled();
   });
-
-  /* ---------------- Utilities ---------------- */
 
   it('should return object keys', () => {
     const result = component.objectKeys({ a: 1, b: 2 });

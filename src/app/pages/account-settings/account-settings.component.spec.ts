@@ -94,7 +94,6 @@ describe('AccountComponent (Jasmine)', () => {
     component.initializeForm();
     component.resetPasswordForm.get('password')?.setValue('Same@123');
     component.resetPasswordForm.get('confirmPassword')?.setValue('Same@123');
-    // first set a mismatch then validate equal to ensure clearing logic works
     component.resetPasswordForm.get('confirmPassword')?.setErrors({ mismatch: true, required: false } as any);
     component.passwordsMatchValidator(component.resetPasswordForm);
     expect(component.resetPasswordForm.get('confirmPassword')?.errors?.['mismatch']).toBeUndefined();
@@ -106,7 +105,6 @@ describe('AccountComponent (Jasmine)', () => {
     expect(acc.get('name')).toBeTruthy();
     expect(acc.get('email')).toBeTruthy();
     expect(acc.get('userName')).toBeTruthy();
-    // userName control should be disabled by default
     expect(acc.get('userName')?.disabled).toBeTrue();
     const reset = component.resetPasswordForm;
     expect(reset.get('oldPassword')).toBeTruthy();
@@ -115,7 +113,6 @@ describe('AccountComponent (Jasmine)', () => {
   });
 
   it('ngOnInit patches userData and disables accountForm', () => {
-    // override getUser to return meaningful data and recreate component
     mockSharedService.getUser.and.returnValue({ name: 'John', email: 'j@e.com', userName: 'jdoe' } as any);
     fixture = TestBed.createComponent(AccountComponent);
     component = fixture.componentInstance;

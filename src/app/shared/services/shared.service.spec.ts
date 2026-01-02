@@ -19,7 +19,6 @@ describe('SharedService', () => {
     service = TestBed.inject(SharedService);
     httpMock = TestBed.inject(HttpTestingController);
 
-    // flush the initial constructor ensureRatesFor(['INR']) call if present
     const req = httpMock.match((req) => req.url.indexOf('https://api.frankfurter.dev') === 0);
     if (req && req.length) {
       req[0].flush({ rates: { INR: 89.62 } });
@@ -54,13 +53,10 @@ describe('SharedService', () => {
   });
 
   it('convertAmount uses fallback when rates not available', () => {
-    // ensure empty rates and old timestamp to force fallback
     (service as any).rates = {};
     (service as any).ratesLoadedAt = 0;
     const out = service.convertAmount(100, 'USD', 'INR');
-    // fallback INR 89.62 expected
     expect(Math.round(out)).toBe(Math.round(100 * 89.62));
-    // consume any async rates request triggered by convertAmount
     const pending = httpMock.match((r) => r.url.indexOf('https://api.frankfurter.dev') === 0);
     if (pending && pending.length) {
       pending[0].flush({ rates: { INR: 89.62 } });
@@ -284,7 +280,7 @@ describe('SharedService', () => {
   });
 
   it('hide sets isLoading to false', (done) => {
-    service.show(); // set to true first
+    service.show(); 
     service.isLoading$.subscribe(value => {
       if (value === false) {
         expect(value).toBeFalse();
@@ -379,7 +375,7 @@ describe('SharedService', () => {
     (service as any).ratesLoadedAt = 0;
     const promise = service.ensureRatesFor(['INR']);
     const req = httpMock.expectOne((r) => r.url.indexOf('https://api.frankfurter.dev') === 0);
-    req.flush({ data: 'invalid' }); // no rates object
+    req.flush({ data: 'invalid' });
     await promise;
     expect(true).toBe(true);
   });

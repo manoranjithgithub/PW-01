@@ -40,7 +40,6 @@ describe('CreateDeploymentComponent', () => {
       schemas: [NO_ERRORS_SCHEMA]
     });
 
-    // Ensure component-level provider (if any) uses our spy
     TestBed.overrideComponent(CreateDeploymentComponent as any, {
       set: {
         providers: [

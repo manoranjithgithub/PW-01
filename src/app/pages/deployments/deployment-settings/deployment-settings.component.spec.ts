@@ -12,8 +12,6 @@ import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
-/* ---------------- MOCK SERVICES ---------------- */
-
 class MockDeploymentsService {
   getDeploymentById = jasmine.createSpy('getDeploymentById').and.returnValue(of({ status: 'success', data: {} }));
   getInstanceTypes = jasmine.createSpy('getInstanceTypes').and.returnValue(of({ data: [] }));
@@ -57,8 +55,6 @@ class MockPermissionService {
   canAdminGlobal = jasmine.createSpy('canAdminGlobal').and.returnValue(false);
   canDeleteForCurrentUser = jasmine.createSpy('canDeleteForCurrentUser').and.returnValue(false);
 }
-
-/* ---------------- TEST SUITE ---------------- */
 
 describe('DeploymentSettingsComponent', () => {
   let component: DeploymentSettingsComponent;
@@ -144,7 +140,6 @@ describe('DeploymentSettingsComponent', () => {
     const file = new File([''], 'test.zip', { type: 'application/zip' });
     component.selectedFile = file;
     component.deploymentdetails = { id: 'dep123' };
-    // mark the file input control as having a valid value so the upload path runs
     component.sourceSettingsForm.get('fileInput')?.setValue('test.zip');
     component.sourceSettingsForm.get('fileName')?.setValue('test.zip');
     component.onZipUpload();
@@ -177,26 +172,6 @@ describe('DeploymentSettingsComponent', () => {
     component.onSourceSubmit();
     expect(deploymentService.updateDeployment).toHaveBeenCalled();
   });
-
-  // it('should delete deployment and emit close event', async () => {
-  //   const deploymentService = TestBed.inject(DeploymentsService);
-  //   const toaster = TestBed.inject(ToastrService);
-  //   const closeSpy = spyOn(component.closeModalEvent, 'emit');
-
-  //   spyOn(deploymentService, 'deleteDeployment').and.returnValue(of({ status: 'success', message: 'Deleted' }));
-  //   spyOn(toaster, 'success');
-
-  //   await component.deleteDeployment();
-  //   fixture.detectChanges();
-
-  //   await fixture.whenStable();
-
-  //   expect(deploymentService.deleteDeployment).toHaveBeenCalled();
-  //   expect(toaster.success).toHaveBeenCalledWith('Deleted');
-  //   expect(closeSpy).toHaveBeenCalled();
-  // });
-
-
   it('should copy domain value', () => {
     const input = document.createElement('input');
     input.value = 'test';

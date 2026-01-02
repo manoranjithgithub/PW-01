@@ -24,7 +24,6 @@ describe('DeploymentDetailsComponent', () => {
     fragment$ = new Subject<string | null>();
 
     const deploymentSpy = jasmine.createSpyObj('LLMDeploymentsService', ['getDeploymentById']);
-    // first call returns main data, second call returns release data
     deploymentSpy.getDeploymentById.and.returnValues(
       of({ status: 'success', data: { name: 'app1', status: 'Running' } }),
       of({ status: 'success', data: { release: 'r1' } })
@@ -32,7 +31,6 @@ describe('DeploymentDetailsComponent', () => {
 
     const sharedServiceSpy = jasmine.createSpyObj('SharedService', ['setlastReleaseData', 'getlastReleaseData']);
     sharedServiceSpy.getlastReleaseData.and.returnValue({});
-    // ensure releaseStatus$ observable exists so component can subscribe safely
     (sharedServiceSpy as any).releaseStatus$ = of([]);
 
     const layoutActionSpy = jasmine.createSpyObj('LayoutActionService', ['setExtraTitle', 'clearExtraTitle']);
@@ -48,7 +46,6 @@ describe('DeploymentDetailsComponent', () => {
       queryParams: queryParams$.asObservable(),
       fragment: fragment$.asObservable()
     } as unknown as ActivatedRoute;
-    // Ensure the component uses our spy instance instead of creating its own provider.
     TestBed.overrideComponent(DeploymentDetailsComponent as any, {
       set: {
         providers: [{ provide: LLMDeploymentsService, useValue: deploymentSpy }]
@@ -98,7 +95,6 @@ describe('DeploymentDetailsComponent', () => {
 
   it('onTabChange should update selectedTabIndex and replace state', () => {
     const router = TestBed.inject(Router) as any;
-    // set snapshot query params to include other params
     (component as any).activateRoute.snapshot.queryParams = { a: 'b', tabIndex: '3' };
     (router as any).url = '/llm/deployment-details?tabIndex=3&a=b';
     const location = TestBed.inject(Location) as any;
@@ -179,7 +175,6 @@ describe('DeploymentDetailsComponent', () => {
       queryParams$.next({ id: 'd4' });
       
       setTimeout(() => {
-        // When status is not success, second getDeploymentById should not be called
         expect(deploymentService.getDeploymentById).toHaveBeenCalledTimes(1);
         expect(sharedService.setlastReleaseData).not.toHaveBeenCalled();
         done();
@@ -254,7 +249,6 @@ describe('DeploymentDetailsComponent', () => {
       const statusSubject = new Subject<any>();
       sharedService.releaseStatus$ = statusSubject.asObservable();
       
-      // Re-initialize component to get new subscription
       component.ngOnInit();
       
       const newStatus = { release: 'v2.0' };
@@ -395,7 +389,6 @@ describe('DeploymentDetailsComponent', () => {
     it('should handle missing environment in localStorage', () => {
       localStorage.setItem('environment', JSON.stringify({ name: 'Test Env' }));
       
-      // This will set envId to empty string when id is undefined
       expect(() => {
         component.ngOnInit();
       }).not.toThrow();

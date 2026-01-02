@@ -511,8 +511,6 @@ describe('RawEditorComponent', () => {
     it('should handle complete workflow: initialize, convert, and update', () => {
       spyOn(component.variablesUpdated, 'emit');
       spyOn(component, 'closeRawEditor');
-
-      // Initialize
       component.data = [
         { EnvVariable: 'API_URL', Value: 'https://api.example.com' },
         { EnvVariable: 'DEBUG', Value: 'true' }
@@ -531,12 +529,10 @@ describe('RawEditorComponent', () => {
       expect(component.envData).toBeTruthy();
       expect(component.jsonData).toBeTruthy();
 
-      // Edit and validate
       component.jsonData = '{"NEW_KEY":"new_value"}';
       component.validateJson();
       expect(component.isJsonValid).toBe(true);
 
-      // Update variables
       component.updateVariables();
       expect(component.variablesUpdated.emit).toHaveBeenCalledWith([
         { EnvVariable: 'NEW_KEY', Value: 'new_value' }
@@ -553,7 +549,6 @@ describe('RawEditorComponent', () => {
       expect(component.envData).toBe(envValue);
       expect(component.jsonData).toBeTruthy();
 
-      // Switch to JSON and verify conversion
       component.activeTab = 'json';
       component.onDataChange(component.jsonData);
 
@@ -577,8 +572,6 @@ describe('RawEditorComponent', () => {
       };
 
       component.ngOnChanges(changes);
-      
-      // Convert env to JSON and back
       const envString = component.envData;
       const jsonString = component.envToJson(envString);
       const envStringAgain = component.jsonToEnv(jsonString);

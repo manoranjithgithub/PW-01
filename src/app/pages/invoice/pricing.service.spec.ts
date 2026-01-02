@@ -51,7 +51,6 @@ describe('PricingsService', () => {
     }});
 
     const req = httpMock.expectOne(r => r.method === 'POST');
-    // server returns an error body where `error.error.details` would be present
     req.flush({ error: { details: 'detailed error' } }, { status: 500, statusText: 'Server Error' });
   });
 
@@ -62,7 +61,6 @@ describe('PricingsService', () => {
     }});
 
     const req = httpMock.expectOne(r => r.method === 'GET');
-    // server returns a body where `error.error.message` is not present but `error.message` is
     req.flush({ message: 'simple message' }, { status: 400, statusText: 'Bad Request' });
   });
 

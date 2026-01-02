@@ -182,7 +182,7 @@ describe('ToolsService', () => {
         error: (err: Error) => expect(err.message).toBe('Detailed error')
       });
     } catch (e) {
-      // handleError returns throwError observable; subscribe above will catch
+      // handleError
     }
   });
 
@@ -193,7 +193,7 @@ describe('ToolsService', () => {
         error: (err: Error) => expect(err.message).toBe('Inner message')
       });
     } catch (e) {
-      // handleError returns throwError observable; subscribe above will catch
+      // handleError 
     }
   });
 
@@ -204,7 +204,7 @@ describe('ToolsService', () => {
         error: (err: Error) => expect(err.message).toBe('Something went wrong. Please try again later.')
       });
     } catch (e) {
-      // handleError returns throwError observable; subscribe above will catch
+      // handleError 
     }
   });
 });

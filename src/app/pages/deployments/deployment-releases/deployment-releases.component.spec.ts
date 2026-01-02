@@ -8,9 +8,6 @@ import { of, Subject } from 'rxjs';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-
-/* ---------------- MOCKS ---------------- */
-
 class MockDeploymentsService {
   getDeploymentById() {
     return of({
@@ -48,8 +45,6 @@ class MockActivatedRoute {
   queryParams = of({ id: 'dep1' });
 }
 
-/* ---------------- TESTS ---------------- */
-
 describe('DeploymentReleasesComponent (logic)', () => {
   let component: DeploymentReleasesComponent;
   let fixture: ComponentFixture<DeploymentReleasesComponent>;
@@ -84,20 +79,15 @@ describe('DeploymentReleasesComponent (logic)', () => {
     fixture.detectChanges();
   });
 
-  /* ---------------- BASIC ---------------- */
-
   it('should create', () => {
     expect(component).toBeTruthy();
   });
 
-  /* ---------------- ngOnInit ---------------- */
 
   it('should load deployment details on init', () => {
     expect(component.deploymentId).toBe('dep1');
     expect(component.deploymentdetails).toBeTruthy();
   });
-
-  /* ---------------- Releases ---------------- */
 
   it('should process releases and update steps', () => {
     const releases = [{
@@ -122,15 +112,11 @@ describe('DeploymentReleasesComponent (logic)', () => {
     expect(component.hasFailedStatus()).toBeTrue();
   });
 
-  /* ---------------- Class Meta ---------------- */
-
   it('should return class list from shared service', () => {
     const result = component.getClassList('success');
     expect(result).toContain('icon-success');
     expect(result).toContain('class-success');
   });
-
-  /* ---------------- Logs ---------------- */
 
   it('should fetch logs successfully', () => {
     component.realeseId = 'rel1';
@@ -153,8 +139,6 @@ describe('DeploymentReleasesComponent (logic)', () => {
 
     expect(toaster.error).toHaveBeenCalled();
   });
-
-  /* ---------------- UI State ---------------- */
 
   it('should toggle light mode', () => {
     component.isLightMode = false;
@@ -179,8 +163,6 @@ describe('DeploymentReleasesComponent (logic)', () => {
     expect(component.openDropdown).toBeNull();
   });
 
-  /* ---------------- Duration ---------------- */
-
   it('should calculate duration correctly', () => {
     const result = component.getDuration(
       '2024-01-01T00:00:00Z',
@@ -191,8 +173,6 @@ describe('DeploymentReleasesComponent (logic)', () => {
     expect(result).toContain('1m');
     expect(result).toContain('1s');
   });
-
-  /* ---------------- Pagination ---------------- */
 
   it('should update page size and reload logs', () => {
     spyOn(component, 'getLogData');
@@ -205,8 +185,6 @@ describe('DeploymentReleasesComponent (logic)', () => {
     expect(component.pageSize).toBe(250);
     expect(component.getLogData).toHaveBeenCalled();
   });
-
-  /* ---------------- updateSteps ---------------- */
 
   it('should generate steps for pending build', () => {
     component.active = {
@@ -235,8 +213,6 @@ describe('DeploymentReleasesComponent (logic)', () => {
     const deployStep = component.steps.at(-1);
     expect(deployStep?.status).toBe('paused');
   });
-
-  /* ---------------- Destroy ---------------- */
 
   it('should complete destroy$ on ngOnDestroy', () => {
     spyOn(component['destroy$'], 'next');

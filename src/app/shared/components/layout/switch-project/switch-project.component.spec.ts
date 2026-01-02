@@ -53,8 +53,6 @@ describe('SwitchProjectComponent', () => {
         ]
       }
     });
-
-    // Ensure service spies return observables before component initialization
     projectSpy.getAllProjects.and.returnValue(of({ data: [{ id: '1', name: 'Project1' }] }));
     projectSpy.getAllEnvironmentsByProject.and.returnValue(of({ data: [{ id: 'env1', name: 'Env1', region: 'ap-south-1' }] }));
     projectSpy.getProjectDetailsById.and.returnValue(of({ data: { github: 'github', gitlab: 'gitlab' } }));
@@ -68,13 +66,8 @@ describe('SwitchProjectComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(SwitchProjectComponent);
     component = fixture.componentInstance;
-
-    // Allow component to initialize then replace view child with spies
     fixture.detectChanges();
-    // Mock modal methods after change detection so ViewChild isn't overwritten
     component.showEnvironmentModel = { open: jasmine.createSpy('open'), close: jasmine.createSpy('close') } as any;
-
-    // ensure latest change detection
     fixture.detectChanges();
   });
 

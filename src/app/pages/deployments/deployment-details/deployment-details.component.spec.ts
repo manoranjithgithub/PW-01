@@ -12,8 +12,6 @@ import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
-/* ------------------ MOCKS ------------------ */
-
 class MockRouter {
   url = '/deployment/details?id=1';
   navigate = jasmine.createSpy('navigate');
@@ -81,8 +79,6 @@ class MockToastrService {
   success = jasmine.createSpy('success');
 }
 
-/* ------------------ TESTS ------------------ */
-
 describe('DeploymentDetailsComponent', () => {
   let component: DeploymentDetailsComponent;
   let fixture: ComponentFixture<DeploymentDetailsComponent>;
@@ -101,7 +97,7 @@ describe('DeploymentDetailsComponent', () => {
         { provide: SharedService, useClass: MockSharedService },
         { provide: ToastrService, useClass: MockToastrService }
       ],
-      schemas: [NO_ERRORS_SCHEMA] // ignore child components
+      schemas: [NO_ERRORS_SCHEMA] 
     }).compileComponents();
 
     TestBed.overrideComponent(DeploymentDetailsComponent, {
@@ -120,13 +116,9 @@ describe('DeploymentDetailsComponent', () => {
     fixture.detectChanges();
   });
 
-  /* ------------------ BASIC ------------------ */
-
   it('should create', () => {
     expect(component).toBeTruthy();
   });
-
-  /* ------------------ ngOnInit ------------------ */
 
   it('should set deploymentId and selectedTabIndex from query params', () => {
     expect(component.deploymentId).toBe('123');
@@ -140,14 +132,12 @@ describe('DeploymentDetailsComponent', () => {
     );
   });
 
-  /* ------------------ Tab Change ------------------ */
 
   it('should update selectedTabIndex and replace URL on tab change', () => {
     component.onTabChange(3);
     expect(component.selectedTabIndex).toBe(3);
   });
 
-  /* ------------------ goToNextTab ------------------ */
 
   it('should increment tab index if less than 4', () => {
     component.selectedTabIndex = 2;
@@ -155,7 +145,6 @@ describe('DeploymentDetailsComponent', () => {
     expect(component.selectedTabIndex).toBe(3);
   });
 
-  /* ------------------ Close ------------------ */
 
   it('should emit close event when onCloseClicked is called', () => {
     spyOn(component.closeModalEvent, 'emit');
@@ -163,14 +152,12 @@ describe('DeploymentDetailsComponent', () => {
     expect(component.closeModalEvent.emit).toHaveBeenCalled();
   });
 
-  /* ------------------ Layout Button ------------------ */
 
   it('should delete deployment and navigate on confirm', async () => {
     const router = TestBed.inject(Router) as any;
     const toastr = TestBed.inject(ToastrService) as any;
 
     component.deploymentId = '123';
-    // call the method and wait for modal promise and deletion observable to resolve
     component.onLayoutButtonClick();
     await fixture.whenStable();
 
@@ -178,7 +165,6 @@ describe('DeploymentDetailsComponent', () => {
     expect(router.navigate).toHaveBeenCalledWith(['/deployment']);
   });
 
-  /* ------------------ ngOnDestroy ------------------ */
 
   it('should cleanup subscriptions on destroy', () => {
     spyOn(component['destroy$'], 'next');

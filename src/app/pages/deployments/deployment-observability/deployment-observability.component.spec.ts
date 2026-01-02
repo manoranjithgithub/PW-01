@@ -45,7 +45,6 @@ describe('DeploymentObservabilityComponent', () => {
       ],
       providers: [
         FormBuilder,
-        // `DeploymentsService` is provided at the component level; we'll override that below
         {
           provide: ActivatedRoute,
           useValue: { queryParams: of({ id: '123' }) }
@@ -53,7 +52,6 @@ describe('DeploymentObservabilityComponent', () => {
       ]
     });
 
-    // Override the component's providers so the standalone component uses our mock
     TestBed.overrideComponent(DeploymentObservabilityComponent, {
       set: {
         providers: [
@@ -67,7 +65,6 @@ describe('DeploymentObservabilityComponent', () => {
   });
 
   beforeEach(() => {
-    // Mock localStorage
     spyOn(localStorage, 'getItem').and.callFake((key: string) => {
       if (key === 'environment') {
         return JSON.stringify({ id: 'env-123' });
@@ -99,7 +96,6 @@ describe('DeploymentObservabilityComponent', () => {
   });
 
   it('should filter logs based on search text', fakeAsync(() => {
-    // ensure initial logs are loaded
     tick();
     fixture.detectChanges();
 
@@ -251,8 +247,6 @@ describe('DeploymentObservabilityComponent', () => {
       document.body.appendChild(div);
       
       component.scrollToBottom();
-      
-      // scrollTop should be set to scrollHeight
       expect(div.scrollTop).toBeGreaterThanOrEqual(0);
       document.body.removeChild(div);
     });
@@ -512,7 +506,6 @@ describe('DeploymentObservabilityComponent', () => {
       component.filterForm.patchValue({ duration: '1h' });
       tick();
       
-      // Timestamps should be reset to default values (last 15 mins)
       expect(component.filterForm.get('fromTimestamp')?.value).toBeDefined();
       expect(component.filterForm.get('toTimestamp')?.value).toBeDefined();
     }));
@@ -528,7 +521,6 @@ describe('DeploymentObservabilityComponent', () => {
       });
       tick(100);
       
-      // When staying on custom, timestamps should remain
       expect(component.filterForm.get('fromTimestamp')?.value).toBe(customFrom);
       expect(component.filterForm.get('toTimestamp')?.value).toBe(customTo);
     }));

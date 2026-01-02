@@ -48,7 +48,6 @@ describe('DeploymentConfigMapsComponent', () => {
       { provide: PermissionService, useValue: permissionSpy }
     ],
     })
-    // override the provider declared inside the component's decorator so the component uses our spy
     TestBed.overrideProvider(DeploymentsService, { useValue: deploymentsSpy });
     await TestBed.compileComponents();
     
@@ -89,7 +88,6 @@ describe('DeploymentConfigMapsComponent', () => {
   it('should call getDeploymentById when queryParams contains id and populate form', () => {
     const deployments = TestBed.inject(DeploymentsService) as any;
     const route = TestBed.inject(ActivatedRoute) as any;
-    // emit an id via the underlying Subject used in providers
     if (route.queryParams && (route.queryParams as Subject<any>).next) {
       (route.queryParams as Subject<any>).next({ id: 'dep-1' });
     }
@@ -97,7 +95,6 @@ describe('DeploymentConfigMapsComponent', () => {
   });
 
   it('onFileSelect should set parsedConfigData and add required validator', (done) => {
-    // stub FileReader to synchronously call onload
     const original = (window as any).FileReader;
     (window as any).FileReader = class {
       result: any;
@@ -111,12 +108,10 @@ describe('DeploymentConfigMapsComponent', () => {
     const evt = { target: input } as unknown as Event;
 
     component.onFileSelect(evt);
-    // allow onload to run
     setTimeout(() => {
       expect(component.parsedConfigData).toBe('ZZZ');
       const filePath = component.fileUploadForm.get('filePath');
       expect(filePath?.validator).toBeTruthy();
-      // restore FileReader
       (window as any).FileReader = original;
       done();
     }, 0);

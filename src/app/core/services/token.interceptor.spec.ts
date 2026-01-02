@@ -88,13 +88,9 @@ describe('TokenInterceptor', () => {
     http.get('/api/a').subscribe();
     const reqA = httpMock.expectOne('/api/a');
     reqA.flush({}, { status: 401, statusText: 'Unauthorized' });
-
-    // Start second request while refresh in progress
     http.get('/api/b').subscribe();
     const reqB = httpMock.expectOne('/api/b');
     reqB.flush({}, { status: 401, statusText: 'Unauthorized' });
-
-    // Emit new token
     refreshSubject.next({ access_token: 'new-token' });
     refreshSubject.complete();
 
@@ -111,8 +107,6 @@ describe('TokenInterceptor', () => {
     authSpy.getAccessToken.and.returnValue('old-token');
     const refreshSubject = new Subject<any>();
     authSpy.refreshToken.and.returnValue(refreshSubject.asObservable());
-
-    // issue three concurrent requests
     http.get('/api/a').subscribe();
     const reqA = httpMock.expectOne('/api/a');
     reqA.flush({}, { status: 401, statusText: 'Unauthorized' });
@@ -124,11 +118,7 @@ describe('TokenInterceptor', () => {
     http.get('/api/c').subscribe();
     const reqC = httpMock.expectOne('/api/c');
     reqC.flush({}, { status: 401, statusText: 'Unauthorized' });
-
-    // refreshToken should have been invoked once
     expect(authSpy.refreshToken).toHaveBeenCalledTimes(1);
-
-    // now emit new token and complete
     refreshSubject.next({ access_token: 'new-token' });
     refreshSubject.complete();
 

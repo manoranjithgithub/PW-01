@@ -78,7 +78,6 @@ describe('RegisterComponent', () => {
     tick();
     expect(component.registrationForm.get('type')?.value).toBe('individual');
     expect(component.registrationForm.get('orgName')?.value).toBe('nimbuz');
-    // terms should be required true validator; form invalid if terms false
     component.registrationForm.get('username')?.setValue('user1');
     component.registrationForm.get('password')?.setValue('Abc@1234');
     component.registrationForm.get('email')?.setValue('a@b.com');
@@ -123,7 +122,6 @@ describe('RegisterComponent', () => {
     component.registrationForm.get('terms')?.setValue(true);
 
     const error = { error: { error: { message: 'Duplicate user' } } };
-    // Call handler directly to avoid flaky async subscription timing in this environment
     (component as any).handleError(error);
 
     expect(component.isRegistrationSuccess).toBeFalse();
@@ -132,7 +130,6 @@ describe('RegisterComponent', () => {
   }));
 
   it('should call forgotPassword flow when url indicates password reset', fakeAsync(() => {
-    // simulate forgot-password route
     (mockActivatedRoute as any).queryParams = of({});
     (mockRouter as any).url = '/forgot-password';
     fixture.detectChanges();

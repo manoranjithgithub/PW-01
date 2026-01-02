@@ -19,7 +19,6 @@ describe('DeploymentMetricsComponent', () => {
       'getInstanceTypes',
       'getDeploymentMetricsByTime'
     ]);
-    // provide safe defaults so ngOnInit/onFilter won't call subscribe on undefined
     deploymentServiceSpy.getDeploymentById.and.returnValue(of({ data: {} }));
     deploymentServiceSpy.getInstanceTypes.and.returnValue(of({ data: [] }));
     deploymentServiceSpy.getDeploymentMetricsByTime.and.returnValue(of({ data: { usageRange: { data: { result: [] } } } }));
@@ -270,7 +269,7 @@ describe('DeploymentMetricsComponent', () => {
     });
 
     it('computeMaxLimits should warn when instance type missing and not call onFilter', () => {
-      component.deploymentdetails = {}; // no application.instanceType
+      component.deploymentdetails = {}; 
       spyOn(console, 'warn');
       spyOn(component, 'onFilter');
 
@@ -300,9 +299,7 @@ describe('DeploymentMetricsComponent', () => {
     });
 
     it('onFilter should set loading false when both cpu and memory calls fail', fakeAsync(() => {
-      // prepare filter form expected by onFilter
       component.filterForm = new FormBuilder().group({ duration: ['15'], interval: ['5'], fromTimestamp: [''], toTimestamp: [''] });
-      // mock both metric calls to fail
       deploymentServiceSpy.getDeploymentMetricsByTime.and.returnValue(throwError(() => new Error('boom')));
 
       component.onFilter();
@@ -347,7 +344,7 @@ describe('DeploymentMetricsComponent', () => {
       expect(params).toBeDefined();
       expect(params.fromISO).toBeDefined();
       expect(params.toISO).toBeDefined();
-      expect(params.timeIntervalSeconds).toBe(300); // interval 5 minutes
+      expect(params.timeIntervalSeconds).toBe(300); 
     });
 
     it('should compute params for custom duration', () => {
@@ -438,7 +435,7 @@ describe('DeploymentMetricsComponent', () => {
 
       const config = (component as any).getTimeScaleConfig();
       
-      expect(config.unit).toBe('day'); // 2 days = 2880 minutes
+      expect(config.unit).toBe('day');
     });
 
     it('should return default config when duration not set', () => {
@@ -494,7 +491,6 @@ describe('DeploymentMetricsComponent', () => {
     }));
 
     it('should create CPU chart with correct configuration', () => {
-      // Reset spy to allow actual call
       (component as any).renderCpuChart.and.callThrough();
       
       component.chartRef = {
@@ -722,10 +718,7 @@ describe('DeploymentMetricsComponent', () => {
       fixture.detectChanges();
       queryParams$.next({ id: 'dep-123' });
       tick();
-
       const initialFrom = component.filterForm.get('fromTimestamp')?.value;
-
-      // Wait a bit and change duration
       tick(1000);
       component.filterForm.get('duration')?.setValue('30');
       tick();
@@ -735,7 +728,6 @@ describe('DeploymentMetricsComponent', () => {
 
       expect(newFrom).toBeDefined();
       expect(newTo).toBeDefined();
-      // They should be different due to time passing
       expect(typeof newFrom).toBe('string');
     }));
   });
@@ -894,8 +886,8 @@ describe('DeploymentMetricsComponent', () => {
       component.computeMaxLimits();
       tick();
 
-      expect(component.maxCpuLimit).toBe(2000); // 2 * 1000
-      expect(component.maxRamLimit).toBe(4096); // 4 * 1024
+      expect(component.maxCpuLimit).toBe(2000); 
+      expect(component.maxRamLimit).toBe(4096); 
       expect(component.onFilter).toHaveBeenCalled();
     }));
 
@@ -914,7 +906,6 @@ describe('DeploymentMetricsComponent', () => {
       tick();
 
       expect(console.warn).toHaveBeenCalledWith('Instance type is null or undefined.');
-      // onFilter is not called when instanceType is missing based on code logic
     }));
 
     it('should handle instance type not found in list', fakeAsync(() => {
@@ -983,8 +974,8 @@ describe('DeploymentMetricsComponent', () => {
 
       component.maxRamLimit = 8192;
       component.ramUsageData = [
-        { _id: '1234567890', ramAverage: 2147483648 }, // 2048 MiB
-        { _id: '1234567900', ramAverage: 4294967296 }  // 4096 MiB
+        { _id: '1234567890', ramAverage: 2147483648 },
+        { _id: '1234567900', ramAverage: 4294967296 } 
       ];
       component.filterForm = new FormBuilder().group({
         duration: ['15'],
@@ -1135,7 +1126,6 @@ describe('DeploymentMetricsComponent', () => {
       const computeMaxLimitsSpy = jasmine.createSpy('computeMaxLimits');
       component.computeMaxLimits = computeMaxLimitsSpy;
 
-      // Manually simulate the subscription from ngOnInit
       component.deploymentId = 'test-123';
       deploymentServiceSpy.getDeploymentById(component.deploymentId).subscribe((res: any) => {
         component.deploymentdetails = res.data;
@@ -1161,7 +1151,7 @@ describe('DeploymentMetricsComponent', () => {
 
       const params = component['computeFilterParams']();
 
-      expect(params?.timeIntervalSeconds).toBe(900); // 15 * 60
+      expect(params?.timeIntervalSeconds).toBe(900); 
     });
 
     it('should map 60 minutes duration to 15 minute interval', () => {
@@ -1174,7 +1164,7 @@ describe('DeploymentMetricsComponent', () => {
 
       const params = component['computeFilterParams']();
 
-      expect(params?.timeIntervalSeconds).toBe(900); // 15 * 60
+      expect(params?.timeIntervalSeconds).toBe(900);
     });
 
     it('should map 7 days duration to 1 day interval', () => {
@@ -1187,7 +1177,7 @@ describe('DeploymentMetricsComponent', () => {
 
       const params = component['computeFilterParams']();
 
-      expect(params?.timeIntervalSeconds).toBe(86400); // 1440 * 60
+      expect(params?.timeIntervalSeconds).toBe(86400); 
     });
 
     it('should map 1 month duration to 1 day interval', () => {
@@ -1200,7 +1190,7 @@ describe('DeploymentMetricsComponent', () => {
 
       const params = component['computeFilterParams']();
 
-      expect(params?.timeIntervalSeconds).toBe(86400); // 1440 * 60
+      expect(params?.timeIntervalSeconds).toBe(86400); 
     });
 
     it('should use form interval when provided', () => {
@@ -1213,7 +1203,7 @@ describe('DeploymentMetricsComponent', () => {
 
       const params = component['computeFilterParams']();
 
-      expect(params?.timeIntervalSeconds).toBe(600); // 10 * 60
+      expect(params?.timeIntervalSeconds).toBe(600);
     });
   });
 });

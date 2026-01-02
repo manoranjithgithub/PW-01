@@ -49,7 +49,6 @@ describe('AgGridTableComponent', () => {
   });
 
   it('onGridReady sets overlayMessage for invoice-list', () => {
-    // set tableName directly to simulate router-derived name
     component.tableName = 'invoice-list';
     const fakeApi: any = {
       showNoRowsOverlay: jasmine.createSpy('showNoRowsOverlay'),

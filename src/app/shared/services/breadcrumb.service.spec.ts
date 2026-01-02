@@ -14,8 +14,6 @@ describe('BreadcrumbService', () => {
 
     const routerSpy = jasmine.createSpyObj('Router', ['navigate']);
     routerSpy.events = routerEventsSubject.asObservable();
-
-    // Create a mutable mock for ActivatedRoute
     const mockActivatedRoute: any = {
       root: {
         children: []
@@ -170,7 +168,6 @@ describe('BreadcrumbService', () => {
 
     service.breadcrumbs$.subscribe(breadcrumbs => {
       if (breadcrumbs.length > 0) {
-        // The algorithm returns early, pushing both titles into breadcrumbs array
         expect(breadcrumbs.length).toBe(2);
         expect(breadcrumbs[0].label).toBe('Admin');
         expect(breadcrumbs[0].url).toBe('/admin');
@@ -189,13 +186,10 @@ describe('BreadcrumbService', () => {
     service.breadcrumbs$.subscribe(() => {
       emissionCount++;
     });
-
-    // Emit non-NavigationEnd events
     routerEventsSubject.next({ id: 1, url: '/test' });
     routerEventsSubject.next({ id: 2, url: '/another' });
 
     setTimeout(() => {
-      // Only initial emission should have happened
       expect(emissionCount).toBe(1);
       done();
     }, 100);
@@ -248,13 +242,10 @@ describe('BreadcrumbService', () => {
     service.breadcrumbs$.subscribe(breadcrumbs => {
       emissions.push([...breadcrumbs]);
     });
-
-    // First navigation
     (activatedRoute.root as any).children = [];
     routerEventsSubject.next(new NavigationEnd(8, '/first', '/first'));
 
     setTimeout(() => {
-      // Second navigation
       const mockSnapshot: any = {
         data: { title: 'Second' },
         url: [{ path: 'second' } as UrlSegment]
@@ -340,7 +331,6 @@ describe('BreadcrumbService', () => {
       children: []
     };
 
-    // Create nested structure
     for (let i = 2; i <= 5; i++) {
       const parentSnapshot: any = {
         data: {},

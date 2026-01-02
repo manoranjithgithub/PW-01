@@ -158,7 +158,7 @@ describe('CreateEnvironmentComponent', () => {
 
     component.getPlanLimits();
 
-    expect(component.resourceQuotaForm.get('cpuMaxPlatformLimit')?.value).toBe('10'); // Already set default
+    expect(component.resourceQuotaForm.get('cpuMaxPlatformLimit')?.value).toBe('10'); 
   });
 
 
@@ -180,7 +180,6 @@ describe('CreateEnvironmentComponent', () => {
   it('should not call createEnvironment when form invalid', () => {
     projectSpy.createEnvironment.calls.reset();
     component.environmentForm.setValue({ project: 'p1', name: 'a', region: 'ap-south-1' });
-    // set name control error to simulate invalid form
     component.environmentForm.get('name')?.setErrors({ minlength: true });
     component.createEnvironment();
     expect(projectSpy.createEnvironment).not.toHaveBeenCalled();

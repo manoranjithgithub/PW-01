@@ -42,8 +42,6 @@ describe('UsersListComponent', () => {
       ]
     });
 
-    // Component declares its own provider for UsersListService; override it so the
-    // component receives our spy instance instead of creating a fresh service.
     TestBed.overrideComponent(UsersListComponent as any, {
       set: {
         providers: [{ provide: UsersListService, useValue: usersListSpy }]
@@ -82,7 +80,6 @@ describe('UsersListComponent', () => {
     component.addUserForm.controls['env'].setValue('');
     component.addUserForm.controls['action'].setValue('');
 
-    // call submit
     component.onSubmitAddUser();
 
     expect(toastr.success).toHaveBeenCalled();
@@ -98,10 +95,8 @@ describe('UsersListComponent', () => {
 
     const display = (component as any).computeMergedPolicies(policies);
     expect(display.length).toBe(3);
-    // first two items share same permissions -> first should have permissionRowSpan 2
     expect(display[0].permissionRowSpan).toBe(2);
     expect(display[1].permissionRowSpan).toBe(0);
-    // the third item should have permissionRowSpan 1
     expect(display[2].permissionRowSpan).toBe(1);
   });
 
@@ -112,7 +107,6 @@ describe('UsersListComponent', () => {
     ];
 
     const mapped = (component as any).mapPolicies(rawPolicies, projects as any);
-    // wildcard should have expanded to two environment entries
     expect(mapped.length).toBeGreaterThanOrEqual(2);
     expect(mapped.some((m: any) => m.userid === 'user1' && m.permissions.includes('admin'))).toBeTrue();
   });
@@ -121,7 +115,6 @@ describe('UsersListComponent', () => {
     const proj = { id: 'proj1', name: 'proj1', environments: [{ id: 'env1', name: 'env1' }] } as any;
     component.projectList = [proj];
 
-    // project wildcard path
     const wildcardPolicy: any = { userid: 'u1', projectid: '*', envid: '*', permissions: ['admin'], projectWildcardKey: 'key' };
     let emitted: any[] | undefined;
     component.editEnvList$.subscribe(v => emitted = v);
@@ -132,7 +125,6 @@ describe('UsersListComponent', () => {
     expect(component.editPolicyForm.get('env')?.value).toBe('*');
     expect(emitted && emitted.length > 0).toBeTrue();
 
-    // env wildcard path using existing project
     const envWildcard: any = { userid: 'u1', projectid: 'proj1', envid: '*', permissions: ['read'], envWildcardKey: 'envkey' };
     component.editPolicy(0, envWildcard);
     tick();
@@ -166,14 +158,11 @@ describe('UsersListComponent', () => {
     const rawPolicies: any[] = [
       { V0: 'u1', V1: 'a', V2: 'p1', V3: '*', V4: 'read' },
       { V0: 'u1', V1: 'a', V2: 'p1', V3: 'e1', V4: 'write' },
-      // duplicate permission should be merged into existing entry
       { V0: 'u1', V1: 'a', V2: 'p1', V3: 'e1', V4: 'read' }
     ];
 
     const mapped = (component as any).mapPolicies(rawPolicies, projects as any);
-    // env wildcard expands to two envs
     expect(mapped.length).toBeGreaterThanOrEqual(2);
-    // find entry for e1 should contain both read and write (merged)
     const e1 = mapped.find((m: any) => m.envid === 'e1');
     expect(e1).toBeDefined();
     expect(e1.permissions.sort()).toEqual(['read','write'].sort());
@@ -182,21 +171,16 @@ describe('UsersListComponent', () => {
   it('mapPolicies preserves projectWildcardKey and merges permissions from wildcard and explicit rules', () => {
     const projects = [{ id: 'projA', name: 'projA', environments: [{ id: 'e1', name: 'env1' }, { id: 'e2', name: 'env2' }] }];
     const rawPolicies: any[] = [
-      // project wildcard expands across all projects/environments
       { V0: 'uX', V1: 'acc', V2: '*', V3: '*', V4: 'read' },
-      // explicit rule for projA:e1 should merge into existing wildcard entry
       { V0: 'uX', V1: 'acc', V2: 'projA', V3: 'e1', V4: 'write' }
     ];
 
     const mapped = (component as any).mapPolicies(rawPolicies, projects as any);
-    // should have entries for both environments
     const forE1 = mapped.find((m: any) => m.envid === 'e1' && m.userid === 'uX');
     const forE2 = mapped.find((m: any) => m.envid === 'e2' && m.userid === 'uX');
     expect(forE1).toBeDefined();
     expect(forE2).toBeDefined();
-    // e1 should have both permissions merged
     expect((forE1.permissions || []).sort()).toEqual(['read','write'].sort());
-    // entries created from wildcard should include a projectWildcardKey
     expect(forE1.projectWildcardKey).toBeDefined();
     expect(forE2.projectWildcardKey).toBeDefined();
   });
@@ -211,9 +195,7 @@ describe('UsersListComponent', () => {
   it('mapPolicies attaches envWildcardKey to existing entries when env wildcard later merges', () => {
     const projects = [{ id: 'p2', name: 'p2', environments: [{ id: 'e1', name: 'e1' }, { id: 'e2', name: 'e2' }] }];
     const rawPolicies: any[] = [
-      // explicit env entry created first
       { V0: 'u2', V1: 'a', V2: 'p2', V3: 'e1', V4: 'read' },
-      // env wildcard should mark existing entries with envWildcardKey when merging
       { V0: 'u2', V1: 'a', V2: 'p2', V3: '*', V4: 'admin' }
     ];
 
@@ -222,11 +204,8 @@ describe('UsersListComponent', () => {
     const entryE2 = mapped.find((m: any) => m.envid === 'e2' && m.userid === 'u2');
     expect(entryE1).toBeDefined();
     expect(entryE2).toBeDefined();
-    // admin should have been added to both env entries
     expect(entryE1.permissions.sort()).toEqual(['admin','read'].sort());
     expect(entryE2.permissions).toContain('admin');
-    // entries originating from env wildcard expansion should have envWildcardKey on the added entries
-    // at least one of the entries should have an envWildcardKey property
     expect(mapped.some((m: any) => !!m.envWildcardKey)).toBeTrue();
   });
 
@@ -302,7 +281,6 @@ describe('UsersListComponent', () => {
       usersList.createPolicy.and.returnValue(of({ status: 'success', message: 'created' }));
       spyOn(component as any, 'refreshPolicies');
 
-      // ensure selectedUserPolicyInfo exists for create path
       component.selectedUserPolicyInfo = [{ userid: 'u1', accountid: 'a' } as any];
       component.editingPolicy = null;
       component.editPolicyForm.get('project')?.setValue('p1');
@@ -365,10 +343,6 @@ describe('UsersListComponent', () => {
 
       component.createPolicy();
       tick();
-
-      // when the update request errors, current implementation logs the error
-      // and does not call toastr.error — assert console.error was invoked
-      // and that no toast was shown.
       expect(toastr.error).not.toHaveBeenCalled();
     }));
 
@@ -396,7 +370,6 @@ describe('UsersListComponent', () => {
       const modal = TestBed.inject(NgbModal) as any;
       const modalRef: any = { result: Promise.resolve(true), componentInstance: {} };
       modal.open.and.returnValue(modalRef);
-      // stub editPolicyModal to avoid undefined access
       (component as any).editPolicyModal = { close: jasmine.createSpy('close') } as any;
       spyOn(component as any, 'refreshPolicies');
 
@@ -426,7 +399,6 @@ describe('UsersListComponent', () => {
     }));
 
     it('onActionClick opens policy modal for view and sets subtitle', () => {
-      // provide fake modal instances as ViewChild
       (component as any).policyModal = { open: jasmine.createSpy('open') } as any;
       const params = { id: 'u1', name: 'User One', isVerfied: true } as any;
       component.onActionClick('view', params);
@@ -475,7 +447,6 @@ describe('UsersListComponent', () => {
 
       component.onSubmitAddUser();
       tick();
-      // current implementation does not emit an error toast on invite failure
       expect(toastr.error).not.toHaveBeenCalled();
     }));
 

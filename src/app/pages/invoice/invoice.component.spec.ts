@@ -19,7 +19,6 @@ describe('InvoiceComponent', () => {
     pricingSpy = jasmine.createSpyObj('PricingsService', ['paynow', 'getInvoiceList']);
     currencyChange$ = new Subject<any>();
     sharedSpy = jasmine.createSpyObj('SharedService', ['getCurrency', 'convertAmount'] as any);
-    // attach observable properties manually for components that subscribe to them
     (sharedSpy as any).currencyChange$ = currencyChange$;
     (sharedSpy as any).valueChange$ = of(null);
     (sharedSpy as any).isLoading$ = of(false);
@@ -27,7 +26,6 @@ describe('InvoiceComponent', () => {
     sharedSpy.convertAmount.and.callFake((v: number) => v);
     toastrSpy = jasmine.createSpyObj('ToastrService', ['success', 'error', 'info', 'warning']);
 
-    // ensure component-level provider is overridden so the component uses our spy
     TestBed.overrideComponent(InvoiceComponent as any, { set: { providers: [{ provide: PricingsService, useValue: pricingSpy }] } });
 
     await TestBed.configureTestingModule({
@@ -62,16 +60,12 @@ describe('InvoiceComponent', () => {
   it('buildColumnDefs: S.NO valueGetter and period formatting', () => {
     const cols = component.buildColumnDefs();
     const sno = cols[0];
-    // missing node
     expect((sno.valueGetter as any)({ node: undefined, rowIndex: null })).toBe(0);
-    // present node
     const res = (sno.valueGetter as any)({ node: { rowIndex: 0 } });
     expect(res).toBe(1);
 
     const periodCol = cols.find(c => c.field === 'period')!;
-    // invalid data
     expect((periodCol.valueGetter as any)({ data: null })).toBe('');
-    // valid timestamp
     const date = new Date(2020, 0, 1).toISOString();
     const formatted = (periodCol.valueGetter as any)({ data: { updated_at: date } });
     expect(typeof formatted).toBe('string');
@@ -90,25 +84,20 @@ describe('InvoiceComponent', () => {
     spyOn(component, 'openPayNow');
     const cols = component.buildColumnDefs();
     const statusCol = cols.find(c => c.field === 'status')!;
-    // simulate a cell click event
     (statusCol.onCellClicked as any)({ colDef: { field: 'status' }, value: 'draft', data: { id: 1 } });
     expect(component.openPayNow).toHaveBeenCalledWith({ id: 1 });
   });
 
   it('openPayNow successful checkout calls getInvoiceList, failure shows toast', (done) => {
-    // mock paynow response
     pricingSpy.paynow.and.returnValue(of({ order: { payment_session_id: 'sid' } }));
-    // stub cashfree.checkout
     component.cashfree = { checkout: (opts: any) => Promise.resolve({ paymentDetails: { paymentMessage: 'Payment finished. Check status.' } }) };
     spyOn(component, 'getInvoiceList');
     component.openPayNow({ id: 2 });
-    // wait for promise resolution
     setTimeout(() => {
       expect(pricingSpy.paynow).toHaveBeenCalled();
       const calledArg = (pricingSpy.paynow as jasmine.Spy).calls.mostRecent().args[0];
       expect(calledArg).toBe(2);
       expect(component.getInvoiceList).toHaveBeenCalled();
-      // now simulate checkout rejection
       component.cashfree = { checkout: () => Promise.reject('err') };
       component.openPayNow({ id: 3 });
       setTimeout(() => {

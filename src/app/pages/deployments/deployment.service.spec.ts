@@ -28,8 +28,6 @@ describe('DeploymentsService', () => {
     service = TestBed.inject(DeploymentsService);
     httpMock = TestBed.inject(HttpTestingController);
     zone = TestBed.inject(NgZone);
-    
-    // Set default localStorage values
     localStorage.setItem('environment', JSON.stringify({ id: 'env-default' }));
     localStorage.setItem('project', JSON.stringify({ id: 'proj-default' }));
     localStorage.setItem('accountId', 'acc-default');
@@ -551,7 +549,6 @@ describe('DeploymentsService', () => {
       next: () => fail('expected error'),
       error: (e: Error) => {
         expect(e.message).toBeDefined();
-        // Check after a small delay because finalize runs after error callback
         setTimeout(() => {
           expect((loaderSpy.hide as jasmine.Spy)).toHaveBeenCalled();
           done();

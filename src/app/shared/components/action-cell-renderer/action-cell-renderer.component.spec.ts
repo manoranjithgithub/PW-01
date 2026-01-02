@@ -21,7 +21,6 @@ describe('ActionCellRendererComponent', () => {
   let deploymentServiceSpy: jasmine.SpyObj<DeploymentsService>;
 
   beforeEach(async () => {
-    // Mock localStorage to prevent JSON.parse errors in component constructor
     spyOn(localStorage, 'getItem').and.callFake((key: string) => {
       if (key === 'environment') {
         return JSON.stringify({ id: 'env-123' });
@@ -53,7 +52,7 @@ describe('ActionCellRendererComponent', () => {
         { provide: PermissionService, useValue: {} },
         { provide: TOAST_CONFIG, useValue: toastConfigMock }
       ],
-      schemas: [NO_ERRORS_SCHEMA] // Ignore CoreUI / modal templates
+      schemas: [NO_ERRORS_SCHEMA] 
     });
 
     TestBed.overrideComponent(ActionCellRendererComponent as any, {
@@ -243,31 +242,7 @@ describe('ActionCellRendererComponent', () => {
   });
 
   describe('openConfirmationDialog() and delete tools flow', () => {
-    // it('should call deleteTools and show success when confirmed and param tools', async () => {
-    //   component.additionalParam = 'tools';
-    //   component.toolsDetails = { name: 'tool1', namespace: 'ns1' } as any;
-
-    //   modalSpy.open.and.returnValue({ componentInstance: {}, result: Promise.resolve(true) } as any);
-    //   deploymentServiceSpy.deleteTools.and.returnValue(of({ status: true }));
-
-    //   // attempt to spy on window.location.reload safely; some environments disallow it
-    //   let reloadSpy: jasmine.Spy | undefined;
-    //   try {
-    //     // Spy if writable in this environment
-    //     reloadSpy = spyOn((window as any).location, 'reload' as any).and.callFake(() => {});
-    //   } catch (e) {
-    //     reloadSpy = undefined;
-    //   }
-
-    //   component.openConfirmationDialog();
-    //   await fixture.whenStable();
-
-    //   expect(deploymentServiceSpy.deleteTools).toHaveBeenCalled();
-    //   expect(toastrSpy.success).toHaveBeenCalledWith('Deleted Successfully');
-    //   if (reloadSpy) {
-    //     expect(reloadSpy).toHaveBeenCalled();
-    //   }
-    // });
+   
 
     it('should not call deleteTools when confirmation is cancelled', async () => {
       component.additionalParam = 'tools';
@@ -290,7 +265,6 @@ describe('ActionCellRendererComponent', () => {
       modalSpy.open.and.returnValue({ componentInstance: {}, result: Promise.resolve(true) } as any);
       deploymentServiceSpy.deleteTools.and.returnValue(of({ status: false }));
 
-      // try to spy on reload but safe-guarded in environment
       let reloadSpy: jasmine.Spy | undefined;
       try { reloadSpy = spyOn((window as any).location, 'reload' as any).and.callFake(() => { }); } catch (e) { reloadSpy = undefined; }
 
@@ -340,7 +314,7 @@ describe('ActionCellRendererComponent', () => {
     });
 
     it('should show invalid id error when release id missing', () => {
-      component.realeseId = ''; // missing
+      component.realeseId = ''; 
       component.getLogData(0, 'build');
       expect(toastrSpy.error).toHaveBeenCalledWith('Invalid release ID or type');
     });
@@ -389,10 +363,8 @@ describe('ActionCellRendererComponent', () => {
       component.scrollToTop();
       expect(native.scrollTo).toHaveBeenCalled();
 
-      // make totalPages > currentPage to trigger scrollToend progression
       component.currentPage = 1;
       component.pageSize = 2;
-      // call scrollToend and allow timeouts to execute
       component.scrollToend();
       setTimeout(() => {
         expect(native.scrollTo).toHaveBeenCalled();
@@ -402,16 +374,12 @@ describe('ActionCellRendererComponent', () => {
 
     it('should not close dropdown when clicking inside menu or button', () => {
       component.isDropdownOpen = true;
-
-      // simulate click inside floating-dropdown
       const insideMenu = document.createElement('div');
       insideMenu.classList.add('floating-dropdown');
       const eventMenu = new MouseEvent('click', { bubbles: true });
       Object.defineProperty(eventMenu, 'target', { value: insideMenu });
       component.onOutsideClick(eventMenu);
       expect(component.isDropdownOpen).toBeTrue();
-
-      // simulate click inside button
       const insideBtn = document.createElement('button');
       insideBtn.classList.add('btn-icon');
       const eventBtn = new MouseEvent('click', { bubbles: true });
@@ -706,7 +674,6 @@ describe('ActionCellRendererComponent', () => {
         bottom: 100,
         right: 200
       } as any);
-      // Toggle to open and set lastButtonRef
       const event = new MouseEvent('click');
       component.toggleDropdown(event, btn);
       component.onWindowScroll();
@@ -727,7 +694,6 @@ describe('ActionCellRendererComponent', () => {
         bottom: 150,
         right: 300
       } as any);
-      // Toggle to open and set lastButtonRef
       const event = new MouseEvent('click');
       component.toggleDropdown(event, btn);
       component.onWindowResize();
@@ -847,7 +813,6 @@ describe('ActionCellRendererComponent', () => {
     it('should set replica data', () => {
       component.replicaCount = 5;
       component.scaleDeployment();
-      // Method currently doesn't do anything but sets data variable
       expect(component).toBeTruthy();
     });
   });

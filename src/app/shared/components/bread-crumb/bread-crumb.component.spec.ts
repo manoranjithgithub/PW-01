@@ -223,8 +223,6 @@ describe('BreadCrumbComponent', () => {
       mockActivatedRoute.children = [mockChild];
 
       fixture.detectChanges();
-
-      // Non-Home empty URLs still create breadcrumbs, just with empty URLs
       expect(component.breadcrumbs.length).toBe(1);
       expect(component.breadcrumbs[0].label).toBe('Dashboard');
       expect(component.breadcrumbs[0].url).toBe('');
@@ -240,9 +238,7 @@ describe('BreadCrumbComponent', () => {
       };
 
       mockActivatedRoute.children = [mockChild];
-
       fixture.detectChanges();
-
       expect(component.breadcrumbs[0].label).toBe('Test');
       expect(component.breadcrumbs[0].url).toBe('/test');
     });

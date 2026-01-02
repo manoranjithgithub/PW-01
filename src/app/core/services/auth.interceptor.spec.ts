@@ -72,7 +72,6 @@ describe('AuthInterceptor', () => {
     req.flush({});
 
     tick(200);
-    // loader calls depend on global activeRequests state; ensure request completes without error
     expect(req.request).toBeTruthy();
   }));
 
@@ -194,7 +193,6 @@ describe('AuthInterceptor', () => {
     req.flush({}, { status: 500, statusText: 'Server Error' });
 
     expect(toastrSpy.error).toHaveBeenCalled();
-    // ensure the status title was used
     expect(toastrSpy.error.calls.mostRecent().args[1]).toBe('500');
   });
 
@@ -270,10 +268,7 @@ describe('AuthInterceptor', () => {
       authSpy.getAccessToken.and.returnValue('old-token');
       authSpy.isTokenExpired.and.returnValue(true);
       const refreshSubject = new Subject<any>();
-      // provide an observable that will be resolved later
       authSpy.refreshToken.and.returnValue(refreshSubject.asObservable());
-
-      // fire three requests which will 401
       http.get('/api/one').subscribe({ error: () => {} });
       const r1 = httpMock.expectOne('/api/one');
       r1.flush({}, { status: 401, statusText: 'Unauthorized' });
@@ -285,11 +280,7 @@ describe('AuthInterceptor', () => {
       http.get('/api/three').subscribe({ error: () => {} });
       const r3 = httpMock.expectOne('/api/three');
       r3.flush({}, { status: 401, statusText: 'Unauthorized' });
-
-      // refresh should be called only once so far
       expect(authSpy.refreshToken).toHaveBeenCalledTimes(1);
-
-      // emit new token
       refreshSubject.next({ access_token: 'new-t' });
       refreshSubject.complete();
 
@@ -302,7 +293,6 @@ describe('AuthInterceptor', () => {
       expect(retried3.request.headers.get('Authorization')).toBe('Bearer new-t');
 
       retried1.flush({}); retried2.flush({}); retried3.flush({});
-      // advance past any pending hide timeouts in the interceptor
       tick(300);
     }));
 

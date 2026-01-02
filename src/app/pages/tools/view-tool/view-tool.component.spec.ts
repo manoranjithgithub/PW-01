@@ -53,8 +53,6 @@ describe('ViewToolComponent', () => {
       schemas: [NO_ERRORS_SCHEMA]
     }).compileComponents();
 
-    // Component declares its own provider for ToolsService; override it so the
-    // component receives our spy instance instead of a real service.
     TestBed.overrideComponent(ViewToolComponent as any, {
       set: {
         providers: [
@@ -116,16 +114,13 @@ describe('ViewToolComponent', () => {
   });
 
   it('should build form with disabled controls from schema', fakeAsync(() => {
-    // prepare a schema with multiple fields including instance type
     const schema = {
       fieldA: { ui: true, key: 'fieldA', type: 'text', label: 'A', value: 'valA', help: '', children: [], depends_on: null },
       instanceType: { ui: true, key: 'instanceType', type: 'text', label: 'Instance Type', value: 't2.micro', help: '', children: [], depends_on: null }
     } as any;
 
-    // set resources to include the instance used
     component.resources = [{ instanceType: 't2.micro', cpuVcpu: '1', memoryGb: '1', instanceHourRate: 3 }];
 
-    // call createForm and verify controls exist and are disabled
     component.createForm(schema);
     tick();
     expect(component.form.controls['fieldA']).toBeDefined();
@@ -134,7 +129,6 @@ describe('ViewToolComponent', () => {
   }));
 
   it('should populate toolDetails and create form on viewToolDetails', fakeAsync(() => {
-    // spy on createForm and ensure service is called
     const createFormSpy = spyOn(component, 'createForm');
     component.selectedView = 'tool1';
     component.viewToolDetails();
@@ -144,7 +138,6 @@ describe('ViewToolComponent', () => {
   }));
 
   it('should handle missing query params without throwing', fakeAsync(() => {
-    // simulate missing/empty query params
     expect(() => {
       queryParamsSubject.next({});
       tick();

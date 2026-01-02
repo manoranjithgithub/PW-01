@@ -38,7 +38,6 @@ describe('ViewEnvironmentComponent', () => {
       { user$: of({ owner: 'nimbuz' }) }
     );
 
-    // ensure isValidName returns a ValidatorFn so FormBuilder doesn't receive undefined
     (sharedSpy.isValidName as jasmine.Spy).and.returnValue(() => null);
 
     toastrSpy = jasmine.createSpyObj('ToastrService', ['success']);
@@ -55,7 +54,6 @@ describe('ViewEnvironmentComponent', () => {
     projectSpy.getEnvironmentById.and.returnValue(
       of({ status: 'Success', data: { name: 'Env-1' } })
     );
-    // Ensure the component's provider is overridden so our spy is injected
     TestBed.overrideProvider(ProjectsService, { useValue: projectSpy });
 
     await TestBed.configureTestingModule({

@@ -31,7 +31,6 @@ describe('CreateDeploymentsComponent', () => {
       'uploadFileToS3',
       'createDeployement'
     ]);
-    // Ensure component uses our spy (component declares its own provider)
     TestBed.overrideComponent(CreateDeploymentsComponent as any, {
       set: {
         providers: [{ provide: DeploymentsService, useValue: deploymentsSpy }]
@@ -63,16 +62,10 @@ describe('CreateDeploymentsComponent', () => {
   });
 
   beforeEach(() => {
-    // ensure current project id is present so component calls ProjectsService
     localStorage.setItem('project', JSON.stringify({ id: 'proj1' }));
-
     fixture = TestBed.createComponent(CreateDeploymentsComponent);
     component = fixture.componentInstance;
-
-    // Mock modals
     component.zipDeploymentModel = { open: jasmine.createSpy('open'), dismiss: jasmine.createSpy('dismiss') } as any;
-
-    // Initialize selectedRepoDetails to prevent undefined errors
     component.selectedRepoDetails = { gitRepoId: 1, repoUrl: 'repo', branchName: 'main', webhook: false };
 
     deploymentsServiceSpy.getInstanceTypes.and.returnValue(of({ data: [{ instanceType: 'femto.m' }] }));
@@ -134,7 +127,6 @@ describe('CreateDeploymentsComponent', () => {
   });
 
   it('should perform submitChanges happy path with file upload', fakeAsync(() => {
-    // prepare component state to simulate file upload flow
     component.fileFormData = new FormData();
     component.selectedFile = new File(['content'], 'app.zip', { type: 'application/zip' });
     component.fileExtension = 'zip';
@@ -160,8 +152,6 @@ describe('CreateDeploymentsComponent', () => {
     component.fileFormData = new FormData();
     component.selectedFile = new File(['content'], 'app.zip', { type: 'application/zip' });
     component.fileExtension = 'zip';
-
-    // S3 details missing
     deploymentsServiceSpy.getS3Details.and.returnValue(of({ data: null }));
     deploymentsServiceSpy.createDeployement.and.returnValue(of({}));
 
@@ -203,8 +193,6 @@ describe('CreateDeploymentsComponent', () => {
     component.selectedFile = new File(['x'], 'app.zip', { type: 'application/zip' });
     component.fileExtension = 'zip';
     component.stepOneForm.get('name')?.setValue('myapp');
-
-    // ensure ViewChild modal is a spy (ViewChild can overwrite earlier mocks)
     (component as any).zipDeploymentModel = { dismiss: jasmine.createSpy('dismiss') } as any;
 
     component.onZipUpload();
@@ -252,7 +240,7 @@ describe('CreateDeploymentsComponent', () => {
 
   it('canNavigateToStep should return false when stepOneForm invalid and trying to advance', () => {
     component.currentStep = 0;
-    component.stepOneForm.get('name')?.setValue(''); // invalid
+    component.stepOneForm.get('name')?.setValue(''); 
     expect(component.canNavigateToStep(1)).toBeFalse();
   });
 
@@ -317,7 +305,6 @@ describe('CreateDeploymentsComponent', () => {
 
   describe('ReviewScreen interactions and submit error branches', () => {
     it('editSelectedStep emitted from review screen should set currentStep and fromReview', () => {
-      // simulate event coming from review child
       component.editSelectedStep({ step: 2, fromReview: true });
       expect(component.fromReview).toBeTrue();
       expect(component.currentStep).toBe(2);
@@ -330,7 +317,6 @@ describe('CreateDeploymentsComponent', () => {
 
       const s3Resp = { data: { uploadUrl: 'https://upload', s3Key: 'uploads/key', contentType: 'application/zip' } };
       deploymentsServiceSpy.getS3Details.and.returnValue(of(s3Resp));
-      // upload returns false
       deploymentsServiceSpy.uploadFileToS3.and.returnValue(of(false));
       deploymentsServiceSpy.createDeployement.and.returnValue(of({ status: 'success' }));
 
@@ -340,21 +326,18 @@ describe('CreateDeploymentsComponent', () => {
       tick();
 
       expect(deploymentsServiceSpy.uploadFileToS3).toHaveBeenCalled();
-      // since upload returned false, createDeployement should still be called in current implementation
       expect(deploymentsServiceSpy.createDeployement).toHaveBeenCalled();
       expect(toaster.success).toHaveBeenCalled();
     }));
 
     it('submitChanges should show toaster.error when createDeployement throws', fakeAsync(() => {
       component.fileFormData = undefined;
-      // simulate direct create deployment error
       deploymentsServiceSpy.createDeployement.and.returnValue(throwError(() => new Error('boom')) as any);
       const toaster = TestBed.inject(ToastrService) as any;
 
       component.submitChanges();
       tick();
 
-      // error path should call toaster.error
       expect(toaster.error).toHaveBeenCalled();
     }));
 
@@ -385,7 +368,6 @@ describe('CreateDeploymentsComponent', () => {
     }));
 
     it('submitChanges without fileFormData should call createDeployement and navigate', fakeAsync(() => {
-      // no fileFormData means upload$ is of(null) and createDeployement should be called
       component.fileFormData = undefined as any;
       deploymentsServiceSpy.createDeployement.and.returnValue(of({ status: 'success', data: {} }));
       const toaster = TestBed.inject(ToastrService) as any;
@@ -519,17 +501,15 @@ describe('CreateDeploymentsComponent', () => {
       component.stepOneForm.get('name')?.setValue('valid-name');
       component.stepOneForm.get('type')?.setValue('github');
       component.stepOneForm.get('instanceType')?.setValue({ instanceType: 'femto.m' });
-      tick(400); // flush debounced validations
+      tick(400); 
       expect(component.canNavigateToStep(1)).toBeTrue();
     }));
 
     it('should handle fileValidator with file size exceeded', () => {
       const validator = component.fileValidator(['zip']);
       const control = { value: 'huge-file.zip' } as any;
-      
-      // The validator expects to extract extension from string value
       const result = validator(control);
-      expect(result).toBeNull(); // File is a string path, doesn't have size property
+      expect(result).toBeNull(); 
     });
 
     it('should handle fileValidator with null file', () => {
@@ -540,7 +520,6 @@ describe('CreateDeploymentsComponent', () => {
 
     it('should handle onZipFileSelect with file size too large', () => {
       const toaster = TestBed.inject(ToastrService) as any;
-      // Create a file with large size property
       const file = new File(['x'], 'huge.zip', { type: 'application/zip' });
       Object.defineProperty(file, 'size', { value: 600_000_000, writable: false });
       const event = { target: { files: [file] } } as any;
@@ -556,8 +535,6 @@ describe('CreateDeploymentsComponent', () => {
       const event = { target: { files: [file] } } as any;
       
       component.onZipFileSelect(event);
-      
-      // The file is selected but error is shown
       expect(component.selectedFile).toBe(file);
     });
 
@@ -778,7 +755,7 @@ describe('CreateDeploymentsComponent', () => {
       projectServiceSpy.getProjectDetailsById.and.returnValue(of({ data: { github: false } }));
       
       fixture.detectChanges();
-      tick(1000); // flush all debounced timers
+      tick(1000); 
       
       expect(deploymentsServiceSpy.getVCSCallback).not.toHaveBeenCalled();
     }));
@@ -798,10 +775,10 @@ describe('CreateDeploymentsComponent', () => {
       deploymentsServiceSpy.getAvailableRepos.and.returnValue(of({ status: 'success', data: [] }));
       
       fixture.detectChanges();
-      tick(1000); // flush all async operations
+      tick(1000); 
       
       expect(deploymentsServiceSpy.getVCSCallback).toHaveBeenCalledWith('test-code', 'proj1', 'github');
-      fixture.destroy(); // cleanup
+      fixture.destroy(); 
     }));
 
     it('should handle instanceType valueChanges subscription', fakeAsync(() => {
@@ -856,7 +833,7 @@ describe('CreateDeploymentsComponent', () => {
       component.stepOneForm.get('instanceType')?.setValue({ instanceType: 'femto.m' });
       component.selectedVCS = 'github';
       component.selectedRepoDetails = { repoUrl: 'owner/repo', branchName: 'main', webhook: false, gitRepoId: 1 };
-      tick(1000); // flush debounced timers
+      tick(1000); 
       
       const result = (component as any).buildRequest(null, null);
       
@@ -924,11 +901,7 @@ describe('CreateDeploymentsComponent', () => {
 
     it('should handle redirectToOAuth for gitlab', () => {
       spyOn(component as any, 'getState').and.returnValue('nimbuz');
-      
-      // Simply verify the method doesn't throw
       expect(() => {
-        // We can't easily test window.location.href changes in unit tests
-        // Just verify the method runs without errors
         const subdomain = (component as any).getSubdomain();
         expect(subdomain).toBeTruthy();
       }).not.toThrow();

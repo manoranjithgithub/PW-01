@@ -11,9 +11,6 @@ import { ToastrService, TOAST_CONFIG } from 'ngx-toastr';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { ActivatedRoute } from '@angular/router';
 
-// Provide a robust canvas context stub for headless/chart tests.
-// Chart.js uses several 2D context APIs; create a forgiving stub that
-// implements commonly-used methods and returns safe defaults.
 try {
   if (typeof HTMLCanvasElement !== 'undefined') {
     const safeContext = () => {
@@ -34,60 +31,49 @@ try {
         stroke: () => {},
         fillText: () => {},
         measureText: () => ({ width: 0 }),
-        // transforms
         translate: () => {},
         rotate: () => {},
         scale: () => {},
         setTransform: () => {},
         transform: () => {},
         resetTransform: () => {},
-        // state
         save: () => {},
         restore: () => {},
-        // images
         drawImage: () => {},
         createImageData: () => ({ width: 0, height: 0, data: [] }),
         getImageData: (_: any, __: any, ___: any, ____: any) => ({ data: [] }),
         putImageData: () => {},
-        // paths
         isPointInPath: () => false,
-        // style
         setLineDash: () => {},
         getLineDash: () => [],
-        // gradients/patterns
         createLinearGradient: () => ({ addColorStop: () => {} }),
         createRadialGradient: () => ({ addColorStop: () => {} }),
         createPattern: () => ({}),
-        // canvas metadata
         canvas: { width: 300, height: 150 },
       };
       return ctx;
     };
 
     (HTMLCanvasElement.prototype as any).getContext = (HTMLCanvasElement.prototype as any).getContext || function(type?: string) {
-      // Chart.js asks for '2d' contexts; return safe stub for those.
       if (!type || type === '2d') return safeContext();
       return null;
     };
   }
 } catch (e) {
-  // Ignore in environments where HTMLCanvasElement isn't available.
+  // Ignore if HTMLCanvasElement is not defined
 }
 
-// CRITICAL: Stub window.location BEFORE initializing Angular test environment
-// Prevent ALL page reloads by intercepting at multiple levels
 (function() {
   const _origLocation = window.location;
   
-  // Create a complete fake location that mimics the real one
   const fakeLocation = {
-    reload: function() { /* no-op */ },
-    assign: function(url: string) { /* no-op */ },
-    replace: function(url: string) { /* no-op */ },
+    reload: function() {  },
+    assign: function(url: string) {  },
+    replace: function(url: string) {  },
     toString: function() { return _origLocation.href; },
     _href: _origLocation.href,
     get href() { return this._href; },
-    set href(v: string) { this._href = v; /* no-op assignment */ },
+    set href(v: string) { this._href = v; },
     origin: _origLocation.origin,
     protocol: _origLocation.protocol,
     host: _origLocation.host,
@@ -98,12 +84,10 @@ try {
     hash: _origLocation.hash
   };
 
-  // Replace window.location completely
-  try {
+ try {
     delete (window as any).location;
     (window as any).location = fakeLocation;
   } catch (e) {
-    // If we can't delete, try Object.defineProperty
     try {
       Object.defineProperty(window, 'location', {
         configurable: true,
@@ -115,7 +99,6 @@ try {
     }
   }
 
-  // Also stub document.location
   try {
     delete (document as any).location;
     (document as any).location = fakeLocation;
@@ -131,13 +114,10 @@ try {
     }
   }
 
-  // Stub window.open
   (window as any).open = function() { return null; };
 
-  // Use Jasmine's global beforeEach to reset before each test
   if (typeof beforeEach === 'function') {
     beforeEach(function() {
-      // Ensure our stubs are still in place
       if ((window as any).location !== fakeLocation) {
         (window as any).location = fakeLocation;
       }
@@ -148,16 +128,12 @@ try {
   }
 })();
 
-// First, initialize the Angular testing environment.
 getTestBed().initTestEnvironment(
   BrowserDynamicTestingModule,
   platformBrowserDynamicTesting(),
   { teardown: { destroyAfterEach: true } },
 );
 
-// Provide common testing modules globally so standalone components and services
-// that rely on HttpClient can be created without each spec importing the module.
-// Provide lightweight defaults for commonly-missing providers in specs.
 const toastrMock = (window as any).jasmine?.createSpyObj
   ? (window as any).jasmine.createSpyObj('ToastrService', ['success', 'error', 'info', 'warning'])
   : { success: () => {}, error: () => {}, info: () => {}, warning: () => {} };
@@ -171,25 +147,20 @@ const toastConfigMock = {
 const ngbActiveModalMock = { close: () => {}, dismiss: () => {} };
 const activatedRouteMock = { snapshot: { queryParams: {} }, queryParams: { subscribe: () => ({}) } };
 
-// Provide a minimal Cashfree stub so `InvoiceComponent` tests don't throw.
 try {
   (window as any).Cashfree = (window as any).Cashfree || {};
 } catch (e) {
-  // ignore in non-browser test harnesses
+  // ignore 
 }
 
-// Ensure a safe default `environment` exists for components that parse it.
 try {
   if (!localStorage.getItem('environment')) {
     localStorage.setItem('environment', JSON.stringify({ id: 'test-env' }));
   }
 } catch (e) {
-  // ignore when localStorage isn't available
+  // ignore 
 }
 
-// Normalize `localStorage.getItem` results so tests don't accidentally
-// parse the literal strings 'undefined' or 'null' (which some tests
-// or code paths may set). Treat those as missing values.
 try {
   const _origGetItem = Storage.prototype.getItem;
   Storage.prototype.getItem = function (key: string) {
@@ -197,11 +168,10 @@ try {
     if (v === undefined || v === null || v === 'undefined' || v === 'null') return null;
     return v;
   };
-} catch (e) {
-  // ignore if Storage isn't available in this environment
-}
+} catch (e) { 
+  //ignore
+  }
 
-// Patch JSON.parse to handle 'undefined' and 'null' strings safely
 try {
   const _origJSONParse = JSON.parse;
   JSON.parse = function(text: string, reviver?: any) {
@@ -211,10 +181,9 @@ try {
     return _origJSONParse.call(JSON, text, reviver);
   };
 } catch (e) {
-  // ignore if JSON.parse cannot be patched
+  // ignore 
 }
 
-// Additional safe defaults to avoid JSON.parse('undefined') in tests
 try {
   if (!localStorage.getItem('project')) {
     localStorage.setItem('project', JSON.stringify({ id: 'test-project' }));
@@ -244,10 +213,9 @@ try {
     localStorage.setItem('llmDeployments', JSON.stringify([]));
   }
 } catch (e) {
-  // ignore when localStorage isn't available
+  // ignore 
 }
 
-// Provide default resource usage to avoid parse errors in settings/metrics tests
 try {
   if (!localStorage.getItem('resourceUsage')) {
     localStorage.setItem('resourceUsage', JSON.stringify([
@@ -257,7 +225,7 @@ try {
     ]));
   }
 } catch (e) {
-  // ignore when localStorage isn't available
+  // ignore 
 }
 
 getTestBed().configureTestingModule({
@@ -270,30 +238,23 @@ getTestBed().configureTestingModule({
   ]
 });
 
-// Patch TestBed.configureTestingModule so individual specs automatically
-// include common testing imports/providers when they call it without them.
 const testBedRef: any = getTestBed();
 const _originalConfigure = testBedRef.configureTestingModule.bind(testBedRef);
-// Ensure overrides exist on the TestBed itself so standalone components or
-// imported modules that register their own Toastr providers still get the
-// safe config and spy instance during tests.
 try {
   testBedRef.overrideProvider(TOAST_CONFIG, { useValue: toastConfigMock });
   testBedRef.overrideProvider(ToastrService, { useValue: toastrMock });
   testBedRef.overrideProvider(ActivatedRoute, { useValue: activatedRouteMock });
   testBedRef.overrideProvider(NgbActiveModal, { useValue: ngbActiveModalMock });
 } catch (e) {
-  // ignore if overrideProvider isn't available in this env
+  // ignore 
 }
 testBedRef.configureTestingModule = (cfg: any = {}) => {
   cfg.imports = Array.isArray(cfg.imports) ? cfg.imports : (cfg.imports ? [cfg.imports] : []);
   cfg.providers = Array.isArray(cfg.providers) ? cfg.providers : (cfg.providers ? [cfg.providers] : []);
 
-  // Ensure HttpClientTestingModule and our common providers are present.
   if (!cfg.imports.some((m: any) => m === HttpClientTestingModule)) {
     cfg.imports.push(HttpClientTestingModule);
   }
-  // Merge providers but avoid duplicates by token identity.
   const commonProviders = [
     { provide: ToastrService, useValue: toastrMock },
     { provide: TOAST_CONFIG, useValue: toastConfigMock },

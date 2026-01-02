@@ -8,7 +8,6 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ToastrService } from 'ngx-toastr';
 import { PermissionService } from 'src/app/shared/services/permission.service';
 
-// Mock services
 class MockDeploymentsService {
   liveDeploymentData(envId: string) {
     return of({ deployment: [{ id: '1', name: 'Test Deployment', status: 'Active' }] });

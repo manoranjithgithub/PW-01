@@ -108,8 +108,6 @@ describe('EnvironmentVariablesComponent', () => {
     expect((component as any).rawEditorModel.dismiss).toHaveBeenCalled();
   });
 
-  // Additional tests
-
   it('should emit envDetails when canAddVariables is false in addEnvVariables', () => {
     component.canAddVariables = false;
     const emitSpy = spyOn(component.envDetails, 'emit');

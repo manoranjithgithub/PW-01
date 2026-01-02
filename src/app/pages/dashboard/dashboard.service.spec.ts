@@ -29,7 +29,6 @@ describe('DashboardsService', () => {
   });
 
   beforeEach(() => {
-    // tests expect a project id to be present in localStorage
     localStorage.setItem('project', JSON.stringify({ id: 'proj-1' }));
   });
 
@@ -116,11 +115,9 @@ describe('DashboardsService', () => {
     let call = 0;
     spyOn(window as any, 'fetch').and.callFake((url: string, init: any) => {
       call++;
-      // first call should be cpu, second call memory
       if (call === 1) expect(url).toBe(expectedCpuUrl);
       if (call === 2) expect(url).toBe(expectedMemUrl);
       expect(init.headers.Authorization).toBe('Bearer mytoken');
-      // return a minimal body reader that completes immediately
       return Promise.resolve({
         body: {
           getReader: () => ({
@@ -130,12 +127,10 @@ describe('DashboardsService', () => {
       });
     });
 
-    // subscribe to cpu observable and ensure it completes
     service.getDeploymentUtilizationSSE(namespace, 'cpu').subscribe({
       next: () => {},
       error: (e) => fail(e),
       complete: () => {
-        // now test memory
         service.getDeploymentUtilizationSSE(namespace, 'memory').subscribe({
           next: () => {},
           error: (e) => fail(e),

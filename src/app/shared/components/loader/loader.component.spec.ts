@@ -32,7 +32,6 @@ describe('LoaderComponent', () => {
   });
 
   it('should use SharedService.isLoading$ as isLoading$', () => {
-    // component.isLoading$ should be the same observable reference
     expect((component as any).isLoading$).toBeDefined();
   });
 

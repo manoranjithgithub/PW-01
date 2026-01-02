@@ -22,12 +22,9 @@ describe('CreateToolComponent', () => {
     sharedSpy = jasmine.createSpyObj('SharedService', ['getCurrency', 'convertAmount']);
     sharedSpy.getCurrency.and.returnValue('USD');
     sharedSpy.convertAmount.and.returnValue(123);
-    // provide envValueChange$ observable used in ngOnInit
     (sharedSpy as any).envValueChange$ = of({});
 
     const toastrSpy = jasmine.createSpyObj('ToastrService', ['success', 'error']);
-
-    // set availableTools in localStorage for ngOnInit path
     localStorage.setItem('availableTools', JSON.stringify(['tool-a']));
     localStorage.setItem('environment', JSON.stringify({ id: 'env1' }));
     localStorage.setItem('project', JSON.stringify({ id: 'proj1' }));
@@ -47,7 +44,6 @@ describe('CreateToolComponent', () => {
       ]
     }).compileComponents();
 
-    // override component provider so component uses our spy instance
     TestBed.overrideComponent(CreateToolComponent as any, {
       set: { providers: [{ provide: ToolsService, useValue: toolsSpy }] }
     });
@@ -88,7 +84,6 @@ describe('CreateToolComponent', () => {
 
   it('onSubmit invalid sets submitted flag', () => {
     component.form = component['fb'].group({ name: [''], other: [''] });
-    // mark form as invalid to avoid accessing undefined toolDetails
     component.form.setErrors({ invalid: true });
     component.onSubmit();
     expect(component.submitted).toBeTrue();

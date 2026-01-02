@@ -93,11 +93,11 @@ describe('LayoutActionService', () => {
       service.extraTitle$.subscribe(value => {
         emissionCount++;
         if (emissionCount === 1) {
-          expect(value).toBeNull(); // Initial value
+          expect(value).toBeNull(); 
         } else if (emissionCount === 2) {
-          expect(value).toBe(testTitle); // After setExtraTitle
+          expect(value).toBe(testTitle);
         } else if (emissionCount === 3) {
-          expect(value).toBeNull(); // After clearExtraTitle
+          expect(value).toBeNull(); 
           done();
         }
       });
@@ -251,7 +251,7 @@ describe('LayoutActionService', () => {
       service.extraTitle$.subscribe(value => {
         lastEmission = value;
         emissionCount++;
-        if (emissionCount === numberOfChanges + 1) { // +1 for initial null
+        if (emissionCount === numberOfChanges + 1) {
           expect(lastEmission).toBe(`Title ${numberOfChanges - 1}`);
           done();
         }
@@ -267,7 +267,7 @@ describe('LayoutActionService', () => {
 
       service.extraTitle$.subscribe(value => {
         emissions.push(value);
-        if (emissions.length === 7) { // initial null + 3 sets + 3 clears
+        if (emissions.length === 7) { 
           expect(emissions[0]).toBeNull();
           expect(emissions[1]).toBe('Title 1');
           expect(emissions[2]).toBeNull();
@@ -318,7 +318,7 @@ describe('LayoutActionService', () => {
       service.setExtraTitle('Test 2');
 
       setTimeout(() => {
-        expect(emissionCount).toBe(2); // Initial null + first setExtraTitle
+        expect(emissionCount).toBe(2);
         done();
       }, 50);
     });
@@ -373,7 +373,7 @@ describe('LayoutActionService', () => {
 
       service.extraTitle$.subscribe(value => {
         emissions.push(value);
-        if (emissions.length === 4) { // initial null + 3 same titles
+        if (emissions.length === 4) { 
           expect(emissions[0]).toBeNull();
           expect(emissions[1]).toBe(sameTitle);
           expect(emissions[2]).toBe(sameTitle);

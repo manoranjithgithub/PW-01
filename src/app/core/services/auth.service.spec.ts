@@ -178,7 +178,7 @@ describe('AuthService', () => {
   });
 
   it('isTokenExpired returns true for past token', () => {
-    const exp = Math.floor(Date.now() / 1000) - 60; // expired 1 minute ago
+    const exp = Math.floor(Date.now() / 1000) - 60;
     const payload = { exp };
     const b64 = (obj: any) => btoa(unescape(encodeURIComponent(JSON.stringify(obj)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
     const token = `${b64({ alg: 'none' })}.${b64(payload)}.sig`;

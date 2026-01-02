@@ -12,13 +12,12 @@ describe('DeploymentsService', () => {
   const activatedRouteMock = {
     snapshot: {
       paramMap: new Map([
-        ['id', 'mock-id'] // or mock any params you need
+        ['id', 'mock-id'] 
       ])
     }
   }
 
   beforeEach(() => {
-    // Set up required localStorage values for tests
     localStorage.setItem('environment', JSON.stringify({ id: 'test-env-id' }));
     localStorage.setItem('project', JSON.stringify({ id: 'test-project-id' }));
     
@@ -32,10 +31,9 @@ describe('DeploymentsService', () => {
       });
 
       afterEach(() => {
-        // flush any unexpected pending requests (third-party or app initializers)
         const pending = httpMock.match(() => true);
         pending.forEach(req => {
-          try { req.flush({}); } catch { /* ignore if already flushed */ }
+          try { req.flush({}); } catch { /* ignore  */ }
         });
         httpMock.verify();
       });

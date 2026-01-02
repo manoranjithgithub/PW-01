@@ -35,8 +35,6 @@ describe('DeploymentListComponent', () => {
       ]
     })
     .compileComponents();
-    // Component declares its own provider for LLMDeploymentsService; ensure the component
-    // receives our spy instance instead of creating a fresh service.
     TestBed.overrideComponent(DeploymentListComponent as any, {
       set: {
         providers: [{ provide: LLMDeploymentsService, useValue: deploymentSpy }]
@@ -52,7 +50,6 @@ describe('DeploymentListComponent', () => {
 
   it('should populate tableData on successful getDeployment', () => {
     const svc = TestBed.inject(LLMDeploymentsService) as jasmine.SpyObj<LLMDeploymentsService>;
-    // simulate environment
     component.getDeployment({ id: 'env1' });
     expect(component.tableData.length).toBeGreaterThan(0);
     expect(component.loading).toBeFalse();
@@ -125,8 +122,6 @@ describe('DeploymentListComponent', () => {
     it('should subscribe to envValueChange$ and call getDeployment', () => {
       spyOn(component, 'getDeployment');
       const subscription = component['subscription'];
-      
-      // Verify subscription exists after ngOnInit (already called in beforeEach)
       expect(subscription).toBeDefined();
     });
   });

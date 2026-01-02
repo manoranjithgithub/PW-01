@@ -93,7 +93,6 @@ describe('DashboardComponent', () => {
       ],
       schemas: [NO_ERRORS_SCHEMA]
     })
-    // ensure the component uses our mock dashboards service instead of its own provider
     .overrideComponent(DashboardComponent, {
       set: {
         providers: [ { provide: DashboardsService, useClass: MockDashboardsService } ]
@@ -114,8 +113,6 @@ describe('DashboardComponent', () => {
       if (key === 'accountId') return 'acc1';
       return null;
     });
-
-    // Reset mocks before each test
     dashboardService.getCostDetails.calls.reset();
     dashboardService.getEndpoints.calls.reset();
     dashboardService.deleteEndpoint.calls.reset();
@@ -139,7 +136,6 @@ describe('DashboardComponent', () => {
   });
 
   it('should subscribe to envValueChange$ on ngOnInit', fakeAsync(() => {
-    // Create a fresh component without calling ngOnInit yet
     const freshFixture = TestBed.createComponent(DashboardComponent);
     const freshComponent = freshFixture.componentInstance;
     const initSpy = spyOn(freshComponent, 'initializeDashboard');
@@ -608,13 +604,11 @@ describe('DashboardComponent', () => {
 
   it('should not update dropdown position when btn is null', () => {
     component.updateDropdownPosition(null);
-    // Should not throw error
     expect(component.dropdownStyle).toBeDefined();
   });
 
   it('should not update dropdown position when btn is undefined', () => {
     component.updateDropdownPosition(undefined);
-    // Should not throw error
     expect(component.dropdownStyle).toBeDefined();
   });
 

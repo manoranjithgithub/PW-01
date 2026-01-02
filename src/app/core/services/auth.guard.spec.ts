@@ -32,13 +32,11 @@ describe('AuthGuard', () => {
     });
 
     guard = TestBed.inject(AuthGuard);
-    // ensure clean localStorage baseline
     localStorage.removeItem('project');
     localStorage.removeItem('environment');
   });
 
   afterEach(() => {
-    // restore environment.production default (reasonable default false)
     (environment as any).production = false;
     localStorage.removeItem('project');
     localStorage.removeItem('environment');
@@ -53,7 +51,6 @@ describe('AuthGuard', () => {
 
   it('warns and navigates to /projects when project/env missing', () => {
     authSpy.isAuthenticated.and.returnValue(true);
-    // missing project & environment
     localStorage.removeItem('project');
     localStorage.removeItem('environment');
     permSpy.canAdminGlobal.and.returnValue(false);
@@ -76,7 +73,6 @@ describe('AuthGuard', () => {
   it('blocks create-environment when not admin', () => {
     authSpy.isAuthenticated.and.returnValue(true);
     permSpy.canAdminGlobal.and.returnValue(false);
-    // set project in storage to simulate selection
     localStorage.setItem('project', JSON.stringify({ id: 'p1' }));
     const res = guard.canActivate(dummyRoute, mkState('/projects/create-environment'));
     expect(res).toBeFalse();
@@ -97,7 +93,6 @@ describe('AuthGuard', () => {
 
   it('allows tools/create-tool when canWriteForCurrentUser returns true', () => {
     authSpy.isAuthenticated.and.returnValue(true);
-    // provide project/env in storage
     localStorage.setItem('project', JSON.stringify({ id: 'p1' }));
     localStorage.setItem('environment', JSON.stringify({ id: 'e1' }));
     permSpy.canAdminGlobal.and.returnValue(false);
@@ -122,11 +117,9 @@ describe('AuthGuard', () => {
 
   it('redirects when production and llm route present', () => {
     authSpy.isAuthenticated.and.returnValue(true);
-    // set production mode
     (environment as any).production = true;
     const routeSnap = { routeConfig: { path: 'llm/some' } } as ActivatedRouteSnapshot;
     const res = guard.canActivate(routeSnap, mkState('/llm/whatever'));
     expect(res).toBeFalse();
-    // router navigation may be proxied in different test envs; ensure guard returns false
   });
 });

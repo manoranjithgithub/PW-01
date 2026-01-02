@@ -10,7 +10,6 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { Validators } from '@angular/forms';
 
-// Mock services
 class MockDeploymentsService {
   getDeploymentById = jasmine.createSpy('getDeploymentById').and.callFake((id: string) =>
     of({ status: 'success', data: { id, name: 'Test App', network: {} } })
@@ -68,7 +67,6 @@ describe('DeploymentNetworkingComponent', () => {
 
   it('should initialize the form', () => {
     expect(component.networkSettingsForm).toBeDefined();
-    // component init populates service name from the deployment mock
     expect(component.networkSettingsForm.get('service')?.value).toBe('Test App');
   });
 
@@ -85,7 +83,6 @@ describe('DeploymentNetworkingComponent', () => {
   });
 
   it('should submit networking form', () => {
-    // `createEndpoint` is already a jasmine spy on the mock service; use that spy directly
     const createEndpointSpy = (deploymentService as any).createEndpoint;
     spyOn(toastr, 'success');
 
@@ -99,14 +96,12 @@ describe('DeploymentNetworkingComponent', () => {
   });
 
   it('should copy domain to clipboard', () => {
-    // make spying idempotent across specs
     let writeSpy: any;
     if (navigator.clipboard && (navigator.clipboard.writeText as any) && (navigator.clipboard.writeText as any).and) {
       writeSpy = (navigator.clipboard.writeText as any);
     } else if (navigator.clipboard && typeof (navigator.clipboard.writeText as any) === 'function') {
       writeSpy = spyOn(navigator.clipboard, 'writeText');
     } else {
-      // fallback: define clipboard with spy
       Object.defineProperty(navigator, 'clipboard', { value: { writeText: jasmine.createSpy('writeText') }, configurable: true });
       writeSpy = (navigator.clipboard as any).writeText;
     }
@@ -370,7 +365,6 @@ describe('DeploymentNetworkingComponent', () => {
       
       modalRef.result.then(() => {
         setTimeout(() => {
-          // Error handler calls scrollIntoView, just verify it was called
           expect((deploymentService as any).deleteEndpoint).toHaveBeenCalled();
           done();
         }, 100);
@@ -496,7 +490,6 @@ describe('DeploymentNetworkingComponent', () => {
       
       component.networkSettingsForm.get('host')?.setValue('newhost.com');
       
-      // Should not reset because isPatchedValue is true
       expect(authGroup.get('username')?.value).toBe('testuser');
     });
 
@@ -510,7 +503,6 @@ describe('DeploymentNetworkingComponent', () => {
     it('should handle missing environment in localStorage', () => {
       localStorage.removeItem('environment');
       component.ngOnInit();
-      // Should not throw error
       expect(component.networkSettingsForm).toBeDefined();
     });
 
@@ -610,8 +602,6 @@ describe('DeploymentNetworkingComponent', () => {
       );
       
       component.fetchCustomDnsHost();
-      
-      // Just verify it doesn't crash
       expect(component.customDnsHost.value).toBe('test.com');
     });
 
@@ -688,7 +678,6 @@ describe('DeploymentNetworkingComponent', () => {
       component.onNetworkingSubmit();
       
       const callArgs = createEndpointSpy.calls.mostRecent().args[1];
-      // showAuthentication should be removed from formValue
       expect(callArgs.showAuthentication).toBeUndefined();
     });
 

@@ -1,4 +1,3 @@
-// Clean consolidated spec for DeploymentSecretsComponent
 import { ComponentFixture, TestBed, fakeAsync, flushMicrotasks } from '@angular/core/testing';
 import { DeploymentSecretsComponent } from './deployment-secrets.component';
 import { FormBuilder, ReactiveFormsModule, FormsModule } from '@angular/forms';
@@ -22,7 +21,6 @@ describe('DeploymentSecretsComponent', () => {
   const queryParamsSubject = new BehaviorSubject<any>({});
 
   beforeEach(async () => {
-    // Mock localStorage
     spyOn(localStorage, 'getItem').and.callFake((key: string) => {
       if (key === 'environment') {
         return JSON.stringify({ id: 'env-123' });
@@ -170,15 +168,11 @@ describe('DeploymentSecretsComponent', () => {
 
   it('addSecret updates existing secret when editing and calls updateDeployment', fakeAsync(() => {
     component.deploymentId = 'dep-update-1';
-    // existing secret list with two entries so we can edit a truthy index
     component.secretList = [{ EnvVariable: 'KEEP', Value: '0' }, { EnvVariable: 'OLD', Value: '1' }];
-    // simulate editing the second secret (index 1 which is truthy)
     component.editIndex = 1 as any;
     component.showSecretForm = true;
     component.addRule();
     component.rulesFormArray.at(0).patchValue({ name: 'NEW', value: '2' });
-
-    // ensure updateDeployment will be called when addEnvVariables runs
     mockDeploymentsService.updateDeployment.and.returnValue(of({}));
 
     component.addSecret();
@@ -191,7 +185,6 @@ describe('DeploymentSecretsComponent', () => {
 
   it('addSecret does not change secrets when form invalid', () => {
     component.secretList = [];
-    // no rule added -> form invalid
     component.showSecretForm = true;
 
     component.addSecret();

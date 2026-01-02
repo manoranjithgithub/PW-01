@@ -90,7 +90,6 @@ describe('ToolsComponent', () => {
   });
 
   it('should navigate to environments if env is missing', () => {
-    // ensure no environment is present in storage
     localStorage.removeItem('environment');
 
     component.ngOnInit();
@@ -230,7 +229,6 @@ describe('ToolsComponent', () => {
     
     component.ngOnInit();
     
-    // When environment is missing, getAvailableTools should not be called
     expect(toolsServiceSpy.liveToolsData).not.toHaveBeenCalled();
   });
 
@@ -461,7 +459,6 @@ describe('ToolsComponent', () => {
       { _id: '1', name: 'MySQL', status: 'running' }
     ]);
     
-    // Array reference should not change if no changes
     expect(component.rowData).toBe(original);
   });
 

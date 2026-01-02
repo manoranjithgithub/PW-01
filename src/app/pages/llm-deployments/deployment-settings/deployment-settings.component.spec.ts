@@ -32,11 +32,9 @@ describe('DeploymentSettingsComponent', () => {
     };
     mockDeploymentService = jasmine.createSpyObj('LLMDeploymentsService', ['getDeploymentById', 'updateDeployment', 'deleteDeployment', 'getDeployments', 'getInstanceTypes']);
     mockDeploymentService.getDeploymentById.and.callFake((id: any) => {
-      // First call by id -> return lightweight meta
       if (id === '123') {
         return of({ status: 'Success', data: { id: '123', name: 'TestDeployment' } });
       }
-      // Second call by name -> return full details used by getDeploymentById()
       return of({ status: 'Success', data: { name: 'TestDeployment', application: { replicas: 1, instanceType: 'Nvidia L2', storage: null }, buildConfig: {}, sourceCode: { type: 'git', gitUrl: 'https://github.com/org/repo.git branch' } } });
     });
     mockDeploymentService.getDeployments.and.returnValue(of({ status: 'Success', data: [] }));
@@ -50,7 +48,6 @@ describe('DeploymentSettingsComponent', () => {
 
     mockViewportScroller = jasmine.createSpyObj('ViewportScroller', ['scrollToAnchor']);
 
-    // Ensure component-level provider is overridden so the component uses our spy
     TestBed.overrideProvider(LLMDeploymentsService, { useValue: mockDeploymentService });
 
     await TestBed.configureTestingModule({
@@ -102,7 +99,6 @@ describe('DeploymentSettingsComponent', () => {
 
   it('should call updateDeployment on onGeneralSubmit', fakeAsync(() => {
     component.deploymentdetails = { id: '123', name: 'OldName', application: { replicas: 1, instanceType: 'Nvidia L2', storage: null }, buildConfig: {} };
-    // supply all required fields so the form is valid
     component.generalSettingsForm.patchValue({
       name: 'OldName',
       modelId: 'model-1',
@@ -113,7 +109,6 @@ describe('DeploymentSettingsComponent', () => {
       ephemeralStorageSize: 10,
       environmentId: 'env-123'
     });
-    // ensure form validity is propagated to the component
     fixture.detectChanges();
     tick();
     expect(component.generalSettingsForm.valid).toBeTrue();
@@ -122,7 +117,7 @@ describe('DeploymentSettingsComponent', () => {
   }));
 
   it('should mark form as touched if invalid on submit', () => {
-    component.generalSettingsForm.patchValue({ name: '' }); // invalid
+    component.generalSettingsForm.patchValue({ name: '' }); 
     component.onGeneralSubmit();
     expect(component.generalSettingsForm.touched).toBeTrue();
   });
@@ -337,7 +332,6 @@ describe('DeploymentSettingsComponent', () => {
 
   describe('deleteDeployment', () => {
     xit('should call deleteDeployment and show success message', fakeAsync(() => {
-      // Skipped due to window.location.href navigation that causes page reload in tests
       component.deploymentdetails = { id: '123' };
       const modalRef = {
         componentInstance: {},

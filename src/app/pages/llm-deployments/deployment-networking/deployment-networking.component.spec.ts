@@ -27,8 +27,6 @@ describe('DeploymentNetworkingComponent', () => {
       ...activatedRouteMock,
       queryParams: queryParams$.asObservable()
     } as unknown as ActivatedRoute;
-
-    // Force the component to use our spy provider instead of its own provider array.
     TestBed.overrideComponent(DeploymentNetworkingComponent as any, {
       set: { providers: [{ provide: LLMDeploymentsService, useValue: deploymentSpy }] }
     });
@@ -45,7 +43,6 @@ describe('DeploymentNetworkingComponent', () => {
   });
 
   beforeEach(() => {
-    // Ensure environment exists so component can parse it safely
     localStorage.setItem('environment', JSON.stringify({ id: 'env-test' }));
 
     fixture = TestBed.createComponent(DeploymentNetworkingComponent);
@@ -68,15 +65,10 @@ describe('DeploymentNetworkingComponent', () => {
   });
 
   it('should patch host when service value changes using environment type', (done) => {
-    // set environment to prod so domainSuffix uses prod path
     localStorage.setItem('environment', JSON.stringify({ id: 'env1', type: 'prod' }));
-
-    // recreate component to pick up new localStorage value
     fixture = TestBed.createComponent(DeploymentNetworkingComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
-
-    // trigger value change
     component.networkSettingsForm.get('service')?.setValue('myservice');
 
     setTimeout(() => {

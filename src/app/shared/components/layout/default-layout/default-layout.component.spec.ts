@@ -57,15 +57,10 @@ describe('DefaultLayoutComponent', () => {
       ]
     }).compileComponents();
 
-    // override template to avoid heavy standalone imports
     TestBed.overrideComponent(DefaultLayoutComponent, { set: { template: '<div></div>' } });
     fixture = TestBed.createComponent(DefaultLayoutComponent);
     component = fixture.componentInstance;
-
-    // provide a fake sidebarRef element
     (component as any).sidebarRef = { nativeElement: document.createElement('div') } as ElementRef;
-    
-    // Reset spies
     routerStub.navigateByUrl.calls.reset();
     (rendererSpy.addClass as jasmine.Spy).calls.reset();
     (rendererSpy.removeClass as jasmine.Spy).calls.reset();
@@ -156,8 +151,6 @@ describe('DefaultLayoutComponent', () => {
     component.selectedItemFromCom = 'Item Name (OK)';
     expect(component.getItemName()).toBe('Item Name');
     expect(component.getItemStatus()).toBe('OK');
-
-    // cleanColorMode when colorMode returns JSON
     (colorModeMock as any).andReturn = undefined;
     (colorModeMock as any).and.returnValue('"dark"');
     const clean = component.cleanColorMode;
@@ -177,17 +170,6 @@ describe('DefaultLayoutComponent', () => {
     expect(routerStub.navigateByUrl).toHaveBeenCalledWith('/projects', { replaceUrl: true });
   });
 
-  // it('should allow navigation to users-list for non-nimbuz global admins', () => {
-  //   localStorage.setItem('project', JSON.stringify({ id: 'p1' }));
-  //   localStorage.setItem('environment', JSON.stringify({ id: 'e1' }));
-  //   permissionSpy.canAdminGlobal.and.returnValue(true);
-  //   component.currentUser = 'otherUser';
-
-  //   const navStart = new NavigationStart(2, '/users-list');
-  //   routerEvents$.next(navStart);
-
-  //   expect(routerStub.navigateByUrl).not.toHaveBeenCalled();
-  // });
 
   it('should redirect to projects if project is missing on NavigationStart', () => {
     localStorage.removeItem('project');

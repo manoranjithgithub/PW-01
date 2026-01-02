@@ -42,7 +42,6 @@ describe('EditToolComponent', () => {
     mockSharedService.getCurrency.and.returnValue('USD');
     mockSharedService.convertAmount.and.callFake((val: number) => val);
 
-    // Ensure the standalone component uses our mock ToolsService instance
     TestBed.overrideComponent(EditToolComponent, {
       set: {
         providers: [{ provide: ToolsService, useValue: mockToolsService }]
