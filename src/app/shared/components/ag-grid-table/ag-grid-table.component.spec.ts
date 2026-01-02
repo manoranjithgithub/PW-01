@@ -3,17 +3,30 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { TOAST_CONFIG, ToastrService } from 'ngx-toastr';
 
 import { AgGridTableComponent } from './ag-grid-table.component';
-import { Router } from '@angular/router';
-import { of } from 'rxjs';
+import { SharedService } from '../../services/shared.service';
+import { of, Subject } from 'rxjs';
 
 describe('AgGridTableComponent', () => {
   let component: AgGridTableComponent;
   let fixture: ComponentFixture<AgGridTableComponent>;
+  let loadingSubject: Subject<boolean>;
+  let sharedService: any;
 
   beforeEach(async () => {
+    loadingSubject = new Subject<boolean>();
+
+    sharedService = {
+      isLoading$: loadingSubject.asObservable(),
+      valueChange$: of('ag-theme-alpine')
+    };
+
     await TestBed.configureTestingModule({
       imports: [AgGridTableComponent, HttpClientTestingModule],
       providers: [
+        {
+          provide: SharedService,
+          useValue: sharedService
+        },
         {
           provide: TOAST_CONFIG,
           useValue: {
@@ -21,16 +34,31 @@ describe('AgGridTableComponent', () => {
             positionClass: 'toast-top-right',
             timeOut: 5000,
             extendedTimeOut: 1000,
-            iconClasses: { error: 'toast-error', info: 'toast-info', success: 'toast-success', warning: 'toast-warning' }
+            iconClasses: {
+              error: 'toast-error',
+              info: 'toast-info',
+              success: 'toast-success',
+              warning: 'toast-warning'
+            }
           }
         },
-        { provide: ToastrService, useValue: (window as any).jasmine?.createSpyObj ? (window as any).jasmine.createSpyObj('ToastrService', ['success','error','info','warning']) : { success: () => {}, error: () => {}, info: () => {}, warning: () => {} } }
+        {
+          provide: ToastrService,
+          useValue: (window as any).jasmine?.createSpyObj
+            ? (window as any).jasmine.createSpyObj('ToastrService', ['success', 'error', 'info', 'warning'])
+            : { success: () => { }, error: () => { }, info: () => { }, warning: () => { } }
+        }
       ]
-    })
-    .compileComponents();
-    
+    }).compileComponents();
+
     fixture = TestBed.createComponent(AgGridTableComponent);
     component = fixture.componentInstance;
+    (component as any).gridApi = {
+      showNoRowsOverlay: jasmine.createSpy('showNoRowsOverlay'),
+      hideOverlay: jasmine.createSpy('hideOverlay'),
+      isDestroyed: () => false
+    };
+
     fixture.detectChanges();
   });
 
@@ -61,5 +89,56 @@ describe('AgGridTableComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+  it('should return environment id from localStorage', () => {
+    localStorage.setItem('environment', JSON.stringify({ id: 'env-1' }));
+    expect(component.getCurrentEnvId()).toBe('env-1');
+
+    localStorage.setItem('environment', 'plain-env');
+    expect(component.getCurrentEnvId()).toBe('plain-env');
+
+    localStorage.removeItem('environment');
+  });
+
+  it('should show loading overlay when isLoading is true', () => {
+    loadingSubject.next(true);
+
+    expect(component.overlayMessage).toBe('Loading...');
+    expect((component as any).gridApi.showNoRowsOverlay).toHaveBeenCalled();
+  });
+  it('should hide overlay when loading is false and rowData exists', () => {
+    component.rowData = [{ id: 1 }];
+
+    loadingSubject.next(false);
+
+    expect(component.overlayMessage).toBe('');
+    expect((component as any).gridApi.hideOverlay).toHaveBeenCalled();
+  });
+  it('should show no rows overlay when loading is false and no data', () => {
+    component.rowData = [];
+    component.tableName = 'tools';
+    component.tablebtn = 'Tool';
+
+    loadingSubject.next(false);
+
+    expect(component.overlayMessage).toContain('You do not have');
+    expect((component as any).gridApi.showNoRowsOverlay).toHaveBeenCalled();
+  });
+  it('should return noRowsTemplate with overlay message', () => {
+    component.overlayMessage = 'No records found';
+    expect(component.noRowsTemplate).toContain('No records found');
+  });
+  it('should emit add user event', () => {
+    spyOn(component.addUuserEvent, 'emit');
+
+    component.addNewUser();
+
+    expect(component.addUuserEvent.emit).toHaveBeenCalledWith(true);
+  });
+  it('should return no rows template with overlay message', () => {
+    component.overlayMessage = 'No data available';
+
+    expect(component.noRowsTemplate)
+      .toContain('No data available');
   });
 });

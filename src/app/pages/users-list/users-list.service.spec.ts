@@ -93,4 +93,58 @@ describe('UsersListService', () => {
     const req = httpMock.expectOne(`${environment.usermanagementBaseUrl}/user/list-user`);
     req.flush({ error: { message: 'x' } }, { status: 500, statusText: 'Server Error' });
   });
+  it('should handle client-side ErrorEvent and call toastr.error', (done) => {
+    const toastr = TestBed.inject(ToastrService) as jasmine.SpyObj<ToastrService>;
+    service.getAllUSers().subscribe({
+      next: () => fail('expected error'),
+      error: (err) => {
+        expect(toastr.error).toHaveBeenCalled();
+        expect(err).toBe('Something bad happened; please try again later.');
+        done();
+      }
+    });
+    const req = httpMock.expectOne(
+      `${environment.usermanagementBaseUrl}/user/list-user`
+    );
+    const errorEvent = new ErrorEvent('NetworkError', {
+      message: 'Client error'
+    });
+    req.error(errorEvent);
+  });
+  it('should log server error message when error.error.error exists', (done) => {
+    spyOn(console, 'error');
+    service.getAllUSers().subscribe({
+      next: () => fail('expected error'),
+      error: (err) => {
+        expect(console.error).toHaveBeenCalledWith('Server error occurred');
+        expect(err).toBe('Something bad happened; please try again later.');
+        done();
+      }
+    });
+    const req = httpMock.expectOne(
+      `${environment.usermanagementBaseUrl}/user/list-user`
+    );
+    req.flush(
+      { error: 'Server error occurred' },
+      { status: 500, statusText: 'Server Error' }
+    );
+  });
+  it('should fallback to default error message when server error is empty', (done) => {
+    spyOn(console, 'error');
+
+    service.getAllUSers().subscribe({
+      next: () => fail('expected error'),
+      error: (err) => {
+        expect(console.error).toHaveBeenCalledWith('Please try again later');
+        expect(err).toBe('Something bad happened; please try again later.');
+        done();
+      }
+    });
+
+    const req = httpMock.expectOne(
+      `${environment.usermanagementBaseUrl}/user/list-user`
+    );
+
+    req.flush({}, { status: 500, statusText: 'Server Error' });
+  });
 });

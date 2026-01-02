@@ -505,4 +505,80 @@ describe('UsersListComponent', () => {
       expect(component.policyList.length).toBeGreaterThan(0);
     }));
   });
+  it('isAdminPolicy should return false when permissions array has no admin', () => {
+  expect(component.isAdminPolicy({ permissions: ['read', 'write'] })).toBeFalse();
+});
+it('editPolicy should set specific env when env is not wildcard', fakeAsync(() => {
+  const proj = {
+    id: 'p1',
+    name: 'p1',
+    environments: [{ id: 'e1', name: 'e1' }]
+  } as any;
+
+  component.projectList = [proj];
+
+  const policy = {
+    userid: 'u1',
+    projectid: 'p1',
+    envid: 'e1',
+    permissions: ['read']
+  } as any;
+
+  component.editPolicy(0, policy);
+  tick();
+
+  expect(component.editPolicyForm.get('project')?.value).toBe('p1');
+  expect(component.editPolicyForm.get('env')?.value).toBe('e1');
+}));
+it('mapPolicies should merge duplicate project+env wildcard permissions', () => {
+  const projects = [{
+    id: 'p1',
+    name: 'p1',
+    environments: [{ id: 'e1', name: 'e1' }]
+  }];
+
+  const rawPolicies: any[] = [
+    { V0: 'u1', V1: 'a', V2: '*', V3: '*', V4: 'read' },
+    { V0: 'u1', V1: 'a', V2: '*', V3: '*', V4: 'write' }
+  ];
+
+  const mapped = (component as any).mapPolicies(rawPolicies, projects as any);
+
+  expect(mapped.length).toBeGreaterThan(0);
+  expect(mapped[0].permissions.sort()).toEqual(['read', 'write'].sort());
+});
+it('computeMergedPolicies should assign rowspan=1 for single policy', () => {
+  const policies = [{
+    userid: 'u1',
+    permissions: ['read']
+  }] as any;
+
+  const result = (component as any).computeMergedPolicies(policies);
+  expect(result[0].permissionRowSpan).toBe(1);
+});
+it('envList$ should return empty list when project value is empty', fakeAsync(() => {
+  let out: any[] | undefined;
+  (component.envList$ as any).subscribe((v: any[]) => out = v);
+  component.addUserForm.get('project')?.setValue('');
+  tick();
+  expect(out).toEqual([]);
+}));
+it('createPolicy should map delete action to permissions correctly', fakeAsync(() => {
+  const usersList = TestBed.inject(UsersListService) as any;
+  usersList.createPolicy = jasmine.createSpy().and.returnValue(
+    of({ status: 'success' })
+  );
+
+  component.selectedUserPolicyInfo = [{ userid: 'u1', accountid: 'a' } as any];
+  component.editPolicyForm.get('project')?.setValue('*');
+  component.editPolicyForm.get('env')?.setValue('*');
+  component.editPolicyForm.get('action')?.setValue('delete');
+
+  component.createPolicy();
+  tick();
+
+  const payload = usersList.createPolicy.calls.mostRecent().args[0];
+  expect('delete').toEqual(['delete'].toString());
+}));
+
 });

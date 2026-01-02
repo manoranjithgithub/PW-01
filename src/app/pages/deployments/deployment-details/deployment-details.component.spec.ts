@@ -176,4 +176,142 @@ describe('DeploymentDetailsComponent', () => {
     expect(component['destroy$'].complete).toHaveBeenCalled();
     expect(layoutService.clearExtraTitle).toHaveBeenCalled();
   });
+
+  it('should handle undefined params id', () => {
+    const activatedRoute = TestBed.inject(ActivatedRoute) as any;
+    activatedRoute.queryParams = of({});
+    component.ngOnInit();
+    expect(component.deploymentId).toBe('123'); // Previous value from beforeEach
+  });
+
+  it('should handle error status from getDeploymentById', (done) => {
+    const deploymentService = TestBed.inject(DeploymentsService) as any;
+    spyOn(deploymentService, 'getDeploymentById').and.returnValue(of({
+      status: 'error',
+      data: { name: 'TestApp', status: 'Failed' }
+    }));
+    spyOn(deploymentService, 'liveReleaseStatus').and.returnValue(of({
+      releases: { releases: { status: 'error' } }
+    }));
+    
+    const activatedRoute = TestBed.inject(ActivatedRoute) as any;
+    activatedRoute.queryParams = of({ id: '456' });
+    
+    component.ngOnInit();
+    
+    setTimeout(() => {
+      expect(component.appName).toBe('TestApp');
+      expect(layoutService.setExtraTitle).toHaveBeenCalled();
+      done();
+    }, 100);
+  });
+
+  it('should navigate to network tab when fragment is network-section', (done) => {
+    const activatedRoute = TestBed.inject(ActivatedRoute) as any;
+    activatedRoute.fragment = of('network-section');
+    spyOn(component, 'onTabChange');
+    
+    component.ngOnInit();
+    
+    setTimeout(() => {
+      expect(component.onTabChange).toHaveBeenCalledWith(7);
+      done();
+    }, 100);
+  });
+
+  it('should call createEnvironmentVariable when selectedTabIndex is 1', () => {
+    component.selectedTabIndex = 1;
+    component.envVarChild = jasmine.createSpyObj('EnvironmentVariablesComponent', ['createEnvironmentVariable']);
+    component.goToNextTab();
+    expect(component.envVarChild.createEnvironmentVariable).toHaveBeenCalled();
+    expect(component.selectedTabIndex).toBe(2);
+  });
+
+  it('should call updateConfigFile when selectedTabIndex is 3', () => {
+    component.selectedTabIndex = 3;
+    component.configMapChild = jasmine.createSpyObj('DeploymentConfigMapsComponent', ['updateConfigFile']);
+    component.goToNextTab();
+    expect(component.configMapChild.updateConfigFile).toHaveBeenCalled();
+    expect(component.selectedTabIndex).toBe(4);
+  });
+
+  it('should not increment tab index if already at 4 or greater', () => {
+    component.selectedTabIndex = 4;
+    component.goToNextTab();
+    expect(component.selectedTabIndex).toBe(4);
+    
+    component.selectedTabIndex = 5;
+    component.goToNextTab();
+    expect(component.selectedTabIndex).toBe(5);
+  });
+
+  it('should handle modal cancellation and not delete deployment', async () => {
+    const modalService = TestBed.inject(NgbModal) as any;
+    const mockModalRef = new MockModalRef();
+    mockModalRef.result = Promise.resolve(false);
+    spyOn(modalService, 'open').and.returnValue(mockModalRef);
+    
+    const deploymentService = TestBed.inject(DeploymentsService) as any;
+    spyOn(deploymentService, 'deleteDeployment');
+    spyOn(console, 'log');
+    
+    component.onLayoutButtonClick();
+    await fixture.whenStable();
+    
+    expect(deploymentService.deleteDeployment).not.toHaveBeenCalled();
+    expect(console.log).toHaveBeenCalledWith('Cancelled delete deployment!');
+  });
+
+  // it('should handle delete deployment error status', async () => {
+  //   const deploymentService = TestBed.inject(DeploymentsService) as any;
+  //   spyOn(deploymentService, 'deleteDeployment').and.returnValue(of({ status: 'error' }));
+  //   const toastr = TestBed.inject(ToastrService) as any;
+  //   const router = TestBed.inject(Router) as any;
+    
+  //   component.deploymentId = '123';
+  //   component.onLayoutButtonClick();
+  //   await fixture.whenStable();
+    
+  //   expect(toastr.success).not.toHaveBeenCalled();
+  //   expect(router.navigate).not.toHaveBeenCalled();
+  // });
+
+  it('should replace URL with query string when params exist', () => {
+    const location = TestBed.inject(Location) as any;
+    const activatedRoute = TestBed.inject(ActivatedRoute) as any;
+    activatedRoute.snapshot.queryParams = { id: '123', tabIndex: '2', other: 'value' };
+    
+    component.onTabChange(5);
+    
+    expect(location.replaceState).toHaveBeenCalled();
+    expect(component.selectedTabIndex).toBe(5);
+  });
+
+  it('should navigate to deployment on goBack', () => {
+    const router = TestBed.inject(Router) as any;
+    component.goBack();
+    expect(router.navigate).toHaveBeenCalledWith(['/deployment']);
+  });
+
+  it('should trigger layout action click', (done) => {
+    spyOn(component, 'onLayoutButtonClick');
+    layoutService.actionClick$.next();
+    
+    setTimeout(() => {
+      expect(component.onLayoutButtonClick).toHaveBeenCalled();
+      done();
+    }, 100);
+  });
+
+  it('should handle envValueChange$ subscription', (done) => {
+    const router = TestBed.inject(Router) as any;
+    const sharedService = TestBed.inject(SharedService) as any;
+    
+    component.ngOnInit();
+    
+    setTimeout(() => {
+      expect(router.navigate).toHaveBeenCalledWith(['/deployment']);
+      done();
+    }, 100);
+  });
 });

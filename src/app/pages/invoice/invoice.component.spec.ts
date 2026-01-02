@@ -46,8 +46,8 @@ describe('InvoiceComponent', () => {
         { provide: SharedService, useValue: sharedSpy }
       ]
     })
-    .compileComponents();
-    
+      .compileComponents();
+
     fixture = TestBed.createComponent(InvoiceComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -156,5 +156,52 @@ describe('InvoiceComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+  it('formats amount using Intl.NumberFormat with USD', () => {
+    const cols = component.buildColumnDefs();
+    const amountCol = cols.find(c => c.field === 'subtotal')!;
+
+    const result = (amountCol.valueFormatter as any)({
+      value: 100,
+      data: { currency: 'USD' }
+    });
+
+    expect(sharedSpy.getCurrency).toHaveBeenCalled();
+    expect(sharedSpy.convertAmount).toHaveBeenCalled();
+    expect(result).toContain('$');
+  });
+  it('falls back to USD when currency is undefined', () => {
+    const cols = component.buildColumnDefs();
+    const amountCol = cols.find(c => c.field === 'total')!;
+
+    const result = (amountCol.valueFormatter as any)({
+      value: 250,
+      data: {}
+    });
+
+    expect(result).toContain('$');
+  });
+  it('returns string value when Intl.NumberFormat throws error', () => {
+    spyOn(Intl, 'NumberFormat').and.throwError('format error');
+
+    const cols = component.buildColumnDefs();
+    const taxCol = cols.find(c => c.field === 'tax_amount')!;
+
+    const result = (taxCol.valueFormatter as any)({
+      value: 123,
+      data: { currency: 'USD' }
+    });
+
+    expect(result).toBe('123');
+  });
+  it('currency column valueGetter returns current currency', () => {
+    sharedSpy.getCurrency.and.returnValue('EUR');
+
+    const cols = component.buildColumnDefs();
+    const currencyCol = cols.find(c => c.field === 'currency')!;
+
+    const value = (currencyCol.valueGetter as any)({});
+
+    expect(value).toBe('EUR');
   });
 });

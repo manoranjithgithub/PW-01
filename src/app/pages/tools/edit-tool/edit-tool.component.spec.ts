@@ -5,7 +5,7 @@ import { SharedService } from '../../../shared/services/shared.service';
 import { ToastrService } from 'ngx-toastr';
 import { ActivatedRoute, Router } from '@angular/router';
 import { of } from 'rxjs';
-import { FormBuilder, Validators } from '@angular/forms';
+import { FormBuilder, Validators, FormControl } from '@angular/forms';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('EditToolComponent', () => {
@@ -146,4 +146,38 @@ describe('EditToolComponent', () => {
     component.ngOnDestroy();
     expect(component['subscription'].unsubscribe).toHaveBeenCalled();
   });
+  it('should return null when control value is empty (regexValidator)', () => {
+    const pattern = /^[0-9]+$/;
+    const errorMessage = 'Only numbers allowed';
+
+    const validatorFn = component.regexValidator(pattern, errorMessage);
+    const control = new FormControl('');
+
+    const result = validatorFn(control);
+
+    expect(result).toBeNull();
+  });
+  it('should return error object when control value does not match regex', () => {
+    const pattern = /^[a-z]+$/;
+    const errorMessage = 'Only lowercase letters allowed';
+
+    const validatorFn = component.regexValidator(pattern, errorMessage);
+    const control = new FormControl('Invalid123');
+
+    const result = validatorFn(control);
+
+    expect(result).toEqual({ regex: errorMessage });
+  });
+  it('should return null when control value matches regex', () => {
+    const pattern = /^[a-z]+$/;
+    const errorMessage = 'Only lowercase letters allowed';
+
+    const validatorFn = component.regexValidator(pattern, errorMessage);
+    const control = new FormControl('validtext');
+
+    const result = validatorFn(control);
+
+    expect(result).toBeNull();
+  });
+
 });
