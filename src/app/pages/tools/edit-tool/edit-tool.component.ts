@@ -64,7 +64,13 @@ export class EditToolComponent implements OnInit, OnDestroy {
     });
     this.viewToolDetails();
     this.http.getInstanceTypes().subscribe((res: any) => {
-      this.resources = res.data;
+      const items = Array.isArray(res?.data) ? res.data.slice() : [];
+      items.sort((a: any, b: any) => {
+        const pa = parseFloat(String(a.price || a.instanceHourRate || '').replace(/[^0-9.]/g, '')) || 0;
+        const pb = parseFloat(String(b.price || b.instanceHourRate || '').replace(/[^0-9.]/g, '')) || 0;
+        return pa - pb;
+      });
+      this.resources = items;
     })
   }
 

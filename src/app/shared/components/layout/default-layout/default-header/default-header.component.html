@@ -1,72 +1,7 @@
 <ng-container>
   <c-container [fluid]="true" class="px-4">
-    <!-- <button [cSidebarToggle]="sidebarId" cHeaderToggler class="btn side-bar-toggler rounded-circle" toggle="visible"
-      style="margin-inline-start: -14px;">
-      <svg cIcon name="cilMenu" size="lg"></svg>
-    </button> -->
-    <!-- <c-header-nav class="d-none d-md-flex m-0 align-items-center">
-    </button> -->
     <c-header-nav class="d-none d-md-flex">
     </c-header-nav>
-
-    <!-- <c-header-nav class="d-none d-md-flex ms-auto">
-      <ng-container>
-        <c-dropdown class="mx-2">
-          <button cButton cDropdownToggle class="btn btn-drop-down">
-            {{selectedProject}}
-          </button>
-          <ul cDropdownMenu>
-            <li *ngFor="let list of listOfProjects" [class.active]="isSelectedProject(list)"
-              (click)="getSelectedProject(list)"><a [routerLink]="[]" cDropdownItem>{{list?.name}}</a></li>
-          </ul>
-        </c-dropdown>
-        <div class="nav-item py-1">
-          <div class="vr h-100 mx-2 text-body text-opacity-75"></div>
-        </div>
-      </ng-container>
-    </c-header-nav> -->
-    <!-- <c-header-nav>
-      <ng-container>
-        <c-dropdown>
-          <button cButton cDropdownToggle class="btn btn-drop-down">
-            {{selectedRegion}}
-          </button>
-          <ul cDropdownMenu>
-            <li *ngFor="let list of listOfRegions" [class.active]="isSelectedRegion(list)"
-            (click)="getSelectedRegion(list)"
-              ><a [routerLink]="[]" cDropdownItem>{{list?.name}}</a></li>
-          </ul>
-        </c-dropdown>
-        <div class="nav-item py-1">
-          <div class="vr h-100 mx-2 text-body text-opacity-75"></div>
-        </div>
-      </ng-container>
-    </c-header-nav> -->
-    <!-- <c-header-nav>
-      <ng-container>
-        <c-dropdown>
-          [style.background]="colorMode() === 'dark' ? '#212631' : '#dee2e6'"
-          <button cButton cDropdownToggle class="btn btn-drop-down">
-            {{selectedEnvironment}}
-          </button>
-          <ul cDropdownMenu>
-            <li><a [routerLink]="['/environment']" cDropdownItem class="b-0"> + New Environment</a></li>
-            <li *ngFor="let list of listOfenvironments" [class.active]="isSelectedEnv(list)"
-              (click)="getSelectedEnv(list)"><a [routerLink]="[]" cDropdownItem>{{list?.name}}</a></li>
-          </ul>
-        </c-dropdown>
-        <div class="nav-item py-1">
-          <div class="vr h-100 mx-2 text-body text-opacity-75"></div>
-        </div>
-      </ng-container>
-    </c-header-nav> -->
-    <!-- <c-header-nav class="ms-auto ms-md-0">
-      
-      <ng-container *ngTemplateOutlet="themeDropdown" />
-      <div class="nav-item py-1">
-        <div class="vr h-100 mx-2 text-body text-opacity-75"></div>
-      </div>
-    </c-header-nav> -->
 
     <c-header-nav class="mx-0">
       <ng-container *ngTemplateOutlet="userDropdown" />
@@ -76,18 +11,20 @@
 </ng-container>
 
 <ng-template #userDropdown>
-    <div class="header-controls d-flex align-items-center">
+  <div class="header-controls d-flex align-items-center">
     <a href="https://docs.nimbuz.tech/" target="_blank" class="text-white nav-text me-3 support-link">
       Docs <i class="bi bi-box-arrow-up-right"></i>
     </a>
     <div class="currency-toggle me-3" role="tablist" aria-label="Currency selector">
-      <button type="button" *ngIf="selectedCurrency === 'USD'" class="currency-btn" [class.active]="selectedCurrency === 'USD'" (click)="changeCurrency('INR')" title="Convert to INR">$</button>
-      <button type="button" *ngIf="selectedCurrency === 'INR'" class="currency-btn" [class.active]="selectedCurrency === 'INR'" (click)="changeCurrency('USD')" title="Convert to USD">₹</button>
+      <button type="button" *ngIf="selectedCurrency === 'USD'" class="currency-btn"
+        [class.active]="selectedCurrency === 'USD'" (click)="changeCurrency('INR')" title="Convert to INR">$</button>
+      <button type="button" *ngIf="selectedCurrency === 'INR'" class="currency-btn"
+        [class.active]="selectedCurrency === 'INR'" (click)="changeCurrency('USD')" title="Convert to USD">₹</button>
     </div>
     <!-- <span (click)="logout()" class="text-white nav-text" title="Logout"><i class="bi bi-power"></i></span> -->
   </div>
   <!-- <span class="text-white user-name">{{userData?.name}}</span> -->
-    <c-dropdown class="user-dropdown" [popperOptions]="{ placement: 'bottom-start' }" variant="nav-item">
+  <c-dropdown class="user-dropdown" [popperOptions]="{ placement: 'bottom-start' }" variant="nav-item">
     <button [caret]="false" cDropdownToggle class="py-0 pe-0 d-flex align-items-center profile-btn">
       <div class="avatar-lines" aria-hidden="true">
         <span></span>
@@ -95,22 +32,10 @@
         <span></span>
       </div>
       <span class="c-avatar">{{ getInitials() }}</span>
-      <!-- <c-avatar shape="rounded" [size]="'s'" [attr.title]="userData?.name || 'User'">
-        <ng-container *ngIf="userData?.avatar; else initials">
-          <img [src]="userData?.avatar" alt="{{ userData?.name }}" />
-        </ng-container>
-        <ng-template #initials>{{ getInitials() }}</ng-template>
-      </c-avatar> -->
     </button>
     <ul cDropdownMenu class="pt-0 w-auto user-dropdown-menu" title="Profile">
       <li class="dropdown-header p-2">
         <a cDropdownItem routerLink="/account-settings" class="d-flex align-items-center header-block">
-          <!-- <c-avatar shape="rounded" [size]="'md'" class="me-2">
-            <ng-container *ngIf="userData?.avatar; else headerInitials">
-              <img [src]="userData?.avatar" alt="{{ userData?.name }}" />
-            </ng-container>
-            <ng-template #headerInitials>{{ getInitials() }}</ng-template>
-          </c-avatar> -->
           <div class="header-lines">
             <div class="header-name">{{ userData?.name }}</div>
             <div class="header-email">{{ userData?.email }}</div>
@@ -118,38 +43,21 @@
           </div>
         </a>
       </li>
-      
+
       <li>
         <a cDropdownItem routerLink="/account-settings">
           <!-- <svg cIcon class="me-2" name="cilAccountLogout"></svg> -->
-           <i class="bi bi-gear"></i>
-           Account Settings 
+          <i class="bi bi-gear"></i>
+          Account Settings
         </a>
       </li>
       <li>
         <a cDropdownItem (click)="logout()">
           <!-- <svg cIcon class="me-2" name="cilAccountLogout"></svg> -->
-           <i class="bi bi-power"></i>
+          <i class="bi bi-power"></i>
           Logout
         </a>
       </li>
     </ul>
   </c-dropdown>
 </ng-template>
-
-<!-- <ng-template #themeDropdown>
-  <c-dropdown alignment="end" variant="nav-item">
-    <button [caret]="false" cDropdownToggle>
-      <svg cIcon [name]="icons()" size="lg"></svg>
-    </button>
-    <div cDropdownMenu>
-      @for (mode of colorModes; track mode.name) {
-      <button (click)="setTheme(mode.name)" [active]="colorMode()===mode.name" [routerLink]="[]" cDropdownItem
-        class="d-flex align-items-center">
-        <svg cIcon class="me-2" [name]="mode.icon" size="lg"></svg>
-        {{ mode.text }}
-      </button>
-      }
-    </div>
-  </c-dropdown>
-</ng-template> -->

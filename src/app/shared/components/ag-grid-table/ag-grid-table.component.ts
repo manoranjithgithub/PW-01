@@ -96,7 +96,7 @@ export class AgGridTableComponent implements OnInit {
     });
     this.sharedService.isLoading$.subscribe((isLoading: boolean) => {
       if (isLoading) {
-        this.overlayMessage = 'Loading...';
+        this.overlayMessage = '';
         if (this.gridApi && !this.gridApi.isDestroyed()) {
           this.gridApi.showNoRowsOverlay();
         }

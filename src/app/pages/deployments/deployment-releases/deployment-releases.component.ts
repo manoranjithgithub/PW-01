@@ -32,7 +32,7 @@ import { interval, skip, Subject, switchMap, take, takeUntil, takeWhile, tap } f
 })
 export class DeploymentReleasesComponent implements OnInit, OnDestroy {
 
-  deploymentdetails: any;
+  @Input() deploymentdetails: any;
   active: any = [];
   history: any = [];
   selectedHistoryId: string = '';
@@ -78,22 +78,26 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
   constructor(private deploymentService: DeploymentsService, private sharedService: SharedService,
     private toaster: ToastrService, private ac: ActivatedRoute) { }
 
-
-
   ngOnInit(): void {
-    this.ac.queryParams.pipe(takeUntil(this.destroy$),
-      switchMap(params => {
+    this.ac.queryParams.pipe(
+      takeUntil(this.destroy$)).subscribe(params => {
         const depolyementId = params['id'];
         this.deploymentId = depolyementId;
-        return this.deploymentService.getDeploymentById(depolyementId);
-      })
-    )
-      .subscribe((res: any) => {
-        this.deploymentdetails = res.data;
-        // this.getReleasesByDeploymentId();
       });
+    // this.ac.queryParams.pipe(takeUntil(this.destroy$),
+    //   switchMap(params => {
+    //     const depolyementId = params['id'];
+    //     this.deploymentId = depolyementId;
+    //     return this.deploymentService.getDeploymentById(depolyementId);
+    //   })
+    // )
+    //   .subscribe((res: any) => {
+    //     this.deploymentdetails = res.data;
+    //     // this.getReleasesByDeploymentId();
+    //   });
     this.sharedService.releaseStatus$.subscribe(res => {
       if (res) {
+        console.log('release status subscription in release comp', res);
         this.getReleasesByDeploymentId(res);
       }
     })
@@ -108,7 +112,7 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
     this.logsModal.open('right');
   }
 
-  getReleasesByDeploymentId(res:any): void {
+  getReleasesByDeploymentId(res: any): void {
     this.releaseData = res[0];
     [this.active, ...this.history] = res || [];
     this.releaseData = this.active;
