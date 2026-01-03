@@ -9,6 +9,7 @@ import { RegisterComponent } from './register.component';
 import { UserService } from '../../core/services/user.service';
 import { ToastrService, TOAST_CONFIG } from 'ngx-toastr';
 import { Router } from '@angular/router';
+import { RouterTestingModule } from '@angular/router/testing';
 import { ActivatedRoute } from '@angular/router';
 import { toastConfigMock } from '../../../test-helpers/testing-mocks';
 
@@ -27,7 +28,9 @@ describe('RegisterComponent', () => {
   } as any as Partial<ToastrService>;
 
   const mockRouter = {
-    url: '/register'
+    url: '/register',
+    events: of(null),
+    navigate: jasmine.createSpy('navigate')
   } as any as Partial<Router>;
 
   const mockActivatedRoute = {
@@ -35,16 +38,16 @@ describe('RegisterComponent', () => {
   } as any as Partial<ActivatedRoute>;
 
   let iconSetService: IconSetService;
+  let router: Router;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CardModule, FormModule, GridModule, ButtonModule, IconModule, RegisterComponent],
+      imports: [CardModule, FormModule, GridModule, ButtonModule, IconModule, RegisterComponent, RouterTestingModule],
       providers: [
         IconSetService,
         { provide: UserService, useValue: mockUserService },
         { provide: ToastrService, useValue: mockToastr },
         { provide: TOAST_CONFIG, useValue: toastConfigMock },
-        { provide: Router, useValue: mockRouter },
         { provide: ActivatedRoute, useValue: mockActivatedRoute }
       ]
     }).compileComponents();
@@ -53,6 +56,8 @@ describe('RegisterComponent', () => {
   beforeEach(() => {
     iconSetService = TestBed.inject(IconSetService);
     iconSetService.icons = { ...iconSubset };
+
+    router = TestBed.inject(Router);
 
     fixture = TestBed.createComponent(RegisterComponent);
     component = fixture.componentInstance;
@@ -73,7 +78,7 @@ describe('RegisterComponent', () => {
 
   it('should default orgName to nimbuz for individual type and require terms when not password reset', fakeAsync(() => {
     (mockActivatedRoute as any).queryParams = of({ type: 'individual' });
-    (mockRouter as any).url = '/register';
+    spyOnProperty(router, 'url', 'get').and.returnValue('/register');
     fixture.detectChanges();
     tick();
     expect(component.registrationForm.get('type')?.value).toBe('individual');
@@ -95,7 +100,7 @@ describe('RegisterComponent', () => {
   });
 
   it('should call register and set success message on success', fakeAsync(() => {
-    (mockRouter as any).url = '/register';
+    spyOnProperty(router, 'url', 'get').and.returnValue('/register');
     fixture.detectChanges();
     component.registrationForm.get('username')?.setValue('user1');
     component.registrationForm.get('password')?.setValue('Abc@1234');
@@ -131,7 +136,7 @@ describe('RegisterComponent', () => {
 
   it('should call forgotPassword flow when url indicates password reset', fakeAsync(() => {
     (mockActivatedRoute as any).queryParams = of({});
-    (mockRouter as any).url = '/forgot-password';
+    spyOnProperty(router, 'url', 'get').and.returnValue('/forgot-password');
     fixture.detectChanges();
     tick();
 
