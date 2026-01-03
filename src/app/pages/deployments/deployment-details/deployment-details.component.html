@@ -42,8 +42,8 @@
     </c-nav-item>
   </c-nav>
   <c-tab-content #tabContent1="cTabContent" [activeTabPaneIdx]="selectedTabIndex" cRounded="bottom">
-    <c-tab-pane class="p-3 preview" role="tabpanel">
-      <app-deployment-releases  [currentStatus]="lastReleaseData[0]?.status"></app-deployment-releases>
+    <c-tab-pane class="p-3 preview" role="tabpanel" >
+      <app-deployment-releases  [currentStatus]="lastReleaseData[0]?.status" [deploymentdetails]="deploymentdetails"></app-deployment-releases>
     </c-tab-pane>
 
     <c-tab-pane class="p-3 preview" role="tabpanel">

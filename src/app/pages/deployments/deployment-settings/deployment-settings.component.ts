@@ -207,8 +207,13 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
     this.ephemeralQuota = ephemeralResource;
 
     this.deploymentService.getInstanceTypes().subscribe((res: any) => {
-      // this.configForm.patchValue(res.data)
-      this.resources = res.data
+      const items = Array.isArray(res?.data) ? res.data.slice() : [];
+      items.sort((a: any, b: any) => {
+        const pa = parseFloat(String(a.price || a.instanceHourRate || '').replace(/[^0-9.]/g, '')) || 0;
+        const pb = parseFloat(String(b.price || b.instanceHourRate || '').replace(/[^0-9.]/g, '')) || 0;
+        return pa - pb;
+      });
+      this.resources = items;
     });
 
     // update view when currency changes
@@ -224,7 +229,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
     this.deploymentService.getAuthenticatedresponse(envId, this.deploymentId).subscribe((res: any) => {
       this.showAuthenticationData = res.data;
       this.endpointStatus = res.data?.status;
-      const customDomain = res.data.customDomain || '';
+      const customDomain = res.data?.customDomain || '';
       const authentication = this.showAuthenticationData?.authentication || null;
 
       if (customDomain) { this.isHostDisabled = true; }
@@ -390,17 +395,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
       this.fileError = 'Please select a valid file to upload.';
     }
     else {
-      // const environment = this.sharedService.getCookie('environment');
-      // const environment = localStorage.getItem('environment');
-      // const envId = environment ? JSON.parse(environment).id : null;
-      // if (this.selectedFile && envId) {
-      //   const formData = new FormData();
-
       if (this.selectedFile) {
-        //     formData.append('file', this.selectedFile, this.selectedFile.name);
-        //   }
-        //   formData.append('type', 'ZIP');
-        //   formData.append('appName', this.generalSettingsForm.get('name')?.value);
         const extension = this.selectedFile.name.split('.').pop()?.toLowerCase() || '';
         this.deploymentService.getS3Details(extension).pipe(
           concatMap((res: any) => {
@@ -424,27 +419,14 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
         ).subscribe({
           next: (res: any) => {
             this.isSourceSettingsChanged = false;
+            if (res.status.toLowerCase() === "success") {
+              this.toaster.success('File uploaded and deployment updated successfully');
+            }
           },
           error: (err) => {
             console.error('Error during file upload or update:', err);
           }
         });
-
-
-
-        // this.deploymentService.uploadZipDeployment(envId, formData).subscribe((res: any) => {
-        //   if (res.status === 'Success') {
-        //     this.fileError = '';
-        //     this.sourceSettingsForm.get('fileName')?.patchValue(this.selectedFile?.name);
-        //     this.fileUploadedSuccessfully = true;
-        //     this.toaster.success('File uploaded successfully');
-        //   }
-        // },
-        //   err => {
-        //     this.fileUploadedSuccessfully = false;
-        //     // this.toaster.error('Error uploading file');
-        //     console.error(err);
-        //   })
       }
     }
   }

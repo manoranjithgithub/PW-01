@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { DefaultLayoutComponent } from './shared/components/layout';
 import { AuthGuard } from '../app/core/services/auth.guard';
+import { RedirectIfAuthenticatedGuard } from '../app/core/services/redirect-if-authenticated.guard';
 import '@angular/localize/init';
 
 export const routes: Routes = [
@@ -73,7 +74,7 @@ export const routes: Routes = [
       ),
   },
   {
-    path: 'create-account',
+    path: 'create-new-account',
     loadComponent: () =>
       import('./pages/register/register.component').then(
         (m) => m.RegisterComponent
@@ -95,6 +96,7 @@ export const routes: Routes = [
   },
   {
     path: 'login',
+    canActivate: [RedirectIfAuthenticatedGuard],
     loadComponent: () =>
       import('./pages/login/login.component').then(
         (m) => m.LoginComponent

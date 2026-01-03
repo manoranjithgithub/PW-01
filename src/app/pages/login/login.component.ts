@@ -55,7 +55,7 @@ export class LoginComponent implements OnInit {
     this.loading = true;
     this.http.login(this.loginForm.value).subscribe({
       next: (response) => {
-        this.toaster.success('Login successful');
+        this.toaster.success('You’re logged in successfully!');
         localStorage.setItem('accessToken', response.data.token);
         this.permissionService.loadPolicies().subscribe({
           next: () => {

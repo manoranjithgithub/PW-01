@@ -26,9 +26,10 @@ export class AuthInterceptor implements HttpInterceptor {
   private isRefreshing = false;
   private refreshTokenSubject = new BehaviorSubject<string | null>(null);
 
-  private readonly skipLoaderUrls = [
-    '/artificat?fileExtension',
-  ];
+  // private readonly skipLoaderUrls = [
+  //   '/artificat?fileExtension',
+  // ];
+  // private readonly skipLoaderUrls = [];
 
   constructor(
     private loader: SharedService,
@@ -40,13 +41,12 @@ export class AuthInterceptor implements HttpInterceptor {
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     activeRequests++;
 
-    const skipLoader = this.shouldSkipLoader(req.url);
-    // Only show loader when the first non-skipped request starts to avoid repeated show/hide churn
-    if (!skipLoader && activeRequests === 1) {
+    // const skipLoader = this.shouldSkipLoader(req.url);
+    if (activeRequests === 1) {
       this.loader.show();
     }
     if (req.url.includes('/user-uploads')) {
-      return next.handle(req).pipe(finalize(() => !skipLoader && this.loader.hide()));
+      return next.handle(req).pipe(finalize(() => this.loader.hide()));
     }
     const token = this.authService.getAccessToken();
     const request = token ? this.addToken(req, token) : req;
@@ -55,18 +55,17 @@ export class AuthInterceptor implements HttpInterceptor {
       finalize(() => {
         activeRequests--;
 
-        if (!skipLoader && activeRequests === 0) {
-          // keep a short delay so extremely fast requests don't cause flicker; hide quickly otherwise
+        if (activeRequests === 0) {
           setTimeout(() => this.loader.hide(), 150);
+          // window.scrollTo({ top: 0, behavior: 'smooth' });
         }
-        // avoid scrolling on every request finalize to prevent janky UX
       })
     );
   }
 
-  private shouldSkipLoader(url: string): boolean {
-    return this.skipLoaderUrls.some(pattern => url.includes(pattern));
-  }
+  // private shouldSkipLoader(url: string): boolean {
+  //   return this.skipLoaderUrls.some(pattern => url.includes(pattern));
+  // }
 
   private addToken(req: HttpRequest<any>, token: string): HttpRequest<any> {
     return req.clone({

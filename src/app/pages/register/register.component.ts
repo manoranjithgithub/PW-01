@@ -26,7 +26,7 @@ export class RegisterComponent implements OnInit {
   isPasswordReset: boolean = false;
   loading: boolean = false;
   visiblePasswordFields = new Set<string>();
-
+  createdBy : string | null = null;
 
 
   constructor(
@@ -49,6 +49,7 @@ export class RegisterComponent implements OnInit {
   ngOnInit(): void {
     this.ac.queryParams.subscribe(params => {
       this.registrationForm.get('type')?.setValue(params['type'] || 'individual');
+      this.createdBy = params['createdBy'] || null;
     });
     this.currentUrl = this.router.url;
     this.isPasswordReset = this.currentUrl.includes('forgot-password');
