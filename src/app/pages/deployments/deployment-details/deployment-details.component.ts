@@ -1,4 +1,4 @@
-import {  Location } from '@angular/common';
+import { Location } from '@angular/common';
 import { Component, EventEmitter, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { DeploymentConfigMapsComponent } from '../deployment-config-maps/deployment-config-maps.component';
 import { DeploymentReleasesComponent } from '../deployment-releases/deployment-releases.component';
@@ -42,6 +42,7 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
   appName: string = '';
   private subscription: Subscription | undefined;
   sseSub!: Subscription;
+  deploymentdetails: any;
 
   constructor(private router: Router, private modalService: NgbModal, private sharedService: SharedService,
     private layoutActionService: LayoutActionService, private deploymentService: DeploymentsService, private location: Location,
@@ -61,6 +62,7 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
       .subscribe((data: any) => {
         this.appName = data?.data.name;
         if (data.status.toLowerCase() === 'success') {
+          this.deploymentdetails = data.data;
           this.sseSub = this.deploymentService.liveReleaseStatus(this.deploymentId).subscribe((res: any) => {
             const releaseData = res?.releases?.releases;
             // this.sharedService.setlastReleaseStatus(releaseData.status);
@@ -150,6 +152,6 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
     this.layoutActionService.clearExtraTitle();
     this.subscription?.unsubscribe();
-    this.sseSub?.unsubscribe(); 
+    this.sseSub?.unsubscribe();
   }
 }

@@ -75,7 +75,13 @@ export class CreateToolComponent implements OnInit, OnDestroy {
       this.toolNames = availableTools;
     }
     this.http.getInstanceTypes().subscribe((res: any) => {
-      this.resources = res.data
+      const items = Array.isArray(res?.data) ? res.data.slice() : [];
+      items.sort((a: any, b: any) => {
+        const pa = parseFloat(String(a.price || a.instanceHourRate || '').replace(/[^0-9.]/g, '')) || 0;
+        const pb = parseFloat(String(b.price || b.instanceHourRate || '').replace(/[^0-9.]/g, '')) || 0;
+        return pa - pb;
+      });
+      this.resources = items;
     })
   }
 
@@ -143,42 +149,42 @@ export class CreateToolComponent implements OnInit, OnDestroy {
           this.formStructure.push(field);
         }
       }
+    }
+    this.form = this.fb.group(group);
+  }
+  onFieldBlur(fieldKey: string) {
+    if (fieldKey === 'name') {
+      const nameValue = this.form.get('name')?.value;
+      if (fieldKey) {
+        this.form.get(fieldKey)?.updateValueAndValidity();
       }
-      this.form = this.fb.group(group);
+      const nameExists = this.toolNames.some((name: any) => name === nameValue);
     }
-    onFieldBlur(fieldKey: string) {
-      if (fieldKey === 'name') {
-        const nameValue = this.form.get('name')?.value;
-        if (fieldKey) {
-          this.form.get(fieldKey)?.updateValueAndValidity();
-        }
-        const nameExists = this.toolNames.some((name: any) => name === nameValue);
-      }
-    }
+  }
 
-    addNameField(schema: FormField): any {
-      return {
-        name: {
-          key: 'name',
-          type: 'text',
-          label: 'Name',
-          children: {},
-          depends_on: null,
-          default_value: '',
-          value: this.toolDetails.name,
-          options: [],
-          validation: {},
-          placeholder: '',
-          ui: true
-        },
-        ...schema
-      };
-    }
+  addNameField(schema: FormField): any {
+    return {
+      name: {
+        key: 'name',
+        type: 'text',
+        label: 'Name',
+        children: {},
+        depends_on: null,
+        default_value: '',
+        value: this.toolDetails.name,
+        options: [],
+        validation: {},
+        placeholder: '',
+        ui: true
+      },
+      ...schema
+    };
+  }
 
-    onSubmit(): void {
-      const { name, ...formValues } = this.form.getRawValue();
+  onSubmit(): void {
+    const { name, ...formValues } = this.form.getRawValue();
 
-      if(this.form.valid) {
+    if (this.form.valid) {
       const sizeFields = [
         'mysql.primary.persistence.size',
         'postgresql.primary.persistence.size',
@@ -294,19 +300,19 @@ export class CreateToolComponent implements OnInit, OnDestroy {
     return this.hourlyInstanceRate * 730;
   }
   formatCurrency(value: any | undefined, fromCurrency?: string): string {
-      if (value == null || isNaN(Number(value))) return '';
-      const target = this.sharedService.getCurrency() || 'USD';
-      const converted = this.sharedService.convertAmount(Number(value), fromCurrency, target);
-      try {
-        return new Intl.NumberFormat('en-US', {
-          style: 'currency',
-          currency: target,
-          minimumFractionDigits: 2,
-        }).format(converted);
-      } catch (e) {
-        return String(converted);
-      }
+    if (value == null || isNaN(Number(value))) return '';
+    const target = this.sharedService.getCurrency() || 'USD';
+    const converted = this.sharedService.convertAmount(Number(value), fromCurrency, target);
+    try {
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: target,
+        minimumFractionDigits: 2,
+      }).format(converted);
+    } catch (e) {
+      return String(converted);
     }
+  }
 }
 
 

@@ -25,6 +25,7 @@ export class AuthGuard implements CanActivate {
       '/account-settings',
       '/projects/project-preferences',
       '/users-list',
+      '/login'
     ];
     const publicRoutes = ['/', '/login', '/create-account', '/logout', '/login', '/forgot-password'];
 
