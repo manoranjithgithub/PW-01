@@ -116,6 +116,7 @@ export class DefaultLayoutComponent implements OnInit {
             '/projects/create-environment',
             '/account-settings',
             '/projects/project-preferences',
+            '/login'
           ];
           const publicRoutes = ['/', '/login', '/create-account', '/logout', '/login', '/forgot-password'];
           // show Users only to non-nimbuz owners who are global admins
