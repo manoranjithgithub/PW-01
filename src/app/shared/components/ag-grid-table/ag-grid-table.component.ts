@@ -52,6 +52,7 @@ export class AgGridTableComponent implements OnInit {
     rowHeight: 50,
     suppressRowTransform: true,
     enableBrowserTooltips: true,
+    suppressLoadingOverlay: true,
     onGridReady: (params) => this.onGridReady(params),
   };
 

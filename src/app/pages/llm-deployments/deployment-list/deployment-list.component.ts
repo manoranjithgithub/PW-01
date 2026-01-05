@@ -129,17 +129,23 @@ export class DeploymentListComponent implements OnInit, OnDestroy {
   getDeployment(env: any): void {
     if (env) {
 
+      this.sharedService.show();
       this.deploymentsService.getDeployments(env.id).subscribe((res: any) => {
-        if (res.status.toLowerCase() === "success") {
-          this.tableData = res.data;
-          localStorage.setItem('availableDeployments', JSON.stringify(res.data?.map((x: any) => x.name)));
-          this.mergeStatusIntoTable();
-          this.loading = false
+        try {
+          if (res.status.toLowerCase() === "success") {
+            this.tableData = res.data;
+            localStorage.setItem('availableDeployments', JSON.stringify(res.data?.map((x: any) => x.name)));
+            this.mergeStatusIntoTable();
+          }
+        } finally {
+          this.loading = false;
+          this.sharedService.hide();
         }
       },
         err => {
           this.tableData = [];
-          this.loading = false
+          this.loading = false;
+          this.sharedService.hide();
         });
     }
   }
