@@ -53,7 +53,8 @@ export class ToolsService {
     }
 
     updateTools(req: any) {
-        return this.http.patch(`${this.deploymentUrl}/tools`, req)
+        const projectId = JSON.parse(localStorage.getItem('project') || '{}').id;
+        return this.http.patch(`${this.deploymentUrl}/tools`, { ...req, projectId })
             .pipe(
                 catchError(this.handleError.bind(this))
             );
