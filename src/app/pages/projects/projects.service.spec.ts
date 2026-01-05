@@ -162,4 +162,91 @@ describe('ProjectsService', () => {
     expect(req.request.method).toBe('GET');
     req.flush(mockRes);
   });
+
+  it('should include Authorization header when getting project details if token present', () => {
+    const projectId = '2';
+    const mockRes = { id: '2', name: 'Project2' };
+    localStorage.setItem('accessToken', 'token-xyz');
+
+    service.getProjectDetailsById(projectId).subscribe(res => {
+      expect(res).toEqual(mockRes);
+    });
+
+    const req = httpMock.expectOne(`${environment.projectsApiUrl}/${projectId}`);
+    expect(req.request.method).toBe('GET');
+    expect(req.request.headers.get('Authorization')).toBe('Bearer token-xyz');
+    req.flush(mockRes);
+    localStorage.removeItem('accessToken');
+  });
+
+  it('should call toastr.error for client-side ErrorEvent', () => {
+    service.getAllProjects().subscribe({
+      next: () => fail('should have errored'),
+      error: (err) => {
+        expect(err).toBeDefined();
+      }
+    });
+
+    const req = httpMock.expectOne(`${environment.projectsApiUrl}`);
+    const evt = new ErrorEvent('Network error', { message: 'network down' });
+    req.error(evt);
+
+    expect(toastrSpy.error).toHaveBeenCalled();
+  });
+
+  // it('should handle 500 error with details and call toastr.error', () => {
+  //   service.getAllProjects().subscribe({
+  //     next: () => fail('should have errored'),
+  //     error: (err) => {
+  //       expect(err).toBe('Something bad happened; please try again later.');
+  //     }
+  //   });
+
+  //   const req = httpMock.expectOne(`${environment.projectsApiUrl}`);
+  //   const body = { error: { error: { details: 'internal details' } } };
+  //   req.flush(body, { status: 500, statusText: 'Server Error' });
+
+  //   expect(toastrSpy.error).toHaveBeenCalledWith('internal details', 'Internal Server Error 500:');
+  // });
+
+  // it('should handle 404 error with details and call toastr.error', () => {
+  //   service.getAllProjects().subscribe({
+  //     next: () => fail('should have errored'),
+  //     error: (err) => {
+  //       expect(err).toBe('Something bad happened; please try again later.');
+  //     }
+  //   });
+
+  //   const req = httpMock.expectOne(`${environment.projectsApiUrl}`);
+  //   const body = { error: { error: { details: 'not found details' } } };
+  //   req.flush(body, { status: 404, statusText: 'Not Found' });
+
+  //   expect(toastrSpy.error).toHaveBeenCalledWith('not found details', 'Internal Server Error 404:');
+  // });
+
+  it('should return resource usage with plan query param set to lite', () => {
+    const envId = 'env-123';
+    const mockRes = { data: { cpu: 1 } };
+
+    service.getResourceUsage(envId).subscribe(res => {
+      expect(res).toEqual(mockRes);
+    });
+
+    const req = httpMock.expectOne(`${environment.deploymentManagement}/environments/${envId}/resource-quotas/usage?plan=lite`);
+    expect(req.request.method).toBe('GET');
+    req.flush(mockRes);
+  });
+
+  it('should get all environments by project (duplicate endpoint) ', () => {
+    const projectId = '3';
+    const mockRes = { data: [{ id: 'env2' }] };
+
+    service.getAllEnvironmentsByProject(projectId).subscribe(res => {
+      expect(res).toEqual(mockRes);
+    });
+
+    const req = httpMock.expectOne(`${environment.projectsBaseUrl}/environments?projectId=${projectId}`);
+    expect(req.request.method).toBe('GET');
+    req.flush(mockRes);
+  });
 });

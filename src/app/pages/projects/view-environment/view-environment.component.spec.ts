@@ -244,4 +244,39 @@ describe('ViewEnvironmentComponent', () => {
 
     expect(projectSpy.deleteEnvironment).not.toHaveBeenCalled();
   });
+
+  it('cancel() should set isOpen to false and navigate to /project', () => {
+    component.isOpen = true;
+    component.cancel();
+
+    expect(component.isOpen).toBeFalse();
+    expect(routerSpy.navigate).toHaveBeenCalledWith(['/project']);
+  });
+
+  it('goBack() should navigate to /project', () => {
+    component.goBack();
+    expect(routerSpy.navigate).toHaveBeenCalledWith(['/project']);
+  });
+
+  it('toggleDropdown should set and unset activeEnv', () => {
+    component.ngOnInit();
+    const env = { id: 'env1', name: 'Env 1' };
+
+    component.toggleDropdown(env);
+    expect(component.activeEnv).toBe(env);
+
+    component.toggleDropdown(env);
+    expect(component.activeEnv).toBeNull();
+  });
+
+  it('cancelAddUser should reset userForm and hide the add-user form', () => {
+    component.ngOnInit();
+    component.userForm.setValue({ name: 'Alice', email: 'a@x.com', role: 'admin' });
+    component.showAddUserForm = true;
+
+    component.cancelAddUser();
+
+    expect(component.showAddUserForm).toBeFalse();
+    expect(component.userForm.value).toEqual({ name: null, email: null, role: null });
+  });
 });
