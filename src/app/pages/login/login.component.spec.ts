@@ -116,7 +116,7 @@ describe('LoginComponent', () => {
     expect(permissionService.loadPolicies).toHaveBeenCalled();
     expect(localStorage.getItem('accessToken')).toBe('fake-token');
     expect(router.navigate).toHaveBeenCalledWith(['/projects']);
-    expect(toaster.success).toHaveBeenCalledWith('Login successful');
+    expect(toaster.success).toHaveBeenCalledWith('You’re logged in successfully!');
   }));
 
   it('should show error toaster on 400 error', fakeAsync(() => {

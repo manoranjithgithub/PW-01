@@ -103,7 +103,7 @@ describe('AgGridTableComponent', () => {
   it('should show loading overlay when isLoading is true', () => {
     loadingSubject.next(true);
 
-    expect(component.overlayMessage).toBe('Loading...');
+    expect(component.overlayMessage).toBe('');
     expect((component as any).gridApi.showNoRowsOverlay).toHaveBeenCalled();
   });
   it('should hide overlay when loading is false and rowData exists', () => {

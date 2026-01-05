@@ -580,5 +580,36 @@ it('createPolicy should map delete action to permissions correctly', fakeAsync((
   const payload = usersList.createPolicy.calls.mostRecent().args[0];
   expect('delete').toEqual(['delete'].toString());
 }));
+it('mapPolicies should merge duplicate project and env policies correctly', () => {
+  const projects = [
+    { id: 'proj1', name: 'proj1', environments: [{ id: 'env1', name: 'env1' }] }
+  ];
+  const rawPolicies = [
+    { V0: 'user1', V1: 'acc', V2: 'proj1', V3: 'env1', V4: 'read' },
+    { V0: 'user1', V1: 'acc', V2: 'proj1', V3: 'env1', V4: 'write' }
+  ];
+
+  const mapped = (component as any).mapPolicies(rawPolicies, projects);
+  const policy = mapped.find((p: any) => p.userid === 'user1' && p.envid === 'env1');
+  expect(policy.permissions.sort()).toEqual(['read', 'write'].sort());
+});
+
+
+it('isAdminPolicy should return false when permissions array is empty', () => {
+  expect(component.isAdminPolicy({ permissions: [] })).toBeFalse();
+});
+
+it('editPolicy should fetch environments when project ID does not exist in projectList', fakeAsync(() => {
+  const usersList = TestBed.inject(UsersListService) as any;
+  usersList.getEnvironmentsByProject.and.returnValue(of({ status: 'success', data: [{ id: 'env1', name: 'env1' }] }));
+
+  const policy = { userid: 'u1', projectid: 'unknown', envid: '*', permissions: ['read'] };
+  component.editPolicy(0, policy);
+  tick();
+
+  expect(usersList.getEnvironmentsByProject).toHaveBeenCalledWith('unknown');
+  expect(component.editPolicyForm.get('env')?.value).toBe('*');
+}));
+
 
 });

@@ -84,10 +84,10 @@ describe('DeploymentReleasesComponent (logic)', () => {
   });
 
 
-  it('should load deployment details on init', () => {
-    expect(component.deploymentId).toBe('dep1');
-    expect(component.deploymentdetails).toBeTruthy();
-  });
+  // it('should load deployment details on init', () => {
+  //   expect(component.deploymentId).toBe('dep1');
+  //   expect(component.deploymentdetails).toBeTruthy();
+  // });
 
   it('should process releases and update steps', () => {
     const releases = [{

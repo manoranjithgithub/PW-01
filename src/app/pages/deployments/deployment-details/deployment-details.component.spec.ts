@@ -73,6 +73,12 @@ class MockSharedService {
   getlastReleaseData() {
     return [];
   }
+  getStatusMeta(status: string) {
+    return {
+      icon: 'icon-' + status,
+      statusClass: 'class-' + status
+    };
+  }
 }
 
 class MockToastrService {
