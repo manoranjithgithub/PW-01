@@ -121,14 +121,22 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
   }
   getDeployment(env: any): any {
     if (env) {
+      // show global loader until we receive the first data or an error
+      this.sharedService.show();
+      let firstEmit = true;
       this.sseSub = this.deploymentsService.liveDeploymentData(env.id).subscribe((res: any) => {
         if (res) {
           this.updateTableData(res.deployment);
           localStorage.setItem('availableDeployments', JSON.stringify(res.deployment?.map((x: any) => x.name)));
         }
+        if (firstEmit) {
+          firstEmit = false;
+          this.sharedService.hide();
+        }
       },
         err => {
           this.tableData = [];
+          this.sharedService.hide();
         });
     }
   }

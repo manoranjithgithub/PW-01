@@ -199,7 +199,7 @@ describe('ProjectsService', () => {
       region: 'ap-south-1'
     };
 
-    service.createEnvironment(projectId, requestPayload).subscribe((response: any) => {
+    service.createEnvironment(projectId).subscribe((response: any) => {
       expect(response.status).toBe('success');
       expect(response.message).toBe('Environment created successfully.');
       expect(response.data.id).toBe('bb212db4-e766-43af-9d74-2a38ac12acdf');
@@ -234,7 +234,7 @@ describe('ProjectsService', () => {
       "name" : "env-update"
   }
 
-    service.updateEnvironment(projectId, environmentId, requestPayload).subscribe((response: any) => {
+    service.updateEnvironment(projectId).subscribe((response: any) => {
       expect(response.status).toBe('Success');
       expect(response.message).toBe('Environment updated successfully.');
       expect(response.data.id).toBe('8a0263f3-bbdc-4e54-ac68-9cebbe03fa5c');
