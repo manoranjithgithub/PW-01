@@ -229,17 +229,23 @@ export class ToolsComponent implements OnInit, OnDestroy {
       this.sseSub = null;
     }
 
+    this.sharedService.show();
     this.sseSub = this.http.liveToolsData(value).subscribe((res: any) => {
-      if (res) {
-        const newTools = Object.values(res.tools)?.map((tool: any) => ({
-          ...tool,
-          icon: this.getToolIcon(tool.schemaId)
-        }));
-        this.updateTools(newTools);
-        localStorage.setItem('availableTools', JSON.stringify(newTools?.map((tool: any) => tool.name)));
+      try {
+        if (res) {
+          const newTools = Object.values(res.tools)?.map((tool: any) => ({
+            ...tool,
+            icon: this.getToolIcon(tool.schemaId)
+          }));
+          this.updateTools(newTools);
+          localStorage.setItem('availableTools', JSON.stringify(newTools?.map((tool: any) => tool.name)));
+        }
+      } finally {
+        this.sharedService.hide();
       }
     }, error => {
       this.rowData = [];
+      this.sharedService.hide();
     });
   }
 
