@@ -1,367 +1,338 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { ProjectsService } from './projects.service';
-import { HttpClient } from '@angular/common/http';
-import { ToastrService,ToastrModule  } from 'ngx-toastr';
+import { ToastrService } from 'ngx-toastr';
+import { environment } from '../../../environments/environment';
 
 describe('ProjectsService', () => {
   let service: ProjectsService;
   let httpMock: HttpTestingController;
+  let toastrSpy: jasmine.SpyObj<ToastrService>;
 
   beforeEach(() => {
+    const toastrMock = jasmine.createSpyObj('ToastrService', ['success', 'error']);
+
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule,ToastrModule.forRoot()], 
-      providers: [ProjectsService,ToastrService]
+      imports: [HttpClientTestingModule],
+      providers: [
+        ProjectsService,
+        { provide: ToastrService, useValue: toastrMock }
+      ]
     });
+
     service = TestBed.inject(ProjectsService);
-    httpMock = TestBed.inject(HttpTestingController); 
+    httpMock = TestBed.inject(HttpTestingController);
+    toastrSpy = TestBed.inject(ToastrService) as jasmine.SpyObj<ToastrService>;
   });
 
   afterEach(() => {
-    httpMock.verify();  
+    httpMock.verify(); 
   });
 
   it('should be created', () => {
     expect(service).toBeTruthy();
   });
 
-  //getAllProjects
-  it('should fetch data successfully', () => {
-    const mockData = { projectId: 1, projectName: 'Test' };
-
-    service.getAllProjects().subscribe((data) => {
-      expect(data).toEqual(mockData); 
+  it('should get all projects', () => {
+    const mockResponse = { data: [{ id: '1', name: 'Project1' }] };
+    service.getAllProjects().subscribe(res => {
+      expect(res).toEqual(mockResponse);
     });
 
-    // Mock the HTTP request
-    const req = httpMock.expectOne('https://api.dev.nimbuz.tech/project-management/v1/projects');
-    expect(req.request.method).toBe('GET'); 
-    req.flush(mockData); 
-
-    httpMock.verify(); 
-  });
-
-  //CreateProject
-  it('should create a project with the provided data', () => {
-    const projectData = {
-      name: 'default',
-      description: '',
-      envName: 'default',
-      region: 'ap-south-1',
-    };
-
-    // Mock response data
-    const mockResponse = {
-      success: true,
-      message: 'Project created successfully',
-      project:{
-        id:'28e087a3-993a-421d-b322',
-        name:'default',
-        description:'',
-        envName:'default',
-        region:'ap-south-1'
-      }
-    };
-
-    // Call the createProject method
-    service.createProject(projectData).subscribe((response : any) => {
-      expect(response.success).toBe(true); 
-      expect(response.message).toBe('Project created successfully'); 
-      expect(response.project).toEqual({
-        id: '28e087a3-993a-421d-b322',
-        name: 'default',
-        description: '',
-        envName: 'default',
-        region: 'ap-south-1',
-      });
-    });
-
-    // Mock the HTTP request
-    const req = httpMock.expectOne('https://api.dev.nimbuz.tech/project-management/v1/projects/');
-    expect(req.request.method).toBe('POST');
-    expect(req.request.body).toEqual(projectData); 
-
-    req.flush(mockResponse); 
-  });
-
-  //GetProjectByName
-  it('should fetch project details by id and return project', () => {
-    const projectId = '480189b7-eb3b-4caa-85d4-c3813511166f';
-    const mockResponse = {
-      status: 'success',
-      data: {
-        id: '258fc589-bb2b-4948-af09-faae959c18f9',
-        name: 'Diligen-tech-project-test12',
-        description: '',
-        user_id: '6be443bb-1007-4cfb-a42a-85248d352f4f',
-        environments: [
-          {
-            id: 'env-mf4ybd',
-            name: 'devdt1',
-            cluster_id: '91c58a65-4f24-4b2d-a491-a2521f5c2056',
-            ingress_domain: '*.env-mf4ybd.*.dev-lb.nimbuz.tech'
-          }
-        ]
-      }
-    };
-
-    service.getProjectDetailsById(projectId).subscribe((response: any) => {
-      // Assert the status
-      expect(response.status).toBe('success');
-      
-      // Assert the project details in 'data'
-      expect(response.data.id).toBe('258fc589-bb2b-4948-af09-faae959c18f9');
-      expect(response.data.name).toBe('Diligen-tech-project-test12');
-      expect(response.data.description).toBe('');
-      expect(response.data.user_id).toBe('6be443bb-1007-4cfb-a42a-85248d352f4f');
-
-      // Assert the environments array and its contents
-      expect(response.data.environments.length).toBeGreaterThan(0); // Ensure there is at least one environment
-      expect(response.data.environments[0].id).toBe('env-mf4ybd');
-      expect(response.data.environments[0].name).toBe('devdt1');
-      expect(response.data.environments[0].ingress_domain).toBe('*.env-mf4ybd.*.dev-lb.nimbuz.tech');
-    });
-
-    // Mock the HTTP request
-    const reqMock = httpMock.expectOne(`https://api.dev.nimbuz.tech/project-management/v1/projects/${projectId}`);
-    expect(reqMock.request.method).toBe('GET'); // Ensure the request method is GET
-    reqMock.flush(mockResponse); // Return the mock response
-  });
-
-
-  //UpdateProject
-  it('should update a project and return the updated project data', () => {
-    const projectId = '28e087a3-993a-421d-b322';
-    const req = {
-      projectName: 'ProjectName',
-      description: 'Updated project description',
-    };
-
-    const mockResponse = {
-      status: 'success',
-      message: 'Project updated successfully',
-      data:{
-        id: '28e087a3-993a-421d-b322',
-        name: 'ProjectName',
-        description: 'Updated project description',
-      }
-    };
-
-    service.updateProject(projectId, req).subscribe((response : any) => {
-      expect(response.data.id).toBe(projectId); 
-      expect(response.data.name).toBe(req.projectName); 
-      expect(response.data.description).toBe(req.description); 
-    });
-
-    const reqMock = httpMock.expectOne(`https://api.dev.nimbuz.tech/project-management/v1/projects/${projectId}`);
-    expect(reqMock.request.method).toBe('PUT');
-    expect(reqMock.request.body).toEqual(req); 
-
-    reqMock.flush(mockResponse); 
-  });
-
-  //DeleteProject
-  it('should delete a project and return a success message', () => {
-    const projectId = '28e087a3-993a-421d-b322'; 
-
-    const mockResponse = {
-      success: true,
-      message: 'Project deleted successfully',
-    };
-
-    service.deleteProject(projectId).subscribe((response : any) => {
-      expect(response.success).toBe(true); 
-      expect(response.message).toBe('Project deleted successfully'); 
-    });
-
-    const reqMock = httpMock.expectOne(`https://api.dev.nimbuz.tech/project-management/v1/projects/${projectId}`);
-    expect(reqMock.request.method).toBe('DELETE'); 
-    reqMock.flush(mockResponse); 
-  });
-
-  //CreateEnvironment
-  it('should create an environment and return success response', () => {
-    const projectId = '8a0263f3-bbdc-4e54-ac68-9cebbe03fa5c';
-    const mockResponse = {
-      status: 'success',
-      message: 'Environment created successfully.',
-      data: {
-        id: 'bb212db4-e766-43af-9d74-2a38ac12acdf',
-        name: 'test',
-        clusterID: '1',
-        userID: '8a0263f3-bbdc-4e54-ac68-9cebbe03fa5c',
-        projectId: '8a0263f3-bbdc-4e54-ac68-9cebbe03fa5c',
-        ingressDomain: '*.env-abc123.example.com'
-      }
-    };
-    const requestPayload = {
-      name: 'test',
-      region: 'ap-south-1'
-    };
-
-    service.createEnvironment(projectId).subscribe((response: any) => {
-      expect(response.status).toBe('success');
-      expect(response.message).toBe('Environment created successfully.');
-      expect(response.data.id).toBe('bb212db4-e766-43af-9d74-2a38ac12acdf');
-      expect(response.data.name).toBe('test');
-      expect(response.data.clusterID).toBe('1');
-      expect(response.data.userID).toBe('8a0263f3-bbdc-4e54-ac68-9cebbe03fa5c');
-      expect(response.data.projectId).toBe('8a0263f3-bbdc-4e54-ac68-9cebbe03fa5c');
-      expect(response.data.ingressDomain).toBe('*.env-abc123.example.com');
-    });
-
-    const reqMock = httpMock.expectOne(`https://api.dev.nimbuz.tech/project-management/v1/projects/${projectId}/environments`);
-    expect(reqMock.request.method).toBe('POST'); 
-    reqMock.flush(mockResponse); 
-  });
-
-  //UpdateEnvironment
-  it('should update an environment and return success response', () => {
-    const projectId = '8a0263f3-bbdc-4e54-ac68-9cebbe03fa5c';
-    const environmentId = 'env-update';
-    const mockResponse = {
-      "status": "Success",
-      "message": "Environment updated successfully.",
-      "data": {
-          "id": "8a0263f3-bbdc-4e54-ac68-9cebbe03fa5c",
-          "name": "env-update",
-          "cluster_id": "91c58a65-4f24-4b2d-a491-a2521f5c2056",
-          "user_id": "91c58a65-4f24-4b2d-a491-a2521f5c2056",
-          "project_id": "8a0263f3-bbdc-4e54-ac68-9cebbe03fa5c"
-      }
-  }
-    const requestPayload =    {
-      "name" : "env-update"
-  }
-
-    service.updateEnvironment(projectId).subscribe((response: any) => {
-      expect(response.status).toBe('Success');
-      expect(response.message).toBe('Environment updated successfully.');
-      expect(response.data.id).toBe('8a0263f3-bbdc-4e54-ac68-9cebbe03fa5c');
-      expect(response.data.name).toBe('env-update');
-      expect(response.data.cluster_id).toBe('91c58a65-4f24-4b2d-a491-a2521f5c2056');
-      expect(response.data.user_id).toBe('91c58a65-4f24-4b2d-a491-a2521f5c2056');
-      expect(response.data.project_id).toBe('8a0263f3-bbdc-4e54-ac68-9cebbe03fa5c');
-    });
-
-    const reqMock = httpMock.expectOne(`https://api.dev.nimbuz.tech/project-management/v1/projects/${projectId}/environments/${environmentId}`);
-    expect(reqMock.request.method).toBe('PUT'); 
-    reqMock.flush(mockResponse); 
-  });
-
-  //DeleteEnvironment
-  it('should delete a environment and return a success message', () => {
-    const mockReq = { projectId:'981ceeac-ba33-4331-a186-255f75b7a560',envId: 'envhlk'};
-
-    const mockResponse = {
-      success: true,
-      message: 'Environment deleted successfully.',
-    };
-
-    service.deleteEnvironment(mockReq.projectId,mockReq.envId).subscribe((response : any) => {
-      expect(response.success).toBe(true); 
-      expect(response.message).toBe('Environment deleted successfully.'); 
-    });
-
-    const reqMock = httpMock.expectOne(`https://api.dev.nimbuz.tech/project-management/v1/projects/${mockReq.projectId}/environments/${mockReq.envId}`);
-    expect(reqMock.request.method).toBe('DELETE'); 
-    reqMock.flush(mockResponse); 
-  });
-
-  //ListEnvironment
-  it('should fetch environment details and return success message', () => {
-    const mockReq = { projectId: '258fc589-bb2b-4948-af09-faae959c18f9' };  
-    
-    const mockResponse = {
-      status: 'success',
-      message: 'Environment details returned successfully',
-      data: [
-        {
-          id: 'env-mf4ybd',
-          name: 'devdt1',
-          cluster_id: '91c58a65-4f24-4b2d-a491-a2521f5c2056',
-          user_id: '6be443bb-1007-4cfb-a42a-85248d352f4f',
-          project_id: '258fc589-bb2b-4948-af09-faae959c18f9',
-          ingress_domain: '*.env-mf4ybd.*.dev-lb.nimbuz.tech',
-          created_by: '6be443bb-1007-4cfb-a42a-85248d352f4f',
-          updated_by: null,
-          created_at: '2025-03-10T08:29:38.296Z',
-          updated_at: '2025-03-10T08:29:38.296Z',
-          deleted_at: null
-        }
-      ]
-    };
-  
-    service.getEnvironmentsByProject(mockReq.projectId).subscribe((response: any) => {
-      expect(response.status).toBe('success');
-      expect(response.message).toBe('Environment details returned successfully');
-      
-      expect(response.data.length).toBeGreaterThan(0);  
-      expect(response.data[0].id).toBe('env-mf4ybd');
-      expect(response.data[0].name).toBe('devdt1');
-      expect(response.data[0].cluster_id).toBe('91c58a65-4f24-4b2d-a491-a2521f5c2056');
-      expect(response.data[0].ingress_domain).toBe('*.env-mf4ybd.*.dev-lb.nimbuz.tech');
-      expect(response.data[0].created_at).toBe('2025-03-10T08:29:38.296Z');
-    });
-  
-    const reqMock = httpMock.expectOne(`https://api.dev.nimbuz.tech/project-management/v1/projects/${mockReq.projectId}/environments`);
-    expect(reqMock.request.method).toBe('GET'); 
-    reqMock.flush(mockResponse);
-  });
-
-  //GetPlanLimits
-  it('should return plan details on success', () => {
-    const mockResponse = {
-      status: 'success',
-      message: 'Plan limits retrieved successfully',
-      data: {
-        plan: 'TRIAL',
-        details: [
-          {
-            resource_type: 'CPU',
-            default_limit: 0.5,
-            max_limit: 1,
-            unit: 'vCPU',
-            created_at: '2025-03-04T06:23:28.517Z',
-            updated_at: '2025-03-04T06:23:28.517Z',
-            created_by: 'admin',
-            updated_by: null,
-            deleted_at: null
-          },
-          {
-            resource_type: 'RAM',
-            default_limit: 1,
-            max_limit: 64,
-            unit: 'GB',
-            created_at: '2025-03-04T06:23:28.517Z',
-            updated_at: '2025-03-04T06:23:28.517Z',
-            created_by: 'admin',
-            updated_by: null,
-            deleted_at: null
-          },
-          {
-            resource_type: 'MEMORY',
-            default_limit: 20,
-            max_limit: 512,
-            unit: 'GB',
-            created_at: '2025-03-04T06:23:28.517Z',
-            updated_at: '2025-03-04T06:23:28.517Z',
-            created_by: 'admin',
-            updated_by: null,
-            deleted_at: null
-          }
-        ]
-      }
-    };
-
-    const plan = 'TRIAL';
-    
-    service.getPlanLimits(plan).subscribe(response => {
-      expect(response).toEqual(mockResponse); 
-    });
-
-    const req = httpMock.expectOne(`https://api.dev.nimbuz.tech/project-management/v1/plans/${plan}`);
+    const req = httpMock.expectOne(`${environment.projectsApiUrl}`);
     expect(req.request.method).toBe('GET');
     req.flush(mockResponse);
   });
+
+  it('should get project details by id', () => {
+    const projectId = '1';
+    const mockResponse = { id: '1', name: 'Project1' };
+
+    service.getProjectDetailsById(projectId).subscribe(res => {
+      expect(res).toEqual(mockResponse);
+    });
+
+    const req = httpMock.expectOne(`${environment.projectsApiUrl}/${projectId}`);
+    expect(req.request.method).toBe('GET');
+    req.flush(mockResponse);
+  });
+
+  it('should create project', () => {
+    const mockReq = { name: 'NewProject' };
+    const mockRes = { status: 'success', message: 'Created' };
+
+    service.createProject(mockReq).subscribe(res => {
+      expect(res).toEqual(mockRes);
+    });
+
+    const req = httpMock.expectOne(`${environment.projectsApiUrl}/`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual(mockReq);
+    req.flush(mockRes);
+  });
+
+  it('should update project', () => {
+    const projectId = '1';
+    const mockReq = { name: 'UpdatedProject' };
+    const mockRes = { status: 'success' };
+
+    service.updateProject(projectId, mockReq).subscribe(res => {
+      expect(res).toEqual(mockRes);
+    });
+
+    const req = httpMock.expectOne(`${environment.projectsApiUrl}/${projectId}`);
+    expect(req.request.method).toBe('PATCH');
+    req.flush(mockRes);
+  });
+
+  it('should delete project', () => {
+    const projectId = '1';
+    const mockRes = { status: 'success' };
+
+    service.deleteProject(projectId).subscribe(res => {
+      expect(res).toEqual(mockRes);
+    });
+
+    const req = httpMock.expectOne(`${environment.projectsApiUrl}/${projectId}`);
+    expect(req.request.method).toBe('DELETE');
+    req.flush(mockRes);
+  });
+
+  it('should get environments by project', () => {
+    const projectId = '1';
+    const mockRes = { data: [{ id: 'env1', name: 'Env1' }] };
+
+    service.getEnvironmentsByProject(projectId).subscribe(res => {
+      expect(res).toEqual(mockRes);
+    });
+
+    const req = httpMock.expectOne(`${environment.projectsBaseUrl}/environments?projectId=${projectId}`);
+    expect(req.request.method).toBe('GET');
+    req.flush(mockRes);
+  });
+
+  it('should create environment', () => {
+    const mockReq = { name: 'Env1', projectId: '1', region: 'ap-south-1' };
+    const mockRes = { status: true, message: 'Created' };
+
+    service.createEnvironment(mockReq).subscribe(res => {
+      expect(res).toEqual(mockRes);
+    });
+
+    const req = httpMock.expectOne(`${environment.projectsBaseUrl}/environments`);
+    expect(req.request.method).toBe('POST');
+    req.flush(mockRes);
+  });
+
+  it('should update environment', () => {
+    const mockReq = { id: 'env1', name: 'EnvUpdated' };
+    const mockRes = { status: true };
+
+    service.updateEnvironment(mockReq).subscribe(res => {
+      expect(res).toEqual(mockRes);
+    });
+
+    const req = httpMock.expectOne(`${environment.projectsBaseUrl}/environments`);
+    expect(req.request.method).toBe('PUT');
+    req.flush(mockRes);
+  });
+
+  it('should delete environment', () => {
+    const envId = 'env1';
+    const mockRes = { status: true };
+
+    service.deleteEnvironment('1', envId).subscribe(res => {
+      expect(res).toEqual(mockRes);
+    });
+
+    const req = httpMock.expectOne(`${environment.projectsBaseUrl}/environments?id=${envId}`);
+    expect(req.request.method).toBe('DELETE');
+    req.flush(mockRes);
+  });
+
+  it('should get plan limits', () => {
+    const plan = 'lite';
+    const mockRes = { data: [{ resource_type: 'CPU', max_limit: 10 }] };
+
+    service.getPlanLimits(plan).subscribe(res => {
+      expect(res).toEqual(mockRes);
+    });
+
+    const req = httpMock.expectOne(`${environment.usermanagementBaseUrl}/plans/${plan}`);
+    expect(req.request.method).toBe('GET');
+    req.flush(mockRes);
+  });
+
+  it('should include Authorization header when getting project details if token present', () => {
+    const projectId = '2';
+    const mockRes = { id: '2', name: 'Project2' };
+    localStorage.setItem('accessToken', 'token-xyz');
+
+    service.getProjectDetailsById(projectId).subscribe(res => {
+      expect(res).toEqual(mockRes);
+    });
+
+    const req = httpMock.expectOne(`${environment.projectsApiUrl}/${projectId}`);
+    expect(req.request.method).toBe('GET');
+    expect(req.request.headers.get('Authorization')).toBe('Bearer token-xyz');
+    req.flush(mockRes);
+    localStorage.removeItem('accessToken');
+  });
+
+  it('should call toastr.error for client-side ErrorEvent', () => {
+    service.getAllProjects().subscribe({
+      next: () => fail('should have errored'),
+      error: (err) => {
+        expect(err).toBeDefined();
+      }
+    });
+
+    const req = httpMock.expectOne(`${environment.projectsApiUrl}`);
+    const evt = new ErrorEvent('Network error', { message: 'network down' });
+    req.error(evt);
+
+    expect(toastrSpy.error).toHaveBeenCalled();
+  });
+
+
+  it('should return resource usage with plan query param set to lite', () => {
+    const envId = 'env-123';
+    const mockRes = { data: { cpu: 1 } };
+
+    service.getResourceUsage(envId).subscribe(res => {
+      expect(res).toEqual(mockRes);
+    });
+
+    const req = httpMock.expectOne(`${environment.deploymentManagement}/environments/${envId}/resource-quotas/usage?plan=lite`);
+    expect(req.request.method).toBe('GET');
+    req.flush(mockRes);
+  });
+
+  it('should get all environments by project (duplicate endpoint) ', () => {
+    const projectId = '3';
+    const mockRes = { data: [{ id: 'env2' }] };
+
+    service.getAllEnvironmentsByProject(projectId).subscribe(res => {
+      expect(res).toEqual(mockRes);
+    });
+
+    const req = httpMock.expectOne(`${environment.projectsBaseUrl}/environments?projectId=${projectId}`);
+    expect(req.request.method).toBe('GET');
+    req.flush(mockRes);
+  });
+  it('should handle 500 error and show toastr with message', () => {
+  service.getAllProjects().subscribe({
+    next: () => fail('server error'),
+    error: (err) => {
+      expect(err).toBeTruthy();
+    }
+  });
+
+  const req = httpMock.expectOne(`${environment.projectsApiUrl}`);
+
+  req.flush(
+    {
+      error: {
+        details: 'Server Error. Please try again later or contact support if it persists'
+      }
+    },
+    {
+      status: 500,
+      statusText: 'Internal Server Error'
+    }
+  );
+
+  expect(toastrSpy.error).toHaveBeenCalledWith(
+    'Server Error. Please try again later or contact support if it persists.',
+    'Internal Server Error 500:'
+  );
+});
+it('should handle 404 error and show toastr with message', () => {
+  service.getAllProjects().subscribe({
+    next: () => fail('should error'),
+    error: (err) => {
+      expect(err).toBeTruthy();
+    }
+  });
+
+  const req = httpMock.expectOne(`${environment.projectsApiUrl}`);
+
+  req.flush(
+    {
+      error: {
+        details: 'Not found'
+      }
+    },
+    {
+      status: 404,
+      statusText: 'Not Found'
+    }
+  );
+
+  expect(toastrSpy.error).toHaveBeenCalledWith(
+    'Not found',
+    'Internal Server Error 404:'
+  );
+});
+it('should handle unknown error status and log error message', () => {
+  spyOn(console, 'error');
+
+  service.getAllProjects().subscribe({
+    next: () => fail('should error'),
+    error: () => {}
+  });
+
+  const req = httpMock.expectOne(`${environment.projectsApiUrl}`);
+
+  req.flush(
+    {
+      error: 'Unknown failure'
+    },
+    {
+      status: 403,
+      statusText: 'Forbidden'
+    }
+  );
+
+  expect(console.error).toHaveBeenCalledWith('Unknown failure');
+});
+it('should get environment by id', () => {
+  const projectId = 'p1';
+  const envId = 'env1';
+  const mockRes = { id: envId, name: 'Environment 1' };
+
+  service.getEnvironmentById(projectId, envId).subscribe(res => {
+    expect(res).toEqual(mockRes);
+  });
+
+  const req = httpMock.expectOne(
+    `${environment.projectsBaseUrl}/environments?id=${envId}`
+  );
+
+  expect(req.request.method).toBe('GET');
+  req.flush(mockRes);
+});
+it('should get usage cost', () => {
+  const reqBody = {
+    envId: 'env1',
+    month: 'Jan'
+  };
+
+  const mockRes = {
+    totalCost: 123
+  };
+
+  service.getUsageCost(reqBody).subscribe(res => {
+    expect(res).toEqual(mockRes);
+  });
+
+  const req = httpMock.expectOne(
+    `${environment.pricingManagement}/usage-cost`
+  );
+
+  expect(req.request.method).toBe('POST');
+  expect(req.request.body).toEqual(reqBody);
+  req.flush(mockRes);
+});
+
 });

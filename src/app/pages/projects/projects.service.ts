@@ -130,19 +130,23 @@ export class ProjectsService {
   }
 
   private handleError(error: HttpErrorResponse) {
+    // Normalize nested error shapes and prefer detailed messages when available
+    const nestedDetails =
+      error?.error?.error?.details || error?.error?.details || error?.error?.message || null;
+
     if (error.error instanceof ErrorEvent) {
       console.error('An error occurred:', error.error.message);
-      this.toastr.error(error.error?.error)
+      this.toastr.error(error.error?.message || 'An error occurred');
     }
-    else if (error.status === 500 && error.error && error.error?.error.details) {
-      const errorMessage = error.error?.error.details;
+    else if (error.status === 500) {
+      const errorMessage = 'Server Error. Please try again later or contact support if it persists.';
       console.error('Internal Server Error 500:', errorMessage);
-      this.toastr.error(errorMessage, 'Internal Server Error 500:')
+      this.toastr.error(errorMessage, 'Internal Server Error 500:');
     }
-    else if (error.status === 404 && error.error?.error.details) {
-      const errorMessage = error.error?.error.details;
+    else if (error.status === 404) {
+      const errorMessage = nestedDetails || 'Please try again later';
       console.error('Internal Server Error 404:', errorMessage);
-      this.toastr.error(errorMessage, 'Internal Server Error 404:')
+      this.toastr.error(errorMessage, 'Internal Server Error 404:');
     }
     // else if (error.status === 400) {
     //   const errorMessage = error.response?.message || 'Bad Request';

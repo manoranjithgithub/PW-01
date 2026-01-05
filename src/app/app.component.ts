@@ -25,11 +25,6 @@ export class AppComponent implements OnInit {
   ) {
     this.titleService.setTitle(this.title);
     this.iconSetService.icons = { ...iconSubset };
-    // this.router.events.subscribe(event => {
-    //   if (event instanceof NavigationStart) {
-    //     this.loader.show();
-    //   }
-    // });
   }
 
   ngOnInit(): void {

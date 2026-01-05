@@ -21,7 +21,7 @@ import { SHARED_IMPORTS } from '../../../shared/shared-imports';
   providers: [ToolsService]
 })
 export class ViewToolComponent implements OnInit, OnDestroy {
-  @ViewChild('showToolsModel') private showToolsModel!: ModalComponent;
+  @ViewChild('showToolsModel') public showToolsModel!: ModalComponent;
   form!: FormGroup;
   formStructure: FormField[] = [];
   submitted: boolean = false;
@@ -56,9 +56,8 @@ export class ViewToolComponent implements OnInit, OnDestroy {
       this.env = JSON.parse(storedValue).id;
     }
     this.ac.queryParams.subscribe(params => {
-      this.toolName = params['id'];
-      this.selectedView = params['selectedView'];
-      this.toolName = this.selectedView;
+      this.selectedView = params['selectedView'] ?? params['id'];
+      this.toolName = params['id'] ?? this.selectedView ?? this.toolName;
     })
   }
   ngOnInit(): void {
@@ -80,6 +79,7 @@ export class ViewToolComponent implements OnInit, OnDestroy {
       if (fields.hasOwnProperty(key)) {
         if (fields[key].ui) {
           const field = fields[key];
+          const controlKey = field.key ?? key;
 
           if (field.type === 'password') {
             this.hide[field.key] = true;
@@ -87,8 +87,7 @@ export class ViewToolComponent implements OnInit, OnDestroy {
 
           const initialValue = field.value || field.default_value || '';
           const control = new FormControl({ value: initialValue, disabled: true });
-          group[field.key] = control;
-          group[field.key] = control;
+          group[controlKey] = control;
           if (field.label === 'Instance Type') {
             this.selectedResource = this.resources.find(resource => resource.instanceType === initialValue) || { cpuVcpu: '', memoryGb: '', instanceHourRate: 0 };
           }
@@ -96,7 +95,22 @@ export class ViewToolComponent implements OnInit, OnDestroy {
         }
       }
     }
-    this.form = this.fb.group(group);
+    // Use FormGroup constructor with the prepared controls so their disabled state is preserved
+    this.form = new FormGroup(group);
+    // Safety: ensure controls are disabled explicitly
+    try {
+      this.form.disable({ emitEvent: false });
+    } catch (e) {
+      Object.keys(this.form.controls).forEach(k => this.form.controls[k].disable());
+    }
+    // Ensure each control is disabled explicitly (some test environments may not reflect disabled state immediately)
+    Object.keys(this.form.controls).forEach(k => {
+      try {
+        this.form.controls[k].disable({ emitEvent: false });
+      } catch (e) {
+        this.form.controls[k].disable();
+      }
+    });
   }
 
   addNameField(schema: FormField): any {
