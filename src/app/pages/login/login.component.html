@@ -26,7 +26,7 @@
                 <span class="input-group-text">
                   <i class="bi bi-person"></i>
                 </span>
-                <input type="text" class="form-control" placeholder="Username *" formControlName="username" />
+                <input type="text" class="form-control" placeholder="Username or Email *" formControlName="username" />
               </div>
               <div
                 *ngIf="loginForm.get('username')?.invalid && (submitted || loginForm.get('username')?.touched || loginForm.get('username')?.dirty)"

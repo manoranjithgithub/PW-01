@@ -117,11 +117,6 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
     [this.active, ...this.history] = res || [];
     this.releaseData = this.active;
     this.updateSteps(this.active);
-    // this.deploymentService.liveReleaseStatus(this.deploymentId).subscribe((res: any) => {
-    //   [this.active, ...this.history] = res?.releases?.releases || [];
-    //   this.releaseData = this.active;
-    //   this.updateSteps(this.active);
-    // });
   }
   hasFailedStatus(): boolean {
     return this.steps.some(s => s.status === 'failed');

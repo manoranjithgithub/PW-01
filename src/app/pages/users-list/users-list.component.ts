@@ -614,7 +614,7 @@ export class UsersListComponent implements OnInit, OnDestroy {
           this.toastr.error(createRes?.message || 'Failed to create policy');
         }
       }, (err) => {
-        console.error('createPolicy error', err);
+        // console.error('createPolicy error', err);
       });
     }
   }
