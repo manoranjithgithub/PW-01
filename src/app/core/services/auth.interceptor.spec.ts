@@ -166,11 +166,11 @@ describe('AuthInterceptor', () => {
 
     const req = httpMock.expectOne('/api/test');
     req.flush(
-      { error: { message: 'Server crashed' } },
+      { error: { message: 'Server Error. Please try again later or contact support if it persists.' } },
       { status: 500, statusText: 'Server Error' }
     );
 
-    expect(toastrSpy.error).toHaveBeenCalledWith('Server crashed', '500');
+    expect(toastrSpy.error).toHaveBeenCalledWith('Server Error. Please try again later or contact support if it persists.', '500');
   });
 
   it('should show multiple validation toasts for 400.details array', () => {

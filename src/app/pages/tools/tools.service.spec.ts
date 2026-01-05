@@ -27,9 +27,9 @@ describe('ToolsService', () => {
           useValue: {
             run: (fn: any) => fn(),
             runOutsideAngular: (fn: any) => fn(),
-            onMicrotaskEmpty: { subscribe: () => ({ unsubscribe: () => {} }) },
-            onStable: { subscribe: () => ({ unsubscribe: () => {} }) },
-            onUnstable: { subscribe: () => ({ unsubscribe: () => {} }) }
+            onMicrotaskEmpty: { subscribe: () => ({ unsubscribe: () => { } }) },
+            onStable: { subscribe: () => ({ unsubscribe: () => { } }) },
+            onUnstable: { subscribe: () => ({ unsubscribe: () => { } }) }
           }
         },
         {
@@ -128,7 +128,7 @@ describe('ToolsService', () => {
     const req = httpMock.expectOne(
       r =>
         r.url ===
-          `${deploymentUrl}/deployment/getResourceAllocationDetails` &&
+        `${deploymentUrl}/deployment/getResourceAllocationDetails` &&
         r.params.get('toolName') === 'mysql' &&
         r.params.get('environmentId') === 'env-1'
     );
@@ -207,4 +207,121 @@ describe('ToolsService', () => {
       // handleError 
     }
   });
+  it('should get tools values to update', () => {
+    const env = 'env-1';
+    const name = 'mysql';
+    const mockResponse = { values: [] };
+
+    service.getToolsValuesToUpdate(env, name).subscribe(res => {
+      expect(res).toEqual(mockResponse);
+    });
+
+    const req = httpMock.expectOne(
+      `${deploymentUrl}/${env}/tools/supported/${name}/values`
+    );
+    expect(req.request.method).toBe('GET');
+    req.flush(mockResponse);
+  });
+  it('should get available tools list', () => {
+    const mockResponse = [{ name: 'MySQL' }, { name: 'MongoDB' }];
+
+    service.getAvailableToolsList().subscribe(res => {
+      expect(res).toEqual(mockResponse);
+    });
+
+    const req = httpMock.expectOne(
+      `${deploymentUrl}/tools/supported`
+    );
+    expect(req.request.method).toBe('GET');
+    req.flush(mockResponse);
+  });
+  it('should validate tool name', () => {
+    const env = 'env-1';
+    const name = 'mysql';
+
+    service.getToolNameValidation(env, name).subscribe();
+
+    const req = httpMock.expectOne(
+      `${deploymentUrl}/tools/${env}/${name}`
+    );
+    expect(req.request.method).toBe('GET');
+    req.flush({});
+  });
+  it('should handle error for getAvailableToolsList', () => {
+    service.getAvailableToolsList().subscribe({
+      error: err => {
+        expect(err.message).toBe('Error occurred');
+      }
+    });
+
+    const req = httpMock.expectOne(
+      `${deploymentUrl}/tools/supported`
+    );
+
+    req.flush(
+      { error: { message: 'Error occurred' } },
+      { status: 500, statusText: 'Server Error' }
+    );
+  });
+  it('should call getToolDetailsById with undefined projectId when project is missing', () => {
+    localStorage.removeItem('project');
+
+    service.getToolDetailsById('env-1', 'mysql').subscribe();
+
+    const req = httpMock.expectOne(
+      `${deploymentUrl}/tools/values?environmentId=env-1&name=mysql&projectId=undefined`
+    );
+
+    expect(req.request.method).toBe('GET');
+    req.flush({});
+  });
+  it('should update tools with undefined projectId when project is missing', () => {
+    localStorage.removeItem('project');
+
+    const payload = { name: 'Postgres' };
+    service.updateTools(payload).subscribe();
+
+    const req = httpMock.expectOne(`${deploymentUrl}/tools`);
+    expect(req.request.method).toBe('PATCH');
+    expect(req.request.body.projectId).toBeUndefined();
+    req.flush({});
+  });
+it('should delete tools with undefined projectId when project is missing', () => {
+  localStorage.removeItem('project');
+
+  service.deleteTools('env-1', 'MySQL').subscribe();
+
+  const req = httpMock.expectOne(`${deploymentUrl}/tools`);
+  expect(req.request.method).toBe('DELETE');
+  expect(req.request.body).toEqual({
+    environmentId: 'env-1',
+    name: 'MySQL',
+    projectId: undefined
+  });
+  req.flush({});
+});
+it('should extract error.error.message from handleError()', (done) => {
+  const errorResponse: any = {
+    error: {
+      message: 'Direct backend message'
+    }
+  };
+
+  service.getToolsList('env-1').subscribe({
+    error: (err: Error) => {
+      expect(err.message).toBe('Direct backend message');
+      done();
+    }
+  });
+
+  const req = httpMock.expectOne(
+    `${deploymentUrl}/tools/installed/env-1`
+  );
+
+  req.flush(errorResponse, {
+    status: 400,
+    statusText: 'Bad Request'
+  });
+});
+
 });

@@ -30,7 +30,7 @@ describe('ToolsComponent', () => {
     toolsServiceSpy.liveToolsData.and.returnValue(of({ tools: {} }));
 
     sharedServiceSpy = jasmine.createSpyObj('SharedService', [
-      'getStatusMeta'
+      'getStatusMeta', 'show', 'hide'
     ], {
       envValueChange$: envChange$.asObservable(),
       valueChange$: of('ag-theme-alpine'),

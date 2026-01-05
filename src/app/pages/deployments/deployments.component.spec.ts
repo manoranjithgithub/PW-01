@@ -21,6 +21,12 @@ class MockSharedService {
   getStatusMeta(status: string) {
     return { statusClass: 'status-class', icon: 'bi-check', label: status || '' };
   }
+  show() {
+    this.isLoading$.next(true);
+  }
+  hide() {
+    this.isLoading$.next(false);
+  }
 }
 
 class MockRouter {
@@ -119,4 +125,5 @@ describe('DeploymentsComponent', () => {
     expect(component.sseSub!.unsubscribe).toHaveBeenCalled();
     expect(component.subscription!.unsubscribe).toHaveBeenCalled();
   });
+  
 });

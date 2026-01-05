@@ -194,35 +194,6 @@ describe('ProjectsService', () => {
     expect(toastrSpy.error).toHaveBeenCalled();
   });
 
-  // it('should handle 500 error with details and call toastr.error', () => {
-  //   service.getAllProjects().subscribe({
-  //     next: () => fail('should have errored'),
-  //     error: (err) => {
-  //       expect(err).toBe('Something bad happened; please try again later.');
-  //     }
-  //   });
-
-  //   const req = httpMock.expectOne(`${environment.projectsApiUrl}`);
-  //   const body = { error: { error: { details: 'internal details' } } };
-  //   req.flush(body, { status: 500, statusText: 'Server Error' });
-
-  //   expect(toastrSpy.error).toHaveBeenCalledWith('internal details', 'Internal Server Error 500:');
-  // });
-
-  // it('should handle 404 error with details and call toastr.error', () => {
-  //   service.getAllProjects().subscribe({
-  //     next: () => fail('should have errored'),
-  //     error: (err) => {
-  //       expect(err).toBe('Something bad happened; please try again later.');
-  //     }
-  //   });
-
-  //   const req = httpMock.expectOne(`${environment.projectsApiUrl}`);
-  //   const body = { error: { error: { details: 'not found details' } } };
-  //   req.flush(body, { status: 404, statusText: 'Not Found' });
-
-  //   expect(toastrSpy.error).toHaveBeenCalledWith('not found details', 'Internal Server Error 404:');
-  // });
 
   it('should return resource usage with plan query param set to lite', () => {
     const envId = 'env-123';
@@ -249,4 +220,119 @@ describe('ProjectsService', () => {
     expect(req.request.method).toBe('GET');
     req.flush(mockRes);
   });
+  it('should handle 500 error and show toastr with message', () => {
+  service.getAllProjects().subscribe({
+    next: () => fail('server error'),
+    error: (err) => {
+      expect(err).toBeTruthy();
+    }
+  });
+
+  const req = httpMock.expectOne(`${environment.projectsApiUrl}`);
+
+  req.flush(
+    {
+      error: {
+        details: 'Server Error. Please try again later or contact support if it persists'
+      }
+    },
+    {
+      status: 500,
+      statusText: 'Internal Server Error'
+    }
+  );
+
+  expect(toastrSpy.error).toHaveBeenCalledWith(
+    'Server Error. Please try again later or contact support if it persists.',
+    'Internal Server Error 500:'
+  );
+});
+it('should handle 404 error and show toastr with message', () => {
+  service.getAllProjects().subscribe({
+    next: () => fail('should error'),
+    error: (err) => {
+      expect(err).toBeTruthy();
+    }
+  });
+
+  const req = httpMock.expectOne(`${environment.projectsApiUrl}`);
+
+  req.flush(
+    {
+      error: {
+        details: 'Not found'
+      }
+    },
+    {
+      status: 404,
+      statusText: 'Not Found'
+    }
+  );
+
+  expect(toastrSpy.error).toHaveBeenCalledWith(
+    'Not found',
+    'Internal Server Error 404:'
+  );
+});
+it('should handle unknown error status and log error message', () => {
+  spyOn(console, 'error');
+
+  service.getAllProjects().subscribe({
+    next: () => fail('should error'),
+    error: () => {}
+  });
+
+  const req = httpMock.expectOne(`${environment.projectsApiUrl}`);
+
+  req.flush(
+    {
+      error: 'Unknown failure'
+    },
+    {
+      status: 403,
+      statusText: 'Forbidden'
+    }
+  );
+
+  expect(console.error).toHaveBeenCalledWith('Unknown failure');
+});
+it('should get environment by id', () => {
+  const projectId = 'p1';
+  const envId = 'env1';
+  const mockRes = { id: envId, name: 'Environment 1' };
+
+  service.getEnvironmentById(projectId, envId).subscribe(res => {
+    expect(res).toEqual(mockRes);
+  });
+
+  const req = httpMock.expectOne(
+    `${environment.projectsBaseUrl}/environments?id=${envId}`
+  );
+
+  expect(req.request.method).toBe('GET');
+  req.flush(mockRes);
+});
+it('should get usage cost', () => {
+  const reqBody = {
+    envId: 'env1',
+    month: 'Jan'
+  };
+
+  const mockRes = {
+    totalCost: 123
+  };
+
+  service.getUsageCost(reqBody).subscribe(res => {
+    expect(res).toEqual(mockRes);
+  });
+
+  const req = httpMock.expectOne(
+    `${environment.pricingManagement}/usage-cost`
+  );
+
+  expect(req.request.method).toBe('POST');
+  expect(req.request.body).toEqual(reqBody);
+  req.flush(mockRes);
+});
+
 });

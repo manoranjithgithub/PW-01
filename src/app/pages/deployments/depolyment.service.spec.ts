@@ -1,10 +1,9 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
 import { DeploymentsService } from './deployment.service';
 import { ToastrService,ToastrModule  } from 'ngx-toastr';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { ActivatedRoute } from '@angular/router';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'; 
-import { DeploymentSettingsComponent } from './deployment-settings/deployment-settings.component';
 
 describe('DeploymentsService', () => {
   let service: DeploymentsService;

@@ -24,7 +24,7 @@ class MockLocation {
   back = jasmine.createSpy('back');
 }
 
-class MockSharedService {}
+class MockSharedService { }
 
 class MockToastrService {
   success = jasmine.createSpy('success');
@@ -44,7 +44,7 @@ describe('ReviewScreenComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ReviewScreenComponent,HttpClientTestingModule],
+      imports: [ReviewScreenComponent, HttpClientTestingModule],
       providers: [
         { provide: DeploymentsService, useClass: MockDeploymentsService },
         { provide: Router, useClass: MockRouter },
@@ -174,5 +174,74 @@ describe('ReviewScreenComponent', () => {
     expect(component.hasData({ a: 1 })).toBeTrue();
     expect(component.hasData({})).toBeFalse();
     expect(component.hasData(null)).toBeFalse();
+  });
+  it('should set envId as null when environment is not in localStorage', () => {
+    (localStorage.getItem as jasmine.Spy).and.returnValue(null);
+
+    component.submitChanges();
+
+    const reqArg = deploymentService.createDeployement.calls.mostRecent().args[0];
+    expect(reqArg.envId).toBeNull();
+  });
+  it('should send null for optional fields when they are undefined', () => {
+    component.review.stepOne.buildCommand = undefined;
+    component.review.stepOne.startCommand = undefined;
+    component.review.stepOne.installCommand = undefined;
+    component.review.stepOne.healthEndpoint = undefined;
+    component.review.stepOne.ephemeralStorage = undefined;
+    component.review.stepOne.zipFilename = undefined;
+
+    component.submitChanges();
+
+    const reqArg = deploymentService.createDeployement.calls.mostRecent().args[0];
+
+    expect(reqArg.buildCommand).toBeNull();
+    expect(reqArg.startCommand).toBeNull();
+    expect(reqArg.installCommand).toBeNull();
+    expect(reqArg.healthEndpoint).toBeNull();
+    expect(reqArg.ephemeralStorage).toBeNull();
+    expect(reqArg.zipFileName).toBeNull();
+  });
+  it('should send actual values when optional fields are present', () => {
+    component.review.stepOne.buildCommand = 'npm run build';
+    component.review.stepOne.startCommand = 'npm start';
+    component.review.stepOne.installCommand = 'npm install';
+    component.review.stepOne.healthEndpoint = '/health';
+    component.review.stepOne.ephemeralStorage = 5;
+    component.review.stepOne.zipFilename = 'app.zip';
+
+    component.submitChanges();
+
+    const reqArg = deploymentService.createDeployement.calls.mostRecent().args[0];
+
+    expect(reqArg.buildCommand).toBe('npm run build');
+    expect(reqArg.startCommand).toBe('npm start');
+    expect(reqArg.installCommand).toBe('npm install');
+    expect(reqArg.healthEndpoint).toBe('/health');
+    expect(reqArg.ephemeralStorage).toBe(5);
+    expect(reqArg.zipFileName).toBe('app.zip');
+  });
+  it('should return empty string when path has no separators', () => {
+    const fileName = component.getFileNameOnly('');
+    expect(fileName).toBe('');
+  });
+  it('should return false for undefined object in hasData()', () => {
+    expect(component.hasData(undefined)).toBeFalse();
+  });
+it('should return empty string when fullPath is undefined', () => {
+    expect(component.getFileNameOnly(undefined)).toBe('');
+  });
+
+  it('should return empty string when fullPath is empty', () => {
+    expect(component.getFileNameOnly('')).toBe('');
+  });
+
+  it('should extract filename from Windows path', () => {
+    expect(component.getFileNameOnly('C:\\folder\\file.zip')).toBe('file.zip');
+  });
+
+  it('should return empty string when split().pop() is undefined', () => {
+    spyOn(String.prototype, 'split').and.returnValue([]);
+    expect(component.getFileNameOnly('C:\\test')).toBe('');
   });
 });

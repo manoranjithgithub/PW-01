@@ -14,7 +14,7 @@ describe('DeploymentListComponent', () => {
   let fixture: ComponentFixture<DeploymentListComponent>;
 
   beforeEach(async () => {
-    const sharedSpy = jasmine.createSpyObj('SharedService', ['getStatusMeta'], { valueChange$: of('ag-theme-alpine'), isLoading$: of(false), envValueChange$: of(null) } as any);
+    const sharedSpy = jasmine.createSpyObj('SharedService', ['getStatusMeta', 'show', 'hide'], { valueChange$: of('ag-theme-alpine'), isLoading$: of(false), envValueChange$: of(null) } as any);
     sharedSpy.getStatusMeta.and.returnValue({ icon: 'bi-check', statusClass: 'success', label: 'active' });
     const deploymentSpy = jasmine.createSpyObj('LLMDeploymentsService', ['getDeployments']);
     deploymentSpy.getDeployments.and.returnValue(of({ status: 'success', data: [{ name: 'd1', status: 'active' }] }));
@@ -22,7 +22,7 @@ describe('DeploymentListComponent', () => {
     const routerSpy = { navigate: jasmine.createSpy('navigate'), url: '/llm/deployment-list' };
 
     await TestBed.configureTestingModule({
-      imports: [ DeploymentListComponent, HttpClientTestingModule ],
+      imports: [ HttpClientTestingModule ],
       providers: [
         { provide: SharedService, useValue: sharedSpy },
         { provide: LLMDeploymentsService, useValue: deploymentSpy },

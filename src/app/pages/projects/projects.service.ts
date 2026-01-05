@@ -139,7 +139,7 @@ export class ProjectsService {
       this.toastr.error(error.error?.message || 'An error occurred');
     }
     else if (error.status === 500) {
-      const errorMessage = nestedDetails || 'Please try again later';
+      const errorMessage = 'Server Error. Please try again later or contact support if it persists.';
       console.error('Internal Server Error 500:', errorMessage);
       this.toastr.error(errorMessage, 'Internal Server Error 500:');
     }
