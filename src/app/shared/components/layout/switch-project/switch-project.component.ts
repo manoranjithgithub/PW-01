@@ -81,12 +81,14 @@ export class SwitchProjectComponent implements OnInit {
       this.getSelectedEnv(envs[0]);
     });
 
-    this.form.get('project')?.valueChanges.subscribe(val => this.getSelectedProject(val));
+    this.form.get('project')?.valueChanges.subscribe(val => {
+      this.getSelectedProject(val);
+    });
     this.form.get('region')?.valueChanges.subscribe(val => this.getSelectedRegion(val));
   }
 
 
-   getBasicInfo(): void {
+  getBasicInfo(): void {
     const { project, region, environment } = this.getSavedSelections();
     this.showSwitchProject = !!(project && region && environment);
     this.projectService.getAllProjects().subscribe((res: any) => {
@@ -99,7 +101,7 @@ export class SwitchProjectComponent implements OnInit {
     });
   }
 
-   getRegionsAndEnvironment(): void {
+  getRegionsAndEnvironment(): void {
     const { region } = this.getSavedSelections();
     if (!this.projectId) return;
     this.projectService.getAllEnvironmentsByProject(this.projectId).subscribe((res: any) => {
@@ -121,7 +123,7 @@ export class SwitchProjectComponent implements OnInit {
   }
 
   getSelectedRegion(data: any): void {
-    localStorage.setItem('environment', JSON.stringify(this.listOfenvironments[0]));
+    // localStorage.setItem('environment', JSON.stringify(this.listOfenvironments[0]));
     const { environment } = this.getSavedSelections();
     if (!data) return;
     this.selectedRegion = data.name;
@@ -131,9 +133,9 @@ export class SwitchProjectComponent implements OnInit {
 
   getSelectedEnv(env: any): void {
     if (!env) return;
-    this.selectedEnvironmentObj = env;
+    this.selectedEnvironmentObj = this.listOfenvironments.find(e => e.id === env.id) || this.listOfenvironments[0];
     this.selectedEnvironment = this.selectedEnvironmentObj?.name;
-
+    
     localStorage.setItem('environment', JSON.stringify(this.selectedEnvironmentObj));
   }
   showEnvironment(): void {
@@ -167,7 +169,7 @@ export class SwitchProjectComponent implements OnInit {
   }
 
   isSelectedEnv(item: any): boolean {
-    return this.selectedEnvironmentObj?.name === item.name;
+    return this.selectedEnvironmentObj?.id === item.id;
   }
 
   private getSavedSelections() {
