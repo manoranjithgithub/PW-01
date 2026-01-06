@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Router, } from '@angular/router';
+import { Router } from '@angular/router';
 import { SharedService } from '../../shared/services/shared.service';
 import { Subscription } from 'rxjs';
 import { CellClickedEvent, ColDef } from 'ag-grid-community';
@@ -17,16 +17,30 @@ import { SHARED_IMPORTS } from '../../shared/shared-imports';
   providers: [DeploymentsService]
 })
 export class DeploymentsComponent implements OnInit, OnDestroy {
-  tableData: any[] = [];
 
-  subscription: Subscription | undefined;
-  statusData: any;
+  tableData: any[] = [];
+  subscription?: Subscription;
+  sseSub: Subscription | null = null;
+
+  private tabHiddenAt: number | null = null;
+  private isTabHidden = false;
+  private lastEnv: any = null;
+
   columnDefs: ColDef[] = [
     {
-      headerName: 'Name', field: 'name', sortable: true, filter: true, flex: 1, minWidth: 250, tooltipField: 'name',
-      cellStyle: { 'white-space': 'nowrap', 'overflow': 'hidden !important', 'text-overflow': 'ellipsis' },
-      onCellClicked: (event: CellClickedEvent) =>
-        this.gotoAction(event.data)
+      headerName: 'Name',
+      field: 'name',
+      sortable: true,
+      filter: true,
+      flex: 1,
+      minWidth: 250,
+      tooltipField: 'name',
+      cellStyle: {
+        'white-space': 'nowrap',
+        'overflow': 'hidden',
+        'text-overflow': 'ellipsis'
+      },
+      onCellClicked: (event: CellClickedEvent) => this.gotoAction(event.data)
     },
     {
       headerName: 'Date',
@@ -35,126 +49,135 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
       width: 130,
       filter: 'agTextColumnFilter',
       valueGetter: (params: any) => {
-        if (!params.data || !params.data.createdAt) return '';
+        if (!params.data?.createdAt) return '';
         const date = new Date(params.data.createdAt);
-        return isNaN(date.getTime()) ? '' : date.toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit'
-        });
+        return isNaN(date.getTime())
+          ? ''
+          : date.toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: '2-digit',
+              day: '2-digit'
+            });
       },
-      valueFormatter: (params: any) => {
-        return params.value || '';
-      },
-      onCellClicked: (event: CellClickedEvent) =>
-        this.gotoAction(event.data)
+      onCellClicked: (event: CellClickedEvent) => this.gotoAction(event.data)
     },
     {
       headerName: 'URL',
       field: 'name',
-      sortable: true,
-      filter: false,
       width: 300,
-      autoHeight: true,
       tooltipField: 'urlTooltip',
       cellRenderer: UrlCellRendererComponent
     },
     {
       headerName: 'Application Status',
       field: 'status',
-      sortable: true,
-      filter: false,
       flex: 1,
       minWidth: 150,
       cellRenderer: (params: any) => this.statusCellRenderer(params),
-      onCellClicked: (event: CellClickedEvent) =>
-        this.gotoAction(event.data)
+      onCellClicked: (event: CellClickedEvent) => this.gotoAction(event.data)
     },
     {
       headerName: 'Last Release Status',
       field: 'releaseStatus',
-      sortable: true,
-      filter: false,
       flex: 1,
       minWidth: 200,
-      cellRenderer: (params: any) => this.statusCellRenderer(params),
+      cellRenderer: (params: any) => this.statusCellRenderer(params)
     },
     {
-      headerName: "",
-      field: "actions",
-      cellStyle: { cursor: 'pointer' },
+      headerName: '',
+      field: 'actions',
       width: 102,
       cellRenderer: ActionCellRendererComponent,
+      cellStyle: { cursor: 'pointer' },
       cellRendererParams: {
-        additionalParam: 'deployment',
-      },
+        additionalParam: 'deployment'
+      }
     }
-
   ];
-  messages: any[] = [];
-  getDeploymentIntervel: any;
-  sseSub: Subscription | null = null;
 
   constructor(
     private deploymentsService: DeploymentsService,
     private sharedService: SharedService,
-    private router: Router,
-  ) { }
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
     const storedEnvironment = localStorage.getItem('environment');
-    if (storedEnvironment && storedEnvironment !== "undefined") {
+    if (storedEnvironment && storedEnvironment !== 'undefined') {
       this.getDeployment(JSON.parse(storedEnvironment));
     }
-    this.subscription = this.sharedService.envValueChange$.subscribe(value => {
-      if (this.sseSub) {
-        this.sseSub.unsubscribe();
-        this.sseSub = null;
-      }
-      this.tableData = [];
-      this.getDeployment(value);
-    });
-    // this.getDeploymentIntervel = setInterval(() => {
-    //   this.getDeployment(JSON.parse(localStorage.getItem('environment') || '{}'));
-    // }, 30000);
 
+    this.subscription = this.sharedService.envValueChange$.subscribe(env => {
+      this.sseSub?.unsubscribe();
+      this.sseSub = null;
+      this.tableData = [];
+      this.getDeployment(env);
+    });
+
+    document.addEventListener('visibilitychange', this.handleVisibilityChange);
   }
-  getDeployment(env: any): any {
-    if (env) {
-      // show global loader until we receive the first data or an error
-      this.sharedService.show();
-      let firstEmit = true;
-      this.sseSub = this.deploymentsService.liveDeploymentData(env.id).subscribe((res: any) => {
-        if (res) {
-          this.updateTableData(res.deployment);
-          localStorage.setItem('availableDeployments', JSON.stringify(res.deployment?.map((x: any) => x.name)));
-        }
-        if (firstEmit) {
-          firstEmit = false;
-          this.sharedService.hide();
-        }
-      },
-        err => {
+
+  getDeployment(env: any): void {
+    if (!env || this.sseSub) return;
+
+    this.lastEnv = env;
+    this.sharedService.show();
+
+    let firstEmit = true;
+
+    this.sseSub = this.deploymentsService
+      .liveDeploymentData(env.id)
+      .subscribe(
+        (res: any) => {
+          if (res?.deployment) {
+            this.updateTableData(res.deployment);
+            localStorage.setItem(
+              'availableDeployments',
+              JSON.stringify(res.deployment.map((x: any) => x.name))
+            );
+          }
+
+          if (firstEmit) {
+            firstEmit = false;
+            this.sharedService.hide();
+          }
+        },
+        () => {
           this.tableData = [];
           this.sharedService.hide();
-        });
-    }
-  }
-  statusCellRenderer(params: any): string {
-    const status = params.value;
-    const meta = this.sharedService.getStatusMeta(status);
-    return `<span class="${meta.statusClass} text-capitalize"><i class="bi ${meta.icon}"></i> ${meta.label.toLowerCase()}</span>`;
+        }
+      );
   }
 
-  gotoAction(params: any) {
-    this.router.navigate(['/deployment/deployment-details'], { queryParams: { id: params.id } })
-  }
-  goToNewDeployment() {
-    this.router.navigate(['/deployment/create-deployment'])
-  }
+  handleVisibilityChange = () => {
+    if (document.hidden) {
+      if (this.isTabHidden) return;
+
+      console.log('Tab hidden → SSE stopped');
+      this.isTabHidden = true;
+      this.tabHiddenAt = Date.now();
+
+      this.sseSub?.unsubscribe();
+      this.sseSub = null;
+
+    } else {
+      if (!this.isTabHidden) return;
+
+      const idleTime = Date.now() - (this.tabHiddenAt ?? Date.now());
+      console.log(`Tab visible → idle ${idleTime} ms`);
+
+      this.isTabHidden = false;
+      this.tabHiddenAt = null;
+
+      if (this.lastEnv) {
+        this.getDeployment(this.lastEnv);
+      }
+    }
+  };
 
   updateTableData(newData: any[]) {
     let changed = false;
+
     newData.forEach(newItem => {
       const index = this.tableData.findIndex(item => item.id === newItem.id);
 
@@ -168,20 +191,39 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
           this.tableData[index] = { ...existing, ...newItem };
           changed = true;
         }
-
       } else {
         this.tableData.push(newItem);
         changed = true;
       }
     });
+
     if (changed) {
       this.tableData = [...this.tableData];
     }
   }
 
+  statusCellRenderer(params: any): string {
+    const meta = this.sharedService.getStatusMeta(params.value);
+    return `
+      <span class="${meta.statusClass} text-capitalize">
+        <i class="bi ${meta.icon}"></i> ${meta.label.toLowerCase()}
+      </span>
+    `;
+  }
+
+  gotoAction(data: any) {
+    this.router.navigate(['/deployment/deployment-details'], {
+      queryParams: { id: data.id }
+    });
+  }
+
+  goToNewDeployment() {
+    this.router.navigate(['/deployment/create-deployment']);
+  }
+
   ngOnDestroy(): void {
-    clearInterval(this.getDeploymentIntervel)
     this.subscription?.unsubscribe();
     this.sseSub?.unsubscribe();
+    document.removeEventListener('visibilitychange', this.handleVisibilityChange);
   }
 }

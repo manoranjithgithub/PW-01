@@ -179,7 +179,7 @@ export class ViewToolComponent implements OnInit, OnDestroy {
       return new Intl.NumberFormat('en-US', {
         style: 'currency',
         currency: target,
-        minimumFractionDigits: 2
+        minimumFractionDigits: 4
       }).format(converted);
     } catch (e) {
       return String(converted);
