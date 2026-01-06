@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, ViewChild, ViewEncapsulation } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild, ViewEncapsulation } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import {
   AccordionButtonDirective,
@@ -36,7 +36,7 @@ import { PermissionService } from '../../../shared/services/permission.service';
   providers: [DeploymentsService],
   encapsulation: ViewEncapsulation.None
 })
-export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
+export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnChanges {
   domainValue = '3.15.124.155';
 
 
@@ -106,6 +106,19 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
     private cdr: ChangeDetectorRef,
     private viewportScroller: ViewportScroller, public permissionService: PermissionService
   ) { }
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['currentStatus']) {
+      this.freezeAddNewData = this.currentStatus && this.currentStatus?.toLowerCase() === 'building' ? true : false;
+      this.formDisabled = this.freezeAddNewData || !(this.permissionService.canWriteGlobal() || this.permissionService.canAdminGlobal() || this.permissionService.canDeleteForCurrentUser(null, null));
+      if (this.formDisabled) {
+        this.generalSettingsForm?.disable?.();
+        this.sourceSettingsForm?.disable?.();
+      } else {
+        this.generalSettingsForm?.enable?.();
+        this.sourceSettingsForm?.enable?.();
+      }
+    }
+  }
 
   ngAfterViewInit() {
     setTimeout(() => {
@@ -132,7 +145,6 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit(): void {
-    this.freezeAddNewData = this.currentStatus && this.currentStatus?.toLowerCase() === 'building' ? true : false;
     // const environment = this.sharedService.getCookie('environment');
     const environment = localStorage.getItem('environment');
     const envId = environment ? JSON.parse(environment).id : null;
@@ -170,7 +182,8 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
       fileName: [{ value: '', disabled: true }],
       // dockerfilePath: ['', Validators.maxLength(250)],
     });
-    // compute form disabled state based on freeze flag and permissions
+    this.freezeAddNewData = this.currentStatus && this.currentStatus?.toLowerCase() === 'building' ? true : false;
+
     const shouldDisable = this.freezeAddNewData || !(this.permissionService.canWriteGlobal() || this.permissionService.canAdminGlobal() || this.permissionService.canDeleteForCurrentUser(null, null));
     this.formDisabled = shouldDisable;
     if (shouldDisable) {
