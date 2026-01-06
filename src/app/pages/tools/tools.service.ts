@@ -121,7 +121,7 @@ export class ToolsService {
                 errorMessage = error.error.message;
             }
         }
-        // this.toastr.error(errorMessage, 'Error');
+        this.toastr.error(errorMessage, 'Error');
         return throwError(() => new Error(errorMessage));
     }
 }
