@@ -226,6 +226,7 @@ export class EnvironmentVariablesComponent implements OnInit {
             this.deploymentsService.updateDeployment(this.deploymentId, req).subscribe({
               next: (res: any) => {
                 this.envList = this.mapEnvVariables(res.data.environment || {});
+                this.toaster.success('Environment variable deleted successfully');
               },
               error: (err) => {
                 this.toaster.error(err);
@@ -253,7 +254,7 @@ export class EnvironmentVariablesComponent implements OnInit {
     }
   }
   createEnvironmentVariable() {
-    if (this.updatedReq && this.updatedReq.data && Object.keys(this.updatedReq.data).length === 0) {
+    if (!this.updatedReq || (this.updatedReq.data && Object.keys(this.updatedReq.data).length === 0)) {
       return
     }
     const req = {
@@ -261,6 +262,7 @@ export class EnvironmentVariablesComponent implements OnInit {
     }
     this.deploymentsService.updateDeployment(this.deploymentId, req).subscribe({
       next: (res: any) => {
+        this.toaster.success('Environment variables updated successfully');
       },
       error: (err) => {
         this.toaster.error(err);
