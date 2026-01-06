@@ -35,7 +35,6 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
   @Input() deploymentdetails: any;
   active: any = [];
   history: any = [];
-  selectedHistoryId: string = '';
   steps: {
     title: string;
     status: 'success' | 'failed' | 'pending' | 'in-process' | 'paused';
@@ -43,7 +42,6 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
     message?: string;
   }[] = [];
 
-  showScrollToBottom = false;
   @ViewChild('logsModal') private logsModal!: ModalComponent;
 
   public logsModalConfig: any = {
@@ -73,7 +71,6 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
   selectedReleaseDetails: any;
   deploymentId: string = '';
   releaseData: any;
-  pollingSub: any;
 
   constructor(private deploymentService: DeploymentsService, private sharedService: SharedService,
     private toaster: ToastrService, private ac: ActivatedRoute) { }
@@ -84,20 +81,9 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
         const depolyementId = params['id'];
         this.deploymentId = depolyementId;
       });
-    // this.ac.queryParams.pipe(takeUntil(this.destroy$),
-    //   switchMap(params => {
-    //     const depolyementId = params['id'];
-    //     this.deploymentId = depolyementId;
-    //     return this.deploymentService.getDeploymentById(depolyementId);
-    //   })
-    // )
-    //   .subscribe((res: any) => {
-    //     this.deploymentdetails = res.data;
-    //     // this.getReleasesByDeploymentId();
-    //   });
+
     this.sharedService.releaseStatus$.subscribe(res => {
       if (res) {
-        // console.log('release status subscription in release comp', res);
         this.getReleasesByDeploymentId(res);
       }
     })

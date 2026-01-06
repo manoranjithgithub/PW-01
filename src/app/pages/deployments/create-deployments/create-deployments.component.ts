@@ -745,7 +745,7 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
       return new Intl.NumberFormat('en-US', {
         style: 'currency',
         currency: target,
-        minimumFractionDigits: 2,
+        minimumFractionDigits: 4,
       }).format(converted);
     } catch (e) {
       return String(converted);

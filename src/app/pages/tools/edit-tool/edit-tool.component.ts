@@ -166,7 +166,9 @@ export class EditToolComponent implements OnInit, OnDestroy {
 
   onSubmit(): void {
     const { name, ...formValues } = this.form.getRawValue();
+    console.log('Form Values:', formValues);
     if (this.form.valid) {
+      alert('Form submitted successfully!');
       const sizeFields = [
         'mysql.primary.persistance.size',
         'postgresql.primary.persistence.size',
@@ -249,7 +251,7 @@ export class EditToolComponent implements OnInit, OnDestroy {
       return new Intl.NumberFormat('en-US', {
         style: 'currency',
         currency: target,
-        minimumFractionDigits: 2
+        minimumFractionDigits: 4
       }).format(converted);
     } catch (e) {
       return String(converted);
