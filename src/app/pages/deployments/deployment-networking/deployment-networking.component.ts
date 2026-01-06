@@ -244,7 +244,7 @@ export class DeploymentNetworkingComponent implements OnInit {
     this.deploymentService.getAuthenticatedresponse(envId, this.deploymentId).subscribe((res: any) => {
       this.showAuthenticationData = res.data;
       this.endpointStatus = res.data?.status;
-      const customDomain = res.data.customDomain || '';
+      const customDomain = res.data?.customDomain || '';
       const authentication = this.showAuthenticationData?.authentication || null;
 
       if (customDomain) { this.isHostDisabled = true; }
