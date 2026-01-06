@@ -97,7 +97,7 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
     //   });
     this.sharedService.releaseStatus$.subscribe(res => {
       if (res) {
-        console.log('release status subscription in release comp', res);
+        // console.log('release status subscription in release comp', res);
         this.getReleasesByDeploymentId(res);
       }
     })

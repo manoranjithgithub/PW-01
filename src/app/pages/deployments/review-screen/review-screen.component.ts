@@ -29,7 +29,7 @@ export class ReviewScreenComponent implements OnInit {
     public permissionService: PermissionService) { }
 
   ngOnInit() {
-    console.log('ReviewScreenComponent')
+    // console.log('ReviewScreenComponent')
   }
 
   goBack() {
