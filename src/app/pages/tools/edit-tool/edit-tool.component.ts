@@ -150,7 +150,7 @@ export class EditToolComponent implements OnInit, OnDestroy {
       this.createForm(modifiedSchema);
 
       const keysToClean = [
-        'mysql.primary.persistance.size',
+        'mysql.primary.persistence.size',
         'postgresql.primary.persistence.size',
         'mongodb.persistence.size',
         'postgresql.readReplicas.persistence.size'
@@ -174,7 +174,7 @@ export class EditToolComponent implements OnInit, OnDestroy {
     const { name, ...formValues } = this.form.getRawValue();
     if (this.form.valid) {
       const sizeFields = [
-        'mysql.primary.persistance.size',
+        'mysql.primary.persistence.size',
         'postgresql.primary.persistence.size',
         'mongodb.persistence.size',
         'postgresql.readReplicas.persistence.size'

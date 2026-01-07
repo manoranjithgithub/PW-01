@@ -114,6 +114,19 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
     return `${meta.icon} ${meta.statusClass}`;
   }
 
+  getProviderName(gitUrl: string): string {
+    if (!gitUrl) return 'vcs';
+    
+    try {
+      const urlLower = gitUrl.toLowerCase();
+      if (urlLower.includes('github.com')) return 'GitHub';
+      if (urlLower.includes('gitlab.com')) return 'GitLab';
+      return 'vcs';
+    } catch {
+      return 'vcs';
+    }
+  }
+
   getLogData(type: string, resetPage: boolean = false) {
     if (resetPage) {
       this.currentPage = 1;

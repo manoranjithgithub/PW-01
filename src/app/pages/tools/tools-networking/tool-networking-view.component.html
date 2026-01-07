@@ -9,12 +9,12 @@
           <label class="form-label">Domain</label>
           <div class="input-group">
             <input type="text" class="form-control custom-values"
-              [value]="data.publicHost ? ('https://' + data.publicHost) : 'Host not available'" name="publicHost"
+              [value]="data.publicHost ? (data.publicHost) : 'Host not available'" name="publicHost"
               readonly>
-              <button class="btn btn-outline-secondary" type="button" title="Copy domain" (click)="data.publicHost ? copy('https://' + data.publicHost) : null" [disabled]="!data.publicHost">
+              <button class="btn btn-outline-secondary" type="button" title="Copy domain" (click)="data.publicHost ? copy(data.publicHost) : null" [disabled]="!data.publicHost">
                 <i class="bi bi-clipboard"></i>
               </button>
-              <button class="btn" title="Open domain" (click)="data.publicHost ? open('https://' + data.publicHost) : null" [disabled]="!data.publicHost"> <i class="bi bi-box-arrow-up-right"></i></button>
+              <!-- <button class="btn" title="Open domain" (click)="data.publicHost ? open(data.publicHost) : null" [disabled]="!data.publicHost"> <i class="bi bi-box-arrow-up-right"></i></button> -->
               <button *ngIf="!data.publicHost && allowGenerate" class="btn btn-primary ms-2" (click)="requestGenerate()">Generate host</button>
           </div>
         </div>
@@ -27,15 +27,15 @@
           <div class="w-50 my-3">
             <div class="input-group">
               <input type="text" class="form-control" placeholder="Enter a host name" [disabled]="true"
-                [value]="data.privateHost ? ('http://' + data.privateHost) : ('http://' + data.name)">
+                [value]="data.privateHost ? (data.privateHost) : (data.name)">
 
               <button class="btn btn-outline-secondary" type="button" title="Copy domain"
-                (click)="copy(data.privateHost ? ('http://' + data.privateHost) : ('http://' + data.name))">
+                (click)="copy(data.privateHost ? (data.privateHost) : (data.name))">
                 <i class="bi bi-clipboard"></i>
               </button>
-              <button class="btn btn-outline-secondary" title="Open domain"
+              <!-- <button class="btn btn-outline-secondary" title="Open domain"
                 (click)="open(data.privateHost ? ('http://' + data.privateHost) : ('http://' + data.name))"> <i
-                  class="bi bi-box-arrow-up-right"></i></button>
+                  class="bi bi-box-arrow-up-right"></i></button> -->
             </div>
           </div>
         </div>
