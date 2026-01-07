@@ -604,4 +604,12 @@ export class ProjectPreferenceComponent implements OnInit, OnDestroy {
       }
     }
   }
+  cancelGeneralEdit(){
+    this.isGeneralEditMode = false;
+    this.generalSettingForm.patchValue({
+      projectName: this.projectDetails.name,
+      description: this.projectDetails.description,
+    });
+    
+  }
 }

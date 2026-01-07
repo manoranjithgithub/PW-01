@@ -100,6 +100,7 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
 
   getReleasesByDeploymentId(res: any): void {
     this.releaseData = res[0];
+    console.log('res in deployment releases', res);
     [this.active, ...this.history] = res || [];
     this.releaseData = this.active;
     this.updateSteps(this.active);
