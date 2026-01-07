@@ -100,6 +100,7 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
 
   getReleasesByDeploymentId(res: any): void {
     this.releaseData = res[0];
+    console.log('res in deployment releases', res);
     [this.active, ...this.history] = res || [];
     this.releaseData = this.active;
     this.updateSteps(this.active);
@@ -111,6 +112,19 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
   getClassList(status: string): string {
     const meta = this.sharedService.getStatusMeta(status);
     return `${meta.icon} ${meta.statusClass}`;
+  }
+
+  getProviderName(gitUrl: string): string {
+    if (!gitUrl) return 'vcs';
+    
+    try {
+      const urlLower = gitUrl.toLowerCase();
+      if (urlLower.includes('github.com')) return 'GitHub';
+      if (urlLower.includes('gitlab.com')) return 'GitLab';
+      return 'vcs';
+    } catch {
+      return 'vcs';
+    }
   }
 
   getLogData(type: string, resetPage: boolean = false) {

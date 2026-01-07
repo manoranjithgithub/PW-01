@@ -18,7 +18,8 @@
                     <p class="field-value" style="word-break: break-all;">{{ projectNameControl.value }}</p>
                   </ng-container>
                   <ng-template #editName>
-                    <input formControlName="projectName" class="form-control" placeholder="Enter project name" (input)="checkProjectNameUnique()"/>
+                    <input formControlName="projectName" class="form-control" placeholder="Enter project name"
+                      (input)="checkProjectNameUnique()" />
                     <small class="text-danger mt-1"
                       *ngIf="generalSettingForm.get('projectName')?.hasError('maxlength')">
                       Maximum 40 characters allowed.
@@ -51,9 +52,12 @@
                   (click)="isGeneralEditMode = true">
                   <i class="bi bi-pencil-square edit-icon"></i> edit
                 </button>
-                <button *ngIf="isGeneralEditMode" class="btn btn-edit p-0"
-                  (click)="saveGeneralChanges()" [disabled]="generalSettingForm.invalid || !permissionService.canAdminGlobal()">
+                <button *ngIf="isGeneralEditMode" class="btn btn-edit p-0" (click)="saveGeneralChanges()"
+                  [disabled]="generalSettingForm.invalid || !permissionService.canAdminGlobal()">
                   Save
+                </button>
+                <button *ngIf="isGeneralEditMode" class="btn btn-edit p-0 mx-2" (click)="cancelGeneralEdit()">
+                  Cancel
                 </button>
               </div>
             </div>
@@ -97,13 +101,10 @@
                         <a class="custom-dropdown-item">View / Edit</a>
                       </li>
                       <li>
-                        <a
-                          class="custom-dropdown-item"
-                          role="button"
+                        <a class="custom-dropdown-item" role="button"
                           (click)="permissionService.canDeleteForCurrentUser(currentProjectId, env.id) && onActionSelected('delete', env)"
                           [class.disabled]="!permissionService.canDeleteForCurrentUser(currentProjectId, env.id)"
-                          [attr.aria-disabled]="!permissionService.canDeleteForCurrentUser(currentProjectId, env.id)"
-                        >
+                          [attr.aria-disabled]="!permissionService.canDeleteForCurrentUser(currentProjectId, env.id)">
                           Delete
                         </a>
                       </li>
@@ -148,8 +149,7 @@
                 </div>
 
                 <ng-container *ngIf="integration.status === 'connected'; else connectBtn">
-                  <button class="btn btn-outline-danger btn-sm"
-                    (click)="diconnectProfile(integration.name)"
+                  <button class="btn btn-outline-danger btn-sm" (click)="diconnectProfile(integration.name)"
                     [disabled]="!(permissionService.canAdminGlobal() || permissionService.canAdminGlobal() || permissionService.canWriteForCurrentUser(currentProjectId, '*'))"
                     [attr.aria-disabled]="!(permissionService.canAdminGlobal() || permissionService.canWriteForCurrentUser(currentProjectId, '*'))"
                     [attr.title]="!(permissionService.canAdminGlobal() || permissionService.canWriteForCurrentUser(currentProjectId, '*')) ? 'You are not authorized to perform this action.' : null">
@@ -158,8 +158,7 @@
                 </ng-container>
 
                 <ng-template #connectBtn>
-                  <button class="btn btn-outline-success btn-sm"
-                    (click)="getProfile(integration.provider)"
+                  <button class="btn btn-outline-success btn-sm" (click)="getProfile(integration.provider)"
                     [disabled]="!(permissionService.canAdminGlobal() || permissionService.canWriteForCurrentUser(currentProjectId, '*'))"
                     [attr.aria-disabled]="!(permissionService.canAdminGlobal() || permissionService.canWriteForCurrentUser(currentProjectId, '*'))"
                     [attr.title]="!(permissionService.canAdminGlobal() || permissionService.canWriteForCurrentUser(currentProjectId, '*')) ? 'You are not authorized to perform this action.' : null">

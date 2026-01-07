@@ -52,6 +52,7 @@ export class ViewEnvironmentComponent implements OnInit, OnDestroy {
   resourceQuotaForm !: FormGroup;
 
   isGeneralEditMode = false;
+  isResourceEditMode = false;
   showAddUserForm = false;
   activeEnv: any = null;
 
@@ -232,21 +233,45 @@ export class ViewEnvironmentComponent implements OnInit, OnDestroy {
       pvcStorageMaxUserLimit: this.resourceQuotaForm.value.pvcStorageMaxUserLimit
     };
     this.project.updateEnvironment(reqBody).subscribe((res: any) => {
-      if (res.success) {
-        this.toaster.success('Updated Successfully');
+      if (res.status.toLowerCase() === 'success') {
+        this.toaster.success(res.message);
       } else {
         this.toaster.success(res.message);
         this.layoutActionService.setExtraTitle(res.data.name);
       }
     });
     this.isGeneralEditMode = false;
+  }
 
+  saveResourceChanges() {
+    const reqBody = {
+      name: this.envName,
+      id: this.envId,
+      projectId: this.projectId,
+      cpuMaxUserLimit: this.resourceQuotaForm.value.cpuMaxUserLimit,
+      memoryMaxUserLimit: this.resourceQuotaForm.value.memoryMaxUserLimit,
+      ephemeralStorageMaxUserLimit: this.resourceQuotaForm.value.ephemeralStorageMaxUserLimit,
+      pvcStorageMaxUserLimit: this.resourceQuotaForm.value.pvcStorageMaxUserLimit
+    };
+    this.project.updateEnvironment(reqBody).subscribe((res: any) => {
+      if (res.status.toLowerCase() === 'success') {
+        this.toaster.success('Resource limits updated successfully');
+      } else {
+        this.toaster.error(res.message);
+      }
+    });
+    this.isResourceEditMode = false;
+    this.resourceQuotaForm.disable();
   }
 
   toggleGeneralEditMode() {
     this.isGeneralEditMode = !this.isGeneralEditMode;
+  }
 
-    if (this.isGeneralEditMode) {
+  toggleResourceEditMode() {
+    this.isResourceEditMode = !this.isResourceEditMode;
+
+    if (this.isResourceEditMode) {
       this.resourceQuotaForm.enable();
     } else {
       this.resourceQuotaForm.disable();
@@ -349,5 +374,23 @@ export class ViewEnvironmentComponent implements OnInit, OnDestroy {
     this.destroy$.next();
     this.destroy$.complete();
     this.layoutActionService.clearExtraTitle();
+  }
+  cancelGeneralEdit(){
+    this.isGeneralEditMode = false;
+    this.environmentForm.patchValue({
+      name: this.envName,
+      region: this.region,
+    });
+  }
+
+  cancelResourceEdit(){
+    this.isResourceEditMode = false;
+    this.resourceQuotaForm.disable();
+    // Reset form to original values
+    this.project.getEnvironmentById(this.projectId, this.envId).subscribe((res: any) => {
+      if (res.status === 'Success') {
+        this.resourceQuotaForm.patchValue(res.data);
+      }
+    });
   }
 }

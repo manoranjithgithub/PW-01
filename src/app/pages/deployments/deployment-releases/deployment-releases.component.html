@@ -18,7 +18,7 @@
                   }}</div>
 
                 <p class="mb-0 status-des">{{deploymentdetails?.name}} {{active?.updated_at | date}}</p>
-                <p class="status-subtitle">Last updated via {{active?.type === 'VCS' ? active?.provider : 'zip/tar'}}
+                <p class="status-subtitle">Last updated via {{active.sourceCode?.type?.toLowerCase() === 'vcs' ? getProviderName(active.sourceCode?.gitUrl) : 'zip/tar'}}
                 </p>
               </div>
 
