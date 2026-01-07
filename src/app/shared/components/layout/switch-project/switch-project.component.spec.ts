@@ -107,9 +107,9 @@ describe('SwitchProjectComponent', () => {
   }));
 
   it('should determine if environment is selected', () => {
-    component.selectedEnvironmentObj = { name: 'Env1' };
-    expect(component.isSelectedEnv({ name: 'Env1' })).toBeTrue();
-    expect(component.isSelectedEnv({ name: 'Env2' })).toBeFalse();
+    component.selectedEnvironmentObj = { id: 'env1', name: 'Env1' };
+    expect(component.isSelectedEnv({ id: 'env1', name: 'Env1' })).toBeTrue();
+    expect(component.isSelectedEnv({ id: 'env2', name: 'Env2' })).toBeFalse();
   });
   it('should return null when value is null', () => {
     const result = (component as any).safeParse(null);

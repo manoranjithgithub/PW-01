@@ -136,60 +136,49 @@ export class ToolsComponent implements OnInit, OnDestroy {
         'cursor': 'pointer'
       },
       cellRenderer: (params: any) => {
-        const url = `${params.value}`;
-        const escapedUrl = url.replace(/"/g, '&quot;').replace(/'/g, "\\'");
-        const id = `copy-${params.rowIndex}-${Math.random().toString(36).substring(2, 5)}`;
-        const isSecureLink = url.startsWith('https');
-        const isAccessible = params.data?.endpointStatus === 'accessible';
+        const privateUrl = params.data?.privateHost || '';
+        const publicUrl = params.data?.publicHost || '';
+        const parts: string[] = [];
 
-        let linkPart = '';
-
-        if (isSecureLink) {
-          if (isAccessible) {
-            linkPart = `<a href="${escapedUrl}" target="_blank" title="${escapedUrl}" style="text-decoration: underline; color: blue;">${escapedUrl}</a>`;
+        const makePart = (url: string, label: string) => {
+          if (!url) return '';
+          const escapedUrl = String(url).replace(/"/g, '&quot;').replace(/'/g, "\\'");
+          const id = `copy-${label}-${params.rowIndex}-${Math.random().toString(36).substring(2, 5)}`;
+          const isSecureLink = escapedUrl.startsWith('https');
+          const isAccessible = params.data?.endpointStatus === 'accessible';
+          let linkPart = '';
+          if (isSecureLink) {
+            if (isAccessible) {
+              linkPart = `<a href="${escapedUrl}" target="_blank" title="${escapedUrl}" style="text-decoration: underline; color: blue;">${escapedUrl}</a>`;
+            } else {
+              linkPart = `<span title="Endpoint not ready yet" style="color: gray; cursor: not-allowed;">${escapedUrl}</span>`;
+            }
           } else {
-            linkPart = `<span title="Endpoint not ready yet" style="color: gray; cursor: not-allowed;">${escapedUrl}</span>`;
+            linkPart = `<span class="link-text">${escapedUrl}</span>`;
           }
-        } else {
-          linkPart = `<span class="link-text">${escapedUrl}</span>`;
-        }
 
-        const copyTooltip = isSecureLink ? 'Copy URL' : 'Copy Host Name';
-        const clipboardIcon = (isAccessible || !isSecureLink)
+          const copyTooltip = isSecureLink ? 'Copy URL' : 'Copy Host Name';
+          const clipboardIcon = (isAccessible || !isSecureLink)
+            ? `<i class="bi bi-clipboard-check" style="cursor: pointer; position: relative;font-size: 18px; color: #F60;" 
+                onmouseenter="document.getElementById('${id}').innerText = 'Copy'" 
+                onclick="(function(){ navigator.clipboard.writeText('${escapedUrl}'); const tooltip = document.getElementById('${id}'); tooltip.innerText = 'Copied!'; tooltip.style.opacity = '1'; setTimeout(() => { tooltip.innerText = 'Copy'; tooltip.style.opacity = '0'; }, 1000); })()" 
+                title="${copyTooltip}"></i>`
+            : `<i class="bi bi-clipboard" style="cursor: not-allowed; opacity: 0.5;" title="Copy disabled"></i>`;
 
-          ? `<i class="bi bi-clipboard-check" style="cursor: pointer; position: relative;font-size: 20px; color: #F60;" 
-        onmouseenter="document.getElementById('${id}').innerText = 'Copy'" 
-        onclick="(function(){
-          navigator.clipboard.writeText('${escapedUrl}');
-          const tooltip = document.getElementById('${id}');
-          tooltip.innerText = 'Copied!';
-          tooltip.style.opacity = '1';
-          setTimeout(() => {
-            tooltip.innerText = 'Copy';
-            tooltip.style.opacity = '0';
-          }, 1000);
-        })()" 
-        title="${copyTooltip}"></i>`
-          : `<i class="bi bi-clipboard" style="cursor: not-allowed; opacity: 0.5;" title="Copy disabled"></i>`;
+          const displayLabel = label === 'private' ? 'Private' : 'Public';
+          return `
+            <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
+              ${clipboardIcon}
+              <span id="${id}" style="position: absolute; background: black; color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px; opacity: 0; transition: opacity 0.2s; pointer-events: none; z-index: 1000;">Copy</span>
+              <span style="font-weight:600; font-size:12px; color:#333; margin-right:4px;">${displayLabel}:</span>
+              ${linkPart}
+            </div>`;
+        };
 
-        return `
-    <span style="position: relative; display: flex; align-items: center; gap: 5px;">
-      ${clipboardIcon}
-      <span id="${id}" style="
-          position: absolute;
-          background: black;
-          color: white;
-          padding: 5px 10px;
-          border-radius: 5px;
-          font-size: 12px;
-          opacity: 0;
-          transition: opacity 0.2s;
-          pointer-events: none;
-          z-index: 1000;
-        ">Copy</span>
-      ${linkPart}
-    </span>
-  `;
+        if (privateUrl) parts.push(makePart(privateUrl, 'private'));
+        if (publicUrl) parts.push(makePart(publicUrl, 'public'));
+
+        return parts.join('');
       },
       sortable: true,
       filter: true,
@@ -267,7 +256,7 @@ export class ToolsComponent implements OnInit, OnDestroy {
       if (!this.isTabHidden) return;
 
       const idleTime = Date.now() - (this.tabHiddenAt ?? Date.now());
-      console.log(`Tab visible → idle ${idleTime} ms`);
+      // console.log(`Tab visible → idle ${idleTime} ms`);
 
       this.isTabHidden = false;
       this.tabHiddenAt = null;

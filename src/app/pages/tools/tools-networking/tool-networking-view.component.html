@@ -1,0 +1,54 @@
+<ng-container *ngIf="viewdata as vd">
+  <ng-container *ngIf="(vd.data || vd) as data">
+    <div class="my-2">
+      <div class="custom-heading">Public Networking</div>
+      <div class="custom-content">Access this service publicly through HTTP/TCP.</div>
+
+      <div class="my-4">
+        <div class="w-50 my-3">
+          <label class="form-label">Domain</label>
+          <div class="input-group">
+            <input type="text" class="form-control custom-values"
+              [value]="data.publicHost ? ('https://' + data.publicHost) : 'Host not available'" name="publicHost"
+              readonly>
+              <button class="btn btn-outline-secondary" type="button" title="Copy domain" (click)="data.publicHost ? copy('https://' + data.publicHost) : null" [disabled]="!data.publicHost">
+                <i class="bi bi-clipboard"></i>
+              </button>
+              <button class="btn" title="Open domain" (click)="data.publicHost ? open('https://' + data.publicHost) : null" [disabled]="!data.publicHost"> <i class="bi bi-box-arrow-up-right"></i></button>
+              <button *ngIf="!data.publicHost && allowGenerate" class="btn btn-primary ms-2" (click)="requestGenerate()">Generate host</button>
+          </div>
+        </div>
+      </div>
+
+      <fieldset class="my-2">
+        <div class="my-4">
+          <div class="custom-heading">Private Networking</div>
+          <div class="custom-content">Access this service from within the network.</div>
+          <div class="w-50 my-3">
+            <div class="input-group">
+              <input type="text" class="form-control" placeholder="Enter a host name" [disabled]="true"
+                [value]="data.privateHost ? ('http://' + data.privateHost) : ('http://' + data.name)">
+
+              <button class="btn btn-outline-secondary" type="button" title="Copy domain"
+                (click)="copy(data.privateHost ? ('http://' + data.privateHost) : ('http://' + data.name))">
+                <i class="bi bi-clipboard"></i>
+              </button>
+              <button class="btn btn-outline-secondary" title="Open domain"
+                (click)="open(data.privateHost ? ('http://' + data.privateHost) : ('http://' + data.name))"> <i
+                  class="bi bi-box-arrow-up-right"></i></button>
+            </div>
+          </div>
+        </div>
+      </fieldset>
+
+      <div *ngIf="data.publicPort || data.privatePort || data.port" class="my-3">
+        <div class="custom-heading">Ports</div>
+        <div class="custom-content">
+          <div *ngIf="data.publicPort">Public Port: {{ data.publicPort }}</div>
+          <div *ngIf="data.privatePort">Private Port: {{ data.privatePort }}</div>
+          <div *ngIf="data.port && !(data.publicPort || data.privatePort)">Port: {{ data.port }}</div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</ng-container>

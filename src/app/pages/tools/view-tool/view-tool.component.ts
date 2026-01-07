@@ -11,11 +11,12 @@ import { LoaderComponent } from '../../../shared/components/loader/loader.compon
 import { ToolsService } from '../tools.service';
 import { ModalComponent } from '../../../shared/components/model/model.component';
 import { SHARED_IMPORTS } from '../../../shared/shared-imports';
+import { ToolNetworkingViewComponent } from '../tools-networking/tool-networking-view.component';
 
 @Component({
   selector: 'app-view-tool',
   standalone: true,
-  imports: [ShadowOnScrollDirective, MarkdownModule, LoaderComponent, ModalComponent, SHARED_IMPORTS],
+  imports: [ShadowOnScrollDirective, MarkdownModule, LoaderComponent, ModalComponent,ToolNetworkingViewComponent ,SHARED_IMPORTS],
   templateUrl: './view-tool.component.html',
   styleUrl: './view-tool.component.scss',
   providers: [ToolsService]
@@ -36,6 +37,7 @@ export class ViewToolComponent implements OnInit, OnDestroy {
   hide: { [key: string]: boolean } = {};
   selectedResource: ResourceInfo = { cpuVcpu: '', memoryGb: '', instanceHourRate: 0, currency: '' };
   resources: any[] = [];
+  selectedTabIndex: number = 0;
 
 
   get hourlyInstanceRate(): number {
@@ -69,6 +71,10 @@ export class ViewToolComponent implements OnInit, OnDestroy {
     this.http.getInstanceTypes().subscribe((res: any) => {
       this.resources = res.data;
     })
+  }
+
+  onTabChange(index: number) {
+    this.selectedTabIndex = index;
   }
 
 

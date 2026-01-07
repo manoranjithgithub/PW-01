@@ -26,6 +26,9 @@
                 (click)="copyDomain('https://' + ingressDomain)">
                 <i class="bi bi-clipboard"></i>
               </button>
+              <button class="btn btn-outline-secondary" title="Open domain"
+                (click)="open('http://' + ingressDomain)"> <i
+                  class="bi bi-box-arrow-up-right"></i></button>
               <button class="btn" title="Delete endpoint" (click)="deleteEndpoint()" [disabled]="formDisabled"> <i
                   class="bi bi-x-circle-fill"></i></button>
             </div>
