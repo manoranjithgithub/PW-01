@@ -84,8 +84,16 @@ export class InvoiceComponent implements OnInit {
             link.className = 'pay-now-link';
             link.textContent = 'Pay now';
             link.style.textDecoration = 'underline';
-            link.style.color = '#F60';
-            link.style.cursor = 'pointer';
+            
+            const isDisabled = !params.data?.subtotal || params.data?.subtotal <= 0;
+            if (isDisabled) {
+              link.style.color = '#ccc';
+              link.style.cursor = 'not-allowed';
+              link.style.pointerEvents = 'none';
+            } else {
+              link.style.color = '#F60';
+              link.style.cursor = 'pointer';
+            }
 
             wrapper.appendChild(link);
           } else {
