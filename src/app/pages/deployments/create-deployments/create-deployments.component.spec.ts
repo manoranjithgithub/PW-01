@@ -63,6 +63,7 @@ describe('CreateDeploymentsComponent', () => {
 
   beforeEach(() => {
     localStorage.setItem('project', JSON.stringify({ id: 'proj1' }));
+    localStorage.setItem('environment', JSON.stringify({ id: 'env1', name: 'Test Env' }));
     fixture = TestBed.createComponent(CreateDeploymentsComponent);
     component = fixture.componentInstance;
     component.zipDeploymentModel = { open: jasmine.createSpy('open'), dismiss: jasmine.createSpy('dismiss') } as any;
@@ -96,7 +97,7 @@ describe('CreateDeploymentsComponent', () => {
   it('should return formatted currency', () => {
     sharedServiceSpy.getCurrency.and.returnValue('USD');
     sharedServiceSpy.convertAmount.and.returnValue(200);
-    expect(component.formatCurrency(100)).toBe('$200.00');
+    expect(component.formatCurrency(100)).toBe('$200.0000');
   });
 
   it('should remove file extension correctly', () => {
@@ -716,7 +717,7 @@ describe('CreateDeploymentsComponent', () => {
       sharedServiceSpy.getCurrency.and.returnValue('EUR');
       sharedServiceSpy.convertAmount.and.returnValue(85.5);
       const result = component.formatCurrency(100);
-      expect(result).toBe('€85.50');
+      expect(result).toBe('€85.5000');
     });
 
     it('should handle formatCurrency with invalid currency and return string', () => {

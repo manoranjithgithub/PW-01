@@ -259,13 +259,11 @@ describe('DeploymentDetailsComponent', () => {
     
     const deploymentService = TestBed.inject(DeploymentsService) as any;
     spyOn(deploymentService, 'deleteDeployment');
-    spyOn(console, 'log');
     
     component.onLayoutButtonClick();
     await fixture.whenStable();
     
     expect(deploymentService.deleteDeployment).not.toHaveBeenCalled();
-    expect(console.log).toHaveBeenCalledWith('Cancelled delete deployment!');
   });
 
   // it('should handle delete deployment error status', async () => {

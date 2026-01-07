@@ -35,7 +35,7 @@ export class DeploymentObservabilityComponent implements OnInit {
     { label: 'Custom', value: 'custom' }
   ];
   timeZones = [
-    { label: 'IST (Asia/Kolkata)', value: 'IST'},
+    { label: 'IST (Asia/Kolkata)', value: 'IST' },
     { label: 'UTC', value: 'UTC' },
     { label: 'PST (America/Los_Angeles)', value: 'PST' },
     { label: 'EST (America/New_York)', value: 'EST' },
@@ -113,9 +113,20 @@ export class DeploymentObservabilityComponent implements OnInit {
     return map[tz] || '+05:30';
   }
 
+  private getIanaTimeZone(tz: string): string {
+    const map: { [key: string]: string } = {
+      'IST': 'Asia/Kolkata',
+      'UTC': 'UTC',
+      'PST': 'America/Los_Angeles',
+      'EST': 'America/New_York',
+      'CET': 'Europe/Paris'
+    };
+    return map[tz] || 'Asia/Kolkata';
+  }
+
   private convertTimestampToTZ(timestamp: string, tzLabel: string): string {
     if (!timestamp) return '';
-    let date: Date;
+    let date: Date | null = null;
     const numeric = /^\d+$/.test(timestamp);
     if (numeric) {
       if (timestamp.length <= 10) {
@@ -130,19 +141,20 @@ export class DeploymentObservabilityComponent implements OnInit {
         date = new Date(iso);
       }
     }
-    if (isNaN(date.getTime())) return timestamp;
+    if (!date || isNaN(date.getTime())) return timestamp;
 
-    const offsetStr = this.getTimezoneOffset(tzLabel || 'IST');
-    const sign = offsetStr.startsWith('-') ? -1 : 1;
-    const parts = offsetStr.replace(/^[+-]/, '').split(':');
-    const offsetMinutes = sign * (parseInt(parts[0], 10) * 60 + (parseInt(parts[1] || '0', 10)));
-
-    const targetMs = date.getTime() + offsetMinutes * 60_000;
-    const d = new Date(targetMs);
-
-    const pad = (n: number) => n < 10 ? '0' + n : n;
-    const formatted = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())} ${tzLabel}`;
-    return formatted;
+    const iana = this.getIanaTimeZone(tzLabel || 'IST');
+    try {
+      const opts: any = { timeZone: iana, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+      const parts = new Intl.DateTimeFormat('en-US', opts).formatToParts(date);
+      const map: any = {};
+      parts.forEach((p: any) => map[p.type] = p.value);
+      const formatted = `${map.year}-${map.month}-${map.day} ${map.hour}:${map.minute}:${map.second} ${tzLabel}`;
+      return formatted;
+    } catch (e) {
+      // fallback to original timestamp on error
+      return timestamp;
+    }
   }
 
   // ngAfterViewChecked() {

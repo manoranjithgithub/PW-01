@@ -29,6 +29,9 @@ export class ToolsComponent implements OnInit, OnDestroy {
   isShowToolDetails: boolean = false;
   sseSub: Subscription | null = null;
 
+  private tabHiddenAt: number | null = null;
+  private isTabHidden = false;
+  private lastEnvId: string | null = null;
 
   constructor(private http: ToolsService,
     private router: Router, private sharedService: SharedService, private modalService: NgbModal,
@@ -37,6 +40,7 @@ export class ToolsComponent implements OnInit, OnDestroy {
     const storedValue = localStorage.getItem('environment');
     if (storedValue && storedValue !== "undefined") {
       this.envId = JSON.parse(storedValue).id;
+      this.lastEnvId = this.envId;
     }
   }
 
@@ -61,6 +65,7 @@ export class ToolsComponent implements OnInit, OnDestroy {
       const envObj = JSON.parse(savedEnv);
       const envId = envObj.id;
       this.envId = envId;
+      this.lastEnvId = this.envId;
 
       if (this.sseSub) {
         this.sseSub.unsubscribe();
@@ -84,6 +89,7 @@ export class ToolsComponent implements OnInit, OnDestroy {
     // this.getToolsIntervel = setInterval(() => {
     //   this.getAvailableTools(JSON.parse(localStorage.getItem('environment') || '{}').id);
     // }, 30000);
+    document.addEventListener('visibilitychange', this.handleVisibilityChange);
   }
 
   columnDefs: ColDef[] = [
@@ -97,7 +103,7 @@ export class ToolsComponent implements OnInit, OnDestroy {
         this.gotoAction(event.data)
     },
     {
-      headerName: 'Name', field: 'name', sortable: true, filter: true, flex: 1,maxWidth:250,
+      headerName: 'Name', field: 'name', sortable: true, filter: true, flex: 1, maxWidth: 250,
       cellStyle: { cursor: 'pointer', color: '#181d1f' },
       onCellClicked: (event: CellClickedEvent) =>
         this.gotoAction(event.data)
@@ -107,7 +113,7 @@ export class ToolsComponent implements OnInit, OnDestroy {
       field: 'status',
       sortable: true,
       filter: true,
-      width:150,
+      width: 150,
       // flex: 1,
       cellRenderer: (params: any) => {
         const status = params.value;
@@ -130,60 +136,49 @@ export class ToolsComponent implements OnInit, OnDestroy {
         'cursor': 'pointer'
       },
       cellRenderer: (params: any) => {
-        const url = `${params.value}`;
-        const escapedUrl = url.replace(/"/g, '&quot;').replace(/'/g, "\\'");
-        const id = `copy-${params.rowIndex}-${Math.random().toString(36).substring(2, 5)}`;
-        const isSecureLink = url.startsWith('https');
-        const isAccessible = params.data?.endpointStatus === 'accessible';
+        const privateUrl = params.data?.privateHost || '';
+        const publicUrl = params.data?.publicHost || '';
+        const parts: string[] = [];
 
-        let linkPart = '';
-
-        if (isSecureLink) {
-          if (isAccessible) {
-            linkPart = `<a href="${escapedUrl}" target="_blank" title="${escapedUrl}" style="text-decoration: underline; color: blue;">${escapedUrl}</a>`;
+        const makePart = (url: string, label: string) => {
+          if (!url) return '';
+          const escapedUrl = String(url).replace(/"/g, '&quot;').replace(/'/g, "\\'");
+          const id = `copy-${label}-${params.rowIndex}-${Math.random().toString(36).substring(2, 5)}`;
+          const isSecureLink = escapedUrl.startsWith('https');
+          const isAccessible = params.data?.endpointStatus === 'accessible';
+          let linkPart = '';
+          if (isSecureLink) {
+            if (isAccessible) {
+              linkPart = `<a href="${escapedUrl}" target="_blank" title="${escapedUrl}" style="text-decoration: underline; color: blue;">${escapedUrl}</a>`;
+            } else {
+              linkPart = `<span title="Endpoint not ready yet" style="color: gray; cursor: not-allowed;">${escapedUrl}</span>`;
+            }
           } else {
-            linkPart = `<span title="Endpoint not ready yet" style="color: gray; cursor: not-allowed;">${escapedUrl}</span>`;
+            linkPart = `<span class="link-text">${escapedUrl}</span>`;
           }
-        } else {
-          linkPart = `<span class="link-text">${escapedUrl}</span>`;
-        }
 
-        const copyTooltip = isSecureLink ? 'Copy URL' : 'Copy Host Name';
-        const clipboardIcon = (isAccessible || !isSecureLink)
+          const copyTooltip = isSecureLink ? 'Copy URL' : 'Copy Host Name';
+          const clipboardIcon = (isAccessible || !isSecureLink)
+            ? `<i class="bi bi-clipboard-check" style="cursor: pointer; position: relative;font-size: 18px; color: #F60;" 
+                onmouseenter="document.getElementById('${id}').innerText = 'Copy'" 
+                onclick="(function(){ navigator.clipboard.writeText('${escapedUrl}'); const tooltip = document.getElementById('${id}'); tooltip.innerText = 'Copied!'; tooltip.style.opacity = '1'; setTimeout(() => { tooltip.innerText = 'Copy'; tooltip.style.opacity = '0'; }, 1000); })()" 
+                title="${copyTooltip}"></i>`
+            : `<i class="bi bi-clipboard" style="cursor: not-allowed; opacity: 0.5;" title="Copy disabled"></i>`;
 
-          ? `<i class="bi bi-clipboard-check" style="cursor: pointer; position: relative;font-size: 20px; color: #F60;" 
-        onmouseenter="document.getElementById('${id}').innerText = 'Copy'" 
-        onclick="(function(){
-          navigator.clipboard.writeText('${escapedUrl}');
-          const tooltip = document.getElementById('${id}');
-          tooltip.innerText = 'Copied!';
-          tooltip.style.opacity = '1';
-          setTimeout(() => {
-            tooltip.innerText = 'Copy';
-            tooltip.style.opacity = '0';
-          }, 1000);
-        })()" 
-        title="${copyTooltip}"></i>`
-          : `<i class="bi bi-clipboard" style="cursor: not-allowed; opacity: 0.5;" title="Copy disabled"></i>`;
+          const displayLabel = label === 'private' ? 'Private' : 'Public';
+          return `
+            <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
+              ${clipboardIcon}
+              <span id="${id}" style="position: absolute; background: black; color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px; opacity: 0; transition: opacity 0.2s; pointer-events: none; z-index: 1000;">Copy</span>
+              <span style="font-weight:600; font-size:12px; color:#333; margin-right:4px;">${displayLabel}:</span>
+              ${linkPart}
+            </div>`;
+        };
 
-        return `
-    <span style="position: relative; display: flex; align-items: center; gap: 5px;">
-      ${clipboardIcon}
-      <span id="${id}" style="
-          position: absolute;
-          background: black;
-          color: white;
-          padding: 5px 10px;
-          border-radius: 5px;
-          font-size: 12px;
-          opacity: 0;
-          transition: opacity 0.2s;
-          pointer-events: none;
-          z-index: 1000;
-        ">Copy</span>
-      ${linkPart}
-    </span>
-  `;
+        if (privateUrl) parts.push(makePart(privateUrl, 'private'));
+        if (publicUrl) parts.push(makePart(publicUrl, 'public'));
+
+        return parts.join('');
       },
       sortable: true,
       filter: true,
@@ -194,13 +189,13 @@ export class ToolsComponent implements OnInit, OnDestroy {
       field: 'publicPort',
       sortable: true,
       filter: true,
-      width:100,
+      width: 100,
       // flex: 1,
     },
     {
       headerName: "Actions",
       field: "actions",
-      width:100,
+      width: 100,
       cellStyle: { cursor: 'pointer' },
       cellRenderer: ActionCellRendererComponent,
       cellRendererParams: {
@@ -218,36 +213,59 @@ export class ToolsComponent implements OnInit, OnDestroy {
     this.router.navigate(['/tools/view-tool'], { queryParams: { selectedView: this.toolName } })
   }
 
-  getAvailableTools(value: any): any {
-    if (!value) return;
+  getAvailableTools(envId: string): void {
+    if (!envId || this.sseSub) return;
 
-    // ensure any previous SSE subscription is cleaned up before creating a new one
-    if (this.sseSub) {
-      try { this.sseSub.unsubscribe(); } catch {
-        // ignore any errors during unsubscribe
-       }
-      this.sseSub = null;
-    }
-
+    this.lastEnvId = envId;
     this.sharedService.show();
-    this.sseSub = this.http.liveToolsData(value).subscribe((res: any) => {
-      try {
-        if (res) {
-          const newTools = Object.values(res.tools)?.map((tool: any) => ({
+
+    this.sseSub = this.http.liveToolsData(envId).subscribe(
+      (res: any) => {
+        if (res?.tools) {
+          const newTools = Object.values(res.tools).map((tool: any) => ({
             ...tool,
             icon: this.getToolIcon(tool.schemaId)
           }));
+
           this.updateTools(newTools);
-          localStorage.setItem('availableTools', JSON.stringify(newTools?.map((tool: any) => tool.name)));
+          localStorage.setItem(
+            'availableTools',
+            JSON.stringify(newTools.map((tool: any) => tool.name))
+          );
         }
-      } finally {
+        this.sharedService.hide();
+      },
+      () => {
+        this.rowData = [];
         this.sharedService.hide();
       }
-    }, error => {
-      this.rowData = [];
-      this.sharedService.hide();
-    });
+    );
   }
+  handleVisibilityChange = () => {
+    if (document.hidden) {
+      if (this.isTabHidden) return;
+
+      console.log('Tab hidden → stopping tools SSE');
+      this.isTabHidden = true;
+      this.tabHiddenAt = Date.now();
+
+      this.sseSub?.unsubscribe();
+      this.sseSub = null;
+
+    } else {
+      if (!this.isTabHidden) return;
+
+      const idleTime = Date.now() - (this.tabHiddenAt ?? Date.now());
+      // console.log(`Tab visible → idle ${idleTime} ms`);
+
+      this.isTabHidden = false;
+      this.tabHiddenAt = null;
+
+      if (this.lastEnvId) {
+        this.getAvailableTools(this.lastEnvId);
+      }
+    }
+  };
 
   openHost(params: any) {
     window.open(`https://${params?.host}`, '_blank');
@@ -323,5 +341,6 @@ export class ToolsComponent implements OnInit, OnDestroy {
     clearInterval(this.getToolsIntervel)
     this.subscription?.unsubscribe();
     this.sseSub?.unsubscribe();
+    document.removeEventListener('visibilitychange', this.handleVisibilityChange);
   }
 }
