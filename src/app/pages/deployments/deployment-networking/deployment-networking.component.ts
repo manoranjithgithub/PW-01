@@ -318,5 +318,9 @@ export class DeploymentNetworkingComponent implements OnInit {
       document.body.removeChild(textarea);
     }
   }
-
+  open(url?: string) {
+    if (!url) return;
+    const href = url.startsWith('http') ? url : `https://${url}`;
+    window.open(href, '_blank');
+  }
 }

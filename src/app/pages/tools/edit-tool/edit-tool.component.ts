@@ -11,11 +11,12 @@ import { LoaderComponent } from '../../../shared/components/loader/loader.compon
 import { ToolsService } from '../tools.service';
 import { ModalComponent } from '../../../shared/components/model/model.component';
 import { SHARED_IMPORTS } from '../../../shared/shared-imports';
+import { ToolNetworkingViewComponent } from '../tools-networking/tool-networking-view.component';
 
 @Component({
   selector: 'app-edit-tool',
   standalone: true,
-  imports: [ShadowOnScrollDirective, MarkdownModule, LoaderComponent, ModalComponent, SHARED_IMPORTS],
+  imports: [ShadowOnScrollDirective, MarkdownModule, LoaderComponent, ModalComponent, SHARED_IMPORTS, ToolNetworkingViewComponent],
   templateUrl: './edit-tool.component.html',
   styleUrl: './edit-tool.component.scss',
   providers: [ToolsService]
@@ -34,6 +35,7 @@ export class EditToolComponent implements OnInit, OnDestroy {
   hide: { [key: string]: boolean } = {};
   selectedResource: ResourceInfo = { cpuVcpu: '', memoryGb: '', instanceHourRate: 0 };
   resources: any[] = [];
+  selectedTabIndex: number = 0;
 
   get hourlyInstanceRate(): number {
     return Number(this.selectedResource?.instanceHourRate ?? 0);
@@ -74,9 +76,13 @@ export class EditToolComponent implements OnInit, OnDestroy {
     })
   }
 
+  onTabChange(index: number) {
+    this.selectedTabIndex = index;
+  }
+
   private lowercaseValidator(control: FormControl) {
     const value = control.value;
-    return /^[a-z-]+$/.test(value) ? null : { lowercase: true };
+    return /^(?!\\d)(?!.*[-]{2})(?!.*[A-Z])[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value) ? null : { lowercase: true };
   }
 
   createForm(fields: { [key: string]: FormField }): void {
@@ -166,9 +172,7 @@ export class EditToolComponent implements OnInit, OnDestroy {
 
   onSubmit(): void {
     const { name, ...formValues } = this.form.getRawValue();
-    console.log('Form Values:', formValues);
     if (this.form.valid) {
-      alert('Form submitted successfully!');
       const sizeFields = [
         'mysql.primary.persistance.size',
         'postgresql.primary.persistence.size',
@@ -199,6 +203,30 @@ export class EditToolComponent implements OnInit, OnDestroy {
     } else {
       this.submitted = true;
       return
+    }
+  }
+
+  onGenerateHost() {
+    const { name, ...formValues } = this.form.getRawValue();
+    try {
+      const req = {
+        name: name,
+        chart: this.toolDetails.data.chart,
+        version: this.toolDetails.data.version,
+        repository: this.toolDetails.data.repository,
+        values: formValues,
+        environmentId: this.env,
+        exposePublicly: true
+      }
+      if (this.paramsEdit) {
+        this.http.updateTools(req).subscribe((res: any) => {
+          if (res.status) {
+            this.toastr.success('Host generated successfully!');
+          }
+        })
+      }
+    } catch (e) {
+      console.error(e);
     }
   }
 
@@ -243,7 +271,7 @@ export class EditToolComponent implements OnInit, OnDestroy {
       this.selectedResource = this.resources.find(resource => resource.instanceType === value);
     }
   }
-  formatCurrency(value: any | undefined, fromCurrency?: string): string {
+  'formatCurrency'(value: any | undefined, fromCurrency?: string): string {
     if (value == null || isNaN(Number(value))) return '';
     const target = this.sharedService.getCurrency() || 'USD';
     const converted = this.sharedService.convertAmount(Number(value), fromCurrency, target);

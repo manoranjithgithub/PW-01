@@ -1,0 +1,38 @@
+:host { display: block; }
+
+.custom-heading {
+	color: #001225;
+	font-family: 'plusFont', sans-serif;
+	font-size: 16px;
+	font-style: normal;
+	font-weight: 600;
+	line-height: normal;
+}
+
+.custom-content {
+	color: #001225;
+	margin: 10px 0;
+	font-size: 14px;
+	font-style: normal;
+	font-weight: 400;
+	line-height: normal;
+}
+
+.custom-values {
+	font-size: 15px;
+}
+
+.input-group .btn {
+	&:focus { box-shadow: none; }
+}
+
+.custom-domain-section {
+	background: #F8F8F8;
+	margin: 10px auto;
+}
+
+.fieldset-section { min-height: 120px; }
+
+.info-icon { font-size: 18px; color: #EA7131; cursor: pointer; vertical-align: middle; margin-left: 10px; }
+
+.wide-popover.popover { max-width: 500px; }

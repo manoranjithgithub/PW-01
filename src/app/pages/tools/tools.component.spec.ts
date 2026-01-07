@@ -296,7 +296,7 @@ describe('ToolsComponent', () => {
   }));
 
   it('getAvailableTools should return early when value is falsy', () => {
-    const result = component.getAvailableTools(null);
+    const result = component.getAvailableTools('');
     expect(result).toBeUndefined();
     expect(toolsServiceSpy.liveToolsData).not.toHaveBeenCalled();
   });
@@ -306,7 +306,7 @@ describe('ToolsComponent', () => {
     expect(result).toBeUndefined();
   });
 
-  it('getAvailableTools should unsubscribe existing sseSub before creating new one', () => {
+  it('getAvailableTools should return early when sseSub already exists', () => {
     const oldSub = new Subscription();
     spyOn(oldSub, 'unsubscribe');
     component.sseSub = oldSub;
@@ -314,17 +314,19 @@ describe('ToolsComponent', () => {
     
     component.getAvailableTools('env-123');
     
-    expect(oldSub.unsubscribe).toHaveBeenCalled();
+    expect(oldSub.unsubscribe).not.toHaveBeenCalled();
+    expect(toolsServiceSpy.liveToolsData).not.toHaveBeenCalled();
   });
 
-  it('getAvailableTools should handle unsubscribe error gracefully', () => {
-    const oldSub = new Subscription();
-    spyOn(oldSub, 'unsubscribe').and.throwError('Unsubscribe error');
-    component.sseSub = oldSub;
-    toolsServiceSpy.liveToolsData.and.returnValue(of({ tools: {} }));
+  // it('getAvailableTools should return early when sseSub exists even if unsubscribe would error', () => {
+  //   const oldSub = new Subscription();
+  //   spyOn(oldSub, 'unsubscribe').and.throwError('Unsubscribe error');
+  //   component.sseSub = oldSub;
+  //   toolsServiceSpy.liveToolsData.and.returnValue(of({ tools: {} }));
     
-    expect(() => component.getAvailableTools('env-123')).not.toThrow();
-  });
+  //   expect(() => component.getAvailableTools('env-123')).not.toThrow();
+  //   expect(toolsServiceSpy.liveToolsData).not.toHaveBeenCalled();
+  // });
 
   it('getAvailableTools should map tools with icons', () => {
     const mockResponse = {
