@@ -197,6 +197,9 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
       const depolyementId = params['id'];
       this.deploymentService.getDeploymentById(depolyementId).subscribe((res: any) => {
         this.deploymentdetails = res.data;
+        this.freezeAddNewData = res.data?.status.toLowerCase() === 'stopped' || this.currentStatus?.toLowerCase() === 'building' ? true : false;
+        const shouldDisable = this.freezeAddNewData || !(this.permissionService.canWriteGlobal() || this.permissionService.canAdminGlobal() || this.permissionService.canDeleteForCurrentUser(null, null));
+        this.formDisabled = shouldDisable;
         //this.networkSettingsForm.get('service')?.setValue(this.deploymentdetails?.name)
         this.getDeploymentById();
       })

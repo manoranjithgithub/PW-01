@@ -37,6 +37,7 @@ export class DeploymentNetworkingComponent implements OnInit {
   showCustomDnsHost: boolean = false;
   deploymentdetails: any;
   isPatchedValue: boolean = true;
+  submitted: boolean = false;
 
   @ViewChild('confirmationModel') private confirmationModel!: ModalComponent;
 
@@ -67,7 +68,7 @@ export class DeploymentNetworkingComponent implements OnInit {
     });
 
     // freeze flag from input status
-    this.freezeAddNewData = this.currentStatus && this.currentStatus === 'Building' ? true : false;
+    this.freezeAddNewData = this.currentStatus && this.currentStatus?.toLowerCase() === 'building' ? true : false;
 
     // compute and apply form disabled state based on freeze flag and permissions
     const shouldDisable = this.freezeAddNewData || !(this.permissionService.canWriteGlobal() || this.permissionService.canAdminGlobal() || this.permissionService.canDeleteForCurrentUser(null, null));
@@ -83,8 +84,12 @@ export class DeploymentNetworkingComponent implements OnInit {
       this.deploymentId = depolyementId;
       this.deploymentService.getDeploymentById(depolyementId).subscribe((res: any) => {
         this.deploymentdetails = res.data;
-        this.networkSettingsForm.get('service')?.setValue(this.deploymentdetails?.name)
+        this.networkSettingsForm.get('service')?.setValue(this.deploymentdetails?.name);
+        this.networkSettingsForm.get('customDnsHost')?.setValue(this.deploymentdetails?.network?.customDomain);
         this.getDeploymentById();
+        this.freezeAddNewData = res.data?.status.toLowerCase() === 'stopped' || this.currentStatus?.toLowerCase() === 'building' ? true : false;
+        const shouldDisable = this.freezeAddNewData || !(this.permissionService.canWriteGlobal() || this.permissionService.canAdminGlobal() || this.permissionService.canDeleteForCurrentUser(null, null));
+        this.formDisabled = shouldDisable;
       })
     });
 
@@ -197,6 +202,7 @@ export class DeploymentNetworkingComponent implements OnInit {
     delete formValue.host;
     if (!formValue.customDns) delete formValue.customDnsHost;
     if (this.networkSettingsForm.invalid) {
+      this.submitted = true;
       return;
     }
 
@@ -204,9 +210,11 @@ export class DeploymentNetworkingComponent implements OnInit {
       if (res && res.status.toLowerCase() === 'success') {
         if (res.data?.customDomain) {
           this.showCustomDnsHost = true;
+          this.customDnsHost.setValue(res.data.customDomain);
         } else {
           this.ingressDomain = res.data?.domain;
         }
+        this.submitted = false;
         this.toaster.success(res.message);
         this.fetchCustomDnsHost();
       } else {
@@ -253,14 +261,14 @@ export class DeploymentNetworkingComponent implements OnInit {
       const authentication = this.showAuthenticationData?.authentication || null;
 
       if (customDomain) { this.isHostDisabled = true; }
-      this.customDnsHost.setValue(customDomain);
+      // this.customDnsHost.setValue(customDomain);
 
       if (authentication) {
         this.networkSettingsForm.get('showAuthentication')?.setValue(true);
       }
 
       const authGroup = this.networkSettingsForm.get('authentication') as FormGroup;
-      if (authGroup && authentication.username && authentication.password) {
+      if (authGroup && authentication?.username && authentication?.password) {
         authGroup.patchValue({
           username: authentication.username,
           password: authentication.password
@@ -307,7 +315,7 @@ export class DeploymentNetworkingComponent implements OnInit {
   }
   isInvalid(controlName: string): boolean {
     const control = this.networkSettingsForm.get(controlName);
-    return control ? control.invalid && (control.dirty || control.touched) : false;
+    return control ? control.invalid && (control.dirty || control.touched || this.submitted) : false;
   }
 
 

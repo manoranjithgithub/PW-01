@@ -100,6 +100,7 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
       field: 'actions',
       width: 102,
       cellRenderer: ActionCellRendererComponent,
+      valueGetter: (params) => {return params.data; },
       cellStyle: { cursor: 'pointer' },
       cellRendererParams: {
         additionalParam: 'deployment'
