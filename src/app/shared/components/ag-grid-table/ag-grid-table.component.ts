@@ -18,6 +18,7 @@ import { Router } from '@angular/router';
 export class AgGridTableComponent implements OnInit {
   @Input() columnDefs: ColDef[] = [];
   @Input() rowData: any[] = [];
+  @Input() getRowId?: (params: any) => any;
   tableTheme = 'ag-theme-alpine';
   tableData = [];
   paginationPageSize = 20;
@@ -27,6 +28,7 @@ export class AgGridTableComponent implements OnInit {
   @Output() goToNewDeployModel = new EventEmitter<boolean>();
   @Output() rowClicked = new EventEmitter<boolean>();
   @Output() addUuserEvent = new EventEmitter<boolean>();
+  @Output() gridReady = new EventEmitter<GridReadyEvent>();
   tableName: string = '';
   tablebtn: string = '';
   overlayMessage: string = '';
@@ -35,6 +37,7 @@ export class AgGridTableComponent implements OnInit {
 
   onGridReady(params: GridReadyEvent) {
     this.gridApi = params.api;
+    this.gridReady.emit(params);
     this.overlayMessage = `You do not have  ${this.tableName}${this.tableName === 'invoice-list' ? '.' : `, please click 'New ${this.tablebtn}' to create one.`}`;
 
   }
@@ -54,6 +57,7 @@ export class AgGridTableComponent implements OnInit {
     enableBrowserTooltips: true,
     suppressLoadingOverlay: true,
     onGridReady: (params) => this.onGridReady(params),
+    getRowId: (params) => this.getRowId ? this.getRowId(params) : undefined,
   };
 
 

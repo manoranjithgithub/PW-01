@@ -6,12 +6,15 @@ import { ShadowOnScrollDirective } from '@coreui/angular';
 import { ToastrService } from 'ngx-toastr';
 import { SharedService } from '../../../shared/services/shared.service';
 import { MarkdownModule } from 'ngx-markdown';
-import { Subscription } from 'rxjs';
+import { Subject, Subscription, takeUntil } from 'rxjs';
 import { LoaderComponent } from '../../../shared/components/loader/loader.component';
 import { ToolsService } from '../tools.service';
 import { ModalComponent } from '../../../shared/components/model/model.component';
 import { SHARED_IMPORTS } from '../../../shared/shared-imports';
 import { ToolNetworkingViewComponent } from '../tools-networking/tool-networking-view.component';
+import { LayoutActionService } from '../../../shared/services/layout-action.service';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { ConfirmationModalComponent } from '../../../shared/components/modal/confirmation-modal/confirmation-modal.component';
 
 @Component({
   selector: 'app-edit-tool',
@@ -44,10 +47,13 @@ export class EditToolComponent implements OnInit, OnDestroy {
   get monthlyInstanceRate(): number {
     return this.hourlyInstanceRate * 730;
   }
+  private destroy$ = new Subject<void>();
 
   constructor(private http: ToolsService, private ac: ActivatedRoute,
     private route: Router, private fb: FormBuilder, private toastr: ToastrService,
-    private sharedService: SharedService
+    private sharedService: SharedService,
+    private modalService: NgbModal,
+    private layoutActionService: LayoutActionService,
   ) {
     this.form = this.fb.group({})
     const storedValue = localStorage.getItem('environment');
@@ -57,6 +63,10 @@ export class EditToolComponent implements OnInit, OnDestroy {
     this.ac.queryParams.subscribe(params => {
       this.toolName = params['id'];
       this.paramsEdit = params['selectedEdit'];
+      const status = params['status'] || '';
+      this.layoutActionService.setExtraTitle(
+        `${this.toolName} (${status})`
+      );
     })
   }
 
@@ -73,7 +83,12 @@ export class EditToolComponent implements OnInit, OnDestroy {
         return pa - pb;
       });
       this.resources = items;
-    })
+    });
+    this.layoutActionService.actionClick$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.onLayoutButtonClick();
+      });
   }
 
   onTabChange(index: number) {
@@ -222,6 +237,7 @@ export class EditToolComponent implements OnInit, OnDestroy {
         this.http.updateTools(req).subscribe((res: any) => {
           if (res.status) {
             this.toastr.success('Host generated successfully!');
+            this.route.navigate(['/tools']);
           }
         })
       }
@@ -236,6 +252,9 @@ export class EditToolComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.subscription?.unsubscribe();
+    this.destroy$.next();
+    this.destroy$.complete();
+    this.layoutActionService.clearExtraTitle();
   }
 
   addNameViewField(schema: FormField): any {
@@ -284,5 +303,23 @@ export class EditToolComponent implements OnInit, OnDestroy {
     } catch (e) {
       return String(converted);
     }
+  }
+  onLayoutButtonClick() {
+    const modalRef = this.modalService.open(ConfirmationModalComponent);
+    modalRef.componentInstance.selectedItem = 'Tool';
+    modalRef.componentInstance.message = 'Are you sure you want to proceed?';
+
+    modalRef.result.then(result => {
+      if (result) {
+        this.http
+          .deleteTools(this.env, this.paramsEdit)
+          .subscribe((res: any) => {
+            if (res.status) {
+              this.toastr.success('Deleted successfully!');
+              this.route.navigate(['/tools']);
+            }
+          })
+      }
+    });
   }
 }

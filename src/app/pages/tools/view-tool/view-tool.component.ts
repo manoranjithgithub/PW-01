@@ -6,17 +6,21 @@ import { ShadowOnScrollDirective } from '@coreui/angular';
 import { ToastrService } from 'ngx-toastr';
 import { SharedService } from '../../../shared/services/shared.service';
 import { MarkdownModule } from 'ngx-markdown';
-import { Subscription } from 'rxjs';
+import { Subject, Subscription, takeUntil } from 'rxjs';
 import { LoaderComponent } from '../../../shared/components/loader/loader.component';
 import { ToolsService } from '../tools.service';
 import { ModalComponent } from '../../../shared/components/model/model.component';
 import { SHARED_IMPORTS } from '../../../shared/shared-imports';
 import { ToolNetworkingViewComponent } from '../tools-networking/tool-networking-view.component';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { ConfirmationModalComponent } from '../../../shared/components/modal/confirmation-modal/confirmation-modal.component';
+import { LayoutActionService } from '../../../shared/services/layout-action.service';
+import { PermissionService } from '../../../shared/services/permission.service';
 
 @Component({
   selector: 'app-view-tool',
   standalone: true,
-  imports: [ShadowOnScrollDirective, MarkdownModule, LoaderComponent, ModalComponent,ToolNetworkingViewComponent ,SHARED_IMPORTS],
+  imports: [ShadowOnScrollDirective, MarkdownModule, LoaderComponent, ModalComponent, ToolNetworkingViewComponent, SHARED_IMPORTS],
   templateUrl: './view-tool.component.html',
   styleUrl: './view-tool.component.scss',
   providers: [ToolsService]
@@ -47,10 +51,16 @@ export class ViewToolComponent implements OnInit, OnDestroy {
   get monthlyInstanceRate(): number {
     return this.hourlyInstanceRate * 730;
   }
-  
+  private destroy$ = new Subject<void>();
+  toolStatus: string = '';
+
   constructor(private http: ToolsService, private ac: ActivatedRoute,
     private route: Router, private fb: FormBuilder,
-    private sharedService: SharedService
+    private sharedService: SharedService,
+    private modalService: NgbModal,
+    private toastr: ToastrService,
+    private layoutActionService: LayoutActionService,
+    public permissionService: PermissionService
   ) {
     this.form = this.fb.group({})
     const storedValue = localStorage.getItem('environment');
@@ -60,6 +70,10 @@ export class ViewToolComponent implements OnInit, OnDestroy {
     this.ac.queryParams.subscribe(params => {
       this.selectedView = params['selectedView'] ?? params['id'];
       this.toolName = params['id'] ?? this.selectedView ?? this.toolName;
+      this.toolStatus = params['status'];
+      this.layoutActionService.setExtraTitle(
+        `${this.toolName} (${this.toolStatus})`
+      );
     })
   }
   ngOnInit(): void {
@@ -70,7 +84,13 @@ export class ViewToolComponent implements OnInit, OnDestroy {
 
     this.http.getInstanceTypes().subscribe((res: any) => {
       this.resources = res.data;
-    })
+    });
+
+    this.layoutActionService.actionClick$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.onLayoutButtonClick();
+      });
   }
 
   onTabChange(index: number) {
@@ -101,15 +121,12 @@ export class ViewToolComponent implements OnInit, OnDestroy {
         }
       }
     }
-    // Use FormGroup constructor with the prepared controls so their disabled state is preserved
     this.form = new FormGroup(group);
-    // Safety: ensure controls are disabled explicitly
     try {
       this.form.disable({ emitEvent: false });
     } catch (e) {
       Object.keys(this.form.controls).forEach(k => this.form.controls[k].disable());
     }
-    // Ensure each control is disabled explicitly (some test environments may not reflect disabled state immediately)
     Object.keys(this.form.controls).forEach(k => {
       try {
         this.form.controls[k].disable({ emitEvent: false });
@@ -141,6 +158,9 @@ export class ViewToolComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.subscription?.unsubscribe();
+    this.destroy$.next();
+    this.destroy$.complete();
+    this.layoutActionService.clearExtraTitle();
   }
 
   showTools(): void {
@@ -190,5 +210,26 @@ export class ViewToolComponent implements OnInit, OnDestroy {
     } catch (e) {
       return String(converted);
     }
+  }
+  onLayoutButtonClick() {
+    const modalRef = this.modalService.open(ConfirmationModalComponent);
+    modalRef.componentInstance.selectedItem = 'Tool';
+    modalRef.componentInstance.message = 'Are you sure you want to proceed?';
+
+    modalRef.result.then(result => {
+      if (result) {
+        this.http
+          .deleteTools(this.env, this.selectedView)
+          .subscribe((res: any) => {
+            if (res.status.toLowerCase() === 'success') {
+              this.toastr.success('Tool deleted successfully');
+              this.route.navigate(['/tools']);
+            }
+          });
+      }
+    });
+  }
+  editTool() {
+    this.route.navigate(['/tools/edit-tool'], { queryParams: { selectedEdit: this.toolName, status: this.toolStatus } });
   }
 }
