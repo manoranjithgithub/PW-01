@@ -65,7 +65,7 @@ export class EditToolComponent implements OnInit, OnDestroy {
       this.paramsEdit = params['selectedEdit'];
       const status = params['status'] || '';
       this.layoutActionService.setExtraTitle(
-        `${this.toolName} (${status})`
+        `${this.paramsEdit} (${status})`
       );
     })
   }
