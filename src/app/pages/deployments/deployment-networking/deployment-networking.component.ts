@@ -107,13 +107,16 @@ export class DeploymentNetworkingComponent implements OnInit {
       this.isPatchedValue = false
     });
     this.customDnsHost?.valueChanges.subscribe(value => {
-      this.networkSettingsForm.get('customDnsHost')?.setValue(value)
+      this.networkSettingsForm.get('customDnsHost')?.setValue(value);
+      if (!this.isPatchedValue) {
+        this.networkSettingsForm.markAsDirty();
+      }
     })
 
     this.deploymentService.getAuthenticatedresponse(envId, this.deploymentId).subscribe((res: any) => {
       this.showAuthenticationData = res.data;
       this.endpointStatus = res.data?.status;
-      const customDomain = res.data.customDomain || '';
+      const customDomain = res.data?.customDomain || '';
       const authentication = this.showAuthenticationData?.authentication || null;
 
       if (customDomain) { this.isHostDisabled = true; }
@@ -130,7 +133,8 @@ export class DeploymentNetworkingComponent implements OnInit {
           password: '********'
         }, { emitEvent: false });
       }
-      this.isPatchedValue = false
+      this.isPatchedValue = false;
+      this.networkSettingsForm.markAsPristine();
     });
 
     const authGroup = this.networkSettingsForm.get('authentication') as FormGroup;
@@ -159,8 +163,9 @@ export class DeploymentNetworkingComponent implements OnInit {
         this.ingressDomain = res.data?.network?.appIngressDomain;
         this.showCustomDnsHost = !!res.data.network?.customDomain;
 
-        this.networkSettingsForm.get('customDns')?.setValue(!!res.data.network?.customDomain)
-        this.customDnsHost?.setValue(res.data.network?.customDomain);
+        this.networkSettingsForm.get('customDns')?.setValue(!!res.data.network?.customDomain, { emitEvent: false });
+        this.customDnsHost?.setValue(res.data.network?.customDomain, { emitEvent: false });
+        this.networkSettingsForm.markAsPristine();
       }
     });
   }

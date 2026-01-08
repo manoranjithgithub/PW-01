@@ -318,15 +318,7 @@ export class ToolsComponent implements OnInit, OnDestroy {
   }
 
   updateTools(newTools: any[]) {
-    if (!this.gridApi) {
-      // Grid not ready yet, just set the data
-      this.rowData = newTools;
-      return;
-    }
-
-    const itemsToUpdate: any[] = [];
-    const itemsToAdd: any[] = [];
-
+    let changed = false;
     newTools.forEach(newTool => {
       const index = this.rowData.findIndex((t: any) => t._id === newTool._id);
 
@@ -338,24 +330,21 @@ export class ToolsComponent implements OnInit, OnDestroy {
         );
 
         if (hasChanges) {
-          itemsToUpdate.push(newTool);
-          this.rowData[index] = newTool;
+          this.rowData[index] = { ...existing, ...newTool };
+          changed = true;
         }
 
       } else {
-        itemsToAdd.push(newTool);
         this.rowData.push(newTool);
+        changed = true;
       }
     });
-
-    // Use AG Grid transactions for smooth updates
-    if (itemsToUpdate.length > 0 || itemsToAdd.length > 0) {
-      this.gridApi.applyTransaction({
-        update: itemsToUpdate,
-        add: itemsToAdd
-      });
+    if (changed) {
+      this.rowData = [...this.rowData];
     }
   }
+
+
 
   ngOnDestroy(): void {
     clearInterval(this.getToolsIntervel)
