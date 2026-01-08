@@ -7,6 +7,7 @@ import { iconSubset } from './core/icons/icon-subset';
 import { HttpClientModule } from '@angular/common/http';
 import { AuthService } from './core/services/auth.service';
 import { SharedService } from './shared/services/shared.service';
+import { GlobalCleanupService } from './core/services/global-cleanup.service';
 
 @Component({
   selector: 'app-root',
@@ -21,7 +22,8 @@ export class AppComponent implements OnInit {
     private router: Router,
     private titleService: Title,
     private iconSetService: IconSetService,
-    private loader:SharedService
+    private loader:SharedService,
+    private cleanup: GlobalCleanupService
   ) {
     this.titleService.setTitle(this.title);
     this.iconSetService.icons = { ...iconSubset };
@@ -31,6 +33,9 @@ export class AppComponent implements OnInit {
     this.router.events.subscribe((evt) => {
       if (!(evt instanceof NavigationEnd)) {
         return;
+      }
+      if (event instanceof NavigationStart) {
+        this.cleanup.globalCleanup();
       }
     });
   }

@@ -14,7 +14,7 @@ import { SHARED_IMPORTS } from '../../shared/shared-imports';
   imports: [SHARED_IMPORTS],
   templateUrl: './deployments.component.html',
   styleUrls: ['./deployments.component.scss'],
-  providers: [DeploymentsService]
+  // providers: [DeploymentsService]
 })
 export class DeploymentsComponent implements OnInit, OnDestroy {
 
@@ -25,6 +25,9 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
   private tabHiddenAt: number | null = null;
   private isTabHidden = false;
   private lastEnv: any = null;
+  private gridApi: any;
+
+  getRowId = (params: any) => params.data.id;
 
   columnDefs: ColDef[] = [
     {
@@ -54,10 +57,10 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
         return isNaN(date.getTime())
           ? ''
           : date.toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: '2-digit',
-              day: '2-digit'
-            });
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+          });
       },
       onCellClicked: (event: CellClickedEvent) => this.gotoAction(event.data)
     },
@@ -80,14 +83,24 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
       headerName: 'Last Release Status',
       field: 'releaseStatus',
       flex: 1,
-      minWidth: 200,
+      minWidth: 160,
       cellRenderer: (params: any) => this.statusCellRenderer(params)
+    },
+    {
+      headerName: 'Instance Type',
+      field: 'application.instanceType',
+      flex: 1,
+      minWidth: 150,
+      sortable: true,
+      filter: false,
+      onCellClicked: (event: CellClickedEvent) => this.gotoAction(event.data)
     },
     {
       headerName: '',
       field: 'actions',
       width: 102,
       cellRenderer: ActionCellRendererComponent,
+      valueGetter: (params) => {return params.data; },
       cellStyle: { cursor: 'pointer' },
       cellRendererParams: {
         additionalParam: 'deployment'
@@ -99,7 +112,11 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
     private deploymentsService: DeploymentsService,
     private sharedService: SharedService,
     private router: Router
-  ) {}
+  ) { }
+
+  onGridReady(params: any): void {
+    this.gridApi = params.api;
+  }
 
   ngOnInit(): void {
     const storedEnvironment = localStorage.getItem('environment');
@@ -130,6 +147,7 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
       .subscribe(
         (res: any) => {
           if (res?.deployment) {
+            // console.log('SSE deployment data', res.deployment);
             this.updateTableData(res.deployment);
             localStorage.setItem(
               'availableDeployments',
@@ -152,8 +170,6 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
   handleVisibilityChange = () => {
     if (document.hidden) {
       if (this.isTabHidden) return;
-
-      console.log('Tab hidden → SSE stopped');
       this.isTabHidden = true;
       this.tabHiddenAt = Date.now();
 
@@ -164,7 +180,6 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
       if (!this.isTabHidden) return;
 
       const idleTime = Date.now() - (this.tabHiddenAt ?? Date.now());
-      // console.log(`Tab visible → idle ${idleTime} ms`);
 
       this.isTabHidden = false;
       this.tabHiddenAt = null;
@@ -176,7 +191,13 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
   };
 
   updateTableData(newData: any[]) {
-    let changed = false;
+    if (!this.gridApi) {
+      this.tableData = newData;
+      return;
+    }
+
+    const itemsToUpdate: any[] = [];
+    const itemsToAdd: any[] = [];
 
     newData.forEach(newItem => {
       const index = this.tableData.findIndex(item => item.id === newItem.id);
@@ -188,17 +209,20 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
         );
 
         if (hasChanges) {
-          this.tableData[index] = { ...existing, ...newItem };
-          changed = true;
+          itemsToUpdate.push(newItem);
+          this.tableData[index] = newItem;
         }
       } else {
+        itemsToAdd.push(newItem);
         this.tableData.push(newItem);
-        changed = true;
       }
     });
 
-    if (changed) {
-      this.tableData = [...this.tableData];
+    if (itemsToUpdate.length > 0 || itemsToAdd.length > 0) {
+      this.gridApi.applyTransaction({
+        update: itemsToUpdate,
+        add: itemsToAdd
+      });
     }
   }
 
@@ -224,6 +248,13 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.subscription?.unsubscribe();
     this.sseSub?.unsubscribe();
+    if (this.gridApi) {
+      this.gridApi.destroy();
+      this.gridApi = null;
+    }
+
+    this.tableData = [];
+    this.lastEnv = null;
     document.removeEventListener('visibilitychange', this.handleVisibilityChange);
   }
 }

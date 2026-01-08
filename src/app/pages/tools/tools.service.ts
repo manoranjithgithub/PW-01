@@ -106,7 +106,7 @@ export class ToolsService {
     liveToolsData(envId: string) {
         const token = localStorage.getItem("accessToken")!;
         const projectId = JSON.parse(localStorage.getItem('project') || '{}').id;
-        const url = `${this.deploymentUrl}/live/tools/stream?environmentId=${envId}&interval=15&projectId=${projectId}`;
+        const url = `${this.deploymentUrl}/live/tools/stream?environmentId=${envId}&interval=5&projectId=${projectId}`;
         return this.createSSE(url, token, this.zone);
     }
 

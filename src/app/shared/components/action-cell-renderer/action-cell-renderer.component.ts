@@ -72,6 +72,7 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
   paginatedLogs: { timestamp: string; message: string }[] = [];
   activeTabIndex: number = 0;
   isDropdownOpen = false;
+  isPauseResumeDisabled = false;
 
   @ViewChild('scaleDeploymentsModel') private scaleDeploymentsModel!: ModalComponent;
   @ViewChild('logsModal') private logsModal!: ModalComponent;
@@ -95,7 +96,7 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
     hideDismissButton: () => true,
     hideCloseButton: () => false
   };
-  
+
   projects: any[] = [];
   allExpanded = false;
   currentProjectId: string | undefined = undefined;
@@ -132,6 +133,10 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
     const isVer = params?.data?.isVerfied;
     this.isUserVerified = (isVer === true || isVer === 'true');
     return true;
+  }
+
+  get pauseResumeLabel(): string {
+    return this.params?.data?.status?.toLowerCase() === 'stopped' ? 'Resume' : 'Pause';
   }
 
   onOptionSelected(action: string): void {
@@ -179,7 +184,7 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
       this.route.navigate(['/edit-deployment'], { queryParams: { id: data.name } });
     }
     if (this.additionalParam === "tools") {
-      this.route.navigate(['/tools/edit-tool'], { queryParams: { selectedEdit: data.name } });
+      this.route.navigate(['/tools/edit-tool'], { queryParams: { selectedEdit: data.name, status: data.status } });
     }
   }
 
@@ -198,12 +203,9 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
     }
   }
   pause(data: any, type: string) {
+    if (this.isPauseResumeDisabled) return;
+
     if (this.additionalParam === "deployment" || this.additionalParam === "llm") {
-      // const req = {
-      //   application: {
-      //     replicas: type === 'Pause' ? '0' : '1'
-      //   },
-      // };
       const req = {
         action: type === 'Pause' ? 'pause' : 'resume',
       };
@@ -213,13 +215,18 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
       modalRef.result.then(
         (result) => {
           if (result) {
+            this.isPauseResumeDisabled = true;
             this.http.updateDeployment(data?.id, req).subscribe((res: any) => {
               if (res.status.toLowerCase() === "success") {
                 this.toaster.success('Successfully initiated');
               }
+              setTimeout(() => {
+                this.isPauseResumeDisabled = false;
+              }, 10000);
             },
               err => {
                 this.toaster.error(`Error in ${type} deployment`);
+                this.isPauseResumeDisabled = false;
               });
           }
         });
@@ -293,10 +300,10 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
 
   view(data: any) {
     if (this.additionalParam === "tools") {
-      this.route.navigate(['/tools/view-tool'], { queryParams: { selectedView: data.name } });
+      this.route.navigate(['/tools/view-tool'], { queryParams: { selectedView: data.name, status: data.status } });
     }
     if (this.additionalParam === 'user-list') {
-      alert('user-list')
+      // alert('user-list')
     }
   }
   showDeploymentView(deploymentDetails: any) {
@@ -471,9 +478,9 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
     this.lastButtonRef = null;
   }
   viewPolicies() {
-     this.params.onActionClick('view', this.params?.data);
+    this.params.onActionClick('view', this.params?.data);
   }
   editPolicies() {
-     this.params.onActionClick('edit', this.params?.data);
+    this.params.onActionClick('edit', this.params?.data);
   }
 }

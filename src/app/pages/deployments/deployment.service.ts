@@ -201,7 +201,7 @@ export class DeploymentsService {
   liveDeploymentData(envId: string) {
     const token = localStorage.getItem("accessToken")!;
     const projectId = JSON.parse(localStorage.getItem('project') || '{}').id;
-    const url = `${this.deploymentManagement}/live/deployment/stream?environmentId=${envId}&projectId=${projectId}&interval=15`;
+    const url = `${this.deploymentManagement}/live/deployment/stream?environmentId=${envId}&projectId=${projectId}&interval=5`;
     return createSSEObservable(url, token, this.zone);
   }
 
