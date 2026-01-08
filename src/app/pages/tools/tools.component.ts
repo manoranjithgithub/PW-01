@@ -32,6 +32,9 @@ export class ToolsComponent implements OnInit, OnDestroy {
   private tabHiddenAt: number | null = null;
   private isTabHidden = false;
   private lastEnvId: string | null = null;
+  private gridApi: any;
+
+  getRowId = (params: any) => params.data._id;
 
   constructor(private http: ToolsService,
     private router: Router, private sharedService: SharedService, private modalService: NgbModal,
@@ -53,6 +56,10 @@ export class ToolsComponent implements OnInit, OnDestroy {
     } catch {
       return p || undefined;
     }
+  }
+
+  onGridReady(params: any): void {
+    this.gridApi = params.api;
   }
 
   ngOnInit(): void {
@@ -210,7 +217,7 @@ export class ToolsComponent implements OnInit, OnDestroy {
 
   gotoAction(params: any) {
     this.toolName = params.name;
-    this.router.navigate(['/tools/view-tool'], { queryParams: { selectedView: this.toolName } })
+    this.router.navigate(['/tools/view-tool'], { queryParams: { selectedView: this.toolName, status: params.status } })
   }
 
   getAvailableTools(envId: string): void {
@@ -311,7 +318,15 @@ export class ToolsComponent implements OnInit, OnDestroy {
   }
 
   updateTools(newTools: any[]) {
-    let changed = false;
+    if (!this.gridApi) {
+      // Grid not ready yet, just set the data
+      this.rowData = newTools;
+      return;
+    }
+
+    const itemsToUpdate: any[] = [];
+    const itemsToAdd: any[] = [];
+
     newTools.forEach(newTool => {
       const index = this.rowData.findIndex((t: any) => t._id === newTool._id);
 
@@ -323,17 +338,22 @@ export class ToolsComponent implements OnInit, OnDestroy {
         );
 
         if (hasChanges) {
-          this.rowData[index] = { ...existing, ...newTool };
-          changed = true;
+          itemsToUpdate.push(newTool);
+          this.rowData[index] = newTool;
         }
 
       } else {
+        itemsToAdd.push(newTool);
         this.rowData.push(newTool);
-        changed = true;
       }
     });
-    if (changed) {
-      this.rowData = [...this.rowData];
+
+    // Use AG Grid transactions for smooth updates
+    if (itemsToUpdate.length > 0 || itemsToAdd.length > 0) {
+      this.gridApi.applyTransaction({
+        update: itemsToUpdate,
+        add: itemsToAdd
+      });
     }
   }
 

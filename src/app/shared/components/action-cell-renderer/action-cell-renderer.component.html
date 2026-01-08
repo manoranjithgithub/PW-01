@@ -14,14 +14,14 @@
         [attr.aria-disabled]="!permissionService.canWriteForCurrentUser(currentProjectId, envId)"
       >Edit</a>
     </li>
-    <li>
+    <!-- <li>
       <a class="custom-dropdown-item"
         role="button"
         (click)="permissionService.canDeleteForCurrentUser(currentProjectId, envId) && onOptionSelected('delete')"
         [class.disabled]="!permissionService.canDeleteForCurrentUser(currentProjectId, envId)"
         [attr.aria-disabled]="!permissionService.canDeleteForCurrentUser(currentProjectId, envId)"
       >Delete</a>
-    </li>
+    </li> -->
   </ul>
 </div>
 <div class="custom-dropdown d-inline-block" *ngIf="additionalParam === 'user-list'">
