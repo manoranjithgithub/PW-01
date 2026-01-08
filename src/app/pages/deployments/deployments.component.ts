@@ -169,8 +169,6 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
   handleVisibilityChange = () => {
     if (document.hidden) {
       if (this.isTabHidden) return;
-
-      // console.log('Tab hidden → SSE stopped');
       this.isTabHidden = true;
       this.tabHiddenAt = Date.now();
 
@@ -181,7 +179,6 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
       if (!this.isTabHidden) return;
 
       const idleTime = Date.now() - (this.tabHiddenAt ?? Date.now());
-      // console.log(`Tab visible → idle ${idleTime} ms`);
 
       this.isTabHidden = false;
       this.tabHiddenAt = null;

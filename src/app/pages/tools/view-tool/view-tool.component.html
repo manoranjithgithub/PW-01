@@ -1,9 +1,9 @@
 <div class="container">
-    <div class="d-flex justify-content-end align-items-center mb-3" style="position: absolute;right:20px;">
+    <!-- <div class="d-flex justify-content-end align-items-center mb-3" style="position: absolute;right:20px;">
         <button class="btn button-format-solid px-4 btn-align me-2" (click)="editTool()" >
             <i class="bi bi-pencil"></i> Edit
         </button>
-    </div>
+    </div> -->
     <c-nav variant="underline-border">
         <c-nav-item>
             <a [cTabContent]="tabContent1" (click)="onTabChange(0)" [tabPaneIdx]="0" cNavLink class="px-4 py-2">
@@ -15,8 +15,13 @@
                 Networking
             </a>
         </c-nav-item>
+        <c-nav-item class="ms-auto">
+            <button class="btn button-format-solid px-4 btn-align" (click)="editTool()">
+                <i class="bi bi-pencil"></i> Edit
+            </button>
+        </c-nav-item>
     </c-nav>
-
+ 
     <c-tab-content #tabContent1="cTabContent" [activeTabPaneIdx]="selectedTabIndex" cRounded="bottom">
         <c-tab-pane class="p-3 preview" role="tabpanel">
             <form [formGroup]="form">

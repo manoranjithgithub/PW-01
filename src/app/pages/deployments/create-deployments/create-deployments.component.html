@@ -156,7 +156,7 @@
                   Invalid Port Number Entered: must be between 1 and 65535.
                 </div>
               </div>
-              <div class="col-md-4">
+              <!-- <div class="col-md-4">
                 <label class="form-label">Build Command
                   <span [cTooltip]="commandValidation" cTooltipPlacement="top" class="text-warning cursor mx-1">
                     <i class="bi bi-exclamation-circle"></i>
@@ -166,8 +166,8 @@
                 <div *ngIf="isError('buildCommand','maxlength')" class="text-danger my-1">
                   Maximun 60 characters only.
                 </div>
-              </div>
-              <div class="col-md-4">
+              </div> -->
+              <!-- <div class="col-md-4">
                 <label class="form-label">Start Command
                   <span [cTooltip]="commandValidation" cTooltipPlacement="top" class="text-warning cursor mx-1">
                     <i class="bi bi-exclamation-circle"></i>
@@ -177,15 +177,15 @@
                 <div *ngIf="isError('startCommand','maxlength')" class="text-danger my-1">
                   Maximun 60 characters only.
                 </div>
-              </div>
-              <div class="col-md-4">
+              </div> -->
+              <!-- <div class="col-md-4">
                 <label class="form-label">Install Command
                   <span [cTooltip]="commandValidation" cTooltipPlacement="top" class="text-warning cursor mx-1">
                     <i class="bi bi-exclamation-circle"></i>
                   </span>
                 </label>
                 <input type="text" class="form-control" formControlName="installCommand" placeholder="">
-              </div>
+              </div> -->
               <div class="col-md-4">
                 <label class="form-label">Dockerfile Path
                   <span [cTooltip]="'Please provide the path to the Dockerfile that needs to be deployed.'"

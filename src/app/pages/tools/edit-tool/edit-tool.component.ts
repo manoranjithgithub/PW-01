@@ -30,7 +30,6 @@ export class EditToolComponent implements OnInit, OnDestroy {
   submitted: boolean = false;
   env: string = '';
   toolDetails: any;
-  toolName: string = '';
   private subscription: Subscription = new Subscription();
   viewdata: any;
   toolViewName: any;
@@ -61,7 +60,6 @@ export class EditToolComponent implements OnInit, OnDestroy {
       this.env = JSON.parse(storedValue).id;
     }
     this.ac.queryParams.subscribe(params => {
-      this.toolName = params['id'];
       this.paramsEdit = params['selectedEdit'];
       const status = params['status'] || '';
       this.layoutActionService.setExtraTitle(
@@ -199,13 +197,16 @@ export class EditToolComponent implements OnInit, OnDestroy {
           formValues[key] = formValues[key] + 'Gi';
         }
       });
-      const req = {
+      const req: any = {
         name: name,
         chart: this.toolDetails.data.chart,
         version: this.toolDetails.data.version,
         repository: this.toolDetails.data.repository,
         values: formValues,
-        environmentId: this.env
+        environmentId: this.env,
+      }
+      if (this.toolDetails.data.publicHost) {
+        req['exposePublicly'] = true;
       }
       if (this.paramsEdit) {
         this.http.updateTools(req).subscribe((res: any) => {

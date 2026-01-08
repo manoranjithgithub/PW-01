@@ -562,6 +562,8 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
   canNavigateToStep(index: number): boolean {
     if (index <= this.currentStep) return true;
     if (this.currentStep === 0 && this.stepOneForm.invalid) return false;
+    if (this.currentStep === 3 && this.fileUploadForm.invalid) return false;
+    if (index === 4 && this.currentStep === 3 && this.fileUploadForm.invalid) return false;
     return true;
   }
 
@@ -579,6 +581,8 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
         return true;
       case 2:
         return true;
+      case 3:
+        return this.fileUploadForm.valid || (!this.fileUploadForm.get('fileInput')?.value && !this.fileUploadForm.get('filePath')?.value);
       default:
         return false;
     }
