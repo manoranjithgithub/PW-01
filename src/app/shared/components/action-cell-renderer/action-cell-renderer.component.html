@@ -55,9 +55,12 @@
       <a class="custom-dropdown-item" (click)="onOptionSelected('redeploy')">Redeploy</a>
     </li>
     <li>
-      <a class="custom-dropdown-item"
-        (click)="onOptionSelected(params?.data?.status.toLowerCase() === 'stopped' ? 'Resume' : 'Pause')">{{
-        params?.data?.status.toLowerCase() === 'stopped' ? 'Resume' : 'Pause'}}</a>
+      <a class="custom-dropdown-item" 
+         [class.disabled]="isPauseResumeDisabled"
+         [attr.aria-disabled]="isPauseResumeDisabled"
+         (click)="!isPauseResumeDisabled && onOptionSelected(pauseResumeLabel)">
+        {{ pauseResumeLabel }}
+      </a>
     </li>
   </ul>
 </div>

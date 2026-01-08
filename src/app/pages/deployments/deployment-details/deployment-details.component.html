@@ -43,54 +43,40 @@
   </c-nav>
   <c-tab-content #tabContent1="cTabContent" [activeTabPaneIdx]="selectedTabIndex" cRounded="bottom">
     <c-tab-pane class="p-3 preview" role="tabpanel" >
-      <app-deployment-releases  [currentStatus]="lastReleaseData[0]?.status" [deploymentdetails]="deploymentdetails"></app-deployment-releases>
+      <app-deployment-releases  [currentStatus]="lastReleaseData[0]?.status" [deploymentdetails]="deploymentdetails"
+      ></app-deployment-releases>
     </c-tab-pane>
 
     <c-tab-pane class="p-3 preview" role="tabpanel">
-      <ng-container *ngIf="selectedTabIndex === 1">
-        <app-environment-variables [canAddVariables]="true" [currentStatus]="lastReleaseData[0]?.status"></app-environment-variables>
-      </ng-container>
+      <app-environment-variables [canAddVariables]="true" [currentStatus]="lastReleaseData[0]?.status"></app-environment-variables>
     </c-tab-pane>
 
     <c-tab-pane class="p-3 preview" role="tabpanel">
-      <ng-container *ngIf="selectedTabIndex === 2">
-        <app-deployment-secrets [canAddVariables]="true" [currentStatus]="lastReleaseData[0]?.status"></app-deployment-secrets>
-      </ng-container>
+      <app-deployment-secrets [canAddVariables]="true" [currentStatus]="lastReleaseData[0]?.status"></app-deployment-secrets>
     </c-tab-pane>
     <c-tab-pane class="p-3 preview" role="tabpanel">
-      <ng-container *ngIf="selectedTabIndex === 3">
-        <app-deployment-config-maps [currentStatus]="lastReleaseData[0]?.status"></app-deployment-config-maps>
-      </ng-container>
+      <app-deployment-config-maps [currentStatus]="lastReleaseData[0]?.status"></app-deployment-config-maps>
     </c-tab-pane>
 
     <c-tab-pane class="p-3 preview" role="tabpanel">
-      <ng-container *ngIf="selectedTabIndex === 4">
-        <app-deployment-settings (closeModalEvent)="closeModalEvent.emit()" [currentStatus]="lastReleaseData[0]?.status"></app-deployment-settings>
-      </ng-container>
-
+      <app-deployment-settings (closeModalEvent)="closeModalEvent.emit()" [currentStatus]="lastReleaseData[0]?.status"></app-deployment-settings>
     </c-tab-pane>
     <c-tab-pane class="p-3 preview" role="tabpanel">
-      <ng-container *ngIf="selectedTabIndex === 5 && appName">
+      <ng-container *ngIf="appName">
         <app-deployment-observability (closeModalEvent)="closeModalEvent.emit()" [appName]="appName"></app-deployment-observability>
       </ng-container>
+    </c-tab-pane>
 
+    <c-tab-pane class="p-3 preview" role="tabpanel">
+      <app-deployment-metrics (closeModalEvent)="closeModalEvent.emit()"></app-deployment-metrics>
     </c-tab-pane>
     <c-tab-pane class="p-3 preview" role="tabpanel">
-      <ng-container *ngIf="selectedTabIndex === 6">
-        <app-deployment-metrics (closeModalEvent)="closeModalEvent.emit()"></app-deployment-metrics>
-      </ng-container>
-
-    </c-tab-pane>
-    <c-tab-pane class="p-3 preview" role="tabpanel">
-      <ng-container *ngIf="selectedTabIndex === 7">
-        <app-deployment-networking (closeModalEvent)="closeModalEvent.emit()" [currentStatus]="lastReleaseData[0]?.status"></app-deployment-networking>
-      </ng-container>
-
+      <app-deployment-networking (closeModalEvent)="closeModalEvent.emit()" [currentStatus]="lastReleaseData[0]?.status"></app-deployment-networking>
     </c-tab-pane>
   </c-tab-content>
   <div class="d-flex justify-content-between " *ngIf="selectedTabIndex > 0">
     <button class="btn button-format-outline  mt-3" (click)="goBack()"> <i class="bi bi-arrow-left"></i>
       Deployments</button>
-    <button class="btn button-format-solid mt-3" (click)="goToNextTab()" *ngIf="selectedTabIndex < 4" [disabled]="lastReleaseData[0]?.status === 'Building' " [attr.title]="(lastReleaseData[0]?.status === 'Building') ? 'You are not authorized to view that page.' : null">Submit</button>
+    <button class="btn button-format-solid mt-3" (click)="goToNextTab()" *ngIf="selectedTabIndex < 4" [disabled]="lastReleaseData[0]?.status === 'Building' " [attr.title]="(lastReleaseData[0]?.status === 'Building') ? 'You are not authorized to view that page.' : null">Save & Continue</button>
   </div>
 </div>

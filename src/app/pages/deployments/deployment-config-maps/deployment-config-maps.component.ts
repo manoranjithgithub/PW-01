@@ -48,6 +48,13 @@ export class DeploymentConfigMapsComponent implements OnInit {
       if (depolyementId) {
         this.deploymentsService.getDeploymentById(depolyementId).subscribe((res: any) => {
           this.deploymentdetails = res.data;
+          const freezeAddNewData = res.data?.status.toLowerCase() === 'stopped' || this.currentStatus.toLowerCase() === 'building' ? true : false;
+          const shouldDisable = freezeAddNewData || !(this.permissionService.canWriteGlobal() || this.permissionService.canAdminGlobal() || this.permissionService.canDeleteForCurrentUser(null, null));
+          if (shouldDisable) {
+            this.fileUploadForm.disable();
+          } else {
+            this.fileUploadForm.enable();
+          }
           this.fileUploadForm.get('filePath')?.setValue(this.deploymentdetails?.config?.path)
           this.fileUploadForm.get('fileName')?.setValue(this.deploymentdetails?.config?.name)
         })
