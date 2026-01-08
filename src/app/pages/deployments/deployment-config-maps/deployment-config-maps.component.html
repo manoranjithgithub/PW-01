@@ -16,8 +16,8 @@
           <ng-template cTemplateId="accordionBodyTemplate">
             <div class="accordion-body">
               <fieldset [disabled]="fileUploadForm.disabled">
-                <form [formGroup]="fileUploadForm" >
-                  <div class=" d-flex justify-content-between gap-2">
+                <form [formGroup]="fileUploadForm">
+                  <div class="d-flex justify-content-between gap-2">
                     <div class="my-2 w-100">
                       <label class="custom-label my-1"><b>File Path</b></label>
                       <input type="text" formControlName="filePath" name="filePath" class="form-control" />
@@ -27,15 +27,11 @@
                       <input type="text" formControlName="fileName" name="filePath" class="form-control" />
                     </div>
                   </div>
-                  <div class="my-2 w-50">
-                    <div>
+                  <div class="d-flex justify-content-start align-items-start gap-2">
+                    <div class="my-2 w-50">
                       <label for="fileInput" class="custom-label my-1"><b>Select a file to upload</b></label>
-                      <div class="d-flex align-items-center gap-2">
-                        <input type="file" id="fileInput" formControlName="fileInput" class="form-control custom-label"
-                          (change)="onFileSelect($event)" accept=".json,.yml,.yaml" />
-                        <i class="bi bi-x-circle-fill fs-4 text-dark cursor-pointer" (click)="clearFile()"
-                          title="Clear Selected File"></i>
-                      </div>
+                      <input type="file" id="fileInput" formControlName="fileInput" class="form-control custom-label"
+                        (change)="onFileSelect($event)" accept=".json,.yml,.yaml" />
                       <div
                         *ngIf="fileUploadForm.get('fileInput')?.hasError('invalidFileType') && fileUploadForm.get('fileInput')?.touched"
                         class="text-danger my-2">
@@ -47,11 +43,20 @@
                         File size exceeds the limit of 100MB.
                       </div>
                     </div>
-
+                    <div *ngIf="selectedFileName" class="file-preview">
+                      <div class="file-content">
+                        <div class="file-name">{{ selectedFileName }}</div>
+                        <div class="file-hint">{{ base64Snippet }}</div>
+                        <div class="overlay" (click)="clearFile()" title="Clear Selected File">
+                          <i class="bi bi-x-circle-fill text-white"></i>
+                        </div>
+                      </div>
+                    </div>
                   </div>
+
                   <div class="d-flex justify-content-end my-2">
                     <button class="btn button-format-solid custom-label mt-2" (click)="updateConfigFile()"
-                      [disabled]="fileUploadForm.invalid"><i class="bi bi-upload"></i> Upload
+                      [disabled]="fileUploadForm.invalid || fileUploadForm.pristine"><i class="bi bi-upload"></i> Upload
                     </button>
                   </div>
                 </form>

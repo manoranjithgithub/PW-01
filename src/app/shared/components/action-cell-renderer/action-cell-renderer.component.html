@@ -14,14 +14,14 @@
         [attr.aria-disabled]="!permissionService.canWriteForCurrentUser(currentProjectId, envId)"
       >Edit</a>
     </li>
-    <li>
+    <!-- <li>
       <a class="custom-dropdown-item"
         role="button"
         (click)="permissionService.canDeleteForCurrentUser(currentProjectId, envId) && onOptionSelected('delete')"
         [class.disabled]="!permissionService.canDeleteForCurrentUser(currentProjectId, envId)"
         [attr.aria-disabled]="!permissionService.canDeleteForCurrentUser(currentProjectId, envId)"
       >Delete</a>
-    </li>
+    </li> -->
   </ul>
 </div>
 <div class="custom-dropdown d-inline-block" *ngIf="additionalParam === 'user-list'">
@@ -55,9 +55,12 @@
       <a class="custom-dropdown-item" (click)="onOptionSelected('redeploy')">Redeploy</a>
     </li>
     <li>
-      <a class="custom-dropdown-item"
-        (click)="onOptionSelected(params?.data?.status.toLowerCase() === 'stopped' ? 'Resume' : 'Pause')">{{
-        params?.data?.status.toLowerCase() === 'stopped' ? 'Resume' : 'Pause'}}</a>
+      <a class="custom-dropdown-item" 
+         [class.disabled]="isPauseResumeDisabled"
+         [attr.aria-disabled]="isPauseResumeDisabled"
+         (click)="!isPauseResumeDisabled && onOptionSelected(pauseResumeLabel)">
+        {{ pauseResumeLabel }}
+      </a>
     </li>
   </ul>
 </div>

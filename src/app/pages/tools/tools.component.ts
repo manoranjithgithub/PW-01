@@ -32,6 +32,9 @@ export class ToolsComponent implements OnInit, OnDestroy {
   private tabHiddenAt: number | null = null;
   private isTabHidden = false;
   private lastEnvId: string | null = null;
+  private gridApi: any;
+
+  getRowId = (params: any) => params.data._id;
 
   constructor(private http: ToolsService,
     private router: Router, private sharedService: SharedService, private modalService: NgbModal,
@@ -53,6 +56,10 @@ export class ToolsComponent implements OnInit, OnDestroy {
     } catch {
       return p || undefined;
     }
+  }
+
+  onGridReady(params: any): void {
+    this.gridApi = params.api;
   }
 
   ngOnInit(): void {
@@ -210,7 +217,7 @@ export class ToolsComponent implements OnInit, OnDestroy {
 
   gotoAction(params: any) {
     this.toolName = params.name;
-    this.router.navigate(['/tools/view-tool'], { queryParams: { selectedView: this.toolName } })
+    this.router.navigate(['/tools/view-tool'], { queryParams: { selectedView: this.toolName, status: params.status } })
   }
 
   getAvailableTools(envId: string): void {
@@ -336,6 +343,8 @@ export class ToolsComponent implements OnInit, OnDestroy {
       this.rowData = [...this.rowData];
     }
   }
+
+
 
   ngOnDestroy(): void {
     clearInterval(this.getToolsIntervel)

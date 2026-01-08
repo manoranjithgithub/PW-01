@@ -1,3 +1,5 @@
 <app-ag-grid-table [rowData]="tableData" [columnDefs]="columnDefs"
-  [showDeployButton]="true" (goToNewDeployModel)="goToNewDeployment()">
+  [showDeployButton]="true" [getRowId]="getRowId"
+  (goToNewDeployModel)="goToNewDeployment()"
+  (gridReady)="onGridReady($event)">
 </app-ag-grid-table>

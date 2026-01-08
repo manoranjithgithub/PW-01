@@ -1,4 +1,4 @@
-import { Component, HostListener, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, HostListener, Input, OnDestroy, OnInit, ViewChild, ChangeDetectorRef } from '@angular/core';
 import {
   AccordionButtonDirective,
   AccordionComponent,
@@ -73,7 +73,7 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
   releaseData: any;
 
   constructor(private deploymentService: DeploymentsService, private sharedService: SharedService,
-    private toaster: ToastrService, private ac: ActivatedRoute) { }
+    private toaster: ToastrService, private ac: ActivatedRoute, private cdr: ChangeDetectorRef) { }
 
   ngOnInit(): void {
     this.ac.queryParams.pipe(
@@ -99,11 +99,12 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
   }
 
   getReleasesByDeploymentId(res: any): void {
-    this.releaseData = res[0];
-    console.log('res in deployment releases', res);
-    [this.active, ...this.history] = res || [];
+    if (!res || res.length === 0) return;
+    
+    [this.active, ...this.history] = res;
     this.releaseData = this.active;
     this.updateSteps(this.active);
+    this.cdr.detectChanges();
   }
   hasFailedStatus(): boolean {
     return this.steps.some(s => s.status === 'failed');
@@ -112,6 +113,19 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
   getClassList(status: string): string {
     const meta = this.sharedService.getStatusMeta(status);
     return `${meta.icon} ${meta.statusClass}`;
+  }
+
+  getProviderName(gitUrl: string): string {
+    if (!gitUrl) return 'vcs';
+    
+    try {
+      const urlLower = gitUrl.toLowerCase();
+      if (urlLower.includes('github.com')) return 'GitHub';
+      if (urlLower.includes('gitlab.com')) return 'GitLab';
+      return 'vcs';
+    } catch {
+      return 'vcs';
+    }
   }
 
   getLogData(type: string, resetPage: boolean = false) {
