@@ -110,6 +110,9 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
   submitted: boolean = false
   vcsProfileInfo: any;
 
+  selectedFileName = '';
+  base64Snippet = '';
+
   constructor(
     private _fb: FormBuilder,
     private route: ActivatedRoute,
@@ -119,7 +122,7 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
     private projectService: ProjectsService,
     public permissionService: PermissionService,
     private sharedService: SharedService,
-    private cdr:ChangeDetectorRef
+    private cdr: ChangeDetectorRef
   ) {
     this.stepOneForm = this._fb.group({
       type: ['', Validators.required],
@@ -642,7 +645,9 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
         control.updateValueAndValidity();
       }
     });
-
+    this.selectedFileName = '';
+    this.parsedConfigData = null;
+    this.base64Snippet = '';
     const fileInputElement = document.getElementById(
       'fileInput'
     ) as HTMLInputElement | null;
@@ -659,8 +664,8 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
       this.fileUploadForm.markAllAsTouched();
       return;
     }
-    fileInput?.clearValidators();
-    fileInput?.updateValueAndValidity();
+    // fileInput?.clearValidators();
+    // fileInput?.updateValueAndValidity();
   }
   private buildGitUrl(): string {
     const repo = this.selectedRepoDetails?.repoUrl;
@@ -727,12 +732,25 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
     if (!input.files?.length) return;
 
     const file = input.files[0];
+    this.selectedFileName = file.name;
     const fileReader = new FileReader();
 
     fileReader.onload = () => {
       const base64String = fileReader.result as string;
 
       const pureBase64 = base64String.split(',')[1];
+      this.base64Snippet = pureBase64.substring(0, 60) + '...';
+      const base64Length = pureBase64.length;
+      const padding = (pureBase64.match(/=+$/) || [''])[0].length;
+      const fileSizeInBytes = (base64Length * 3) / 4 - padding;
+      const MAX_FILE_SIZE = 100 * 1024; // 100KB
+
+      if (fileSizeInBytes > MAX_FILE_SIZE) {
+        this.fileUploadForm.get('fileInput')?.setErrors({ fileSizeExceeded: true });
+        this.fileUploadForm.markAllAsTouched();
+        this.parsedConfigData = null;
+        return;
+      }
       this.parsedConfigData = pureBase64;
 
     };
