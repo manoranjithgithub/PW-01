@@ -68,7 +68,7 @@ export class DeploymentNetworkingComponent implements OnInit {
     });
 
     // freeze flag from input status
-    this.freezeAddNewData = this.currentStatus && this.currentStatus.toLowerCase() === 'building' ? true : false;
+    this.freezeAddNewData = this.currentStatus && this.currentStatus?.toLowerCase() === 'building' ? true : false;
 
     // compute and apply form disabled state based on freeze flag and permissions
     const shouldDisable = this.freezeAddNewData || !(this.permissionService.canWriteGlobal() || this.permissionService.canAdminGlobal() || this.permissionService.canDeleteForCurrentUser(null, null));
@@ -87,7 +87,7 @@ export class DeploymentNetworkingComponent implements OnInit {
         this.networkSettingsForm.get('service')?.setValue(this.deploymentdetails?.name);
         this.networkSettingsForm.get('customDnsHost')?.setValue(this.deploymentdetails?.network?.customDomain);
         this.getDeploymentById();
-        this.freezeAddNewData = res.data?.status.toLowerCase() === 'stopped' || this.currentStatus.toLowerCase() === 'building' ? true : false;
+        this.freezeAddNewData = res.data?.status.toLowerCase() === 'stopped' || this.currentStatus?.toLowerCase() === 'building' ? true : false;
         const shouldDisable = this.freezeAddNewData || !(this.permissionService.canWriteGlobal() || this.permissionService.canAdminGlobal() || this.permissionService.canDeleteForCurrentUser(null, null));
         this.formDisabled = shouldDisable;
       })

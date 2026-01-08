@@ -89,7 +89,7 @@
           <div class="border-bottom mb-4">&nbsp;</div>
           <div class="container">
             <div class=" d-flex  justify-content-end align-items-end" style="font-size: 12px;">
-              <span class="me-2"><b>Instance Price :</b></span> 
+              <span class="me-2"><b>Instance Price :</b></span>
               <span>
                 {{ formatCurrency(selectedResource?.instanceHourRate, selectedResource?.currency) }} / hr<br>
                 {{ formatCurrency((selectedResource?.instanceHourRate || 0) * 730, selectedResource?.currency) }} /mo
@@ -253,22 +253,29 @@
                 <div class="w-100">
                   <input type="file" id="fileInput" formControlName="fileInput" class="form-control"
                     accept=".json,.yml,.yaml" (change)="onFileSelected($event)" />
+                  <div
+                    *ngIf="fileUploadForm.get('fileInput')?.hasError('invalidFileType') && fileUploadForm.get('fileInput')?.touched"
+                    class="text-danger my-2">
+                    Invalid file type. Only .yml, .json files are allowed.
+                  </div>
+                  <div
+                    *ngIf="fileUploadForm.get('fileInput')?.hasError('fileSizeExceeded') && fileUploadForm.get('fileInput')?.touched"
+                    class="text-danger my-2">
+                    File size exceeds the limit of 100MB.
+                  </div>
+                  <div *ngIf="fileUploadForm.get('fileInput')?.hasError('required')" class="text-danger my-2">
+                    File is required.
+                  </div>
                 </div>
-                <i class="bi bi-x-circle-fill fs-4 text-dark cursor-pointer" (click)="clearFile()"
-                  title="Clear Selected File"></i>
-              </div>
-              <div
-                *ngIf="fileUploadForm.get('fileInput')?.hasError('invalidFileType') && fileUploadForm.get('fileInput')?.touched"
-                class="text-danger my-2">
-                Invalid file type. Only .yml, .json files are allowed.
-              </div>
-              <div
-                *ngIf="fileUploadForm.get('fileInput')?.hasError('fileSizeExceeded') && fileUploadForm.get('fileInput')?.touched"
-                class="text-danger my-2">
-                File size exceeds the limit of 500MB.
-              </div>
-              <div *ngIf="fileUploadForm.get('fileInput')?.hasError('required')" class="text-danger my-2">
-                File is required.
+                <div *ngIf="selectedFileName" class="file-preview">
+                  <div class="file-content">
+                    <div class="file-name">{{ selectedFileName }}</div>
+                    <div class="file-hint">{{ base64Snippet }}</div>
+                    <div class="overlay" (click)="clearFile()" title="Clear Selected File">
+                      <i class="bi bi-x-circle-fill text-white"></i>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
             <div class="my-2">

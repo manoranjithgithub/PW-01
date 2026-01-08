@@ -22,6 +22,8 @@ export class DeploymentConfigMapsComponent implements OnInit {
   fileName: string | null = null;
   freezeAddNewData: boolean = false;
   parsedConfigData: any;
+  selectedFileName = '';
+  base64Snippet = '';
 
   constructor(private fb: FormBuilder,
     private deploymentsService: DeploymentsService, private ac: ActivatedRoute, private toaster: ToastrService,
@@ -48,7 +50,7 @@ export class DeploymentConfigMapsComponent implements OnInit {
       if (depolyementId) {
         this.deploymentsService.getDeploymentById(depolyementId).subscribe((res: any) => {
           this.deploymentdetails = res.data;
-          const freezeAddNewData = res.data?.status.toLowerCase() === 'stopped' || this.currentStatus.toLowerCase() === 'building' ? true : false;
+          const freezeAddNewData = res.data?.status.toLowerCase() === 'stopped' || this.currentStatus?.toLowerCase() === 'building' ? true : false;
           const shouldDisable = freezeAddNewData || !(this.permissionService.canWriteGlobal() || this.permissionService.canAdminGlobal() || this.permissionService.canDeleteForCurrentUser(null, null));
           if (shouldDisable) {
             this.fileUploadForm.disable();
@@ -57,6 +59,8 @@ export class DeploymentConfigMapsComponent implements OnInit {
           }
           this.fileUploadForm.get('filePath')?.setValue(this.deploymentdetails?.config?.path)
           this.fileUploadForm.get('fileName')?.setValue(this.deploymentdetails?.config?.name)
+          this.selectedFileName = this.deploymentdetails?.config?.name;
+          this.base64Snippet = this.deploymentdetails?.config?.data ? this.deploymentdetails?.config?.data.substring(0, 60) + '...' : '';
         })
       }
     });
@@ -67,11 +71,24 @@ export class DeploymentConfigMapsComponent implements OnInit {
     const input = event.target as HTMLInputElement;
     if (!input.files?.length) return;
     const file = input.files[0];
+    this.selectedFileName = file.name;
     const fileReader = new FileReader();
 
     fileReader.onload = () => {
       const base64String = fileReader.result as string;
       const pureBase64 = base64String.split(',')[1];
+      this.base64Snippet = pureBase64.substring(0, 60) + '...';
+      const base64Length = pureBase64.length;
+      const padding = (pureBase64.match(/=+$/) || [''])[0].length;
+      const fileSizeInBytes = (base64Length * 3) / 4 - padding;
+      const MAX_FILE_SIZE = 100 * 1024; // 100KB
+
+      if (fileSizeInBytes > MAX_FILE_SIZE) {
+        this.fileUploadForm.get('fileInput')?.setErrors({ fileSizeExceeded: true });
+        this.fileUploadForm.markAllAsTouched();
+        this.parsedConfigData = null;
+        return;
+      }
       this.parsedConfigData = pureBase64;
 
     };
@@ -93,8 +110,9 @@ export class DeploymentConfigMapsComponent implements OnInit {
       this.deploymentsService.updateDeployment(this.deploymentdetails.id, req).subscribe({
         next: (res: any) => {
           if (res.status.toLowerCase() === 'success') {
+            // this.fileUploadForm.get('fileName')
             this.toaster.success('Config Map updated successfully');
-            this.clearFile();
+            // this.clearFile();
           }
         },
         error: (err) => {
@@ -133,5 +151,8 @@ export class DeploymentConfigMapsComponent implements OnInit {
     if (fileInputElement) {
       fileInputElement.value = '';
     }
+    this.selectedFileName = '';
+    this.parsedConfigData = null;
+    this.base64Snippet = '';
   }
 }

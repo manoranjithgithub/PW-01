@@ -78,7 +78,7 @@ export class DeploymentSecretsComponent implements OnInit {
         this.isEditSecret = true;
         this.deploymentsService.getDeploymentById(deploymentId).subscribe((res: any) => {
           this.deploymentdetails = this.deploymentData || res.data;
-          const freezeAddNewData = res.data?.status.toLowerCase() === 'stopped' || this.currentStatus.toLowerCase() === 'building' ? true : false;
+          const freezeAddNewData = res.data?.status.toLowerCase() === 'stopped' || this.currentStatus?.toLowerCase() === 'building' ? true : false;
           const shouldDisable = freezeAddNewData || !(this.permissionService.canWriteGlobal() || this.permissionService.canAdminGlobal() || this.permissionService.canDeleteForCurrentUser(null, null));
           this.freezeAddNewData = shouldDisable;
           this.handleSecretListLoading();
