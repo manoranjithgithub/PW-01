@@ -26,6 +26,14 @@
 	&:focus { box-shadow: none; }
 }
 
+.btn-primary {
+	&:active,
+	&.active {
+		background-color: #F60 !important;
+		border-color: #F60 !important;
+	}
+}
+
 .custom-domain-section {
 	background: #F8F8F8;
 	margin: 10px auto;
