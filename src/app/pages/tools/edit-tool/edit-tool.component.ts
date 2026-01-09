@@ -62,9 +62,9 @@ export class EditToolComponent implements OnInit, OnDestroy {
     this.ac.queryParams.subscribe(params => {
       this.paramsEdit = params['selectedEdit'];
       const status = params['status'] || '';
-      this.layoutActionService.setExtraTitle(
-        `${this.paramsEdit} (${status})`
-      );
+      // this.layoutActionService.setExtraTitle(
+      //   `${this.paramsEdit} (${status})`
+      // );
     })
   }
 
@@ -157,7 +157,9 @@ export class EditToolComponent implements OnInit, OnDestroy {
       this.toolViewName = this.toolDetails.data.name;
       this.viewdata = this.toolDetails.data.schema;
       this.submitted = false;
-
+      this.layoutActionService.setExtraTitle(
+        `${this.toolViewName} (${this.toolDetails.data.status})`
+      );
       const schema = this.toolDetails.data.schema;
       const modifiedSchema = this.addNameViewField(schema);
       this.createForm(modifiedSchema);

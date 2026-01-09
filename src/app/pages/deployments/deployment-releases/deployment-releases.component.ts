@@ -202,6 +202,7 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
   updateSteps(responseData: any) {
     const status = responseData?.status?.toLowerCase();
     this.releaseData = responseData;
+    console.log('Updating steps with status:', status, responseData);
     this.currentStatus = responseData?.status;
 
     const isBuilding = status === "initiated" || status === "building";
@@ -231,7 +232,7 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
       }
     ];
 
-    if (!isPaused) {
+    if (!isPaused && responseData.jobMode === 'BUILD_AND_DEPLOY') {
       const buildTime = this.active.buildStartedAt;
       const initiatedTime = this.active.createdAt;
 
