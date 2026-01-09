@@ -146,6 +146,7 @@ export class DeploymentConfigMapsComponent implements OnInit {
   clearFile() {
     this.fileUploadForm.get('fileInput')?.reset();
     this.fileUploadForm.get('fileName')?.reset();
+    this.fileUploadForm.get('filePath')?.reset();
     this.fileName = null;
     const fileInputElement = document.getElementById('fileInput') as HTMLInputElement;
     if (fileInputElement) {
@@ -154,5 +155,24 @@ export class DeploymentConfigMapsComponent implements OnInit {
     this.selectedFileName = '';
     this.parsedConfigData = null;
     this.base64Snippet = '';
+    const req = {
+      config: {
+        path: this.fileUploadForm.get('filePath')?.value,
+        name: this.fileUploadForm.get('fileName')?.value,
+        data: this.parsedConfigData
+      }
+    }
+    if (this.deploymentdetails.id) {
+      this.deploymentsService.updateDeployment(this.deploymentdetails.id, req).subscribe({
+        next: (res: any) => {
+          if (res.status.toLowerCase() === 'success') {
+            this.toaster.success('File deleted successfully');
+          }
+        },
+        error: (err) => {
+          this.toaster.error(err);
+        }
+      });
+    }
   }
 }

@@ -71,9 +71,6 @@ export class ViewToolComponent implements OnInit, OnDestroy {
       this.selectedView = params['selectedView'] ?? params['id'];
       this.toolName = params['id'] ?? this.selectedView ?? this.toolName;
       this.toolStatus = params['status'];
-      this.layoutActionService.setExtraTitle(
-        `${this.toolName} (${this.toolStatus})`
-      );
     })
   }
   ngOnInit(): void {
@@ -173,6 +170,9 @@ export class ViewToolComponent implements OnInit, OnDestroy {
       this.toolViewName = this.toolDetails.data.name;
       this.viewdata = this.toolDetails.data.schema;
       this.submitted = false;
+      this.layoutActionService.setExtraTitle(
+        `${this.toolViewName} (${this.toolDetails.data.status})`
+      );
       const modifiedSchema = this.addNameViewField(this.viewdata);
       this.createForm(modifiedSchema);
     });
@@ -230,6 +230,6 @@ export class ViewToolComponent implements OnInit, OnDestroy {
     });
   }
   editTool() {
-    this.route.navigate(['/tools/edit-tool'], { queryParams: { selectedEdit: this.toolName, status: this.toolStatus } });
+    this.route.navigate(['/tools/edit-tool'], { queryParams: { selectedEdit: this.toolName } });
   }
 }

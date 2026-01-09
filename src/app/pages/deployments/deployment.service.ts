@@ -111,7 +111,7 @@ export class DeploymentsService {
 
   getAuthenticatedresponse(env: string, deploymentId: string) {
     const projectId = JSON.parse(localStorage.getItem('project') || '{}').id;
-    return this.http.get(`${this.deploymentManagement}/endpoints?deploymentId=${deploymentId}&environmentId=${env}&projectId=${projectId}`)
+    return this.http.get(`${this.deploymentManagement}/endpoints?id=${deploymentId}&environmentId=${env}&projectId=${projectId}`)
       .pipe(
         catchError(this.handleError.bind(this))
       );
