@@ -61,9 +61,7 @@
       </ng-container>
     </c-tab-pane>
     <c-tab-pane class="p-3 preview" role="tabpanel">
-      <ng-container *ngIf="selectedTabIndex === 3">
-        <app-deployment-config-maps [currentStatus]="lastReleaseData[0]?.status"></app-deployment-config-maps>
-      </ng-container>
+      <app-deployment-config-maps [currentStatus]="lastReleaseData[0]?.status"></app-deployment-config-maps>
     </c-tab-pane>
 
     <c-tab-pane class="p-3 preview" role="tabpanel">
