@@ -155,7 +155,6 @@ export class DeploymentConfigMapsComponent implements OnInit {
     this.selectedFileName = '';
     this.parsedConfigData = null;
     this.base64Snippet = '';
-<<<<<<< HEAD
     const req = {
       config: {
         path: this.fileUploadForm.get('filePath')?.value,
@@ -175,7 +174,5 @@ export class DeploymentConfigMapsComponent implements OnInit {
         }
       });
     }
-=======
->>>>>>> dev
   }
 }
