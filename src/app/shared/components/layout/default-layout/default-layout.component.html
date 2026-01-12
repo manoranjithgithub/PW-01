@@ -3,11 +3,14 @@
 <header class="fixed-header-section">
   <div class="d-flex justify-content-between w-100 bg-gray-800 px-4">
     <c-sidebar-header>
-      <c-sidebar-brand [routerLink]="[]">
+      <c-sidebar-brand routerLink="/projects">
         <img src="assets/images/logo-with-name.png" class="sidebar-brand-narrow" height="20" />
         <img src="assets/images/logo-with-name.png" class="sidebar-brand-full" height="20" />
         <!-- <span class="logo-title sidebar-brand-full">NIMBUZ</span> -->
       </c-sidebar-brand>
+      <button class="btn btn-outline-secondary d-lg-none" (click)="!sidebarVisible = sidebarVisible">
+        <i class="bi bi-list"></i>
+      </button>
     </c-sidebar-header>
     <app-default-header [cShadowOnScroll]="'sm'" class="d-print-none header header-sticky p-0" position="sticky"
       sidebarId="sidebar1" [ngClass]="{'shadow-sm': isScrolled}" [userData]="userInfo" />
@@ -18,7 +21,8 @@
 <div class="project-switch-section" *ngIf="!isProjectsPage() && showSwitchProject">
   <app-switch-project></app-switch-project>
 </div>
-<c-sidebar #sidebar1="cSidebar" class="d-print-none sidebar sidebar-fixed" colorScheme="dark" id="sidebar1" visible>
+<c-sidebar #sidebar1="cSidebar" class="d-print-none sidebar sidebar-fixed" colorScheme="dark" id="sidebar1"
+  [visible]="sidebarVisible">
   <ng-scrollbar #scrollbar="ngScrollbar" (updated)="onScrollbarUpdate(scrollbar.state)" class="overflow"
     pointerEventsMethod="scrollbar" visibility="hover">
     <c-sidebar-nav #overflow [navItems]="navItems" dropdownMode="close" compact />
@@ -73,14 +77,9 @@
             </button>
             <ul cDropdownMenu class="dropdown-menu dropdown-menu-end" style="padding: 0;">
               <li [attr.title]="!canPerformPageDelete() ? 'You are not authorized to perform this action.' : null">
-                <a
-                  class="dropdown-item"
-                  role="button"
-                  (click)="canPerformPageDelete() && onPageActionClick()"
-                  [class.disabled]="!canPerformPageDelete()"
-                  [attr.aria-disabled]="!canPerformPageDelete()"
-                  [attr.title]="!canPerformPageDelete() ? 'You are not authorized to perform this action.' : null"
-                >
+                <a class="dropdown-item" role="button" (click)="canPerformPageDelete() && onPageActionClick()"
+                  [class.disabled]="!canPerformPageDelete()" [attr.aria-disabled]="!canPerformPageDelete()"
+                  [attr.title]="!canPerformPageDelete() ? 'You are not authorized to perform this action.' : null">
                   Delete
                 </a>
               </li>

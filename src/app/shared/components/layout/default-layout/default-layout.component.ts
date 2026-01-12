@@ -94,6 +94,7 @@ export class DefaultLayoutComponent implements OnInit {
   selectedItemFromCom: string | null = null;
   currentUser: string = '';
   savedTheme: string = '';
+  sidebarVisible = true;
 
 
   constructor(private authService: AuthService, private deployemntService: DeploymentsService,
