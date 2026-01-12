@@ -33,7 +33,7 @@
                 <ng-container *ngIf="!zipUpload && vcsDeploy">
                   <div class=" mb-3 w-50 ">
                     <label for="provider" class="custom-label">Provider</label>
-                    <input id="provider" type="text" formControlName="provider" class="form-control custom-values">
+                    <input id="provider" type="text" formControlName="provider" class="form-control custom-values" readonly>
                   </div>
                 </ng-container>
                 <ng-container *ngIf="zipUpload && !vcsDeploy">
@@ -47,12 +47,12 @@
                 <div class="d-flex gap-2">
                   <div class="flex-fill mb-3">
                     <label for="branchName" class="custom-label">Branch Name</label>
-                    <input id="branchName" type="text" formControlName="branchName" class="form-control custom-values">
+                    <input id="branchName" type="text" formControlName="branchName" class="form-control custom-values" readonly>
                   </div>
 
                   <div class="flex-fill mb-3">
                     <label for="repoUrl" class="custom-label">Repo URL</label>
-                    <input id="repoUrl" type="text" formControlName="repoUrl" class="form-control custom-values">
+                    <input id="repoUrl" type="text" formControlName="repoUrl" class="form-control custom-values" readonly>
                   </div>
                 </div>
               </ng-container>
