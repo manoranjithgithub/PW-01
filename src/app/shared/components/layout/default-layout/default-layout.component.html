@@ -22,7 +22,7 @@
   <app-switch-project></app-switch-project>
 </div>
 <c-sidebar #sidebar1="cSidebar" class="d-print-none sidebar sidebar-fixed" colorScheme="dark" id="sidebar1"
-  [visible]="sidebarVisible">
+  [visible]="!sidebarVisible">
   <ng-scrollbar #scrollbar="ngScrollbar" (updated)="onScrollbarUpdate(scrollbar.state)" class="overflow"
     pointerEventsMethod="scrollbar" visibility="hover">
     <c-sidebar-nav #overflow [navItems]="navItems" dropdownMode="close" compact />
