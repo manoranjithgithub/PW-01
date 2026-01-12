@@ -180,7 +180,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
       branchName: [{ value: '', disabled: true }],
       fileInput: ['', [Validators.required, this.fileValidator.bind(this)]],
       fileName: [{ value: '', disabled: true }],
-      // dockerfilePath: ['', Validators.maxLength(250)],
+      dockerfilePath: ['', Validators.maxLength(250)],
     });
     this.freezeAddNewData = this.currentStatus && this.currentStatus?.toLowerCase() === 'building' ? true : false;
 
@@ -473,17 +473,17 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
       healthEndpoint: formValue.healthEndpoint,
       port: formValue.port,
     }, originalNetwork);
-
+    if(formValue.dockerfilePath !== sourceFormValue.dockerfilePath){
+      sourceFormValue.dockerfilePath = formValue.dockerfilePath
+    }
     const baseData = {
       type: sourceFormValue.type,
       gitUrl: this.buildGitUrl(),
       s3FileKey: fileName ? this.s3FileKey : null,
-      dockerfilePath: formValue.dockerfilePath
+      dockerfilePath: sourceFormValue.dockerfilePath
     };
 
-    const sourceCode = formValue.dockerfilePath
-      ? baseData
-      : this.getChangedFields(baseData, originalSource);
+    const sourceCode =  this.getChangedFields(baseData, originalSource);
     const nameChanged = this.getChangedFields({ name: formValue.name }, { name: this.deploymentdetails?.name });
 
     const req: any = {};
