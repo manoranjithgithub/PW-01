@@ -137,6 +137,7 @@ export class InvoiceComponent implements OnInit {
     this.columnDefs = this.buildColumnDefs();
     // refresh table when currency changes by reassigning the data array
     this.sharedService.currencyChange$.subscribe(() => {
+      this.columnDefs = this.buildColumnDefs();
       this.tableData = Array.isArray(this.tableData) ? [...this.tableData] : this.tableData;
     });
     try {

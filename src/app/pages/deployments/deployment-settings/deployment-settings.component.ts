@@ -191,7 +191,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
       this.sourceSettingsForm?.disable?.();
     } else {
       this.generalSettingsForm?.enable?.();
-      this.sourceSettingsForm?.enable?.();
+      // this.sourceSettingsForm?.enable?.();
     }
     this.ac.queryParams.subscribe(params => {
       const depolyementId = params['id'];
