@@ -306,6 +306,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
           repoUrl: repoUrl,
           branchName: branchName,
           fileName: res.data.sourceCode?.s3FileKey ? res.data.sourceCode?.s3FileKey : '',
+          dockerfilePath: res.data.sourceCode?.dockerfilePath || ''
         });
         if (res.data.sourceCode?.type.toLowerCase() === "file") {
           this.s3FileKey = res.data.sourceCode?.s3FileKey;
@@ -473,9 +474,6 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
       healthEndpoint: formValue.healthEndpoint,
       port: formValue.port,
     }, originalNetwork);
-    if(formValue.dockerfilePath !== sourceFormValue.dockerfilePath){
-      sourceFormValue.dockerfilePath = formValue.dockerfilePath
-    }
     const baseData = {
       type: sourceFormValue.type,
       gitUrl: this.buildGitUrl(),
@@ -483,7 +481,17 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
       dockerfilePath: sourceFormValue.dockerfilePath
     };
 
-    const sourceCode =  this.getChangedFields(baseData, originalSource);
+    const isDockerfilePathChanged =
+      formValue.dockerfilePath !== sourceFormValue.dockerfilePath;
+
+    if (isDockerfilePathChanged) {
+      baseData.dockerfilePath = formValue.dockerfilePath;
+    }
+
+    const sourceCode = isDockerfilePathChanged
+      ? baseData
+      : this.getChangedFields(baseData, originalSource);
+
     const nameChanged = this.getChangedFields({ name: formValue.name }, { name: this.deploymentdetails?.name });
 
     const req: any = {};
