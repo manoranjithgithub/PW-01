@@ -12,7 +12,7 @@ export class PermissionService {
   private rawPolicies$ = new BehaviorSubject<any[]>([]);
 
   private lastLoadedAt = 0;
-  private reloadIntervalMs = 5000; // don't reload more often than this on navigation
+  private reloadIntervalMs = 5000;
 
   constructor(private http: DeploymentsService, private shared: SharedService, private router: Router) {
     try {
@@ -26,9 +26,10 @@ export class PermissionService {
     } catch (e) {
       // ignore storage errors
     }
-
-    // Auto-refresh policies on navigation end, but throttle by reloadIntervalMs
     try {
+       if (this.router.url.includes('/login')) {
+        return;
+      }
       this.router.events.pipe(filter(e => e instanceof NavigationEnd)).subscribe(() => {
         const now = Date.now();
         if (now - this.lastLoadedAt > this.reloadIntervalMs) {
@@ -39,7 +40,7 @@ export class PermissionService {
         }
       });
     } catch (e) {
-      // router might not be available in some test contexts
+      //if router not be available 
     }
   }
 
@@ -57,10 +58,6 @@ export class PermissionService {
     );
   }
 
-  /**
-   * Ensure the latest policies are loaded. If policies were loaded recently this will
-   * return the current in-memory value, otherwise it will fetch from server.
-   */
   ensureLatestPolicies(force: boolean = false): Observable<any[]> {
     const now = Date.now();
     const hasCached = (this.getRawPolicies() || []).length > 0;
@@ -70,9 +67,6 @@ export class PermissionService {
     return this.loadPolicies().pipe(tap(() => { this.lastLoadedAt = Date.now(); }));
   }
 
-  /**
-   * Immediate refresh from server.
-   */
   refreshPoliciesNow(): Observable<any[]> {
     return this.loadPolicies().pipe(tap(() => { this.lastLoadedAt = Date.now(); }));
   }

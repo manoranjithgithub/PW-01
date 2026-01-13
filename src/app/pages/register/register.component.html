@@ -17,7 +17,7 @@
   </div>
 
   <div class="d-flex flex-column justify-content-center align-items-center vh-100 bg-white p-3 w-100">
-    <div class="alert alert-danger" *ngIf="!isPasswordReset && createdBy !== 'nz-admin'">
+    <div class="alert alert-danger" *ngIf="createdBy !== 'nz-admin'">
       <small class="mt-2 small">
         Registration is by invitation only. <a href="https://nimbuz.tech/lead-form.html"
           class="text-danger text-decoration-underline fw-bold"><i>Please contact admin.</i></a>
@@ -25,7 +25,7 @@
     </div>
     <ng-container *ngIf="!isRegistrationSuccess; else successContent">
       <h2 class="my-4">
-        <b>{{ isPasswordReset ? "Forgot Password" : "Create an account" }}</b>
+        <b>Create an account</b>
       </h2>
 
       <div class="d-flex justify-content-center align-items-center">
@@ -79,7 +79,7 @@
                     <i class="bi bi-lock"></i>
                   </span>
                   <input [type]="visiblePasswordFields.has('password') ? 'text' : 'password'" class="form-control"
-                    placeholder="{{isPasswordReset ? 'New Password' : 'Password'}} *" formControlName="password" />
+                    placeholder="Password *" formControlName="password" />
                   <span class="input-group-text password-toggle" style="cursor: pointer"
                     (click)="togglePasswordVisibility('password')">
                     <i class="bi" [ngClass]="visiblePasswordFields.has('password') ? 'bi-eye-slash' : 'bi-eye'"></i>
@@ -145,7 +145,7 @@
                   Only lowercase letters, numbers, and hyphens are allowed.
                 </div>
               </div>
-              <div class="form-group mb-3 form-check" *ngIf="!isPasswordReset">
+              <div class="form-group mb-3 form-check">
                 <input type="checkbox" class="form-check-input" id="terms" formControlName="terms" />
                 <label class="form-check-label" for="terms">
                   I agree to the
@@ -160,16 +160,9 @@
                 </div>
               </div>
               <div class="d-grid my-3">
-                <ng-container *ngIf="!isPasswordReset; else resetPasswordButton">
-                  <button type="submit" class="btn btn-submit p-2" [disabled]="createdBy !== 'nz-admin'">
-                    Register
-                  </button>
-                </ng-container>
-                <ng-template #resetPasswordButton>
-                  <button type="submit" class="btn btn-submit p-2">
-                    Submit
-                  </button>
-                </ng-template>
+                <button type="submit" class="btn btn-submit p-2" [disabled]="createdBy !== 'nz-admin'">
+                  Register
+                </button>
               </div>
               <p class="text-center">
                 Already have an account?
