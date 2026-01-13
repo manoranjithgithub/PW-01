@@ -197,7 +197,7 @@ export class DeploymentNetworkingComponent implements OnInit {
     const environment = localStorage.getItem('environment');
     const envId = environment ? JSON.parse(environment).id : null;
     const formValue = this.networkSettingsForm.value
-    if(formValue.host && (formValue.customDnsHost == '' || formValue.customDnsHost == null)){
+    if(formValue.customDns && (formValue.customDnsHost == '' || formValue.customDnsHost == null)){
       this.iscustomDnsHostError = true;
       return;
     }else{
