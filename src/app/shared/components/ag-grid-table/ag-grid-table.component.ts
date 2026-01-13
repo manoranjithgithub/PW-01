@@ -51,22 +51,27 @@ export class AgGridTableComponent implements OnInit {
       suppressSizeToFit: true,
     };
 
-  gridOptions: GridOptions = {
-    rowHeight: 50,
-    suppressRowTransform: true,
-    enableBrowserTooltips: true,
-    suppressLoadingOverlay: true,
-    onGridReady: (params) => this.onGridReady(params),
-    getRowId: (params) => this.getRowId ? this.getRowId(params) : undefined,
-  };
+  get gridOptions(): GridOptions {
+    const options: GridOptions = {
+      rowHeight: 50,
+      suppressRowTransform: true,
+      enableBrowserTooltips: true,
+      suppressLoadingOverlay: true,
+      onGridReady: (params) => this.onGridReady(params),
+    };
+    
+    if (this.getRowId) {
+      options.getRowId = (params) => this.getRowId!(params);
+    }
+    
+    return options;
+  }
 
 
   constructor(private sharedService: SharedService, private router: Router, public permissionService: PermissionService) {
-    // this.tableTheme = this.sharedService.getCookie('theme');
     this.tableTheme = localStorage.getItem('theme-default') || 'ag-theme-alpine';
     const urlSegments = this.router.url.split('/').filter(Boolean);
     this.tableName = urlSegments[urlSegments.length - 1] == 'tools' ? 'tool' : urlSegments[urlSegments.length - 1];
-    // this.tablebtn = urlSegments[urlSegments.length - 1] == 'deployment' ? 'Deploy' : 'Tool';
     const lastSegment = urlSegments[urlSegments.length - 1];
     this.tablebtn = this.capitalizeFirstLetter(lastSegment);
 

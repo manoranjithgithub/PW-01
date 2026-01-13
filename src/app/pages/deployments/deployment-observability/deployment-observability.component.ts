@@ -152,15 +152,9 @@ export class DeploymentObservabilityComponent implements OnInit {
       const formatted = `${map.year}-${map.month}-${map.day} ${map.hour}:${map.minute}:${map.second} ${tzLabel}`;
       return formatted;
     } catch (e) {
-      // fallback to original timestamp on error
       return timestamp;
     }
   }
-
-  // ngAfterViewChecked() {
-  //   this.scrollToBottom();
-  // }
-
   scrollToBottom(): void {
     const container = document.getElementById('logContainer');
     if (container)
@@ -321,5 +315,15 @@ export class DeploymentObservabilityComponent implements OnInit {
     }
     return pages;
   }
+  getLogClass(message: string): string {
+    const msg = message.toLowerCase();
 
+    if (msg.includes('error') || msg.includes('failed')) return 'log-error';
+    if (msg.includes('warn')) return 'log-warn';
+    if (msg.includes('debug')) return 'log-debug';
+    if (msg.includes('done') || msg.includes('success')) return 'log-success';
+    if (msg.startsWith('#')) return 'log-step';
+
+    return 'log-info';
+  }
 }

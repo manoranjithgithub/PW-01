@@ -58,31 +58,35 @@
 
 <hr>
 
-<div class="log-container" [ngClass]="isLightMode ? 'log-container-light' : 'log-container-dark'">
-  <table class="log-table">
-    <thead>
-      <tr>
-        <th>Timestamp</th>
-        <th>Message</th>
-      </tr>
-    </thead>
-  </table>
-  <div class="log-body" id="logContainer">
+<div class="log-container" [class.dark]="!isLightMode" [class.light]="isLightMode">
     <table class="log-table">
-      <tbody>
-        <tr *ngIf="filteredLogs.length === 0">
-          <td colspan="2" style="text-align: center;">No logs available</td>
-        </tr>
-        <tr *ngFor="let log of filteredLogs">
-          <td style="width:30%">{{ log.timestamp }}</td>
-          <td style="width:70%" [innerHTML]="log.message | highlight:filterForm.get('searchText')?.value"></td>
-        </tr>
-      </tbody>
+        <thead>
+            <tr>
+                <th class="col-timestamp">Timestamp</th>
+                <th>Message</th>
+            </tr>
+        </thead>
     </table>
+    <div class="terminal-wrapper">
+        <table class="terminal-table">
+            <tbody>
+                <tr *ngIf="filteredLogs.length === 0">
+                    <td colspan="2" class="empty-log">No logs available</td>
+                </tr>
 
-  </div>
-
+                <tr *ngFor="let log of filteredLogs">
+                    <td class="timestamp col-timestamp">
+                         {{ log.timestamp | date:'yyyy-MM-dd HH:mm:ss':'Asia/Kolkata' }}
+                    </td>
+                    <td class="message" [ngClass]="getLogClass(log.message)"
+                        [innerHTML]="log.message | highlight:filterForm.get('searchText')?.value">
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 </div>
+
 <div *ngIf="totalItems > 0" class="pagination d-flex justify-content-between gap-3 my-4">
   <nav>
     <ul class="pagination justify-content-center align-items-center">

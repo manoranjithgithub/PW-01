@@ -1,59 +1,59 @@
 <form [formGroup]="filterForm">
     <div class="d-flex align-items-center justify-content-between w-100">
         <div class="d-flex align-items-center gap-2 w-50">
-          <label class="form-label mb-0">Search</label>
-          <input
-            type="text"
-            class="form-control"
-            placeholder="Search by keyword..."
-            formControlName="searchText"
-          />
+            <label class="form-label mb-0">Search</label>
+            <input type="text" class="form-control" placeholder="Search by keyword..." formControlName="searchText" />
+            <button type="button" class="btn btn-outline-secondary" (click)="onRefresh()" aria-label="Refresh logs"
+                title="Refresh logs">
+                <i class="bi bi-arrow-clockwise"></i>
+            </button>
         </div>
         <div class="ms-auto">
-          <button type="button" class="btn btn-outline-secondary" (click)="onRefresh()">
-            <i class="bi bi-arrow-clockwise"></i>
-          </button>
+            <div class="ms-auto theme-toggle mb-0">
+                <span class="switch-label">Switch mode</span>
+                <label class="switch">
+                    <input type="checkbox" [checked]="isLightMode" (change)="toggleMode($event)">
+                    <span class="slider">
+                        <i class="bi bi-moon icon-moon"></i>
+                        <i class="bi bi-sun icon-sun"></i>
+                    </span>
+                </label>
+            </div>
+
         </div>
-      </div>
+    </div>
 </form>
-<div class="log-container" [ngClass]="isLightMode ? 'log-container-light' : 'log-container-dark'" #scrollContainer>
+<div class="log-container" [class.dark]="!isLightMode" [class.light]="isLightMode" #scrollContainer>
     <table class="log-table">
         <thead>
             <tr>
-                <th>Timestamp</th>
+                <th class="col-timestamp">Timestamp</th>
                 <th>Message</th>
             </tr>
         </thead>
     </table>
-    <div class="log-body">
-        <table class="log-table">
+    <div class="terminal-wrapper">
+        <table class="terminal-table">
             <tbody>
                 <tr *ngIf="filteredLogs.length === 0">
-                    <td colspan="2" style="text-align: center;">No logs available</td>
+                    <td colspan="2" class="empty-log">No logs available</td>
                 </tr>
+
                 <tr *ngFor="let log of filteredLogs">
-                    <td>{{ log.timestamp }}</td>
-                    <td [innerHTML]="log.message | highlight:filterForm.get('searchText')?.value"></td>
+                    <td class="timestamp col-timestamp">
+                         {{ log.timestamp | date:'yyyy-MM-dd HH:mm:ss':'Asia/Kolkata' }}
+                    </td>
+                    <td class="message" [ngClass]="getLogClass(log.message)"
+                        [innerHTML]="log.message | highlight:filterForm.get('searchText')?.value">
+                    </td>
                 </tr>
             </tbody>
         </table>
     </div>
 </div>
 
+
 <div *ngIf="totalItems > 0" class="pagination d-flex justify-content-between gap-3 my-4">
-    <!-- <pagination-controls
-      [id]="'log-pagination'"
-      [maxSize]="5"
-      [responsive]="true"
-      [autoHide]="false"
-      [directionLinks]="true"
-      [previousLabel]="'Prev'"
-      [nextLabel]="'Next'"
-      [totalItems]="totalItems"
-      [itemsPerPage]="itemsPerPage"
-      [(ngModel)]="currentPage"
-      (pageChange)="onPageChange($event)">
-    </pagination-controls> -->
     <nav>
         <ul class="pagination justify-content-center align-items-center">
             <li class="page-item" [class.disabled]="currentPage === 1">
