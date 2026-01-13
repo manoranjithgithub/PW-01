@@ -76,7 +76,7 @@
 
                 <tr *ngFor="let log of filteredLogs">
                     <td class="timestamp col-timestamp">
-                         {{ log.timestamp | date:'yyyy-MM-dd HH:mm:ss':'Asia/Kolkata' }}
+                         {{ log.timestamp}}
                     </td>
                     <td class="message" [ngClass]="getLogClass(log.message)"
                         [innerHTML]="log.message | highlight:filterForm.get('searchText')?.value">
