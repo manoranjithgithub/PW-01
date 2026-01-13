@@ -6,18 +6,16 @@ import { UserService } from '../../core/services/user.service';
 import { ToastrService } from 'ngx-toastr';
 import { VALIDATION_REGEX } from '../../core/constants/validation-regex.constant';
 import { togglePasswordField } from '../../shared/helpers/password.helper';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
-  selector: 'app-register',
+  selector: 'app-forgot-password',
   standalone: true,
-  templateUrl: './register.component.html',
-  styleUrls: ['./register.component.scss'],
-  imports: [RouterLink, RouterOutlet, CommonModule, ReactiveFormsModule]
+  imports: [RouterLink, RouterOutlet, CommonModule, ReactiveFormsModule],
+  templateUrl: './forgot-password.component.html',
+  styleUrls: ['./forgot-password.component.scss'],
 })
-
-export class RegisterComponent implements OnInit {
-
-  registrationForm !: FormGroup;
+export class ForgotPasswordComponent implements OnInit {
   submitted: boolean = false;
   isRegistrationSuccess: boolean = false;
   showPassword: boolean = false;
@@ -25,7 +23,7 @@ export class RegisterComponent implements OnInit {
   successMessage: string = '';
   loading: boolean = false;
   visiblePasswordFields = new Set<string>();
-  createdBy: string | null = null;
+  forgotPasswordForm !: FormGroup;
 
 
   constructor(
@@ -33,16 +31,13 @@ export class RegisterComponent implements OnInit {
     private http: UserService,
     private router: Router,
     private toaster: ToastrService,
-    private ac: ActivatedRoute,
+    private authService: AuthService
   ) {
-    this.registrationForm = this.fb.group({
-      type: ['individual', Validators.required],
-      orgName: ['', [Validators.required, Validators.pattern(/^[a-z0-9-]+$/)]],
-      username: ['', [Validators.required, Validators.pattern(VALIDATION_REGEX.USERNAME)]],
+    this.forgotPasswordForm = this.fb.group({
+      username: ['', [Validators.required]],
       password: ['', [Validators.required, Validators.pattern(VALIDATION_REGEX.NEW_PASSWORD)]],
-      email: ['', [Validators.required, Validators.email]],
-      terms: [false]
-    });
+      confirmPassword: ['', [Validators.required]],
+    }, { validators: this.passwordMatchValidator });
   }
 
   passwordMatchValidator(form: FormGroup) {
@@ -65,52 +60,15 @@ export class RegisterComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.ac.queryParams.subscribe(params => {
-      this.registrationForm.get('type')?.setValue(params['type'] || 'individual');
-      this.createdBy = params['createdBy'] || null;
-    });
     this.currentUrl = this.router.url;
-    this.registrationForm.get('terms')?.setValidators(Validators.requiredTrue);
-
-    this.registrationForm.get('type')?.valueChanges.subscribe((typeValue) => {
-      if (typeValue === 'individual') {
-        this.registrationForm.get('orgName')?.setValue('nimbuz');
-      } else {
-        this.registrationForm.get('orgName')?.reset('');
-      }
-    });
-
-    if (this.registrationForm.get('type')?.value === 'individual') {
-      this.registrationForm.get('orgName')?.setValue('nimbuz');
-    }
-  }
-
-  onSubmit(): void {
-    this.submitted = true;
-    if (this.registrationForm.invalid) return;
-    this.loading = true;
-    const { terms, ...finalPayload } = this.registrationForm.value;
-    // const apiCall = this.isPasswordReset
-    //   ? this.http.forgotPassword(finalPayload)
-    //   : this.http.register(finalPayload);
-
-    this.http.register(finalPayload).subscribe({
-      next: () => {
-        this.handleSuccess();
-      },
-      error: (error) => {
-        this.handleError(error);
-      },
-    });
   }
 
   private handleSuccess(): void {
     this.loading = false;
     this.isRegistrationSuccess = true;
 
-    this.successMessage = `Registration Successful!
-Thank you for registering with us.
-We've sent verification details to your registered email address. Please follow the instructions to log in.` ;
+    this.successMessage = `Password reset link sent!
+Please check your email for instructions to reset your password.`;
   }
 
   private handleError(error: any): void {
@@ -124,5 +82,29 @@ We've sent verification details to your registered email address. Please follow 
 
   togglePasswordVisibility(field: string): void {
     togglePasswordField(this.visiblePasswordFields, field);
+  }
+  submitForgotPassword(): void {
+    this.submitted = true;
+    if (this.forgotPasswordForm.invalid) return;
+    const type = this.getSubDomain().clientId;
+    this.loading = true;
+    delete this.forgotPasswordForm.value.confirmPassword;
+    const finalPayload = {
+      ...this.forgotPasswordForm.value,
+      type: type === 'nimbuz' ? 'individual' : 'business',
+      orgName: type === 'nimbuz' ? 'nimbuz' : type
+    };
+    this.http.forgotPassword(finalPayload).subscribe({
+      next: () => {
+        this.handleSuccess();
+      },
+      error: (error) => {
+        this.handleError(error);
+      },
+    });
+  }
+  getSubDomain(): any {
+    const domain = this.authService.getClientInfo();
+    return domain;
   }
 }

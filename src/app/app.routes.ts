@@ -83,8 +83,8 @@ export const routes: Routes = [
   {
     path: 'forgot-password',
     loadComponent: () =>
-      import('./pages/register/register.component').then(
-        (m) => m.RegisterComponent
+      import('./pages/forgot-password/forgot-password.component').then(
+        (m) => m.ForgotPasswordComponent  
       ),
   },
   {

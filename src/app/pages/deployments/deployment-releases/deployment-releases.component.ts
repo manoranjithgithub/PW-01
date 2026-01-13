@@ -202,7 +202,6 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
   updateSteps(responseData: any) {
     const status = responseData?.status?.toLowerCase();
     this.releaseData = responseData;
-    console.log('Updating steps with status:', status, responseData);
     this.currentStatus = responseData?.status;
 
     const isBuilding = status === "initiated" || status === "building";
