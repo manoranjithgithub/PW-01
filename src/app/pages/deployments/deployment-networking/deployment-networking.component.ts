@@ -113,6 +113,7 @@ export class DeploymentNetworkingComponent implements OnInit {
     });
     this.customDnsHost?.valueChanges.subscribe(value => {
       this.networkSettingsForm.get('customDnsHost')?.setValue(value);
+      this.iscustomDnsHostError = false;
       if (!this.isPatchedValue) {
         this.networkSettingsForm.markAsDirty();
       }
@@ -154,6 +155,10 @@ export class DeploymentNetworkingComponent implements OnInit {
         if (usernameControl && passwordControl) {
           usernameControl?.reset('', { emitEvent: false });
           passwordControl?.reset('', { emitEvent: false });
+          authGroup.get('username')?.clearValidators();
+          authGroup.get('password')?.clearValidators();
+          authGroup.get('username')?.updateValueAndValidity();
+          authGroup.get('password')?.updateValueAndValidity();
         }
         if (showAuthControl?.value !== false) {
           showAuthControl?.setValue(false, { emitEvent: false });
@@ -197,10 +202,10 @@ export class DeploymentNetworkingComponent implements OnInit {
     const environment = localStorage.getItem('environment');
     const envId = environment ? JSON.parse(environment).id : null;
     const formValue = this.networkSettingsForm.value
-    if(formValue.customDns && (formValue.customDnsHost == '' || formValue.customDnsHost == null)){
+    if (formValue.customDns && (formValue.customDnsHost == '' || formValue.customDnsHost == null)) {
       this.iscustomDnsHostError = true;
       return;
-    }else{
+    } else {
       this.iscustomDnsHostError = false;
     }
     if (!formValue.showAuthentication) delete formValue.authentication;
@@ -343,7 +348,7 @@ export class DeploymentNetworkingComponent implements OnInit {
     const href = url.startsWith('http') ? url : `https://${url}`;
     window.open(href, '_blank');
   }
-  clearPasswordField(){
+  clearPasswordField() {
     const authGroup = this.networkSettingsForm.get('authentication') as FormGroup;
     authGroup.get('password')?.setValue('');
   }
