@@ -112,17 +112,6 @@
 
 
 <app-modal #logsModal [modalConfig]="logsModalConfig">
- 
-  <div class="ms-auto theme-toggle">
-    <span class="switch-label">Switch mode</span>
-    <label class="switch">
-      <input type="checkbox" [checked]="isLightMode" (change)="toggleMode($event)">
-      <span class="slider">
-        <i class="bi bi-moon icon-moon"></i>
-        <i class="bi bi-sun icon-sun"></i>
-      </span>
-    </label>
-  </div>
   <app-log-viewer [logs]="deploymentLogs" [itemsPerPage]="itemsPerPage" [pageSizes]="pageSizes"
     [currentPage]="currentPage" [isLightMode]="isLightMode" [totalItems]="totalPages"
     (getLogs)="onPageSizeChange($event, 'build')">

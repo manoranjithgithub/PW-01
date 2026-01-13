@@ -46,7 +46,7 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
 
   public logsModalConfig: any = {
     modalTitle: 'View log',
-    width: '1150px',
+    width: '1250px',
     height: 'auto',
     hideDismissButton: () => true,
     hideCloseButton: () => false

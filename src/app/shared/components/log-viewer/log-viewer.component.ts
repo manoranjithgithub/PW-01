@@ -100,4 +100,18 @@ export class LogViewerComponent implements OnInit, AfterViewInit, OnChanges {
       searchText
     });
   }
+  getLogClass(message: string): string {
+    const msg = message.toLowerCase();
+
+    if (msg.includes('error') || msg.includes('failed')) return 'log-error';
+    if (msg.includes('warn')) return 'log-warn';
+    if (msg.includes('debug')) return 'log-debug';
+    if (msg.includes('done') || msg.includes('success')) return 'log-success';
+    if (msg.startsWith('#')) return 'log-step';
+
+    return 'log-info';
+  }
+  toggleMode(event: Event) {
+    this.isLightMode = !this.isLightMode;
+  }
 }
