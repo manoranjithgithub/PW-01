@@ -62,7 +62,7 @@ export class SharedService {
   public isLoading$ = this.isLoading.asObservable();
 
   constructor(private cookieService: CookieService, private http: HttpClient) {
-    this.ensureRatesFor(['INR']).catch(() => { /* ignore */ });
+    // this.ensureRatesFor(['INR']).catch(() => { /* ignore */ });
   }
 
   emitValueChange(value: string) {

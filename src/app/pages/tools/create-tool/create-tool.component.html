@@ -68,7 +68,7 @@
                         <div class="position-relative" *ngSwitchCase="'select'">
                             <select class="form-select" [formControlName]="field.key" [id]="field.key"
                                 (change)="onFieldChange($event,field.label)">
-                                <option *ngFor="let option of field.options" [value]="option">{{option}}</option>
+                                <option *ngFor="let option of getInstanceTypes(field.options)" [value]="option.instanceType">{{option.instanceType}}</option>
                             </select>
                             <span class=" d-flex  justify-content-end align-items-end" style="font-size: 12px;"
                                 *ngIf="field.label === 'Instance Type' && selectedResource">

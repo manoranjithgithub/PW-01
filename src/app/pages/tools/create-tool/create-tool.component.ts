@@ -82,6 +82,7 @@ export class CreateToolComponent implements OnInit, OnDestroy {
         return pa - pb;
       });
       this.resources = items;
+
     })
   }
 
@@ -312,6 +313,12 @@ export class CreateToolComponent implements OnInit, OnDestroy {
     } catch (e) {
       return String(converted);
     }
+  }
+  getInstanceTypes(options: string[]): any[] {
+    const items = this.resources.filter(resource =>
+      options.includes(resource.instanceType)
+    );
+    return items;
   }
 }
 

@@ -299,12 +299,12 @@
     </ng-container>
   </div>
 </div>
-<div>
+<div class="mb-2">
   <div class="stepper-footer d-flex gap-3 justify-content-between">
     <div class="">
       <button class="btn button-format-outline" (click)="prev()" [disabled]="currentStep === 0"
         [attr.title]="(currentStep === 0) ? 'You are not authorized to view that page.' : null"
-        *ngIf="currentStep > 0">Previous</button>
+        *ngIf="currentStep > 0"><i class="bi bi-arrow-left"></i> Previous</button>
     </div>
     <div class="">
       <div class="">

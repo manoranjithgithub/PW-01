@@ -38,6 +38,8 @@ export class DeploymentNetworkingComponent implements OnInit {
   deploymentdetails: any;
   isPatchedValue: boolean = true;
   submitted: boolean = false;
+  showPasswordIcon = false;
+  iscustomDnsHostError: boolean = false;
 
   @ViewChild('confirmationModel') private confirmationModel!: ModalComponent;
 
@@ -67,10 +69,8 @@ export class DeploymentNetworkingComponent implements OnInit {
       customDnsHost: ['']
     });
 
-    // freeze flag from input status
     this.freezeAddNewData = this.currentStatus && this.currentStatus?.toLowerCase() === 'building' ? true : false;
 
-    // compute and apply form disabled state based on freeze flag and permissions
     const shouldDisable = this.freezeAddNewData || !(this.permissionService.canWriteGlobal() || this.permissionService.canAdminGlobal() || this.permissionService.canDeleteForCurrentUser(null, null));
     this.formDisabled = shouldDisable;
     if (shouldDisable) {
@@ -107,12 +107,13 @@ export class DeploymentNetworkingComponent implements OnInit {
       }
       const domainSuffix = envType === 'prod'
         ? `${envId}.${region}.lb.nimbuz.tech`
-        : `${envId}.dev.${region}.lb.nimbuz.tech`;
+        : `${envId}.dev.lb.nimbuz.tech`;
       this.networkSettingsForm.get('host')?.setValue(`${value}-${domainSuffix}`);
       this.isPatchedValue = false
     });
     this.customDnsHost?.valueChanges.subscribe(value => {
       this.networkSettingsForm.get('customDnsHost')?.setValue(value);
+      this.iscustomDnsHostError = false;
       if (!this.isPatchedValue) {
         this.networkSettingsForm.markAsDirty();
       }
@@ -154,6 +155,10 @@ export class DeploymentNetworkingComponent implements OnInit {
         if (usernameControl && passwordControl) {
           usernameControl?.reset('', { emitEvent: false });
           passwordControl?.reset('', { emitEvent: false });
+          authGroup.get('username')?.clearValidators();
+          authGroup.get('password')?.clearValidators();
+          authGroup.get('username')?.updateValueAndValidity();
+          authGroup.get('password')?.updateValueAndValidity();
         }
         if (showAuthControl?.value !== false) {
           showAuthControl?.setValue(false, { emitEvent: false });
@@ -197,6 +202,12 @@ export class DeploymentNetworkingComponent implements OnInit {
     const environment = localStorage.getItem('environment');
     const envId = environment ? JSON.parse(environment).id : null;
     const formValue = this.networkSettingsForm.value
+    if (formValue.customDns && (formValue.customDnsHost == '' || formValue.customDnsHost == null)) {
+      this.iscustomDnsHostError = true;
+      return;
+    } else {
+      this.iscustomDnsHostError = false;
+    }
     if (!formValue.showAuthentication) delete formValue.authentication;
     delete formValue.showAuthentication;
     delete formValue.host;
@@ -271,9 +282,10 @@ export class DeploymentNetworkingComponent implements OnInit {
       if (authGroup && authentication?.username && authentication?.password) {
         authGroup.patchValue({
           username: authentication.username,
-          password: authentication.password
-        });
+          password: '********'
+        }, { emitEvent: false });
       }
+      this.showPasswordIcon = false;
     });
   }
 
@@ -335,5 +347,12 @@ export class DeploymentNetworkingComponent implements OnInit {
     if (!url) return;
     const href = url.startsWith('http') ? url : `https://${url}`;
     window.open(href, '_blank');
+  }
+  clearPasswordField() {
+    const authGroup = this.networkSettingsForm.get('authentication') as FormGroup;
+    authGroup.get('password')?.setValue('');
+  }
+  onPasswordChange() {
+    this.showPasswordIcon = true;
   }
 }
