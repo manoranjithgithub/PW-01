@@ -270,7 +270,7 @@ export class ToolsComponent implements OnInit, OnDestroy {
     if (document.hidden) {
       if (this.isTabHidden) return;
 
-      console.log('Tab hidden → stopping tools SSE');
+      // console.log('Tab hidden → stopping tools SSE');
       this.isTabHidden = true;
       this.tabHiddenAt = Date.now();
 
