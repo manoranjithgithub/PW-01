@@ -45,7 +45,7 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
   @ViewChild('logsModal') private logsModal!: ModalComponent;
 
   public logsModalConfig: any = {
-    modalTitle: 'View log',
+    modalTitle: 'Build & Deployment Logs',
     width: '1250px',
     height: 'auto',
     hideDismissButton: () => true,

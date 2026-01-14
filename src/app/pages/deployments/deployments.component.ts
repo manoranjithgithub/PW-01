@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { SharedService } from '../../shared/services/shared.service';
-import { Subscription } from 'rxjs';
+import { max, Subscription } from 'rxjs';
 import { CellClickedEvent, ColDef } from 'ag-grid-community';
 import { ActionCellRendererComponent } from '../../shared/components/action-cell-renderer/action-cell-renderer.component';
 import { DeploymentsService } from './deployment.service';
@@ -35,14 +35,9 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
       field: 'name',
       sortable: true,
       filter: true,
-      flex: 1,
+      // flex: 1,
       minWidth: 250,
       tooltipField: 'name',
-      cellStyle: {
-        'white-space': 'nowrap',
-        'overflow': 'hidden',
-        'text-overflow': 'ellipsis'
-      },
       onCellClicked: (event: CellClickedEvent) => this.gotoAction(event.data)
     },
     {
@@ -67,7 +62,7 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
     {
       headerName: 'URL',
       field: 'name',
-      width: 300,
+      minWidth: 300,
       tooltipField: 'urlTooltip',
       cellRenderer: UrlCellRendererComponent
     },
@@ -100,7 +95,7 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
       field: 'actions',
       width: 102,
       cellRenderer: ActionCellRendererComponent,
-      valueGetter: (params) => {return params.data; },
+      valueGetter: (params) => { return params.data; },
       cellStyle: { cursor: 'pointer' },
       cellRendererParams: {
         additionalParam: 'deployment'

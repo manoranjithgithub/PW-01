@@ -5,11 +5,11 @@
     }
 
     .url-line {
-        display: flex;
-        align-items: center;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        display: block;
+        // align-items: center;
+        // white-space: nowrap;
+        // overflow: hidden;
+        // text-overflow: ellipsis;
         // line-height: 1.3;
     }
 
@@ -31,7 +31,7 @@
     }
 
     .disabled-link {
-        pointer-events: none;
+        // pointer-events: none;
         color: grey;
         text-decoration: none;
         cursor: not-allowed;
