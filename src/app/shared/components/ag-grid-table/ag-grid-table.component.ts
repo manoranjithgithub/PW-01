@@ -45,10 +45,11 @@ export class AgGridTableComponent implements OnInit {
   defaultColDef =
     {
       resizable: true,
-      wrapText: true,
+      // wrapText: true,
       autoHeight: true,
       minWidth: 50,
       suppressSizeToFit: true,
+      // flex:1
     };
 
   get gridOptions(): GridOptions {

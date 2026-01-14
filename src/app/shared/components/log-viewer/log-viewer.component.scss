@@ -9,7 +9,7 @@
     --info: #c9d1d9;
     --debug: #8b949e;
     --warn: #f2cc60;
-    --error: #ff7b72;
+    --error: #c1190d;
     --success: #3fb950;
     --step: #58a6ff;
 }
@@ -84,7 +84,7 @@
     border-bottom: 1px solid var(--border);
 }
 .terminal-wrapper {
-  max-height: calc(100vh - 300px);
+  max-height: calc(100vh - 200px);
   overflow-y: auto;
   background: var(--bg);
 }

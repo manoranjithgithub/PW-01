@@ -413,7 +413,7 @@ export class DeploymentMetricsComponent implements OnInit, AfterViewInit {
     return { unit: 'month', displayFormats: { month: 'MMM yyyy' } };
   }
   private formatCpuForLabel(val: number): string {
-    return `${Number(val).toFixed(0)} mCPU`;
+    return `${Number(val).toFixed(2)} mCPU`;
   }
   private average(arr: number[]): number {
     if (!arr || arr.length === 0) return 0;

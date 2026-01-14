@@ -27,7 +27,9 @@ export class PermissionService {
       // ignore storage errors
     }
     try {
-       if (this.router.url.includes('/login')) {
+      const authRoutes = ['/login', '/logout', '/forgot-password', '/create-new-account'];
+
+      if (authRoutes.some(route => this.router.url.includes(route))) {
         return;
       }
       this.router.events.pipe(filter(e => e instanceof NavigationEnd)).subscribe(() => {
@@ -94,7 +96,7 @@ export class PermissionService {
   }
 
   hasPermission(projectId: string | null | undefined, envId: string | null | undefined, permission: string): boolean {
-    const uid =  localStorage.getItem('userId') || '';
+    const uid = localStorage.getItem('userId') || '';
     const policies = this.getRawPolicies();
     if (!policies || policies.length === 0) return false;
     const requested = String(permission).toLowerCase();
@@ -113,7 +115,7 @@ export class PermissionService {
   }
 
   hasAnyPermission(permission: string): boolean {
-    const uid =  localStorage.getItem('userId') || '';
+    const uid = localStorage.getItem('userId') || '';
     const policies = this.getRawPolicies();
     if (!policies || policies.length === 0) return false;
     const requested = String(permission).toLowerCase();
@@ -128,7 +130,7 @@ export class PermissionService {
   }
 
   getEffectivePermissionsForUser(projectId: string | null | undefined, envId: string | null | undefined): Set<string> {
-    const uid =  localStorage.getItem('userId') || '';
+    const uid = localStorage.getItem('userId') || '';
     const policies = this.getRawPolicies();
     const caps = new Set<string>();
     if (!policies || policies.length === 0) return caps;

@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { ColDef, CellClickedEvent } from 'ag-grid-community';
+import { ColDef, CellClickedEvent, ColGroupDef } from 'ag-grid-community';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ConfirmationModalComponent } from '../../shared/components/modal/confirmation-modal/confirmation-modal.component';
@@ -99,7 +99,7 @@ export class ToolsComponent implements OnInit, OnDestroy {
     document.addEventListener('visibilitychange', this.handleVisibilityChange);
   }
 
-  columnDefs: ColDef[] = [
+  columnDefs: (ColDef | ColGroupDef)[] = [
     {
       headerName: ' ', field: 'icon', sortable: false, filter: false, width: 80,
       cellStyle: { cursor: 'pointer', color: '#181d1f', display: 'flex', alignItems: 'center', justifyContent: 'center' },
@@ -110,7 +110,7 @@ export class ToolsComponent implements OnInit, OnDestroy {
         this.gotoAction(event.data)
     },
     {
-      headerName: 'Name', field: 'name', sortable: true, filter: true, flex: 1, maxWidth: 250,
+      headerName: 'Name', field: 'name', sortable: true, filter: true, maxWidth: 250,
       cellStyle: { cursor: 'pointer', color: '#181d1f' },
       onCellClicked: (event: CellClickedEvent) =>
         this.gotoAction(event.data)
@@ -136,12 +136,7 @@ export class ToolsComponent implements OnInit, OnDestroy {
     {
       headerName: 'Host',
       field: 'privateHost',
-      cellStyle: {
-        'white-space': 'nowrap',
-        'overflow': 'hidden !important',
-        'text-overflow': 'ellipsis',
-        'cursor': 'pointer'
-      },
+      // minWidth:300,
       cellRenderer: (params: any) => {
         const privateUrl = params.data?.privateHost || '';
         const publicUrl = params.data?.publicHost || '';
@@ -174,12 +169,12 @@ export class ToolsComponent implements OnInit, OnDestroy {
 
           const displayLabel = label === 'private' ? 'Private' : 'Public';
           return `
-            <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
+            <span style="margin-bottom:4px;">
               ${clipboardIcon}
               <span id="${id}" style="position: absolute; background: black; color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px; opacity: 0; transition: opacity 0.2s; pointer-events: none; z-index: 1000;">Copy</span>
               <span style="font-weight:600; font-size:12px; color:#333; margin-right:4px;">${displayLabel}:</span>
               ${linkPart}
-            </div>`;
+            </span><br/>`;
         };
 
         if (privateUrl) parts.push(makePart(privateUrl, 'private'));
@@ -187,18 +182,41 @@ export class ToolsComponent implements OnInit, OnDestroy {
 
         return parts.join('');
       },
-      sortable: true,
-      filter: true,
+      // sortable: true,
+      // filter: true,
       flex: 1
     },
     {
-      headerName: 'Port',
+      headerName: 'Public Port',
       field: 'publicPort',
-      sortable: true,
-      filter: true,
-      width: 100,
-      // flex: 1,
+      width: 120,
+      cellStyle: { textAlign: 'center' }
     },
+    {
+      headerName: 'Private Port',
+      field: 'privatePort',
+      width: 120,
+      cellStyle: { textAlign: 'center' }
+    },
+    // {
+    //   headerName: 'Port',
+    //   marryChildren: true,
+    //   headerClass: 'center-header',
+    //   children: [
+    //     {
+    //       headerName: 'Public',
+    //       field: 'publicPort',
+    //       width: 100,
+    //       cellStyle: { textAlign: 'center' }
+    //     },
+    //     {
+    //       headerName: 'Private',
+    //       field: 'privatePort',
+    //       width: 100,
+    //       cellStyle: { textAlign: 'center' }
+    //     }
+    //   ]
+    // },
     {
       headerName: "Actions",
       field: "actions",
@@ -217,7 +235,7 @@ export class ToolsComponent implements OnInit, OnDestroy {
 
   gotoAction(params: any) {
     this.toolName = params.name;
-    this.router.navigate(['/tools/view-tool'], { queryParams: { selectedView: this.toolName, status: params.status } })
+    this.router.navigate(['/tools/view-tool'], { queryParams: { selectedView: this.toolName } })
   }
 
   getAvailableTools(envId: string): void {
@@ -252,7 +270,7 @@ export class ToolsComponent implements OnInit, OnDestroy {
     if (document.hidden) {
       if (this.isTabHidden) return;
 
-      console.log('Tab hidden → stopping tools SSE');
+      // console.log('Tab hidden → stopping tools SSE');
       this.isTabHidden = true;
       this.tabHiddenAt = Date.now();
 
