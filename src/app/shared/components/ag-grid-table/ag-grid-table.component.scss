@@ -21,31 +21,32 @@
   border-right: 1px solid #ebf1f6;
 }
 
-// .ag-row-even {
-//   background-color:  #FFF7F2  
-// }
-
-// .ag-row-odd {
-//   background-color: white
-// }
 .ag-theme-alpine {
   overflow: auto;
 }
 
-.ag-cell-value{
+.ag-cell-value {
   line-height: 1.3;
+  // white-space: nowrap;
+  // overflow: hidden;
+  // text-overflow: ellipsis;
+  // white-space: nowrap;
+  // overflow: hidden;
+  // text-overflow: ellipsis;
+  // width: 100%;
+  // display: block;
 }
+
 .ag-header-cell,
 .ag-cell {
-  font-family: ''plusFont', sans-serif';
+  font-family: 'plusFont', sans-serif;
   cursor: pointer;
-  // text-transform: capitalize;
   padding: 8px 15px;
   font-size: 14px;
   font-style: normal;
   font-weight: 400;
-  display: flex !important;
-  align-items: center !important;
+  // display: flex !important;
+  // align-items: center !important;
 }
 
 .ag-theme-alpine .ag-row {
@@ -73,41 +74,46 @@
 .ag-row-hover:not(.ag-full-width-row)::before {
   background-color: #FFF6F0 !important;
 }
-::ng-deep .ag-icon-first{
+
+::ng-deep .ag-icon-first {
   color: #fff !important;
 }
+
 .status-badge {
-    display: inline-block;
-    padding: 4px 12px;
-    border-radius: 5px;
-    // font-weight: 600;
-    font-size: 13px;
-    // line-height: 1;
-    min-width: 100px;
-    text-align: center;
-    white-space: nowrap;
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 5px;
+  // font-weight: 600;
+  font-size: 13px;
+  // line-height: 1;
+  min-width: 100px;
+  text-align: center;
+  white-space: nowrap;
 }
 
 .status-success {
-    color: oklch(37.8% .077 168.94);
-    background: oklch(0.98 0.02 166.03);
-    border: 1px solid oklch(90.5% .093 164.15);
+  color: oklch(37.8% .077 168.94);
+  background: oklch(0.98 0.02 166.03);
+  border: 1px solid oklch(90.5% .093 164.15);
 }
 
 .status-danger {
-    color: #8b0836;
-    background: oklch(96.9% .015 12.422);
-    border: 1px solid oklch(89.2% .058 10.001);
+  color: #8b0836;
+  background: oklch(96.9% .015 12.422);
+  border: 1px solid oklch(89.2% .058 10.001);
 }
 
 .status-muted {
-    color: #6c757d;
-    background: rgba(108, 117, 125, 0.04);
-    border: 1px solid rgba(108, 117, 125, 0.08);
+  color: #6c757d;
+  background: rgba(108, 117, 125, 0.04);
+  border: 1px solid rgba(108, 117, 125, 0.08);
 }
 
 @media (prefers-reduced-motion: no-preference) {
-    .status-badge {
-        transition: background-color .15s ease, border-color .15s ease, color .15s ease;
-    }
+  .status-badge {
+    transition: background-color .15s ease, border-color .15s ease, color .15s ease;
+  }
+}
+.center-header .ag-header-cell-comp-wrapper {
+  justify-content: center;
 }

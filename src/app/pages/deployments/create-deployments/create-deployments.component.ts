@@ -133,7 +133,7 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
         [
           Validators.required,
           Validators.pattern(VALIDATION_REGEX.APP_NAME),
-          Validators.maxLength(50),
+          Validators.maxLength(40),
         ],
       ],
       replicas: ['1', [Validators.pattern('^[0-9]+$')]],
@@ -388,7 +388,7 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
   onZipFileSelect(event: any): void {
     const file = event.target.files[0];
     const zipfileinput = this.zipUploadForm.get('zipfileInput');
-    const allowedExtensions = ['zip', 'tar', 'rar'];
+    const allowedExtensions = ['zip', 'tar'];
     zipfileinput?.setValidators([
       Validators.required,
       this.fileValidator(allowedExtensions),
@@ -404,7 +404,15 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
         if (!zipfileInputControl?.errors?.['invalidFileType']) {
           this.stepOneForm.get('zipFilename')?.patchValue(file.name);
           const fileNameWithoutExtension = this.removeFileExtension(file.name);
-          this.stepOneForm.get('name')?.patchValue(fileNameWithoutExtension);
+          this.stepOneForm.get('name')?.setValue(fileNameWithoutExtension);
+          // this.stepOneForm.get('name')?.setValidators([
+          //   Validators.required,
+          //   Validators.maxLength(40),
+          //   this.isNameAvailable(true),
+          //   Validators.pattern(VALIDATION_REGEX.APP_NAME),
+          // ]);
+          // this.stepOneForm.markAllAsTouched();
+          // this.stepOneForm.get('name')?.updateValueAndValidity();
           this.fileError = '';
         } else {
           this.fileError = 'Please upload valid file type';
@@ -461,6 +469,10 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
           this.toaster?.error(`Failed to fetch branches from ${vcs}`);
         }
       });
+
+    this.stepOneForm.get('branchName')?.markAsTouched();
+    this.stepOneForm.get('branchName')?.setValidators([Validators.required]);
+    this.stepOneForm.get('branchName')?.updateValueAndValidity();
   }
 
   goToStep(index: number) {
@@ -552,6 +564,9 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
         this.reposList = [];
       }
     });
+    this.stepOneForm.get('selectedRepo')?.markAsTouched();
+    this.stepOneForm.get('selectedRepo')?.setValidators([Validators.required]);
+    this.stepOneForm.get('selectedRepo')?.updateValueAndValidity();
   }
   private normalizeRepos(type: 'github' | 'gitlab', repos: any[]) {
     return repos.map((repo: any) => ({
