@@ -8,3 +8,13 @@ import { appConfig } from './app/app.config';
 
 bootstrapApplication(AppComponent, appConfig)
   .catch((err) => console.error(err));
+
+window.addEventListener('error', (event: any) => {
+  if (
+    event?.message?.includes('Loading chunk') ||
+    event?.message?.includes('Failed to fetch dynamically imported module')
+  ) {
+    console.warn('Chunk load failed. Reloading app...');
+    window.location.reload();
+  }
+});

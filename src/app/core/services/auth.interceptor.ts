@@ -57,6 +57,11 @@ export class AuthInterceptor implements HttpInterceptor {
 
         if (activeRequests === 0) {
           setTimeout(() => this.loader.hide(), 150);
+          window.scrollTo({
+            top: 0,
+            left: 0,
+            behavior: 'smooth'
+          });
           // window.scrollTo({ top: 0, behavior: 'smooth' });
         }
       })
