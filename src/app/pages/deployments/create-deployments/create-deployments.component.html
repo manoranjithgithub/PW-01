@@ -106,8 +106,8 @@
                   This field is required.
                 </div>
                 <div class="text-danger my-1" *ngIf="isError('name','pattern')">
-                  Name must contain only lowercase letters, numbers, and separators (-). Consecutive separators
-                  and uppercase letters are not allowed.
+                  Name must start with a lowercase letter and contain only lowercase letters, numbers, and hyphens (-).
+                  Consecutive hyphens, uppercase letters, and names starting with a number or hyphen are not allowed.
                 </div>
                 <div class="text-danger my-1" *ngIf="isError('name','nameValidation')"> Name is already taken</div>
                 <div class="text-danger my-1" *ngIf="isError('name', 'maxlength')">
