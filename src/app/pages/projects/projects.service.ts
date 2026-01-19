@@ -130,34 +130,21 @@ export class ProjectsService {
   }
 
   private handleError(error: HttpErrorResponse) {
-    // Normalize nested error shapes and prefer detailed messages when available
     const nestedDetails =
-      error?.error?.error?.details || error?.error?.details || error?.error?.message || null;
-
+      error?.error?.error?.details || error?.error?.details || error?.error?.message || error.error?.error?.message || null;
+    let errorMessage = '';
     if (error.error instanceof ErrorEvent) {
-      console.error('An error occurred:', error.error.message);
-      this.toastr.error(error.error?.message || 'An error occurred');
+      errorMessage = error.error.message;
     }
     else if (error.status === 500) {
-      const errorMessage = 'Server Error. Please try again later or contact support if it persists.';
-      console.error('Internal Server Error 500:', errorMessage);
-      this.toastr.error(errorMessage, 'Internal Server Error 500:');
+      errorMessage = nestedDetails || 'Server Error. Please try again later or contact support if it persists.';
     }
     else if (error.status === 404) {
-      const errorMessage = nestedDetails || 'Please try again later';
-      console.error('Internal Server Error 404:', errorMessage);
-      this.toastr.error(errorMessage, 'Internal Server Error 404:');
+      errorMessage = nestedDetails || 'Resource not found.';
     }
-    // else if (error.status === 400) {
-    //   const errorMessage = error.response?.message || 'Bad Request';
-    //   console.error('Bad Request:', errorMessage);
-    //   this.toastr.error(errorMessage);
-    // }
     else {
-      const errorMessage = error.error?.error || 'Please try again later';
-      // this.toastr.error(errorMessage, 'Error');
-      console.error(errorMessage);
+      errorMessage = nestedDetails || 'An unexpected error occurred. Please try again later.';
     }
-    return throwError('Something bad happened; please try again later.');
+    return throwError(errorMessage);
   }
 }
