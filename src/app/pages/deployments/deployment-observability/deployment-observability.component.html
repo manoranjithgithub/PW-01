@@ -1,21 +1,11 @@
-  <div class="ms-auto theme-toggle d-flex justify-content-end p-2 mt-2">
-    <span class="switch-label">Switch mode</span>
-    <label class="switch">
-      <input type="checkbox" [checked]="isLightMode" (change)="toggleMode($event)">
-      <span class="slider">
-        <i class="bi bi-moon icon-moon"></i>
-        <i class="bi bi-sun icon-sun"></i>
-      </span>
-    </label>
-  </div>
 <form [formGroup]="filterForm" (ngSubmit)="onFilter()"
-  class="filter-bar d-flex align-items-end gap-3 p-3 border rounded flex-wrap w-100">
-  <div class="form-group mb-0">
+  class="filter-bar d-flex align-items-end gap-3 px-3 w-100 mb-0">
+  <div class="form-group">
     <label class="custom-label">Search by keyword</label>
     <input type="text" class="form-control custom-values" placeholder="Search..." formControlName="searchText" />
   </div>
 
-  <div class="form-group mb-0">
+  <div class="form-group">
     <label for="duration" class="custom-label">Time Duration:</label>
     <select id="duration" formControlName="duration" class="form-control  custom-values">
       <option *ngFor="let duration of durations" [value]="duration.value">
@@ -24,7 +14,7 @@
     </select>
   </div>
 
-  <div class="form-group mb-0">
+  <div class="form-group">
     <label for="timeZone" class="custom-label">Time Zone:</label>
     <select id="timeZone" formControlName="timeZone" class="form-select custom-values">
       <option *ngFor="let tz of timeZones" [value]="tz.value">{{ tz.label }}</option>
@@ -33,58 +23,69 @@
 
   <ng-container *ngIf="filterForm.get('duration')?.value === 'custom'">
     <div class="d-flex align-items-end gap-3">
-      <div class="form-group mb-0">
+      <div class="form-group">
         <label class="custom-label">From:</label>
         <input type="datetime-local" formControlName="fromTimestamp" class="form-control custom-values" />
       </div>
 
-      <div class="form-group mb-0">
+      <div class="form-group">
         <label class="custom-label">To:</label>
         <input type="datetime-local" formControlName="toTimestamp" class="form-control custom-values" />
       </div>
     </div>
   </ng-container>
 
-  <div class="form-group mb-0">
+  <div class="form-group d-flex align-items-center gap-2 justify-content-between">
     <button type="submit" class="btn btn-primary p-2 custom-label">Apply Filter</button>
+    <button type="button" class="btn btn-outline-secondary" (click)="onRefresh()" title="Refresh Logs">
+      <i class="bi bi-arrow-clockwise"></i>
+    </button>
   </div>
 
   <div class="ms-auto mb-0">
-    <button type="button" class="btn btn-outline-secondary" (click)="onRefresh()">
-      <i class="bi bi-arrow-clockwise"></i>
-    </button>
+    
+    <div class="ms-auto theme-toggle d-flex justify-content-end p-2 mt-2">
+      <span class="switch-label">Switch mode</span>
+      <label class="switch">
+        <input type="checkbox" [checked]="isLightMode" (change)="toggleMode($event)">
+        <span class="slider">
+          <i class="bi bi-moon icon-moon"></i>
+          <i class="bi bi-sun icon-sun"></i>
+        </span>
+      </label>
+    </div>
   </div>
 </form>
 
 <hr>
 
 <div class="log-container" [class.dark]="!isLightMode" [class.light]="isLightMode">
-    <table class="log-table">
-        <thead>
-            <tr>
-                <th class="col-timestamp">Timestamp</th>
-                <th>Message</th>
-            </tr>
-        </thead>
-    </table>
-    <div class="terminal-wrapper">
-        <table class="terminal-table">
-            <tbody>
-                <tr *ngIf="filteredLogs.length === 0">
-                    <td colspan="2" class="empty-log">No logs available</td>
-                </tr>
+  <table class="log-table">
+    <thead>
+      <tr>
+        <th class="col-timestamp">Timestamp</th>
+        <th>Message</th>
+      </tr>
+    </thead>
+  </table>
+  <div class="terminal-wrapper">
+    <table class="terminal-table">
+      <tbody>
+        <tr *ngIf="filteredLogs.length === 0">
+          <td colspan="2" class="empty-log">No logs available</td>
+        </tr>
 
-                <tr *ngFor="let log of filteredLogs">
-                    <td class="timestamp col-timestamp">
-                         {{ log.timestamp}}
-                    </td>
-                    <td class="message" [ngClass]="getLogClass(log.message)"
-                        [innerHTML]="log.message | highlight:filterForm.get('searchText')?.value">
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+        <tr *ngFor="let log of filteredLogs">
+          <td class="timestamp col-timestamp">
+            {{ log.timestamp}}
+          </td>
+          <td class="message" [ngClass]="getLogClass(log.message)"
+            [innerHTML]="log.message | highlight:filterForm.get('searchText')?.value">
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </div>
 
 <div *ngIf="totalItems > 0" class="pagination d-flex justify-content-between gap-3 my-4">

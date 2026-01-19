@@ -67,9 +67,9 @@
   width: 200px;
 }
 
-.form-group {
-  padding-top: 8px;
-}
+// .form-group {
+//   padding-top: 8px;
+// }
 
 .filter-bar {
   flex-wrap: wrap;
@@ -230,4 +230,7 @@
   text-align: center;
   padding: 20px !important;
   color: var(--timestamp);
+}
+::ng-deep .tab-content{
+  height: calc(60vh - 100px);
 }
