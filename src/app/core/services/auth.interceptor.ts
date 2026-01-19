@@ -92,8 +92,8 @@ export class AuthInterceptor implements HttpInterceptor {
         this.toastr.error(error.error?.error?.details || 'Resource not found', '404');
         break;
       case 500: {
-        const msg = this.extractErrorMessage(error) || 'Internal server error';
-        this.toastr.error('Server Error. Please try again later or contact support if it persists.', '500');
+        const msg = this.extractErrorMessage(error) || 'Server Error. Please try again later or contact support if it persists';
+        this.toastr.error(msg, '500');
         break;
       }
       default:
