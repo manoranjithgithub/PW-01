@@ -25,6 +25,7 @@ export class LogViewerComponent implements OnInit, AfterViewInit, OnChanges {
   filterForm!: FormGroup;
 
   @Output() getLogs = new EventEmitter<any>();
+  @Output() getAlltLogs = new EventEmitter<any>();
   constructor(private fb: FormBuilder) { }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -114,4 +115,21 @@ export class LogViewerComponent implements OnInit, AfterViewInit, OnChanges {
   toggleMode(event: Event) {
     this.isLightMode = !this.isLightMode;
   }
+
+  downloadLogsTxt(): void {
+    this.getAlltLogs.emit();
+    // const content = this.logs
+    //   .map((log: any) => `${log.timestamp} ${log.message}`)
+    //   .join('\n');
+
+    // const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    // const link = document.createElement('a');
+
+    // link.href = URL.createObjectURL(blob);
+    // link.download = 'build-logs.txt';
+    // link.click();
+
+    // URL.revokeObjectURL(link.href);
+  }
+
 }
