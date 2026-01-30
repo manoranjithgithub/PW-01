@@ -100,7 +100,7 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
 
   getReleasesByDeploymentId(res: any): void {
     if (!res || res.length === 0) return;
-    
+
     [this.active, ...this.history] = res;
     this.releaseData = this.active;
     this.updateSteps(this.active);
@@ -117,7 +117,7 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
 
   getProviderName(gitUrl: string): string {
     if (!gitUrl) return 'vcs';
-    
+
     try {
       const urlLower = gitUrl.toLowerCase();
       if (urlLower.includes('github.com')) return 'GitHub';
@@ -290,6 +290,40 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
             ? "Deployment is currently paused."
             : ""
     });
+  }
+
+  onDownloadLogs(): void {
+    const environmentStr = localStorage.getItem('environment');
+    const environmentId = environmentStr ? JSON.parse(environmentStr).id : '';
+    const req = {
+      environmentId: environmentId,
+      logType: 'job',
+      name: this.selectedReleaseDetails.jobName,
+      page: this.currentPage,
+    };
+    if (this.realeseId) {
+      this.deploymentService.getSelectedDeploymentLogs(req).subscribe((res: any) => {
+        if (res.status.toLowerCase() === 'success' && res.data.logs && res.data.logs.length > 0) {
+          // console.log(res.data.logs);
+          const content = res.data.logs
+            .map((log: any) => log)
+            .join('\n');
+
+          const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+          const link = document.createElement('a');
+
+          link.href = URL.createObjectURL(blob);
+          link.download = 'build-logs.txt';
+          link.click();
+
+          URL.revokeObjectURL(link.href);
+        }else{
+          console.error('No logs available for download.');
+        }
+      })
+
+    }
+
   }
 
   ngOnDestroy(): void {

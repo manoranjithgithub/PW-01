@@ -114,7 +114,7 @@
 <app-modal #logsModal [modalConfig]="logsModalConfig">
   <app-log-viewer [logs]="deploymentLogs" [itemsPerPage]="itemsPerPage" [pageSizes]="pageSizes"
     [currentPage]="currentPage" [isLightMode]="isLightMode" [totalItems]="totalPages"
-    (getLogs)="onPageSizeChange($event, 'build')">
+    (getLogs)="onPageSizeChange($event, 'build')" (getAlltLogs)="onDownloadLogs()">
   </app-log-viewer>
   
 </app-modal>
