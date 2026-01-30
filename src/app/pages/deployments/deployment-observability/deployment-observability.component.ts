@@ -326,4 +326,65 @@ export class DeploymentObservabilityComponent implements OnInit {
 
     return 'log-info';
   }
+
+  onDownloadLogs(): void {
+    const filterValues = this.filterForm.value;
+
+    let duration: string | undefined = '';
+    let fromTimestamp: string | undefined = '';
+    let toTimestamp: string | undefined = '';
+    let keyword: string | undefined = '';
+    if (filterValues.searchText) {
+      keyword = filterValues.searchText;
+    }
+    if (filterValues.duration && filterValues.duration !== 'custom') {
+      duration = filterValues.duration;
+    } else if (filterValues.duration === 'custom') {
+      fromTimestamp = `${filterValues.fromTimestamp}:00Z`;
+      toTimestamp = `${filterValues.toTimestamp}:00Z`;
+    }
+
+    const environmentStr = localStorage.getItem('environment');
+    const environmentId = environmentStr ? JSON.parse(environmentStr).id : '';
+    const timeZone = this.getTimezoneOffset(this.filterForm.value.timeZone || 'IST');
+    const fromDate = new Date(this.filterForm.value.fromTimestamp + ":00");
+    const toDate = new Date(this.filterForm.value.toTimestamp + ":00");
+    const req = {
+      environmentId: environmentId,
+      logType: 'application',
+      name: this.appName,
+      page: this.currentPage,
+      limit: this.pageSize,
+      timeRange: duration,
+      keyword: keyword,
+      fromTimestamp: this.filterForm.value.fromTimestamp ? fromDate : '',
+      toTimestamp: this.filterForm.value.toTimestamp ? toDate : '',
+      timeZone: timeZone,
+    };
+
+    this.deploymentService.getSelectedDeploymentLogs(req).subscribe(
+      (response: any) => {
+        if (response.status.toLowerCase() === 'success' && response.data.logs && response.data.logs.length > 0) {
+          const content = response.data.logs
+            .map((log: any) => log)
+            .join('\n');
+
+          const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+          const link = document.createElement('a');
+
+          link.href = URL.createObjectURL(blob);
+          link.download = 'app-logs.txt';
+          link.click();
+
+          URL.revokeObjectURL(link.href);
+        }else{
+          console.error('No logs available for download.');
+        }
+      },
+      (error: any) => {
+        console.error('Error fetching logs:', error);
+      }
+    );
+
+  }
 }
