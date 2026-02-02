@@ -72,6 +72,7 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
   paginatedLogs: { timestamp: string; message: string }[] = [];
   activeTabIndex: number = 0;
   isDropdownOpen = false;
+  typeofDeployment: string = '';
   isPauseResumeDisabled = false;
 
   @ViewChild('scaleDeploymentsModel') private scaleDeploymentsModel!: ModalComponent;
@@ -124,6 +125,7 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
   agInit(params: any): void {
     this.params = params;
     this.additionalParam = params.additionalParam;
+    this.typeofDeployment = params?.data?.sourceCode?.type || '';
     const isVer = params?.data?.isVerfied;
     this.isUserVerified = (isVer === true || isVer === 'true');
   }
