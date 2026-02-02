@@ -54,11 +54,12 @@ export class InvoiceComponent implements OnInit {
         valueFormatter: (params: any) => fmt(params.value, params.data?.currency)
       },
       {
-        field: 'total', headerName: 'Outstanding Amount', flex: 1,
+        field: 'tax_amount', headerName: 'Tax Amount', flex: 1,
         valueFormatter: (params: any) => fmt(params.value, params.data?.currency)
       },
+      
       {
-        field: 'tax_amount', headerName: 'Tax Amount', flex: 1,
+        field: 'total', headerName: 'Outstanding Amount', flex: 1,
         valueFormatter: (params: any) => fmt(params.value, params.data?.currency)
       },
       {
@@ -114,8 +115,8 @@ export class InvoiceComponent implements OnInit {
         field: 'period', headerName: 'Invoice Period', flex: 1,
         filter: 'agTextColumnFilter',
         valueGetter: (params: any) => {
-          if (!params.data || !params.data.updated_at) return '';
-          const date = new Date(params.data.updated_at);
+          if (!params.data || !params.data.period) return '';
+          const date = new Date(params.data.period);
           return isNaN(date.getTime()) ? '' : date.toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'long',
