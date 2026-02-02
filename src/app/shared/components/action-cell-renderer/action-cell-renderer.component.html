@@ -52,7 +52,9 @@
       <a class="custom-dropdown-item" (click)="viewLogs()">View Logs</a>
     </li>
     <li>
-      <a class="custom-dropdown-item" (click)="onOptionSelected('redeploy')">Redeploy</a>
+      <a class="custom-dropdown-item" (click)="onOptionSelected('redeploy')"
+      [class.disabled]="typeofDeployment === 'file'"
+      [attr.aria-disabled]="typeofDeployment === 'file'">Redeploy</a>
     </li>
     <li>
       <a class="custom-dropdown-item" 

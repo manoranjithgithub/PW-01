@@ -89,7 +89,9 @@ export class InvoiceComponent implements OnInit {
             if (isDisabled) {
               link.style.color = '#ccc';
               link.style.cursor = 'not-allowed';
-              link.style.pointerEvents = 'none';
+              // link.style.pointerEvents = 'none';
+              link.title = 'No amount due for payment';
+              link.style.textDecoration = 'none';
             } else {
               link.style.color = '#F60';
               link.style.cursor = 'pointer';
@@ -103,7 +105,7 @@ export class InvoiceComponent implements OnInit {
           return wrapper;
         },
         onCellClicked: (event: CellClickedEvent) => {
-          if (event.colDef.field === 'status' && event.value === 'draft') {
+          if (event.colDef.field === 'status' && event.value === 'draft' && event.data?.subtotal > 0) {
             this.openPayNow(event.data);
           }
         }
@@ -116,8 +118,7 @@ export class InvoiceComponent implements OnInit {
           const date = new Date(params.data.updated_at);
           return isNaN(date.getTime()) ? '' : date.toLocaleDateString('en-US', {
             year: 'numeric',
-            month: 'short',
-            day: '2-digit'
+            month: 'long',
           });
         },
         valueFormatter: (params: any) => {
