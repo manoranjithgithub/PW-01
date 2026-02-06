@@ -184,8 +184,11 @@
                   <ng-container *ngIf="isAutoScaleEnabled">
                     <div class="d-flex justify-content-between gap-2">
                       <div class="w-100">
-                        <input type="text" class="form-control custom-values" formControlName="hpaMinReplicas"
-                          placeholder="Min">
+                        <div class="input-group">
+                          <span class="input-group-text">min</span>
+                          <input type="text" class="form-control custom-values" formControlName="hpaMinReplicas"
+                            placeholder="Min">
+                        </div>
                         <div class="text-danger text-format" *ngIf="isError('hpaMinReplicas', 'required')">
                           <small>This field is required.</small>
                         </div>
@@ -199,8 +202,11 @@
                         </div>
                       </div>
                       <div class="w-100">
-                        <input type="text" class="form-control custom-values" formControlName="hpaMaxReplicas"
-                          placeholder="Max">
+                        <div class="input-group">
+                          <span class="input-group-text">max</span>
+                          <input type="text" class="form-control custom-values" formControlName="hpaMaxReplicas"
+                            placeholder="Max">
+                        </div>
                         <div class="text-danger text-format" *ngIf="isError('hpaMaxReplicas', 'required')">
                           <small>This field is required.</small>
                         </div>
