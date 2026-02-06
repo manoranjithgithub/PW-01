@@ -236,13 +236,18 @@ export class InvoiceComponent implements OnInit {
     this.http.getPdfInvoice(data.id).subscribe({
       next: (response: any) => {
         if (response?.data?.url) {
-          window.open(response.data.url, '_blank');
+          setTimeout(() => {
+            window.open(response.data.url, '_blank');
+          }, 100);
         } else {
           this.toastr.error('PDF URL not available');
         }
       },
       error: (error) => {
         this.toastr.error(error.message || 'Failed to fetch PDF');
+      },
+      complete: () => {
+        // Ensure observable completes properly for interceptor cleanup
       }
     });
   }
