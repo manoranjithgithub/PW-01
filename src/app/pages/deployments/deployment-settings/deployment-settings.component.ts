@@ -526,7 +526,8 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
     if (this.isAutoScaleEnabled) {
       delete req.application.replicas;
     } else {
-      delete req.hpa;
+      delete req.hpa.hpaMinReplicas;
+      delete req.hpa.hpaMaxReplicas;
     }
     this.deploymentService.updateDeployment(this.deploymentdetails?.id, req).subscribe((res: any) => {
       if (res.status.toLowerCase() === "success") {
@@ -539,9 +540,9 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
           instanceType: res.data.application?.instanceType,
           region: 'ap-south-1a',
           replicas: res.data.application?.replicas,
-          hpaMinReplicas: res.data.application?.hpaMinReplicas,
-          hpaMaxReplicas: res.data.application?.hpaMaxReplicas,
-          hpaEnabled: res.data.application?.hpaEnabled,
+          hpaMinReplicas: res.data.hpa?.hpaMinReplicas,
+          hpaMaxReplicas: res.data.hpa?.hpaMaxReplicas,
+          hpaEnabled: res.data.hpa?.hpaEnabled,
           ephemeralStorage: res.data.application?.ephemeralStorage ? res.data.application?.ephemeralStorage.replace(/Gi$/, '') : null,
           storage: res.data.application?.storage,
           healthEndpoint: res.data.network?.healthEndpoint,
