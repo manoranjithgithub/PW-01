@@ -1,7 +1,7 @@
 <app-loader></app-loader>
 
 <div class="container mt-2">
-  <c-card class="p-4">
+  <c-card class="p-4 mb-3">
     <form cForm [formGroup]="accountForm">
       <div class="mb-2"><b>Account Information</b></div>
       <div class="row my-3">
@@ -28,6 +28,99 @@
           <label for="userName" class="form-label">User Name</label>
           <input id="userName" formControlName="userName" class="form-control" />
         </div>
+      </div>
+    </form>
+  </c-card>
+  <c-card class="p-4">
+    <form cForm [formGroup]="billingDetailsForm" (ngSubmit)="onSubmitBillingDetails()">
+      <div class="mb-2"><b>Billing Details</b></div>
+      
+      <div class="row my-3">
+        <div class="col-md-6">
+          <label for="companyName" class="form-label">Company Name <span class="text-danger">*</span></label>
+          <input id="companyName" formControlName="companyName" class="form-control" />
+          <div *ngIf="isBillingFieldInvalid('companyName')" class="text-danger small mt-1">
+            {{getBillingFieldError('companyName')}}
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <label for="gstNumber" class="form-label">GST Number <span class="text-danger">*</span></label>
+          <input id="gstNumber" formControlName="gstNumber" class="form-control" 
+            (input)="toUpperCase('gstNumber')" style="text-transform: uppercase" />
+          <div *ngIf="isBillingFieldInvalid('gstNumber')" class="text-danger small mt-1">
+            {{getBillingFieldError('gstNumber')}}
+          </div>
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label for="panNumber" class="form-label">PAN Number <span class="text-danger">*</span></label>
+          <input id="panNumber" formControlName="panNumber" class="form-control" 
+            (input)="toUpperCase('panNumber')" style="text-transform: uppercase" />
+          <div *ngIf="isBillingFieldInvalid('panNumber')" class="text-danger small mt-1">
+            {{getBillingFieldError('panNumber')}}
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <label for="city" class="form-label">City <span class="text-danger">*</span></label>
+          <input id="city" formControlName="city" class="form-control" />
+          <div *ngIf="isBillingFieldInvalid('city')" class="text-danger small mt-1">
+            {{getBillingFieldError('city')}}
+          </div>
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label for="addressLine1" class="form-label">Address Line 1 <span class="text-danger">*</span></label>
+          <input id="addressLine1" formControlName="addressLine1" class="form-control" />
+          <div *ngIf="isBillingFieldInvalid('addressLine1')" class="text-danger small mt-1">
+            {{getBillingFieldError('addressLine1')}}
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <label for="addressLine2" class="form-label">Address Line 2</label>
+          <input id="addressLine2" formControlName="addressLine2" class="form-control" />
+          <div *ngIf="isBillingFieldInvalid('addressLine2')" class="text-danger small mt-1">
+            {{getBillingFieldError('addressLine2')}}
+          </div>
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label for="state" class="form-label">State <span class="text-danger">*</span></label>
+          <input id="state" formControlName="state" class="form-control" />
+          <div *ngIf="isBillingFieldInvalid('state')" class="text-danger small mt-1">
+            {{getBillingFieldError('state')}}
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <label for="country" class="form-label">Country <span class="text-danger">*</span></label>
+          <input id="country" formControlName="country" class="form-control" />
+          <div *ngIf="isBillingFieldInvalid('country')" class="text-danger small mt-1">
+            {{getBillingFieldError('country')}}
+          </div>
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label for="postalCode" class="form-label">Postal Code <span class="text-danger">*</span></label>
+          <input id="postalCode" formControlName="postalCode" class="form-control" />
+          <div *ngIf="isBillingFieldInvalid('postalCode')" class="text-danger small mt-1">
+            {{getBillingFieldError('postalCode')}}
+          </div>
+        </div>
+      </div>
+
+      <div class="text-end">
+        <button type="submit" class="btn button-format-solid">Save Billing Details</button>
       </div>
     </form>
   </c-card>

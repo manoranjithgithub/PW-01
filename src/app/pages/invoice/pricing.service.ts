@@ -25,6 +25,13 @@ export class PricingsService {
       );
   }
 
+  getPdfInvoice(invoiceId: string): Observable<any> {
+    return this.http.get(`${this.pricingManagement}/invoices/${invoiceId}/presign`)
+      .pipe(
+        catchError(this.handleError.bind(this))
+      );
+  }
+
   private handleError(error: HttpErrorResponse) {
     let errorMessage = 'Something went wrong. Please try again later.';
 
@@ -33,6 +40,8 @@ export class PricingsService {
         errorMessage = error.error.error.details;
       } else if (error.error.message) {
         errorMessage = error.error.message;
+      }else if (typeof error.error?.error === 'string') {
+        errorMessage = error.error.error;
       }
     }
     return throwError(() => new Error(errorMessage));
