@@ -23,6 +23,7 @@ export class ReviewScreenComponent implements OnInit {
   @Input() configFileData: any;
   @Output() editSelectedStep = new EventEmitter<{ step: number, fromReview: boolean }>();
   @Input() selectedRepoName: string = '';
+  @Input() isAutoScaleEnabled: boolean = false;
 
   constructor(private deploymentsService: DeploymentsService, private router: Router,
     private location: Location, private shared: SharedService, private toaster: ToastrService,

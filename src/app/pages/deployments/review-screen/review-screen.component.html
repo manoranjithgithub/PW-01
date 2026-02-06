@@ -16,6 +16,10 @@
             <span class="d-block">{{selectedRepoName }} -
                 {{generalDetails?.branchName}}</span>
         </div>
+        <div class="col-md-6" *ngIf="generalDetails?.type !== 'zip'">
+            <label class="mb-1">Auto Deploy</label>
+            <span class="d-block">{{generalDetails?.vcsAutoDeploy ? 'Enabled' : 'Disabled'}}</span>
+        </div>
     </div>
     <!-- <div class="row mb-4">
         <div class="col-md-6">
@@ -40,16 +44,30 @@
         </div>
     </div>
     <div class="row mb-4">
-        <div class="col-md-6">
+        <div class="col-md-6" *ngIf="!isAutoScaleEnabled">
             <label class="mb-1">Replicas</label>
             <span class="d-block">{{generalDetails?.replicas }}</span>
+        </div>
+        <div class="col-md-6" *ngIf="isAutoScaleEnabled">
+            <label class="mb-1">Auto Scaling</label>
+            <span class="d-block">Enabled</span>
+        </div>
+        <div class="col-md-6" *ngIf="isAutoScaleEnabled">
+            <label class="mb-1">Min Replicas</label>
+            <span class="d-block">{{generalDetails?.hpaMinReplicas }}</span>
+        </div>
+    </div>
+    <div class="row mb-4" *ngIf="isAutoScaleEnabled">
+        <div class="col-md-6">
+            <label class="mb-1">Max Replicas</label>
+            <span class="d-block">{{generalDetails?.hpaMaxReplicas }}</span>
         </div>
         <div class="col-md-6">
             <label class="mb-1">Instance type</label>
             <span class="d-block">{{generalDetails?.instanceType?.instanceType }}</span>
         </div>
     </div>
-    <!-- <div class="row mb-4">
+    <!--<div class="row mb-4">
         <div class="col-md-6">
             <label class="mb-1">Build command</label>
             <span class="d-block">{{generalDetails?.buildCommand ? generalDetails?.buildCommand : ' - '}}</span>

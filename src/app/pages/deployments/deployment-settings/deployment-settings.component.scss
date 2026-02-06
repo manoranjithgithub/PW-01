@@ -111,6 +111,55 @@
   vertical-align: middle;
   margin-left: 10px;
 }
+
 .wide-popover.popover {
   max-width: 500px;
+}
+
+.auto-scale-toggle {
+
+  .toggle {
+    position: relative;
+    display: inline-block;
+    width: 45px;
+    height: 21px;
+
+    input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+  }
+
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    inset: 0;
+    background-color: #ccc;
+    transition: 0.3s;
+    border-radius: 28px;
+    height: 21px;
+    top: -2px;
+
+    &::before {
+      content: "";
+      position: absolute;
+      height: 15px;
+      width: 15px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: 0.3s;
+      border-radius: 50%;
+    }
+  }
+
+  /* Checked state */
+  .toggle input:checked+.slider {
+    background-color: #4caf50;
+  }
+
+  .toggle input:checked+.slider::before {
+    transform: translateX(24px);
+  }
 }

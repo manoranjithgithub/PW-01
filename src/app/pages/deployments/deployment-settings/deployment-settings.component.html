@@ -46,13 +46,22 @@
               </div>
               <ng-container *ngIf="!zipUpload && vcsDeploy">
                 <div class="d-flex gap-2">
-                  <div class="flex-fill mb-3">
-                    <label for="branchName" class="custom-label">Branch Name</label>
+                  <div class="mb-3 w-50">
+                    <div class="d-flex justify-content-between auto-scale-toggle">
+                      <label for="branchName" class="custom-label">Branch Name</label>
+                      <label class="d-flex align-items-center gap-2">
+                        <span class="form-label my-0">Auto Deploy</span>
+                        <span class="toggle">
+                          <input type="checkbox" formControlName="vcsAutoDeploy" (change)="onVcsAutoDeployChange()">
+                          <span class="slider"></span>
+                        </span>
+                      </label>
+                    </div>
                     <input id="branchName" type="text" formControlName="branchName" class="form-control custom-values"
                       readonly>
                   </div>
 
-                  <div class="flex-fill mb-3">
+                  <div class="mb-3 w-50">
                     <label for="repoUrl" class="custom-label">Repo URL</label>
                     <input id="repoUrl" type="text" formControlName="repoUrl" class="form-control custom-values"
                       readonly>
@@ -145,22 +154,67 @@
                 </div>
               </div>
               <div class="d-flex gap-2">
-                <div class="flex-fill mb-3">
+                <div class="flex-fill mb-3 w-50">
                   <label for="region" class="custom-label">Region
                   </label>
                   <input id="region" type="text" for="region" formControlName="region"
                     class="form-control custom-values" readonly>
                 </div>
-                <div class="flex-fill mb-3">
-                  <label for="replicas" class="custom-label">Replicas
-                  </label>
-                  <input id="replicas" type="text" for="replicas" formControlName="replicas"
-                    class="form-control custom-values">
-                  <div
-                    *ngIf="generalSettingsForm.get('replicas')?.invalid && generalSettingsForm.get('replicas')?.touched"
-                    class="text-danger text-format">
-                    <small>Replicas is required</small>
+                <div class="flex-fill mb-3 w-50">
+                  <div class="d-flex justify-content-between ">
+                    <label for="replicas" class="custom-label">Replicas</label>
+                    <label class="d-flex align-items-center gap-2 auto-scale-toggle"
+                      title="Automatically increases or decreases capacity based on usage">
+                      <span class="custom-label">Auto scaling</span>
+                      <span class="toggle">
+                        <input type="checkbox" formControlName="hpaEnabled" id="hpaEnabled">
+                        <span class="slider"></span>
+                      </span>
+                    </label>
                   </div>
+                  <ng-container *ngIf="!isAutoScaleEnabled">
+                    <input id="replicas" type="text" for="replicas" formControlName="replicas"
+                      class="form-control custom-values">
+                    <div
+                      *ngIf="generalSettingsForm.get('replicas')?.invalid && generalSettingsForm.get('replicas')?.touched"
+                      class="text-danger text-format">
+                      <small>Replicas is required</small>
+                    </div>
+                  </ng-container>
+                  <ng-container *ngIf="isAutoScaleEnabled">
+                    <div class="d-flex justify-content-between gap-2">
+                      <div class="w-100">
+                        <input type="text" class="form-control custom-values" formControlName="hpaMinReplicas"
+                          placeholder="Min">
+                        <div class="text-danger text-format" *ngIf="isError('hpaMinReplicas', 'required')">
+                          <small>This field is required.</small>
+                        </div>
+                        <div class="text-danger text-format"
+                          *ngIf="isError('hpaMinReplicas', 'pattern') && !isError('hpaMinReplicas', 'required')">
+                          <small>Only numbers are allowed.</small>
+                        </div>
+                        <div class="text-danger text-format"
+                          *ngIf="isError('hpaMinReplicas', 'min') && !isError('hpaMinReplicas', 'required')">
+                          <small>Minimum value should be 1.</small>
+                        </div>
+                      </div>
+                      <div class="w-100">
+                        <input type="text" class="form-control custom-values" formControlName="hpaMaxReplicas"
+                          placeholder="Max">
+                        <div class="text-danger text-format" *ngIf="isError('hpaMaxReplicas', 'required')">
+                          <small>This field is required.</small>
+                        </div>
+                        <div class="text-danger text-format"
+                          *ngIf="isError('hpaMaxReplicas', 'pattern') && !isError('hpaMaxReplicas', 'required')">
+                          <small>Only numbers are allowed.</small>
+                        </div>
+                        <div class="text-danger text-format"
+                          *ngIf="isError('hpaMaxReplicas', 'maxLessThanMin') && !isError('hpaMaxReplicas', 'required')">
+                          <small>Max value must be greater than min value.</small>
+                        </div>
+                      </div>
+                    </div>
+                  </ng-container>
                 </div>
               </div>
 

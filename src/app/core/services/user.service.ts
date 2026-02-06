@@ -38,4 +38,34 @@ export class UserService {
                 })
             );
     }
+    updateBillingDetails(billingData: any): Observable<any> {
+        const accessToken = localStorage.getItem('accessToken');
+        const headers: { [header: string]: string } = {};
+        if (accessToken) {
+            headers['Authorization'] = `Bearer ${accessToken}`;
+        }
+        return this.http
+            .post<any>(`${this.apiUrl}/user/v1/company-details`, billingData, { headers })
+            .pipe(
+                catchError((error) => {
+                    console.error('Update billing details error', error);
+                    return throwError(() => error);
+                })
+            );
+    }
+    getBillingDetails(accountId: string): Observable<any> {
+        const accessToken = localStorage.getItem('accessToken');
+        const headers: { [header: string]: string } = {};
+        if (accessToken) {
+            headers['Authorization'] = `Bearer ${accessToken}`;
+        }
+        return this.http
+            .get<any>(`${this.apiUrl}/user/v1/company-details/${accountId}`, { headers })
+            .pipe(
+                catchError((error) => {
+                    console.error('Get billing details error', error);
+                    return throwError(() => error);
+                })
+            );
+    }
 }

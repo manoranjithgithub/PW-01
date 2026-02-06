@@ -20,6 +20,7 @@ export class AccountComponent implements OnInit {
   submitted = false;
   accountForm!: FormGroup;
   resetPasswordForm!: FormGroup;
+  billingDetailsForm!: FormGroup;
   visiblePasswordFields = new Set<string>();
   isResetPasswordSubmitted = false;
   userData: any;
@@ -40,6 +41,18 @@ export class AccountComponent implements OnInit {
       password: ['', [Validators.required, Validators.pattern(VALIDATION_REGEX.NEW_PASSWORD)]],
       confirmPassword: ['', Validators.required],
     }, { validators: this.passwordsMatchValidator });
+
+    this.billingDetailsForm = this.fb.group({
+      companyName: ['', [Validators.required, Validators.maxLength(100)]],
+      gstNumber: ['', [Validators.required, Validators.pattern(/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/)]],
+      panNumber: ['', [Validators.required, Validators.pattern(/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/)]],
+      addressLine1: ['', [Validators.required, Validators.maxLength(200)]],
+      addressLine2: ['', Validators.maxLength(200)],
+      city: ['', [Validators.required, Validators.maxLength(50)]],
+      state: ['', [Validators.required, Validators.maxLength(50)]],
+      country: ['', [Validators.required, Validators.maxLength(50)]],
+      postalCode: ['', [Validators.required, Validators.pattern(/^[0-9]{6}$/)]],
+    });
 
   }
 
@@ -67,6 +80,7 @@ export class AccountComponent implements OnInit {
     this.userData = this.sharedService.getUser();
     this.accountForm.patchValue(this.userData);
     this.accountForm.disable();
+    this.loadBillingDetails();
   }
 
   isInvalid(controlName: string): boolean {
@@ -101,5 +115,70 @@ export class AccountComponent implements OnInit {
 
   togglePassword(field: 'old' | 'new' | 'confirm') {
     togglePasswordField(this.visiblePasswordFields, field);
+  }
+
+  isBillingFieldInvalid(controlName: string): boolean {
+    const control = this.billingDetailsForm.get(controlName);
+    return control ? control.invalid && (control.dirty || control.touched) : false;
+  }
+
+  getBillingFieldError(controlName: string): string {
+    const control = this.billingDetailsForm.get(controlName);
+    if (!control || !control.errors) return '';
+
+    if (control.errors['required']) return `${controlName.charAt(0).toUpperCase() + controlName.slice(1)} is required`;
+    if (control.errors['maxlength']) return `Maximum ${control.errors['maxlength'].requiredLength} characters allowed`;
+    if (control.errors['pattern']) {
+      if (controlName === 'gstNumber') return 'Invalid GST Number format (e.g., 29ABCDE1234F1Z5)';
+      if (controlName === 'panNumber') return 'Invalid PAN Number format (e.g., ABCDE1234F)';
+      if (controlName === 'postalCode') return 'Invalid Postal Code (6 digits required)';
+    }
+    return 'Invalid input';
+  }
+
+  toUpperCase(controlName: string): void {
+    const control = this.billingDetailsForm.get(controlName);
+    if (control) {
+      const value = control.value;
+      if (value) {
+        control.setValue(value.toUpperCase(), { emitEvent: false });
+      }
+    }
+  }
+
+  onSubmitBillingDetails(): void {
+    if (this.billingDetailsForm.invalid) {
+      this.billingDetailsForm.markAllAsTouched();
+      return;
+    }
+    const billingData = {
+      ...this.billingDetailsForm.value,
+      accountId: localStorage.getItem('accountId')
+    };
+    this.userService.updateBillingDetails(billingData).subscribe({
+      next: (res: any) => {
+        if (res.status?.toLowerCase() === 'success') {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          this.toaster.success('Billing details updated successfully');
+        }
+      },
+      error: (err) => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        this.toaster.error(err?.error?.message || 'Failed to update billing details');
+      }
+    });
+  }
+  loadBillingDetails(): void {
+    this.userService.getBillingDetails(localStorage.getItem('accountId') || '').subscribe({
+      next: (res: any) => {
+        if (res.status?.toLowerCase() === 'success' && res.data) {
+          this.billingDetailsForm.patchValue(res.data);
+        }
+      },
+      error: (err) => {
+        this.toaster.error(err?.error?.message || 'Failed to load billing details');
+        
+      }
+    });
   }
 }
