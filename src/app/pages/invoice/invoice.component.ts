@@ -132,7 +132,7 @@ export class InvoiceComponent implements OnInit {
           const wrapper = document.createElement('div');
           wrapper.style.textAlign = 'center';
           wrapper.style.display = 'flex';
-          wrapper.style.justifyContent = 'center';
+          // wrapper.style.justifyContent = 'center';
           wrapper.style.alignItems = 'center';
           wrapper.style.height = '100%';
           
