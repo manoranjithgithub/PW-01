@@ -232,13 +232,10 @@ export class InvoiceComponent implements OnInit {
       this.toastr.error('Invoice ID not found');
       return;
     }
-
     this.http.getPdfInvoice(data.id).subscribe({
       next: (response: any) => {
         if (response?.data?.url) {
-          setTimeout(() => {
-            window.open(response.data.url, '_blank');
-          }, 100);
+          window.open(response.data.url, '_blank');
         } else {
           this.toastr.error('PDF URL not available');
         }
@@ -247,7 +244,7 @@ export class InvoiceComponent implements OnInit {
         this.toastr.error(error.message || 'Failed to fetch PDF');
       },
       complete: () => {
-        // Ensure observable completes properly for interceptor cleanup
+        window.location.reload();
       }
     });
   }

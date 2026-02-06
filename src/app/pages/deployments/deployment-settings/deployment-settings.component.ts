@@ -498,11 +498,11 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
       s3FileKey: fileName ? this.s3FileKey : null,
       dockerfilePath: sourceFormValue.dockerfilePath
     };
-    const hpa= this.getChangedFields({
+    const hpa= {
       hpaEnabled: formValue.hpaEnabled,
-      hpaMinReplicas: formValue.hpaMinReplicas,
-      hpaMaxReplicas: formValue.hpaMaxReplicas,
-    }, this.deploymentdetails?.hpa || {});
+      hpaMinReplicas: formValue.hpaEnabled ? formValue.hpaMinReplicas :1,
+      hpaMaxReplicas: formValue.hpaEnabled ? formValue.hpaMaxReplicas :1,
+    };
 
     const isDockerfilePathChanged =
       formValue.dockerfilePath !== sourceFormValue.dockerfilePath;
@@ -526,8 +526,8 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
     if (this.isAutoScaleEnabled) {
       delete req.application.replicas;
     } else {
-      delete req.hpa.hpaMinReplicas;
-      delete req.hpa.hpaMaxReplicas;
+      // delete req.hpa.hpaMinReplicas;
+      // delete req.hpa.hpaMaxReplicas;
     }
     this.deploymentService.updateDeployment(this.deploymentdetails?.id, req).subscribe((res: any) => {
       if (res.status.toLowerCase() === "success") {
@@ -724,8 +724,8 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
       this.generalSettingsForm.get('replicas')?.setValue('1');
       this.generalSettingsForm.get('replicas')?.setValidators([Validators.required]);
       this.generalSettingsForm.get('replicas')?.updateValueAndValidity();
-      this.generalSettingsForm.get('hpaMinReplicas')?.setValue('');
-      this.generalSettingsForm.get('hpaMaxReplicas')?.setValue('');
+      // this.generalSettingsForm.get('hpaMinReplicas')?.setValue('');
+      // this.generalSettingsForm.get('hpaMaxReplicas')?.setValue('');
       this.generalSettingsForm.get('hpaMinReplicas')?.clearValidators();
       this.generalSettingsForm.get('hpaMaxReplicas')?.clearValidators();
       this.generalSettingsForm.get('hpaMinReplicas')?.updateValueAndValidity();
