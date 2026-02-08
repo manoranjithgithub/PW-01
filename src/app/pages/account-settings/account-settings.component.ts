@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnInit, ViewChild } from '@angular/core';
 import { FormGroup, Validators, FormBuilder } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { SharedService } from '../../shared/services/shared.service';
@@ -8,6 +8,7 @@ import { togglePasswordField } from '../../shared/helpers/password.helper';
 import { LoaderComponent } from '../../shared/components/loader/loader.component';
 import { UserService } from '../../core/services/user.service';
 import { ModalComponent } from '../../shared/components/model/model.component';
+import { finalize } from 'rxjs/operators';
 @Component({
   selector: 'app-account',
   standalone: true,
@@ -18,6 +19,7 @@ import { ModalComponent } from '../../shared/components/model/model.component';
 })
 export class AccountComponent implements OnInit {
   private userService = inject(UserService);
+  private cdr = inject(ChangeDetectorRef);
   @ViewChild('resetPasswordModal') resetPasswordModal!: ModalComponent;
   @ViewChild('removeBillingModal') removeBillingModal!: ModalComponent;
   submitted = false;
@@ -27,8 +29,9 @@ export class AccountComponent implements OnInit {
   visiblePasswordFields = new Set<string>();
   isResetPasswordSubmitted = false;
   userData: any;
-  showBillingForm = true;
+  showBillingForm = false;
   hasBillingDetails = false;
+  billingLoading = false;
   resetPasswordConfig = {
     modalTitle: '',
     width: '640px',
@@ -99,6 +102,7 @@ export class AccountComponent implements OnInit {
     this.userData = this.sharedService.getUser();
     this.accountForm.patchValue(this.userData);
     this.accountForm.disable();
+    this.showBillingForm = false;
     this.loadBillingDetails();
   }
 
@@ -195,6 +199,7 @@ export class AccountComponent implements OnInit {
           this.toaster.success('Billing details updated successfully');
           this.hasBillingDetails = true;
           this.showBillingForm = false;
+          this.cdr.markForCheck();
         }
       },
       error: (err) => {
@@ -204,18 +209,51 @@ export class AccountComponent implements OnInit {
     });
   }
   loadBillingDetails(): void {
-    this.userService.getBillingDetails(localStorage.getItem('accountId') || '').subscribe({
-      next: (res: any) => {
-        if (res.status?.toLowerCase() === 'success' && res.data) {
-          this.billingDetailsForm.patchValue(res.data);
-          this.hasBillingDetails = true;
+    this.billingLoading = true;
+    this.userService.getBillingDetails(localStorage.getItem('accountId') || '')
+      .pipe(finalize(() => {
+        this.billingLoading = false;
+        this.cdr.markForCheck();
+      }))
+      .subscribe({
+        next: (res: any) => {
+          if (res.status?.toLowerCase() === 'success' && res.data) {
+            this.billingDetailsForm.patchValue(res.data);
+            const hasData = this.isBillingDataPresent(res.data);
+            this.hasBillingDetails = hasData;
+            this.showBillingForm = !hasData;
+            this.cdr.markForCheck();
+            return;
+          }
+          this.hasBillingDetails = false;
           this.showBillingForm = false;
+          this.cdr.markForCheck();
+        },
+        error: (err) => {
+          this.toaster.error(err?.error?.message || 'Failed to load billing details');
+          this.hasBillingDetails = false;
+          this.showBillingForm = false;
+          this.cdr.markForCheck();
         }
-      },
-      error: (err) => {
-        this.toaster.error(err?.error?.message || 'Failed to load billing details');
-        
-      }
+      });
+  }
+
+  private isBillingDataPresent(data: any): boolean {
+    if (!data || typeof data !== 'object') return false;
+    const fields = [
+      'companyName',
+      'gstNumber',
+      'panNumber',
+      'addressLine1',
+      'addressLine2',
+      'city',
+      'state',
+      'country',
+      'postalCode'
+    ];
+    return fields.some((key) => {
+      const value = data?.[key];
+      return value !== null && value !== undefined && String(value).trim() !== '';
     });
   }
 
@@ -236,8 +274,9 @@ export class AccountComponent implements OnInit {
           this.toaster.success('Company details removed');
           this.billingDetailsForm.reset();
           this.hasBillingDetails = false;
-          this.showBillingForm = true;
+          this.showBillingForm = false;
           this.removeBillingModal?.close();
+          this.cdr.markForCheck();
         }
       },
       error: (err) => {

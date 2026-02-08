@@ -79,7 +79,11 @@
               </button>
             </div>
           </div>
-          <div *ngIf="!showBillingForm && hasBillingDetails" class="dense-form info-grid billing-info-grid">
+          <div *ngIf="billingLoading" class="billing-loading">
+            <div class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></div>
+            <span>Loading billing details...</span>
+          </div>
+          <div *ngIf="!billingLoading && !showBillingForm && hasBillingDetails" class="dense-form info-grid billing-info-grid">
             <div class="info-row">
               <div class="info-label"><i class="bi bi-building"></i> Company</div>
               <div class="info-value">{{ billingDetailsForm.get('companyName')?.value || '-' }}</div>
@@ -123,7 +127,7 @@
             </div>
           </div>
 
-          <form *ngIf="showBillingForm" cForm [formGroup]="billingDetailsForm"
+          <form *ngIf="!billingLoading && showBillingForm" cForm [formGroup]="billingDetailsForm"
             (ngSubmit)="onSubmitBillingDetails()" class="dense-form">
             <div class="row g-2">
               <div class="col-md-6">
