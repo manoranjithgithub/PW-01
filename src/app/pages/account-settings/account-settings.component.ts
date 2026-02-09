@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnInit, ViewChild } from '@angular/core';
 import { FormGroup, Validators, FormBuilder } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { SharedService } from '../../shared/services/shared.service';
@@ -7,16 +7,21 @@ import { SHARED_IMPORTS } from '../../shared/shared-imports';
 import { togglePasswordField } from '../../shared/helpers/password.helper';
 import { LoaderComponent } from '../../shared/components/loader/loader.component';
 import { UserService } from '../../core/services/user.service';
+import { ModalComponent } from '../../shared/components/model/model.component';
+import { finalize } from 'rxjs/operators';
 @Component({
   selector: 'app-account',
   standalone: true,
-  imports: [SHARED_IMPORTS, LoaderComponent],
+  imports: [SHARED_IMPORTS, LoaderComponent, ModalComponent],
   templateUrl: './account-settings.component.html',
   styleUrls: ['./account-settings.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AccountComponent implements OnInit {
   private userService = inject(UserService);
+  private cdr = inject(ChangeDetectorRef);
+  @ViewChild('resetPasswordModal') resetPasswordModal!: ModalComponent;
+  @ViewChild('removeBillingModal') removeBillingModal!: ModalComponent;
   submitted = false;
   accountForm!: FormGroup;
   resetPasswordForm!: FormGroup;
@@ -24,6 +29,23 @@ export class AccountComponent implements OnInit {
   visiblePasswordFields = new Set<string>();
   isResetPasswordSubmitted = false;
   userData: any;
+  showBillingForm = false;
+  hasBillingDetails = false;
+  billingLoading = false;
+  resetPasswordConfig = {
+    modalTitle: '',
+    width: '640px',
+    hideDismissButton: () => false,
+    hideCloseButton: () => false,
+    dismissButtonLabel: 'Cancel',
+    closeButtonLabel: 'Done'
+  };
+  removeBillingConfig = {
+    modalTitle: '',
+    width: '520px',
+    hideDismissButton: () => true,
+    hideCloseButton: () => true
+  };
 
   constructor(private fb: FormBuilder, private toaster: ToastrService,
     private sharedService: SharedService
@@ -80,6 +102,7 @@ export class AccountComponent implements OnInit {
     this.userData = this.sharedService.getUser();
     this.accountForm.patchValue(this.userData);
     this.accountForm.disable();
+    this.showBillingForm = false;
     this.loadBillingDetails();
   }
 
@@ -103,6 +126,9 @@ export class AccountComponent implements OnInit {
         if (res.status?.toLowerCase() === 'success') {
           window.scrollTo({ top: 0, behavior: 'smooth' });
           this.toaster.success('Password reset successfully');
+          this.resetPasswordForm.reset();
+          this.isResetPasswordSubmitted = false;
+          this.resetPasswordModal?.close();
         }
         this.sharedService.hide();
       },
@@ -115,6 +141,17 @@ export class AccountComponent implements OnInit {
 
   togglePassword(field: 'old' | 'new' | 'confirm') {
     togglePasswordField(this.visiblePasswordFields, field);
+  }
+
+  openResetPasswordModal(): void {
+    this.resetPasswordForm.reset();
+    this.isResetPasswordSubmitted = false;
+    this.visiblePasswordFields.clear();
+    this.resetPasswordModal?.open();
+  }
+
+  closeResetPasswordModal(): void {
+    this.resetPasswordModal?.close();
   }
 
   isBillingFieldInvalid(controlName: string): boolean {
@@ -160,6 +197,9 @@ export class AccountComponent implements OnInit {
         if (res.status?.toLowerCase() === 'success') {
           window.scrollTo({ top: 0, behavior: 'smooth' });
           this.toaster.success('Billing details updated successfully');
+          this.hasBillingDetails = true;
+          this.showBillingForm = false;
+          this.cdr.markForCheck();
         }
       },
       error: (err) => {
@@ -169,16 +209,87 @@ export class AccountComponent implements OnInit {
     });
   }
   loadBillingDetails(): void {
-    this.userService.getBillingDetails(localStorage.getItem('accountId') || '').subscribe({
+    this.billingLoading = true;
+    this.userService.getBillingDetails(localStorage.getItem('accountId') || '')
+      .pipe(finalize(() => {
+        this.billingLoading = false;
+        this.cdr.markForCheck();
+      }))
+      .subscribe({
+        next: (res: any) => {
+          if (res.status?.toLowerCase() === 'success' && res.data) {
+            this.billingDetailsForm.patchValue(res.data);
+            const hasData = this.isBillingDataPresent(res.data);
+            this.hasBillingDetails = hasData;
+            this.showBillingForm = !hasData;
+            this.cdr.markForCheck();
+            return;
+          }
+          this.hasBillingDetails = false;
+          this.showBillingForm = false;
+          this.cdr.markForCheck();
+        },
+        error: (err) => {
+          this.toaster.error(err?.error?.message || 'Failed to load billing details');
+          this.hasBillingDetails = false;
+          this.showBillingForm = false;
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  private isBillingDataPresent(data: any): boolean {
+    if (!data || typeof data !== 'object') return false;
+    const fields = [
+      'companyName',
+      'gstNumber',
+      'panNumber',
+      'addressLine1',
+      'addressLine2',
+      'city',
+      'state',
+      'country',
+      'postalCode'
+    ];
+    return fields.some((key) => {
+      const value = data?.[key];
+      return value !== null && value !== undefined && String(value).trim() !== '';
+    });
+  }
+
+  openBillingForm(): void {
+    this.showBillingForm = true;
+  }
+
+  closeBillingForm(): void {
+    this.showBillingForm = false;
+  }
+
+  removeBillingDetails(): void {
+    const accountId = localStorage.getItem('accountId') || '';
+    if (!accountId) return;
+    this.userService.deleteBillingDetails(accountId).subscribe({
       next: (res: any) => {
-        if (res.status?.toLowerCase() === 'success' && res.data) {
-          this.billingDetailsForm.patchValue(res.data);
+        if (res.status?.toLowerCase() === 'success') {
+          this.toaster.success('Company details removed');
+          this.billingDetailsForm.reset();
+          this.hasBillingDetails = false;
+          this.showBillingForm = false;
+          this.removeBillingModal?.close();
+          this.cdr.markForCheck();
         }
       },
       error: (err) => {
-        this.toaster.error(err?.error?.message || 'Failed to load billing details');
-        
+        this.toaster.error(err?.error?.message || 'Failed to remove company details');
       }
     });
+  }
+
+  openRemoveBillingModal(): void {
+    this.removeBillingModal?.open();
+  }
+
+  closeRemoveBillingModal(): void {
+    this.removeBillingModal?.close();
   }
 }

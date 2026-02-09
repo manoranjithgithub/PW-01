@@ -68,4 +68,20 @@ export class UserService {
                 })
             );
     }
+
+    deleteBillingDetails(accountId: string): Observable<any> {
+        const accessToken = localStorage.getItem('accessToken');
+        const headers: { [header: string]: string } = {};
+        if (accessToken) {
+            headers['Authorization'] = `Bearer ${accessToken}`;
+        }
+        return this.http
+            .delete<any>(`${this.apiUrl}/user/v1/company-details/${accountId}`, { headers })
+            .pipe(
+                catchError((error) => {
+                    console.error('Delete billing details error', error);
+                    return throwError(() => error);
+                })
+            );
+    }
 }
