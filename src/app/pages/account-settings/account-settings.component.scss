@@ -121,7 +121,7 @@
 
 .info-grid {
   display: grid;
-  gap: 0.5rem;
+  gap: 0.35rem;
 }
 
 .account-info-compact .info-row {
@@ -170,7 +170,7 @@
   grid-template-columns: 105px 1fr;
   gap: 0.6rem;
   align-items: center;
-  padding: 0.35rem 0;
+  padding: 0.2rem 0;
   border-bottom: 1px dashed #eef2f8;
 }
 
