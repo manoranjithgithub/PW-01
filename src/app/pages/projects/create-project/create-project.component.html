@@ -33,7 +33,7 @@
                     <input type="text" id="projectName" name="projectName" placeholder="Enter project name"
                         formControlName="projectName" class=" form-control text-format textbox-width-sm">
                     <div *ngIf="projectForm.get('projectName')?.hasError('maxlength')" class="text-danger my-1">
-                        Maximun 40 characters only.
+                        Maximun 50 characters only.
                     </div>
                     <div *ngIf="projectForm.get('projectName')?.hasError('minlength')" class="text-danger my-1">
                         Project name must be at least 3 characters long.
@@ -75,7 +75,7 @@
                     <input type="text" id="environmentName" name="environmentName" placeholder="Enter environment name"
                         formControlName="environmentName" class="form-control  text-format">
                     <div *ngIf="projectForm.get('environmentName')?.hasError('maxlength')" class="text-danger my-1">
-                        Maximun 40 characters only.
+                        Maximun 50 characters only.
                     </div>
                     <div *ngIf="projectForm.get('environmentName')?.hasError('invalidName') && projectForm.get('environmentName')?.touched"
                         class="text-danger text-format">
