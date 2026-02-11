@@ -40,7 +40,7 @@
                     </div>
                     <div *ngIf="projectForm.get('projectName')?.hasError('invalidName') && projectForm.get('projectName')?.touched"
                         class="text-danger text-format">
-                        Project name is invalid
+                      Project name can only contain alphabets, numbers and hyphens
                     </div>
                     <div *ngIf="projectForm.get('projectName')?.hasError('uniqueName') && projectForm.get('projectName')?.touched"
                         class="text-danger mt-1">
