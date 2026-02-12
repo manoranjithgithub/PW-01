@@ -7,41 +7,116 @@
     </ng-template>
     <ng-template cTemplateId="accordionBodyTemplate">
       <div class="accordion-body" id="network-section">
-        <div class="my-2">
-          <div class="custom-heading">Public Networking</div>
-          <div class="custom-content">Access to this service publicly through HTTP/TCP.</div>
+        <div class="d-flex gap-4 mb-4">
+          <div class="w-100">
+            <div class="card border h-100">
+              <div class="card-body p-1 card-body-text">
+                <h6 class="card-title mb-2 fs-6 fw-bold"><i class="bi bi-globe"></i> Public Networking</h6>
+                <small class="text-muted d-block mb-3 fs-7">Access to this service publicly through HTTP/TCP.</small>
 
-          <div class="my-4" *ngIf="!isGenerateDomain && !ingressDomain">
-            <button class="btn button-format-outline custom-label mt-2" (click)="onNetworkingSubmit()"
-              [disabled]="formDisabled">
-              <i class="bi bi-lightning-charge mx-1"></i> Generate domain
-            </button>
+                <div *ngIf="!ingressDomain" class="d-flex align-items-center justify-content-center p-4">
+                  <button class="btn button-format-outline" (click)="onNetworkingSubmit()" [disabled]="formDisabled"
+                    title="Generate domain">
+                    <i class="bi bi-lightning-charge mx-1"></i> Generate Domain
+                  </button>
+                </div>
 
-          </div>
-          <div *ngIf="ingressDomain && !networkSettingsForm.get('customDns')?.value" class="w-50 my-3">
-            <label class="form-label">Domain</label>
-            <div class="input-group">
-              <input type="text" class="form-control custom-values" [value]="'https://' + ingressDomain"
-                name="ingressDomain" readonly>
-              <button class="btn btn-outline-secondary" type="button" title="Copy domain"
-                (click)="copyDomain('https://' + ingressDomain)">
-                <i class="bi bi-clipboard"></i>
-              </button>
-              <button class="btn btn-outline-secondary" title="Open domain" (click)="open('http://' + ingressDomain)">
-                <i class="bi bi-box-arrow-up-right"></i></button>
-              <button class="btn" title="Delete endpoint" (click)="deleteEndpoint()" [disabled]="formDisabled"> <i
-                  class="bi bi-x-circle-fill"></i></button>
+                <div *ngIf="ingressDomain">
+                  <div class="d-flex align-items-center justify-content-between">
+                    <small class="fw-bold fs-7">Domain URL</small>
+                    <div class="d-flex gap-2">
+                      <div class="position-relative">
+                        <button class="btn btn-sm btn-outline-secondary" type="button" title="Copy domain"
+                          (click)="copyDomain('https://' + ingressDomain, 'domain-copy')">
+                          <i class="bi bi-clipboard mx-1"></i> copy
+                        </button>
+                        <small *ngIf="copiedButtonId === 'domain-copy'"
+                          class="badge badge-success border border-success text-success ms-2 badge-copied fw-light">Copied!</small>
+                      </div>
+                      <button class="btn btn-sm btn-outline-danger" title="Delete endpoint" (click)="deleteEndpoint()"
+                        [disabled]="formDisabled">
+                        <i class="bi bi-x-circle mx-1"></i>delete
+                      </button>
+                    </div>
+                  </div>
+                  <div class="py-1">
+                    <p class="mb-0 domain-text w-100 domain-link" (click)="open('http://' + ingressDomain)">https://{{
+                      ingressDomain }}</p>
+                  </div>
+                  <!-- <div class="text-secondary small mt-2 fs-7" *ngIf="endpointStatus">
+                    Status: <span class="badge fw-light"
+                      [ngClass]="{
+                        'badge badge-danger': endpointStatus === 'unreachable',
+                        'badge badge-success': endpointStatus === 'reachable'
+                      }">{{ endpointStatus }}</span>
+                  </div> -->
+                  <!-- <div class="mt-2"
+                    *ngIf="!networkSettingsForm.get('customDns')?.value || !networkSettingsForm.get('showAuthentication')?.value">
+                    <hr class="my-3">
+                    <h6 class="fw-bold fs-2 mb-2">
+                      <i class="bi bi-gear"></i> Advanced Settings
+                    </h6>
+                    <div class="form-check form-switch" *ngIf="!networkSettingsForm.get('customDns')?.value">
+                      <input class="form-check-input" type="checkbox" id="enableCustomDns"
+                        [(ngModel)]="enableCustomDns" (change)="onEnableCustomDnsChange($event)">
+                      <label class="form-check-label fs-2" for="enableCustomDns">
+                        Enable Custom DNS
+                      </label>
+                    </div>
+                    <div class="form-check form-switch" *ngIf="!networkSettingsForm.get('showAuthentication')?.value">
+                      <input class="form-check-input" type="checkbox" id="enableAuth" [(ngModel)]="enableAuth" (change)="onEnableAuthChange($event)">
+                      <label class="form-check-label fs-2" for="enableAuth">
+                        Enable Authentication
+                      </label>
+                    </div>
+                  </div> -->
+                </div>
+              </div>
             </div>
-            <div class="text-secondary small" *ngIf="endpointStatus">This domain is {{endpointStatus}}.</div>
           </div>
 
-          <fieldset [disabled]="formDisabled">
-            <form cForm [formGroup]="networkSettingsForm">
-              <div class="d-flex gap-4 mb-4">
-                <div class="w-100">
-                  <div class="d-flex align-items-center toggle-bar my-2">
-                    <label for="customDns" class="me-2 fz-13"><b>Custom DNS</b></label>
-                    <div>
+          <div class="w-100">
+            <div class="card border h-100">
+              <div class="card-body p-1 card-body-text">
+                <h6 class="card-title mb-2 fs-6 fw-bold"><i class="bi bi-shield-lock"></i> Private Networking</h6>
+                <small class="text-muted d-block mb-3 fs-7">Access this service from within the network.</small>
+                <div class="d-flex align-items-center justify-content-between">
+                  <small class="fw-bold fs-7">Internal Host</small>
+                  <div class="position-relative">
+                    <button class="btn btn-sm btn-outline-secondary" type="button" title="Copy host"
+                      (click)="copyDomain('http://' + deploymentdetails?.name, 'host-copy')">
+                      <i class="bi bi-clipboard mx-1"></i>copy
+                    </button>
+                    <small *ngIf="copiedButtonId === 'host-copy'"
+                      class="badge badge-success border border-success text-success ms-2 badge-copied fw-light">Copied!</small>
+                  </div>
+                </div>
+                <div class="py-1">
+                  <p class="mb-0 domain-text w-100">http://{{ deploymentdetails?.name }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <fieldset [disabled]="formDisabled">
+          <form cForm [formGroup]="networkSettingsForm">
+            <div class="d-flex gap-4 mb-4">
+              <div class="w-100 min-vh-auto">
+                <div class="card border h-100">
+                  <div class="card-body p-1 card-body-text">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                      <div>
+                        <h6 class="card-title mb-0 fs-6 fw-bold d-flex align-items-center gap-2">
+                          <span><i class="bi bi-sliders"></i> Custom DNS</span>
+                          <button type="button" class="dns-info-btn" title="DNS setup info"
+                            aria-label="Show DNS setup info" [ngbPopover]="dnsInfoPopover"
+                            triggers="mouseenter:mouseleave focus:blur" popoverClass="wide-popover" placement="right">
+                            <i class="bi bi-info-circle"></i>
+                          </button>
+                        </h6>
+                        <small class="text-muted d-block fs-7 mt-1">Enable custom domain configuration</small>
+                      </div>
                       <label class="svg-toggle">
                         <input type="checkbox" formControlName="customDns" (change)="toggleHost($event)" />
                         <span class="track">
@@ -49,137 +124,234 @@
                         </span>
                       </label>
                     </div>
+
+                    <fieldset [disabled]="!networkSettingsForm.get('customDns')?.value" class="custom-domain-section">
+                      <div class="custom-dns-layout">
+                        <div class="custom-dns-left">
+                          <div class="mb-2">
+                            <label class="form-label fs-7 mb-1">Host Name</label>
+
+                            <div class="input-group">
+                              <input type="text" class="form-control custom-values" name="customDnsHost"
+                                placeholder="Enter hostname" formControlName="customDnsHost">
+                              <button class="btn btn-primary ms-1" (click)="onCustomDnsSubmit()"
+                                [disabled]=" formDisabled || !networkSettingsForm.get('customDnsHost')?.dirty">Generate</button>
+                            </div>
+                            <div *ngIf="iscustomDnsHostError" class="text-danger small mt-1">
+                              Host name is required.
+                            </div>
+                          </div>
+                          <div *ngIf="dnsInfo.dnsName" class="mb-2">
+                            <div class="mb-2 bg-light p-2 rounded">
+                              <small class="fw-bold d-block mb-1 fs-7">CName</small>
+                              <div class="d-flex align-items-center">
+                                <p class="mb-0 small text-break dns-text">https://{{ ingressDomain }}</p>
+                                <div class="position-relative">
+                                  <button class="btn btn-sm btn-outline-secondary border-0" type="button" title="Copy DNS"
+                                    (click)="copyDomain(dnsInfo?.dnsName, 'dns-copy')">
+                                    <i class="bi bi-clipboard mx-1"></i>
+                                  </button>
+                                  <small *ngIf="copiedButtonId === 'dns-copy'"
+                                    class="badge badge-success border border-success text-success ms-2 badge-copied fw-light">Copied!</small>
+                                </div>
+                              </div>
+                            </div>
+                            <div class="mb-2 bg-light p-2 rounded">
+                              <small class="fw-bold d-block mb-1 fs-7">IP Address</small>
+                              <div class="">
+                                <div *ngFor="let item of ipAddresses" class="d-flex align-items-center">
+                                  <small class=" d-block dns-text">
+                                    {{ item.ip }}
+                                  </small>
+                                  <div class="position-relative">
+                                    <button class="btn btn-sm btn-outline-secondary border-0" type="button" title="Copy IP"
+                                      (click)="copyDomain(item.ip, item.id)">
+                                      <i class="bi bi-clipboard mx-1"></i>
+                                    </button>
+                                    <small *ngIf="copiedButtonId === item.id"
+                                      class="badge bg-light border border-success text-success ms-2 badge-copied fw-light">
+                                      Copied!
+                                    </small>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <!-- <div class="custom-dns-right">
+                          <p class="dns-guide-title">DNS Setup Guide</p>
+                          <div class="dns-method-block mb-2" *ngFor="let method of dnsSetupContent.methods">
+                            <p class="dns-method-title mb-0">{{ method.title }}</p>
+                            <ol class="dns-step-list mb-0">
+                              <li *ngFor="let instruction of method.instructions">{{ instruction }}</li>
+                            </ol>
+                          </div>
+                        </div> -->
+                      </div>
+                    </fieldset>
                   </div>
-                  <fieldset [disabled]="!networkSettingsForm.get('customDns')?.value" class="custom-domain-section">
-                    <div class="border p-3 rounded fieldset-section">
-                      <h6 class="mb-3"><b>Setup your domain manually by adding following records</b>
-                        <i class="bi bi-info-circle info-icon" [ngbPopover]="popoverContent"
-                          popoverTitle="Steps to setup custom DNS" placement="right" triggers="mouseenter:mouseleave"
-                          popoverClass="wide-popover"></i>
-
-                        <ng-template #popoverContent>
-                          <ol>
-                            <li>Fill in the fields below to add a <strong>CNAME</strong> record.</li>
-                            <li>The <strong>DNS Name</strong> field is <em>read‑only</em> and is auto‑generated.</li>
-                            <li>Use the <strong>Host</strong> field to enter your subdomain (e.g. <code>app</code>).
-                            </li>
-                            <!-- <li>Use the <strong>Value</strong> field to enter the DNS name shown here.</li> -->
-                            <!-- <li>Enter the provided DNS name in the <strong>Value</strong> field.</li> -->
-                            <li>Click <b>Generate</b> to complete the setup. It may take a few minutes for the changes
-                              to take effect.</li>
-                          </ol>
-                        </ng-template>
-                      </h6>
-                      <div class="mb-3">
-                        <label class="form-label">DNS name</label>
-                        <div class="input-group">
-                          <input type="text" class="form-control"
-                            [value]="'https://' + networkSettingsForm.get('host')?.value" readonly />
-                          <button class="btn btn-outline-secondary" type="button" title="Copy domain"
-                            (click)="copyDomain('https://' + ingressDomain)">
-                            <i class="bi bi-clipboard"></i>
-                          </button>
-                        </div>
-                      </div>
-
-                      <div class="mb-3">
-                        <label class="form-label">Host</label>
-                        <input type="text" class="form-control" [formControl]="customDnsHost" name="customDnsHost" />
-                        <div *ngIf="iscustomDnsHostError" class="text-danger small">
-                          Custom DNS Host is required.
-                        </div>
-                      </div>
-                    </div>
-                  </fieldset>
-
                 </div>
-                <div class="w-100">
-                  <div class="d-flex align-items-center toggle-bar my-2">
-                    <label for="toggleAuthentication" class="me-2 fz-13"><b>Enable authentication</b></label>
-                    <div>
-                      <label class="svg-toggle">
-                        <input type="checkbox" formControlName="showAuthentication"
-                          (change)="toggleAuthentication($event)" />
-                        <span class="track">
-                          <span class="knob"></span>
-                        </span>
-                      </label>
-                    </div>
-                  </div>
-                  <fieldset [disabled]="!networkSettingsForm.get('showAuthentication')?.value"
-                    class="custom-domain-section">
-                    <div class="border p-3 rounded fieldset-section">
-                      <h6 class="mb-3"><b>Setup your domain sample text</b></h6>
-
-                      <!-- Wrap nested controls inside [formGroupName] -->
-                      <div [formGroupName]="'authentication'">
-                        <div class="mb-3">
-                          <label for="username" class="form-label">User name</label>
-                          <input id="username" formControlName="username" class="form-control" autocomplete="off" />
-                          <div *ngIf="isInvalid('authentication.username') && submitted" class="text-danger small">
-                            Username is required.
-                          </div>
-                        </div>
-
-                        <div class="mb-3">
-                          <label for="password" class="form-label">Password</label>
-                          <div class="input-group">
-                            <input id="password" formControlName="password" [type]="hide ? 'password' : 'text'"
-                              class="form-control" autocomplete="new-password"
-                              (input)="onPasswordChange()" />
-                            <span class="input-group-addon" *ngIf="showPasswordIcon">
-                              <i class="positioning glyphicon bi" [ngClass]="{'bi-eye': hide, 'bi-eye-slash': !hide}"
-                                (click)="toggleVisibility()"></i>
-                            </span>
-                          </div>
-                          <div *ngIf="isInvalid('authentication.password') && submitted" class="text-danger small">
-                            Password is required.
-                          </div>
-                        </div>
-                      </div>
-
-                    </div>
-                  </fieldset>
-                </div>
-
               </div>
-              <div class="text-end">
-                <button class="btn button-format-solid me-2" (click)="onNetworkingSubmit()"
-                  [disabled]="networkSettingsForm.pristine">
-                  Generate
-                </button>
-                <button class="btn button-format-outline" (click)="isGenerateDomain = false"
-                  [disabled]="networkSettingsForm.pristine">
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </fieldset>
-        </div>
-        <div class="my-4">
-          <div class="custom-heading">Private Networking</div>
-          <div class="custom-content">Access this service from within the network.</div>
-          <div class="w-50">
-            <div class="input-group">
-              <input type="text" class="form-control" placeholder="Enter a host name" [disabled]="true"
-                [value]="'http://' + deploymentdetails?.name">
 
-              <button class="btn btn-outline-secondary" type="button" title="Copy domain"
-                (click)="copyDomain('http://' + deploymentdetails?.name)">
-                <i class="bi bi-clipboard"></i>
-              </button>
 
             </div>
-          </div>
-        </div>
+            <div class="w-100 ">
+              <div class="card border w-100">
+                <div class="card-body p-1 card-body-text">
+                  <div class="d-flex align-items-center justify-content-between mb-3">
+                    <div>
+                      <h6 class="card-title mb-0 fs-6 fw-bold"><i class="bi bi-shield-check"></i> Authentication</h6>
+                      <small class="text-muted d-block fs-7 mt-1">Secure your endpoint with username &
+                        password</small>
+                    </div>
+                    <label class="svg-toggle">
+                      <input type="checkbox" formControlName="showAuthentication"
+                        (change)="toggleAuthentication($event)" />
+                      <span class="track">
+                        <span class="knob"></span>
+                      </span>
+                    </label>
+                  </div>
+                  <ng-container *ngIf="networkSettingsForm.get('showAuthentication')?.value">
+                    <fieldset [disabled]="!networkSettingsForm.get('showAuthentication')?.value"
+                      class="custom-domain-section">
+                      <div class="custom-dns-layout">
+                        <div class="custom-dns-left">
+                          <!-- <div class="auth-guide-note">
+                            Use a unique username and strong password to protect your endpoint access.
+                          </div> -->
+                          <div [formGroupName]="'authentication'">
+                            <div class="mb-2">
+                              <label for="username" class="form-label fs-7 mb-1">Username</label>
+                              <input id="username" formControlName="username" class="form-control form-control-sm"
+                                autocomplete="off" />
+                              <div *ngIf="isInvalid('authentication.username') && submitted" class="text-danger small mt-1">
+                                Username is required.
+                              </div>
+                            </div>
+
+                            <div class="mb-2">
+                              <label for="password" class="form-label fs-7 mb-1">Password</label>
+                              <div class="input-group">
+                                <input id="password" formControlName="password" [type]="hide ? 'password' : 'text'"
+                                  class="form-control form-control-sm" autocomplete="new-password"
+                                  (input)="onPasswordChange()" />
+                                <span class="input-group-addon" *ngIf="showPasswordIcon">
+                                  <i class="positioning glyphicon bi" [ngClass]="{'bi-eye': hide, 'bi-eye-slash': !hide}"
+                                    (click)="toggleVisibility()"></i>
+                                </span>
+                              </div>
+                              <div *ngIf="isInvalid('authentication.password') && submitted" class="text-danger small mt-1">
+                                Password is required.
+                              </div>
+                            </div>
+                          </div>
+
+                          <div class="d-flex gap-2 justify-content-end mt-3">
+                            <button class="btn button-format-solid btn-sm" type="button" (click)="onAuthenticationSubmit()"
+                              [disabled]="!networkSettingsForm.get('showAuthentication')?.value || formDisabled"
+                              title="Set Authentication">
+                              Set Authentication
+                            </button>
+                            <button class="btn button-format-outline btn-sm" type="button" (click)="cancelAuthentication()"
+                              [disabled]="!networkSettingsForm.get('showAuthentication')?.value || formDisabled"
+                              title="Cancel Authentication">
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                        <!-- <div class="custom-dns-right">
+                          <p class="dns-guide-title">Authentication Guide</p>
+                          <ul class="auth-guide-list mb-0">
+                            <li>Enter a unique username.</li>
+                            <li>Use a strong password with letters, numbers, and symbols.</li>
+                            <li>Click <b>Set Authentication</b> to apply credentials.</li>
+                          </ul>
+                        </div> -->
+                      </div>
+                    </fieldset>
+                  </ng-container>
+                </div>
+              </div>
+            </div>
+          </form>
+        </fieldset>
       </div>
     </ng-template>
   </c-accordion-item>
 </c-accordion>
 
-<app-modal #confirmationModel [modalConfig]="confirmationConfig">
-  <div class="mt-4 text-right">
-    <button class="btn button-format-solid mx-2 px-3 py-1" (click)="onNetworkingSubmit()">Generate</button>
-    <button class="btn button-format-outline mx-2 px-3 py-1" (click)="closeModal()">Cancel</button>
+<ng-template #dnsInfoPopover>
+  <div class="dns-popover-card">
+    <div class="dns-popover-header">Steps to setup custom DNS</div>
+    <div class="dns-popover-body">
+      <ng-container *ngIf="dnsInfo?.dnsName; else defaultDnsInfoContent">
+        <ng-container *ngTemplateOutlet="dnsInstructionsTemplate; context: { listClass: 'dns-popover-list' }"></ng-container>
+      </ng-container>
+      <ng-template #defaultDnsInfoContent>
+        <ol class="dns-popover-list">
+          <li>Fill in the fields below to add a <strong>CNAME</strong> record.</li>
+          <li>The <strong>DNS Name</strong> field is <em>read-only</em> and auto-generated.</li>
+          <li>Use the <strong>Host</strong> field to enter your subdomain (e.g. <span
+              class="dns-example-text">app</span>).</li>
+          <li>Click <strong>Generate</strong> to complete setup. It may take a few minutes for changes to take effect.
+          </li>
+        </ol>
+      </ng-template>
+    </div>
   </div>
-</app-modal>
+</ng-template>
+
+<ng-template #dnsSetupModal let-modal>
+  <div class="dns-modal-container py-4">
+    <div class="dns-modal-header">
+      <div class="dns-title-wrap">
+        <div class="dns-title-icon">
+          <i class="bi bi-shield-lock"></i>
+        </div>
+        <div>
+          <p class="dns-modal-title mb-0">Custom DNS Setup</p>
+          <p class="dns-modal-subtitle mb-3">Add your domain and point it to Nimbuz with the records below.</p>
+        </div>
+
+      </div>
+      <button type="button" class="dns-close-btn" (click)="modal.dismiss('close')">
+        <i class="bi bi-x-lg"></i> Close
+      </button>
+    </div>
+    <div class="dns-step-box">
+      <ng-container *ngTemplateOutlet="dnsInstructionsTemplate; context: { listClass: 'dns-step-list' }"></ng-container>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #dnsInstructionsTemplate let-listClass="listClass">
+  <p class="dns-step-item">
+    <span class="dns-step-label">{{ dnsSetupContent.step1.label }}:</span>
+    {{ dnsSetupContent.step1.description }}
+  </p>
+  <p class="dns-step-item">
+    <span class="dns-step-label">{{ dnsSetupContent.step2.label }}:</span>
+    {{ dnsSetupContent.step2.description }}
+  </p>
+
+  <ng-container *ngFor="let method of dnsSetupContent.methods; let i = index">
+    <div class="dns-method-block">
+      <p class="dns-method-title mb-0">{{ method.title }}</p>
+      <ol [ngClass]="[listClass, 'mb-0']">
+        <li *ngFor="let instruction of method.instructions">{{ instruction }}</li>
+      </ol>
+    </div>
+
+    <!-- <div class="dns-divider" *ngIf="i < dnsSetupContent.methods.length - 1">
+      <hr class="dns-divider-line">
+      <span class="dns-divider-text">OR</span>
+      <hr class="dns-divider-line">
+    </div> -->
+  </ng-container>
+
+  <p class="dns-step-item mb-0">
+    <span class="dns-step-label">{{ dnsSetupContent.step3.label }}:</span>
+    {{ dnsSetupContent.step3.description }}
+  </p>
+</ng-template>

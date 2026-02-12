@@ -23,12 +23,12 @@ export class DashboardsService {
         catchError(this.handleError.bind(this))
       );
   }
-  getDeploymentUtilization(envId: string) {
-    return this.http.get(`${this.metricsApiUrl}/resources/live?namespace=${envId}&resourceType=cpu&deploymentId=b503656e-8c23-4d70-91b9-6cf34c4685de}`)
-      .pipe(
-        catchError(this.handleError.bind(this))
-      );
-  }
+  // getDeploymentUtilization(envId: string) {
+  //   return this.http.get(`${this.metricsApiUrl}/resources/live?namespace=${envId}&resourceType=cpu&deploymentId=b503656e-8c23-4d70-91b9-6cf34c4685de}`)
+  //     .pipe(
+  //       catchError(this.handleError.bind(this))
+  //     );
+  // }
 
   getEndpoints(envId: any) {
     const projectId = JSON.parse(localStorage.getItem('project') || '{}').id;
