@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output, ViewChild, ViewEncapsulation } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { DeploymentsService } from '../deployment.service';
 import { ModalComponent } from '../../../shared/components/model/model.component';
@@ -22,6 +22,7 @@ export class DeploymentNetworkingComponent implements OnInit {
 
   @Output() closeModalEvent = new EventEmitter<void>();
   @Input() currentStatus: string = '';
+  @ViewChild('dnsSetupModal') dnsSetupModal!: TemplateRef<any>;
   networkSettingsForm !: FormGroup;
   public formDisabled: boolean = false;
   freezeAddNewData: boolean = false;
@@ -45,9 +46,41 @@ export class DeploymentNetworkingComponent implements OnInit {
   };
   copiedButtonId: string = '';
   ipAddresses = [
-    { ip: '101.53.135.137', type: 'Primary', id: 'ip-primary-copy' },
-    { ip: '101.53.135.134', type: 'Secondary', id: 'ip-secondary-copy' }
+    { ip: '101.53.135.137', id: 'ip-1-copy' },
+    { ip: '101.53.135.134', id: 'ip-2-copy' }
   ];
+  readonly dnsSetupContent = {
+    step1: {
+      label: 'Step 1',
+      description: 'Go to your domain provider and open DNS settings for your domain.'
+    },
+    step2: {
+      label: 'Step 2',
+      description: 'Choose one of the following methods.'
+    },
+    methods: [
+      {
+        title: 'Using CNAME',
+        instructions: [
+          'Add a CNAME record.',
+          'In the Host/Name field, enter your subdomain (for example: www or app).',
+          'Use the CNAME value shown here in the Value / Points To field.'
+        ]
+      },
+      {
+        title: 'Using A Record (IP Addresses)',
+        instructions: [
+          'Add one or two A records.',
+          'Enter your root domain (@) or subdomain in the Host/Name field.',
+          'Use either one of the available IPs or both IPs as A records.'
+        ]
+      }
+    ],
+    step3: {
+      label: 'Step 3',
+      description: 'Save your changes. It may take a few minutes for changes to take effect.'
+    }
+  };
 
   // enableAuth: boolean = false;
   // enableCustomDns: boolean = false;
@@ -58,7 +91,6 @@ export class DeploymentNetworkingComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-
     this.networkSettingsForm = this.fb.group({
       service: [''],
       host: [''],
@@ -206,6 +238,7 @@ export class DeploymentNetworkingComponent implements OnInit {
       hostControl?.disable();
       this.networkSettingsForm.get('customDnsHost')?.setValue('')
       this.networkSettingsForm.markAsPristine();
+      this.dnsInfo = { dnsName: '', ipAddress: '' };
       this.onNetworkingSubmit()
     } else {
       hostControl?.enable();
@@ -273,6 +306,7 @@ export class DeploymentNetworkingComponent implements OnInit {
           ipAddress: res.data?.ipAddress || '101.53.135.137'
         };
         this.fetchCustomDnsHost();
+        this.openDnsSetupModal();
       } else {
         this.toaster.error('Failed to update Custom DNS');
       }
@@ -306,7 +340,7 @@ export class DeploymentNetworkingComponent implements OnInit {
     };
 
     // Save authentication
-    this.deploymentService.createEndpoint(envId, { authentication: authData, service: this.deploymentdetails?.name }).subscribe((res: any) => {
+    this.deploymentService.createEndpoint(envId, { authentication: authData, service: this.deploymentdetails?.name, customDns: this.networkSettingsForm.get('customDns')?.value }).subscribe((res: any) => {
       if (res && res.status.toLowerCase() === 'success') {
         this.toaster.success('Authentication configured successfully');
         authGroup.markAsPristine();
@@ -460,6 +494,13 @@ export class DeploymentNetworkingComponent implements OnInit {
   }
   onPasswordChange() {
     this.showPasswordIcon = true;
+  }
+  openDnsSetupModal(): void {
+    this.modalService.open(this.dnsSetupModal, {
+      centered: true,
+      size: 'lg',
+      windowClass: 'dns-setup-modal-window'
+    });
   }
   // onEnableCustomDnsChange(event: any) {
   //   this.networkSettingsForm.get('customDns')?.setValue(event.target.checked);
