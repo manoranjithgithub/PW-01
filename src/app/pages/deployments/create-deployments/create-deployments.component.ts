@@ -112,6 +112,7 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
 
   selectedFileName = '';
   base64Snippet = '';
+  isAutoScaleEnabled: boolean = false;
 
   constructor(
     private _fb: FormBuilder,
@@ -136,7 +137,11 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
           Validators.maxLength(40),
         ],
       ],
+      vcsAutoDeploy: [false],
       replicas: ['1', [Validators.pattern('^[0-9]+$')]],
+      hpaEnabled: [false],
+      hpaMinReplicas: ['', [Validators.pattern('^[0-9]+$'), Validators.min(1)]],
+      hpaMaxReplicas: ['', [Validators.pattern('^[0-9]+$')]],
       instanceType: ['', Validators.required],
       buildCommand: [null, Validators.maxLength(60)],
       startCommand: [null, Validators.maxLength(60)],
@@ -227,9 +232,18 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
         this.fileFormData?.set('appName', lowerCased);
         this.stepOneForm.markAllAsTouched();
       })
+
     this.stepOneForm.get('branchName')?.valueChanges.pipe(debounceTime(300)).subscribe(value => {
       this.selectedRepoDetails.branchName = value;
     })
+    this.stepOneForm.get('hpaEnabled')?.valueChanges.subscribe(value => {
+      this.isAutoScaleEnabled = value;
+      this.toggleAutoScale(value);
+    })
+    // Revalidate hpaMaxReplicas when hpaMinReplicas changes
+    this.stepOneForm.get('hpaMinReplicas')?.valueChanges.subscribe(() => {
+      this.stepOneForm.get('hpaMaxReplicas')?.updateValueAndValidity();
+    });
 
     this.deploymentsService.getInstanceTypes().subscribe((res: any) => {
       const items = Array.isArray(res?.data) ? res.data.slice() : [];
@@ -305,6 +319,12 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
 
     const req = this.buildRequest(fileName, filePath);
     const payload = this.cleanPayload(req);
+     if (this.isAutoScaleEnabled) {
+      delete payload.application.replicas;
+    } else {
+      delete payload.hpa.hpaMinReplicas;
+      delete payload.hpa.hpaMaxReplicas;
+    }
     let upload$: any = of(null);
 
     if (this.fileFormData) {
@@ -639,6 +659,26 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
     };
   }
 
+  hpaMaxReplicasValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      if (!control.value) {
+        return null;
+      }
+      const hpaMinReplicas = this.stepOneForm?.get('hpaMinReplicas')?.value;
+      const hpaMaxReplicas = control.value;
+
+      if (hpaMinReplicas && hpaMaxReplicas) {
+        const minVal = parseInt(hpaMinReplicas, 10);
+        const maxVal = parseInt(hpaMaxReplicas, 10);
+
+        if (maxVal <= minVal) {
+          return { maxLessThanMin: true };
+        }
+      }
+      return null;
+    };
+  }
+
   editSelectedStep(event: { step: number, fromReview: boolean }) {
     this.fromReview = event.fromReview;
     this.currentStep = event.step;
@@ -704,7 +744,7 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
     const ephemeralStorage = this.stepOneForm.value.ephemeralStorage
       ? `${this.stepOneForm.value.ephemeralStorage}Gi`
       : null;
-
+   
     return {
       environmentId: JSON.parse(localStorage.getItem('environment') || '{}').id,
       name: this.stepOneForm.getRawValue().name,
@@ -713,6 +753,7 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
         gitUrl: this.buildGitUrl(),
         s3FileKey: null,
         dockerfilePath: this.stepOneForm.value.dockerfilePath || null,
+        vcsAutoDeploy: this.stepOneForm.value.vcsAutoDeploy || false,
       },
       application: {
         replicas: this.stepOneForm.value.replicas || 0,
@@ -731,6 +772,11 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
         isCustomDns: false,
         appIngressDomain: null,
         customDomain: null,
+      },
+      hpa:{
+        hpaEnabled: this.stepOneForm.value.hpaEnabled || false,
+        hpaMinReplicas: this.stepOneForm.value.hpaMinReplicas || null,
+        hpaMaxReplicas: this.stepOneForm.value.hpaMaxReplicas || null,
       },
       config: {
         name: fileName ? fileName.replace(/\.[^/.]+$/, '') : null,
@@ -786,6 +832,27 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
       }).format(converted);
     } catch (e) {
       return String(converted);
+    }
+  }
+  toggleAutoScale(value: boolean) {
+    if (value) {
+      this.stepOneForm.get('replicas')?.setValue('');
+      this.stepOneForm.get('replicas')?.clearValidators();
+      this.stepOneForm.get('replicas')?.updateValueAndValidity();
+      this.stepOneForm.get('hpaMinReplicas')?.setValidators([Validators.required, Validators.pattern('^[0-9]+$'), Validators.min(1)]);
+      this.stepOneForm.get('hpaMaxReplicas')?.setValidators([Validators.required, Validators.pattern('^[0-9]+$'), this.hpaMaxReplicasValidator()]);
+      this.stepOneForm.get('hpaMinReplicas')?.updateValueAndValidity();
+      this.stepOneForm.get('hpaMaxReplicas')?.updateValueAndValidity();
+    } else {
+      this.stepOneForm.get('replicas')?.setValue('1');
+      this.stepOneForm.get('replicas')?.setValidators([Validators.pattern('^[0-9]+$')]);
+      this.stepOneForm.get('replicas')?.updateValueAndValidity();
+      this.stepOneForm.get('hpaMinReplicas')?.setValue('');
+      this.stepOneForm.get('hpaMaxReplicas')?.setValue('');
+      this.stepOneForm.get('hpaMinReplicas')?.clearValidators();
+      this.stepOneForm.get('hpaMaxReplicas')?.clearValidators();
+      this.stepOneForm.get('hpaMinReplicas')?.updateValueAndValidity();
+      this.stepOneForm.get('hpaMaxReplicas')?.updateValueAndValidity();
     }
   }
 }

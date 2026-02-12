@@ -84,6 +84,9 @@ export class DefaultLayoutComponent implements OnInit {
   subText: string = '';
   currentUrl: string = '';
   showSwitchProject = false;
+  hideBreadcrumb = false;
+  hidePageHeader = false;
+  hideProjectSwitch = false;
 
   readonly #colorModeService = inject(ColorModeService);
   readonly colorMode = this.#colorModeService.colorMode;
@@ -259,6 +262,9 @@ export class DefaultLayoutComponent implements OnInit {
 
     const project = localStorage.getItem('project');
     this.showSwitchProject = !!project && project !== 'undefined';
+    this.hideBreadcrumb = false;
+    this.hidePageHeader = false;
+    this.hideProjectSwitch = currentUrl.startsWith('/account-settings');
   }
 
   public canPerformPageDelete(): boolean {

@@ -62,14 +62,12 @@ export class InvoiceComponent implements OnInit {
         field: 'total', headerName: 'Outstanding Amount', flex: 1,
         valueFormatter: (params: any) => fmt(params.value, params.data?.currency)
       },
-      {
-        field: 'currency', headerName: 'Currency', width: 120,
-        valueGetter: (params: any) => {
-          // const target = this.sharedService.getCurrency() || 'USD';
-          // const src = params.data?.currency || '';
-          return this.sharedService.getCurrency() || 'USD';
-        }
-      },
+      // {
+      //   field: 'currency', headerName: 'Currency', width: 120,
+      //   valueGetter: (params: any) => {
+      //     return this.sharedService.getCurrency() || 'USD';
+      //   }
+      // },
       {
         field: 'status',
         headerName: 'Status',
@@ -125,6 +123,42 @@ export class InvoiceComponent implements OnInit {
         valueFormatter: (params: any) => {
           return params.value || '';
         },
+      },
+      {
+        field:'',
+        headerName: 'Actions',
+        width: 150,
+        cellRenderer: (params: any) => {
+          const wrapper = document.createElement('div');
+          wrapper.style.textAlign = 'center';
+          wrapper.style.display = 'flex';
+          // wrapper.style.justifyContent = 'center';
+          wrapper.style.alignItems = 'center';
+          wrapper.style.height = '100%';
+          
+          if (params.data?.pdf_generated_at) {
+            const icon = document.createElement('i');
+            icon.className = 'bi bi-file-earmark-pdf-fill';
+            icon.style.fontSize = '20px';
+            icon.style.color = '#dc3545';
+            icon.style.cursor = 'pointer';
+            icon.title = 'View PDF';
+            
+            icon.addEventListener('click', () => {
+              this.viewPdf(params.data);
+            });
+            
+            wrapper.appendChild(icon);
+          } else {
+            const noIcon = document.createElement('span');
+            noIcon.textContent = 'No PDF';
+            noIcon.style.color = '#ccc';
+            noIcon.style.fontSize = '12px';
+            wrapper.appendChild(noIcon);
+          }
+          return wrapper;
+        }
+          
       }
     ];
   }
@@ -190,6 +224,28 @@ export class InvoiceComponent implements OnInit {
 
       }
 
+    });
+  }
+
+  viewPdf(data: any) {
+    if (!data?.id) {
+      this.toastr.error('Invoice ID not found');
+      return;
+    }
+    this.http.getPdfInvoice(data.id).subscribe({
+      next: (response: any) => {
+        if (response?.data?.url) {
+          window.open(response.data.url, '_blank');
+        } else {
+          this.toastr.error('PDF URL not available');
+        }
+      },
+      error: (error) => {
+        this.toastr.error(error.message || 'Failed to fetch PDF');
+      },
+      complete: () => {
+        window.location.reload();
+      }
     });
   }
   getInvoiceList() {

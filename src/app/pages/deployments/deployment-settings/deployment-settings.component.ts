@@ -1,5 +1,5 @@
 import { AfterViewInit, ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild, ViewEncapsulation } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import {
   AccordionButtonDirective,
   AccordionComponent,
@@ -100,6 +100,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
   public formDisabled: boolean = false;
   endpointStatus: string = '';
   s3FileKey: string = '';
+  isAutoScaleEnabled: boolean = false;
 
   constructor(private fb: FormBuilder, private sharedService: SharedService, private deploymentService: DeploymentsService,
     private toaster: ToastrService, private modalService: NgbModal, private route: Router, private ac: ActivatedRoute,
@@ -162,6 +163,9 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
       instanceType: ['', Validators.required],
       region: [{ value: '', disabled: true }],
       replicas: ['', Validators.required],
+      hpaEnabled: [false],
+      hpaMinReplicas: ['', [Validators.pattern('^[0-9]+$'), Validators.min(1)]],
+      hpaMaxReplicas: ['', [Validators.pattern('^[0-9]+$')]],
       ephemeralStorage: [null, Validators.pattern("^[0-9]*\\.?[0-9]+$")],
       storage: [null, Validators.pattern("^[0-9]+$")],
       healthEndpoint: [''],
@@ -181,6 +185,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
       fileInput: ['', [Validators.required, this.fileValidator.bind(this)]],
       fileName: [{ value: '', disabled: true }],
       dockerfilePath: ['', Validators.maxLength(250)],
+      vcsAutoDeploy: [false],
     });
     this.freezeAddNewData = this.currentStatus && this.currentStatus?.toLowerCase() === 'building' ? true : false;
 
@@ -242,6 +247,15 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
       // console.log("Selected Object:", this.selectedResource);
     });
 
+    this.generalSettingsForm.get('hpaEnabled')?.valueChanges.subscribe(value => {
+      this.isAutoScaleEnabled = value;
+      this.toggleAutoScale(value);
+    })
+    // Revalidate hpaMaxReplicas when hpaMinReplicas changes
+    this.generalSettingsForm.get('hpaMinReplicas')?.valueChanges.subscribe(() => {
+      this.generalSettingsForm.get('hpaMaxReplicas')?.updateValueAndValidity();
+    });
+
     this.deploymentService.getAuthenticatedresponse(envId, this.deploymentId).subscribe((res: any) => {
       this.showAuthenticationData = res.data;
       this.endpointStatus = res.data?.status;
@@ -285,6 +299,9 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
           instanceType: patchInstanceType,
           region: 'ap-south-1a',
           replicas: res.data.application?.replicas,
+          hpaMinReplicas: res.data.hpa?.hpaMinReplicas,
+          hpaMaxReplicas: res.data.hpa?.hpaMaxReplicas,
+          hpaEnabled: res.data.hpa?.hpaEnabled,
           ephemeralStorage: res.data.application?.ephemeralStorage ? res.data.application?.ephemeralStorage.replace(/Gi$/, '') : null,
           storage: res.data.application?.storage,
           healthEndpoint: res.data.network?.healthEndpoint,
@@ -306,7 +323,8 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
           repoUrl: repoUrl,
           branchName: branchName,
           fileName: res.data.sourceCode?.s3FileKey ? res.data.sourceCode?.s3FileKey : '',
-          dockerfilePath: res.data.sourceCode?.dockerfilePath || ''
+          dockerfilePath: res.data.sourceCode?.dockerfilePath || '',
+          vcsAutoDeploy: res.data.sourceCode?.vcsAutoDeploy || false,
         });
         if (res.data.sourceCode?.type.toLowerCase() === "file") {
           this.s3FileKey = res.data.sourceCode?.s3FileKey;
@@ -480,6 +498,11 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
       s3FileKey: fileName ? this.s3FileKey : null,
       dockerfilePath: sourceFormValue.dockerfilePath
     };
+    const hpa= {
+      hpaEnabled: formValue.hpaEnabled,
+      hpaMinReplicas: formValue.hpaEnabled ? formValue.hpaMinReplicas :1,
+      hpaMaxReplicas: formValue.hpaEnabled ? formValue.hpaMaxReplicas :1,
+    };
 
     const isDockerfilePathChanged =
       formValue.dockerfilePath !== sourceFormValue.dockerfilePath;
@@ -499,6 +522,13 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
     if (Object.keys(sourceCode).length) req.sourceCode = sourceCode;
     if (Object.keys(application).length) req.application = application;
     if (Object.keys(network).length) req.network = network;
+    if (Object.keys(hpa).length) req.hpa = hpa;
+    if (this.isAutoScaleEnabled) {
+      delete req.application.replicas;
+    } else {
+      // delete req.hpa.hpaMinReplicas;
+      // delete req.hpa.hpaMaxReplicas;
+    }
     this.deploymentService.updateDeployment(this.deploymentdetails?.id, req).subscribe((res: any) => {
       if (res.status.toLowerCase() === "success") {
         this.toaster.success('Updated successfully');
@@ -510,6 +540,9 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
           instanceType: res.data.application?.instanceType,
           region: 'ap-south-1a',
           replicas: res.data.application?.replicas,
+          hpaMinReplicas: res.data.hpa?.hpaMinReplicas,
+          hpaMaxReplicas: res.data.hpa?.hpaMaxReplicas,
+          hpaEnabled: res.data.hpa?.hpaEnabled,
           ephemeralStorage: res.data.application?.ephemeralStorage ? res.data.application?.ephemeralStorage.replace(/Gi$/, '') : null,
           storage: res.data.application?.storage,
           healthEndpoint: res.data.network?.healthEndpoint,
@@ -658,6 +691,48 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
     }
   }
 
+  hpaMaxReplicasValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      if (!control.value) {
+        return null;
+      }
+      const hpaMinReplicas = this.generalSettingsForm?.get('hpaMinReplicas')?.value;
+      const hpaMaxReplicas = control.value;
+
+      if (hpaMinReplicas && hpaMaxReplicas) {
+        const minVal = parseInt(hpaMinReplicas, 10);
+        const maxVal = parseInt(hpaMaxReplicas, 10);
+
+        if (maxVal <= minVal) {
+          return { maxLessThanMin: true };
+        }
+      }
+      return null;
+    };
+  }
+
+  toggleAutoScale(value?: boolean) {
+    if (value) {
+      this.generalSettingsForm.get('replicas')?.setValue('');
+      this.generalSettingsForm.get('replicas')?.clearValidators();
+      this.generalSettingsForm.get('replicas')?.updateValueAndValidity();
+      this.generalSettingsForm.get('hpaMinReplicas')?.setValidators([Validators.required, Validators.pattern('^[0-9]+$'), Validators.min(1)]);
+      this.generalSettingsForm.get('hpaMaxReplicas')?.setValidators([Validators.required, Validators.pattern('^[0-9]+$'), this.hpaMaxReplicasValidator()]);
+      this.generalSettingsForm.get('hpaMinReplicas')?.updateValueAndValidity();
+      this.generalSettingsForm.get('hpaMaxReplicas')?.updateValueAndValidity();
+    } else {
+      this.generalSettingsForm.get('replicas')?.setValue('1');
+      this.generalSettingsForm.get('replicas')?.setValidators([Validators.required]);
+      this.generalSettingsForm.get('replicas')?.updateValueAndValidity();
+      // this.generalSettingsForm.get('hpaMinReplicas')?.setValue('');
+      // this.generalSettingsForm.get('hpaMaxReplicas')?.setValue('');
+      this.generalSettingsForm.get('hpaMinReplicas')?.clearValidators();
+      this.generalSettingsForm.get('hpaMaxReplicas')?.clearValidators();
+      this.generalSettingsForm.get('hpaMinReplicas')?.updateValueAndValidity();
+      this.generalSettingsForm.get('hpaMaxReplicas')?.updateValueAndValidity();
+    }
+  }
+
   isError(controlName: string, errorType: string): boolean {
     const control = this.generalSettingsForm.controls[controlName];
     return control.hasError(errorType) && control.touched;
@@ -721,5 +796,24 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
     } catch {
       return e || undefined;
     }
+  }
+  onVcsAutoDeployChange() {
+    const vcsAutoDeploy = this.sourceSettingsForm.get('vcsAutoDeploy')?.value;
+    this.deploymentService.updateDeployment(this.deploymentdetails?.id, {
+      sourceCode: { 
+        vcsAutoDeploy: vcsAutoDeploy,
+        type: this.deploymentdetails?.sourceCode?.type || 'vcs',
+        gitUrl: this.deploymentdetails?.sourceCode?.gitUrl || '',
+        s3FileKey: this.deploymentdetails?.sourceCode?.s3FileKey || '',
+        dockerfilePath: this.deploymentdetails?.sourceCode?.dockerfilePath || '',
+       }
+    }).subscribe((res: any) => {
+      if (res.status.toLowerCase() === "success") {
+        this.toaster.success('VCS Auto Deploy setting updated successfully');
+      }
+    },
+      err => {
+        console.error(err);
+      });
   }
 }
