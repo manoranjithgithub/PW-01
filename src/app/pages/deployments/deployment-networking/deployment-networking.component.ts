@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output, ViewChild, ViewEncapsulation } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { DeploymentsService } from '../deployment.service';
 import { ModalComponent } from '../../../shared/components/model/model.component';
 import { NgbModal, NgbPopoverModule } from '@ng-bootstrap/ng-bootstrap';
@@ -30,7 +30,6 @@ export class DeploymentNetworkingComponent implements OnInit {
   endpointStatus: string = '';
   ingressDomain: string = '';
   hide = true;
-  customDnsHost = new FormControl;
   isHostDisabled = true;
   showAuthentication = false;
   deploymentId: string = '';
@@ -40,16 +39,19 @@ export class DeploymentNetworkingComponent implements OnInit {
   submitted: boolean = false;
   showPasswordIcon = false;
   iscustomDnsHostError: boolean = false;
-
-  @ViewChild('confirmationModel') private confirmationModel!: ModalComponent;
-
-  public confirmationConfig: any = {
-    modalTitle: '',
-    width: '500px',
-    hideDismissButton: () => true,
-    hideCloseButton: () => true,
+  dnsInfo: any = {
+    dnsName: '',
+    ipAddress: ''
   };
+  copiedButtonId: string = '';
+  ipAddresses = [
+    { ip: '101.53.135.137', type: 'Primary', id: 'ip-primary-copy' },
+    { ip: '101.53.135.134', type: 'Secondary', id: 'ip-secondary-copy' }
+  ];
 
+  // enableAuth: boolean = false;
+  // enableCustomDns: boolean = false;
+  activeSetting: 'dns' | 'auth' | null = null;
   constructor(private fb: FormBuilder, private deploymentService: DeploymentsService,
     private toaster: ToastrService, private modalService: NgbModal, private ac: ActivatedRoute,
     public permissionService: PermissionService
@@ -86,6 +88,10 @@ export class DeploymentNetworkingComponent implements OnInit {
         this.deploymentdetails = res.data;
         this.networkSettingsForm.get('service')?.setValue(this.deploymentdetails?.name);
         this.networkSettingsForm.get('customDnsHost')?.setValue(this.deploymentdetails?.network?.customDomain);
+        this.dnsInfo = {
+          dnsName: this.deploymentdetails?.network?.customDomain || '',
+          ipAddress: res.data?.ipAddress || '101.53.135.137'
+        };
         this.getDeploymentById();
         this.freezeAddNewData = res.data?.status.toLowerCase() === 'stopped' || this.currentStatus?.toLowerCase() === 'building' ? true : false;
         const shouldDisable = this.freezeAddNewData || !(this.permissionService.canWriteGlobal() || this.permissionService.canAdminGlobal() || this.permissionService.canDeleteForCurrentUser(null, null));
@@ -111,8 +117,7 @@ export class DeploymentNetworkingComponent implements OnInit {
       this.networkSettingsForm.get('host')?.setValue(`${value}-${domainSuffix}`);
       this.isPatchedValue = false
     });
-    this.customDnsHost?.valueChanges.subscribe(value => {
-      this.networkSettingsForm.get('customDnsHost')?.setValue(value);
+    this.networkSettingsForm.get('customDnsHost')?.valueChanges.subscribe(value => {
       this.iscustomDnsHostError = false;
       if (!this.isPatchedValue) {
         this.networkSettingsForm.markAsDirty();
@@ -124,13 +129,12 @@ export class DeploymentNetworkingComponent implements OnInit {
       this.endpointStatus = res.data?.status;
       const customDomain = res.data?.customDomain || '';
       const authentication = this.showAuthenticationData?.authentication || null;
+      // this.enableAuth = !!authentication;
 
       if (customDomain) { this.isHostDisabled = true; }
-      this.customDnsHost.setValue(customDomain);
+      this.networkSettingsForm.get('customDnsHost')?.setValue(customDomain);
 
-      if (authentication) {
-        this.networkSettingsForm.get('showAuthentication')?.setValue(true, { emitEvent: false },);
-      }
+      this.networkSettingsForm.get('showAuthentication')?.setValue(!!authentication, { emitEvent: false });
 
       const authGroup = this.networkSettingsForm.get('authentication') as FormGroup;
       if (authGroup && authentication?.username && authentication.password) {
@@ -138,11 +142,13 @@ export class DeploymentNetworkingComponent implements OnInit {
           username: authentication.username,
           password: '********'
         }, { emitEvent: false });
+      } else {
+        authGroup.reset('', { emitEvent: false });
       }
       this.isPatchedValue = false;
       this.networkSettingsForm.markAsPristine();
     });
-
+   
     const authGroup = this.networkSettingsForm.get('authentication') as FormGroup;
     const usernameControl = authGroup.get('username');
     const passwordControl = authGroup.get('password');
@@ -150,8 +156,12 @@ export class DeploymentNetworkingComponent implements OnInit {
 
     ['host', 'customDns', 'customDnsHost'].forEach(field => {
       const control = this.networkSettingsForm.get(field);
-      control?.valueChanges.subscribe(() => {
+      control?.valueChanges.subscribe((x) => {
         if (this.isPatchedValue) return;
+        if (field === 'customDns') {
+          // this.enableCustomDns = !!control.value;
+        }
+        
         if (usernameControl && passwordControl) {
           usernameControl?.reset('', { emitEvent: false });
           passwordControl?.reset('', { emitEvent: false });
@@ -165,6 +175,10 @@ export class DeploymentNetworkingComponent implements OnInit {
         }
       });
     });
+    // this.networkSettingsForm.get('showAuthentication')?.valueChanges.subscribe(value => {
+    //   this.enableAuth = !!value;
+    // })
+
   }
 
   getDeploymentById(): void {
@@ -172,9 +186,10 @@ export class DeploymentNetworkingComponent implements OnInit {
       if (res.status.toLowerCase() === "success") {
         this.ingressDomain = res.data?.network?.appIngressDomain;
         this.showCustomDnsHost = !!res.data.network?.customDomain;
+        // this.enableCustomDns = !!res.data.network?.customDomain;
 
         this.networkSettingsForm.get('customDns')?.setValue(!!res.data.network?.customDomain, { emitEvent: false });
-        this.customDnsHost?.setValue(res.data.network?.customDomain, { emitEvent: false });
+        this.networkSettingsForm.get('customDnsHost')?.setValue(res.data.network?.customDomain, { emitEvent: false });
         this.networkSettingsForm.markAsPristine();
       }
     });
@@ -189,8 +204,8 @@ export class DeploymentNetworkingComponent implements OnInit {
     const hostControl = this.networkSettingsForm.get('host');
     if (this.isHostDisabled) {
       hostControl?.disable();
-      this.customDnsHost?.setValue('')
       this.networkSettingsForm.get('customDnsHost')?.setValue('')
+      this.networkSettingsForm.markAsPristine();
       this.onNetworkingSubmit()
     } else {
       hostControl?.enable();
@@ -221,7 +236,7 @@ export class DeploymentNetworkingComponent implements OnInit {
       if (res && res.status.toLowerCase() === 'success') {
         if (res.data?.customDomain) {
           this.showCustomDnsHost = true;
-          this.customDnsHost.setValue(res.data.customDomain);
+          this.networkSettingsForm.get('customDnsHost')?.setValue(res.data.customDomain);
         } else {
           this.ingressDomain = res.data?.domain;
         }
@@ -234,6 +249,87 @@ export class DeploymentNetworkingComponent implements OnInit {
       }
       this.networkSettingsForm.markAsPristine();
     })
+  }
+
+  onCustomDnsSubmit(): void {
+    const hostname = this.networkSettingsForm.get('customDnsHost')?.value;
+    if (!hostname) {
+      this.iscustomDnsHostError = true;
+      return;
+    }
+    this.iscustomDnsHostError = false;
+
+    const environment = localStorage.getItem('environment');
+    const envId = environment ? JSON.parse(environment).id : null;
+    this.deploymentService.createEndpoint(envId, { customDnsHost: hostname, customDns: true, service: this.deploymentdetails?.name }).subscribe((res: any) => {
+      if (res && res.status.toLowerCase() === 'success') {
+        this.toaster.success('Custom DNS updated successfully');
+        this.showCustomDnsHost = true;
+        this.networkSettingsForm.get('customDnsHost')?.setValue(hostname);
+        this.networkSettingsForm.markAsPristine();
+        const domainSuffix = `${hostname}.${this.getEnvId()}.nimbuz.tech`;
+        this.dnsInfo = {
+          dnsName: domainSuffix,
+          ipAddress: res.data?.ipAddress || '101.53.135.137'
+        };
+        this.fetchCustomDnsHost();
+      } else {
+        this.toaster.error('Failed to update Custom DNS');
+      }
+    }, error => {
+      this.toaster.error('Error updating Custom DNS');
+    });
+    // API call to get DNS and IP information
+
+  }
+
+  onAuthenticationSubmit(): void {
+    const authGroup = this.networkSettingsForm.get('authentication') as FormGroup;
+    const username = authGroup.get('username')?.value;
+    const password = authGroup.get('password')?.value;
+
+    if (!username) {
+      this.toaster.error('Username is required');
+      return;
+    }
+    if (!password || password === '') {
+      this.toaster.error('Password is required');
+      return;
+    }
+
+    const environment = localStorage.getItem('environment');
+    const envId = environment ? JSON.parse(environment).id : null;
+
+    const authData = {
+      username: username,
+      password: password
+    };
+
+    // Save authentication
+    this.deploymentService.createEndpoint(envId, { authentication: authData, service: this.deploymentdetails?.name }).subscribe((res: any) => {
+      if (res && res.status.toLowerCase() === 'success') {
+        this.toaster.success('Authentication configured successfully');
+        authGroup.markAsPristine();
+      } else {
+        this.toaster.error('Failed to configure authentication');
+      }
+    }, error => {
+      this.toaster.error('Error configuring authentication');
+    });
+  }
+
+  cancelAuthentication(): void {
+    const authGroup = this.networkSettingsForm.get('authentication') as FormGroup;
+    authGroup.reset('', { emitEvent: false });
+    this.networkSettingsForm.get('showAuthentication')?.setValue(false, { emitEvent: false });
+    this.showAuthentication = false;
+    this.showPasswordIcon = false;
+    this.toaster.info('Authentication cancelled');
+  }
+
+  getEnvId(): string {
+    const environment = localStorage.getItem('environment');
+    return environment ? JSON.parse(environment).id : 'default';
   }
 
   deleteEndpoint() {
@@ -274,9 +370,7 @@ export class DeploymentNetworkingComponent implements OnInit {
       if (customDomain) { this.isHostDisabled = true; }
       // this.customDnsHost.setValue(customDomain);
 
-      if (authentication) {
-        this.networkSettingsForm.get('showAuthentication')?.setValue(true);
-      }
+      this.networkSettingsForm.get('showAuthentication')?.setValue(!!authentication, { emitEvent: false });
 
       const authGroup = this.networkSettingsForm.get('authentication') as FormGroup;
       if (authGroup && authentication?.username && authentication?.password) {
@@ -284,6 +378,8 @@ export class DeploymentNetworkingComponent implements OnInit {
           username: authentication.username,
           password: '********'
         }, { emitEvent: false });
+      } else {
+        authGroup.reset('', { emitEvent: false });
       }
       this.showPasswordIcon = false;
     });
@@ -298,9 +394,9 @@ export class DeploymentNetworkingComponent implements OnInit {
 
   closeModal() {
     this.networkSettingsForm.get('customDns')?.setValue(false)
-    this.customDnsHost?.setValue('');
     this.networkSettingsForm.get('customDnsHost')?.setValue('');
     this.showCustomDnsHost = false;
+    this.dnsInfo = { dnsName: '', ipAddress: '' };
     // this.confirmationModel.close()
   }
 
@@ -331,16 +427,26 @@ export class DeploymentNetworkingComponent implements OnInit {
   }
 
 
-  copyDomain(domain: string) {
+  copyDomain(domain: string | null | undefined, buttonId: string = '') {
+    const valueToCopy = domain ?? '';
     if (navigator.clipboard) {
-      navigator.clipboard.writeText(domain);
+      navigator.clipboard.writeText(valueToCopy).then(() => {
+        this.copiedButtonId = buttonId;
+        setTimeout(() => {
+          this.copiedButtonId = '';
+        }, 2000);
+      });
     } else {
       const textarea = document.createElement('textarea');
-      textarea.value = domain;
+      textarea.value = valueToCopy;
       document.body.appendChild(textarea);
       textarea.select();
       document.execCommand('copy');
       document.body.removeChild(textarea);
+      this.copiedButtonId = buttonId;
+      setTimeout(() => {
+        this.copiedButtonId = '';
+      }, 2000);
     }
   }
   open(url?: string) {
@@ -355,4 +461,10 @@ export class DeploymentNetworkingComponent implements OnInit {
   onPasswordChange() {
     this.showPasswordIcon = true;
   }
+  // onEnableCustomDnsChange(event: any) {
+  //   this.networkSettingsForm.get('customDns')?.setValue(event.target.checked);
+  // }
+  // onEnableAuthChange(event: any) {
+  //   this.networkSettingsForm.get('showAuthentication')?.setValue(event.target.checked);
+  // }
 }

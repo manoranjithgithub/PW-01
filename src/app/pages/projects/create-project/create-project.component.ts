@@ -65,9 +65,9 @@ export class CreateProjectComponent implements OnInit {
     //   this.getResourceUsage(envId);
     // }
     this.projectForm = this.fb.group({
-      projectName: ['', [this.shared.isValidName(), Validators.maxLength(40), Validators.minLength(3)]],
+      projectName: ['', [this.shared.isValidName(), Validators.maxLength(40), Validators.minLength(3), Validators.required]],
       projectDesc: ['', [Validators.maxLength(250)]],
-      environmentName: ['default', [this.shared.isValidName(), Validators.maxLength(40)]],
+      environmentName: ['default', [this.shared.isValidName(), Validators.maxLength(40), Validators.required]],
       region: [this.regionOptions[0].name],
     })
 
