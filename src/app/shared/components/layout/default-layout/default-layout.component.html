@@ -18,7 +18,7 @@
 
 </header>
 
-<div class="project-switch-section" *ngIf="!isProjectsPage() && showSwitchProject && !hideProjectSwitch">
+<div class="project-switch-section" *ngIf="!isProjectsPage() && showSwitchProject">
   <app-switch-project></app-switch-project>
 </div>
 <c-sidebar #sidebar1="cSidebar" class="d-print-none sidebar sidebar-fixed" colorScheme="dark" id="sidebar1"
@@ -58,11 +58,11 @@
   </ul> -->
 
   <div class="body flex-grow-1 main-container">
-    <app-breadcrumb *ngIf="!hideBreadcrumb"></app-breadcrumb>
-    <div class="mt-2 mb-4" *ngIf="!hidePageHeader">
+    <app-breadcrumb></app-breadcrumb>
+    <div class="mt-2 mb-4">
       <div class="d-flex  align-items-start">
         <div class="d-flex align-items-center gap-2">
-          <h2 class="page-title" [ngClass]="{ 'page-title--compact': currentUrl.startsWith('/account-settings') }">{{ pageTitle }}
+          <h2 class="page-title">{{ pageTitle }}
             <span *ngIf="selectedItemFromCom" class="selectedItemFromCom">
               <span class="page-title"> - </span>
               {{ getItemName() }}
