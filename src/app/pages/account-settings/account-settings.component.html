@@ -1,301 +1,138 @@
 <app-loader></app-loader>
 
-<div class="account-settings-page">
-  <div class="container">
-    <div class="row g-3 settings-grid">
-      <div class="col-12">
-        <c-card class="section-card compact-card account-reset-card">
-          <div class="section-header">
-            <div class="section-title-wrap">
-              <span class="section-icon"><i class="bi bi-person-badge"></i></span>
-              <div>
-                <div class="section-title">Account & Security</div>
-                <div class="section-subtitle">Profile details and password settings.</div>
-              </div>
-            </div>
+<div class="container mt-2">
+  <c-card class="p-4 mb-3">
+    <form cForm [formGroup]="accountForm">
+      <div class="mb-2"><b>Account Information</b></div>
+      <div class="row my-3">
+        <div class="col-md-6">
+          <label for="name" class="form-label">Name</label>
+          <input id="name" formControlName="name" class="form-control" />
+          <div *ngIf="isInvalid('name') || submitted" class="text-danger small">
+            <div *ngIf="accountForm.get('name')?.errors?.['required']">Name is required.</div>
           </div>
-          <div class="dense-form">
-            <div class="row g-3">
-              <div class="col-lg-7">
-                <div class="subsection-title">
-                  <i class="bi bi-person"></i>
-                  Account Information
-                </div>
-                <div class="info-grid account-info-compact">
-                  <div class="info-row">
-                    <div class="info-label"><i class="bi bi-person"></i> Name</div>
-                    <div class="info-value">{{ accountForm.get('name')?.value || '-' }}</div>
-                  </div>
-                  <div class="info-row">
-                    <div class="info-label"><i class="bi bi-envelope"></i> Email</div>
-                    <div class="info-value">{{ accountForm.get('email')?.value || '-' }}</div>
-                  </div>
-                  <div class="info-row">
-                    <div class="info-label"><i class="bi bi-at"></i> User Name</div>
-                    <div class="info-value">{{ accountForm.get('userName')?.value || '-' }}</div>
-                  </div>
-                </div>
-              </div>
-              <div class="col-lg-5">
-                <div class="subsection-title">
-                  <i class="bi bi-shield-lock"></i>
-                  Reset Password
-                </div>
-                <div class="reset-panel">
-                  <div class="reset-panel-text">Keep your account secure with a strong password.</div>
-                  <div class="form-actions reset-action-left">
-                    <button type="button" class="btn btn-outline-danger btn-sm" (click)="openResetPasswordModal()">
-                      <i class="bi bi-key"></i>
-                      Reset Password
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
+        </div>
+
+        <div class="col-md-6">
+          <label for="email" class="form-label">Email</label>
+          <input id="email" formControlName="email" class="form-control" />
+          <div *ngIf="isInvalid('email') || submitted" class="text-danger small">
+            <div *ngIf="accountForm.get('email')?.errors?.['required']">Email is required.</div>
+            <div *ngIf="accountForm.get('email')?.errors?.['email']">Invalid email format.</div>
           </div>
-        </c-card>
+        </div>
       </div>
 
-      <div class="col-12">
-        <c-card class="section-card compact-card">
-          <div class="section-header">
-            <div class="section-title-wrap">
-              <span class="section-icon"><i class="bi bi-receipt-cutoff"></i></span>
-              <div>
-                <div class="section-title">Billing Details</div>
-                <div class="section-subtitle">Tax and invoicing information for billing.</div>
-              </div>
-            </div>
-            <div class="d-flex gap-2 align-items-center">
-              <button type="button" class="btn btn-outline-danger btn-sm"
-                (click)="openBillingForm()" *ngIf="!showBillingForm">
-                <i class="bi" [ngClass]="hasBillingDetails ? 'bi-pencil-square' : 'bi-plus-circle'"></i>
-                {{ hasBillingDetails ? 'Update' : 'Add' }}
-              </button>
-              <button type="button" class="btn btn-outline-danger btn-sm"
-                (click)="openRemoveBillingModal()" *ngIf="!showBillingForm && hasBillingDetails">
-                <i class="bi bi-trash"></i>
-                Remove
-              </button>
-            </div>
-          </div>
-          <div *ngIf="billingLoading" class="billing-loading">
-            <div class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></div>
-            <span>Loading billing details...</span>
-          </div>
-          <div *ngIf="!billingLoading && !showBillingForm && hasBillingDetails" class="dense-form info-grid billing-info-grid">
-            <div class="info-row">
-              <div class="info-label"><i class="bi bi-building"></i> Company</div>
-              <div class="info-value">{{ billingDetailsForm.get('companyName')?.value || '-' }}</div>
-            </div>
-            <div class="info-row info-row-split three-col">
-              <div class="info-pair">
-                <div class="info-label"><i class="bi bi-receipt"></i> GST</div>
-                <div class="info-value">{{ billingDetailsForm.get('gstNumber')?.value || '-' }}</div>
-              </div>
-              <div class="info-pair">
-                <div class="info-label"><i class="bi bi-file-earmark-text"></i> PAN</div>
-                <div class="info-value">{{ billingDetailsForm.get('panNumber')?.value || '-' }}</div>
-              </div>
-              <div class="info-pair empty"></div>
-            </div>
-            <div class="info-row">
-              <div class="info-label"><i class="bi bi-geo-alt"></i> City</div>
-              <div class="info-value">{{ billingDetailsForm.get('city')?.value || '-' }}</div>
-            </div>
-            <div class="info-row">
-              <div class="info-label"><i class="bi bi-house-door"></i> Address</div>
-              <div class="info-value">
-                {{ billingDetailsForm.get('addressLine1')?.value || '-' }}
-                <span *ngIf="billingDetailsForm.get('addressLine2')?.value">,
-                  {{ billingDetailsForm.get('addressLine2')?.value }}</span>
-              </div>
-            </div>
-            <div class="info-row info-row-split three-col">
-              <div class="info-pair">
-                <div class="info-label"><i class="bi bi-map"></i> State</div>
-                <div class="info-value">{{ billingDetailsForm.get('state')?.value || '-' }}</div>
-              </div>
-              <div class="info-pair">
-                <div class="info-label"><i class="bi bi-globe2"></i> Country</div>
-                <div class="info-value">{{ billingDetailsForm.get('country')?.value || '-' }}</div>
-              </div>
-              <div class="info-pair">
-                <div class="info-label"><i class="bi bi-mailbox"></i> Postal</div>
-                <div class="info-value">{{ billingDetailsForm.get('postalCode')?.value || '-' }}</div>
-              </div>
-            </div>
-          </div>
-
-          <form *ngIf="!billingLoading && showBillingForm" cForm [formGroup]="billingDetailsForm"
-            (ngSubmit)="onSubmitBillingDetails()" class="dense-form">
-            <div class="row g-2">
-              <div class="col-md-6">
-                <label for="companyName" class="form-label">
-                  <i class="bi bi-building"></i>
-                  Company Name
-                  <span *ngIf="isBillingFieldInvalid('companyName')" class="required-dot" aria-hidden="true"></span>
-                </label>
-                <input id="companyName" formControlName="companyName" class="form-control" />
-                <div *ngIf="isBillingFieldInvalid('companyName')" class="text-danger small mt-1">
-                  {{getBillingFieldError('companyName')}}
-                </div>
-              </div>
-
-              <div class="col-md-6">
-                <label for="city" class="form-label">
-                  <i class="bi bi-geo-alt"></i>
-                  City
-                  <span *ngIf="isBillingFieldInvalid('city')" class="required-dot" aria-hidden="true"></span>
-                </label>
-                <input id="city" formControlName="city" class="form-control" />
-                <div *ngIf="isBillingFieldInvalid('city')" class="text-danger small mt-1">
-                  {{getBillingFieldError('city')}}
-                </div>
-              </div>
-
-              <div class="col-md-6">
-                <label for="gstNumber" class="form-label">
-                  <i class="bi bi-receipt"></i>
-                  GST Number
-                  <span *ngIf="isBillingFieldInvalid('gstNumber')" class="required-dot" aria-hidden="true"></span>
-                </label>
-                <input id="gstNumber" formControlName="gstNumber" class="form-control"
-                  (input)="toUpperCase('gstNumber')" style="text-transform: uppercase" />
-                <div *ngIf="isBillingFieldInvalid('gstNumber')" class="text-danger small mt-1">
-                  {{getBillingFieldError('gstNumber')}}
-                </div>
-              </div>
-
-              <div class="col-md-6">
-                <label for="panNumber" class="form-label">
-                  <i class="bi bi-file-earmark-text"></i>
-                  PAN Number
-                  <span *ngIf="isBillingFieldInvalid('panNumber')" class="required-dot" aria-hidden="true"></span>
-                </label>
-                <input id="panNumber" formControlName="panNumber" class="form-control"
-                  (input)="toUpperCase('panNumber')" style="text-transform: uppercase" />
-                <div *ngIf="isBillingFieldInvalid('panNumber')" class="text-danger small mt-1">
-                  {{getBillingFieldError('panNumber')}}
-                </div>
-              </div>
-
-              <div class="col-12">
-                <label for="addressLine1" class="form-label">
-                  <i class="bi bi-house-door"></i>
-                  Address Line 1
-                  <span *ngIf="isBillingFieldInvalid('addressLine1')" class="required-dot" aria-hidden="true"></span>
-                </label>
-                <input id="addressLine1" formControlName="addressLine1" class="form-control" />
-                <div *ngIf="isBillingFieldInvalid('addressLine1')" class="text-danger small mt-1">
-                  {{getBillingFieldError('addressLine1')}}
-                </div>
-              </div>
-
-              <div class="col-12">
-                <label for="addressLine2" class="form-label">
-                  <i class="bi bi-house"></i>
-                  Address Line 2
-                </label>
-                <input id="addressLine2" formControlName="addressLine2" class="form-control" />
-                <div *ngIf="isBillingFieldInvalid('addressLine2')" class="text-danger small mt-1">
-                  {{getBillingFieldError('addressLine2')}}
-                </div>
-              </div>
-
-              <div class="col-md-4">
-                <label for="state" class="form-label">
-                  <i class="bi bi-map"></i>
-                  State
-                  <span *ngIf="isBillingFieldInvalid('state')" class="required-dot" aria-hidden="true"></span>
-                </label>
-                <input id="state" formControlName="state" class="form-control" />
-                <div *ngIf="isBillingFieldInvalid('state')" class="text-danger small mt-1">
-                  {{getBillingFieldError('state')}}
-                </div>
-              </div>
-
-              <div class="col-md-4">
-                <label for="country" class="form-label">
-                  <i class="bi bi-globe2"></i>
-                  Country
-                  <span *ngIf="isBillingFieldInvalid('country')" class="required-dot" aria-hidden="true"></span>
-                </label>
-                <input id="country" formControlName="country" class="form-control" />
-                <div *ngIf="isBillingFieldInvalid('country')" class="text-danger small mt-1">
-                  {{getBillingFieldError('country')}}
-                </div>
-              </div>
-
-              <div class="col-md-4">
-                <label for="postalCode" class="form-label">
-                  <i class="bi bi-mailbox"></i>
-                  Postal Code
-                  <span *ngIf="isBillingFieldInvalid('postalCode')" class="required-dot" aria-hidden="true"></span>
-                </label>
-                <input id="postalCode" formControlName="postalCode" class="form-control" />
-                <div *ngIf="isBillingFieldInvalid('postalCode')" class="text-danger small mt-1">
-                  {{getBillingFieldError('postalCode')}}
-                </div>
-              </div>
-            </div>
-
-            <div class="form-actions">
-              <button type="button" class="btn btn-outline-danger btn-sm me-2" (click)="closeBillingForm()"
-                *ngIf="hasBillingDetails">
-                <i class="bi bi-x-circle"></i>
-                Cancel
-              </button>
-              <button type="submit" class="btn btn-outline-danger btn-sm">Save Billing Details</button>
-            </div>
-          </form>
-        </c-card>
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label for="userName" class="form-label">User Name</label>
+          <input id="userName" formControlName="userName" class="form-control" />
+        </div>
       </div>
-    </div>
-  </div>
-</div>
+    </form>
+  </c-card>
+  <c-card class="p-4">
+    <form cForm [formGroup]="billingDetailsForm" (ngSubmit)="onSubmitBillingDetails()">
+      <div class="mb-2"><b>Billing Details</b></div>
+      
+      <div class="row my-3">
+        <div class="col-md-6">
+          <label for="companyName" class="form-label">Company Name <span class="text-danger">*</span></label>
+          <input id="companyName" formControlName="companyName" class="form-control" />
+          <div *ngIf="isBillingFieldInvalid('companyName')" class="text-danger small mt-1">
+            {{getBillingFieldError('companyName')}}
+          </div>
+        </div>
 
-<app-modal #removeBillingModal [modalConfig]="removeBillingConfig">
-  <div class="confirm-modal">
-    <div class="confirm-icon">
-      <i class="bi bi-exclamation-triangle"></i>
-    </div>
-    <div class="confirm-title">Remove Company Details?</div>
-    <div class="confirm-subtitle">This action cannot be undone. Do you want to continue?</div>
-    <div class="confirm-actions">
-      <button type="button" class="btn btn-outline-secondary btn-sm" (click)="closeRemoveBillingModal()">
-        Cancel
-      </button>
-      <button type="button" class="btn btn-outline-danger btn-sm" (click)="removeBillingDetails()">
-        Remove
-      </button>
-    </div>
-  </div>
-</app-modal>
-
-<app-modal #resetPasswordModal [modalConfig]="resetPasswordConfig">
-  <div class="reset-password-modal">
-    <button type="button" class="btn reset-modal-close" (click)="closeResetPasswordModal()">
-      <i class="bi bi-x-lg"></i>
-      Close
-    </button>
-    <div class="reset-modal-header">
-      <div class="reset-modal-title">
-        <span class="reset-modal-icon"><i class="bi bi-shield-lock"></i></span>
-        Update Password
+        <div class="col-md-6">
+          <label for="gstNumber" class="form-label">GST Number <span class="text-danger">*</span></label>
+          <input id="gstNumber" formControlName="gstNumber" class="form-control" 
+            (input)="toUpperCase('gstNumber')" style="text-transform: uppercase" />
+          <div *ngIf="isBillingFieldInvalid('gstNumber')" class="text-danger small mt-1">
+            {{getBillingFieldError('gstNumber')}}
+          </div>
+        </div>
       </div>
-      <div class="reset-modal-subtitle">Enter your current password and choose a new one.</div>
-    </div>
-    <form cForm [formGroup]="resetPasswordForm" class="dense-form">
-      <div class="row g-3">
-        <div class="col-12">
-          <label for="oldPasswordModal" class="form-label">
-            <i class="bi bi-key-fill"></i>
-            Current Password
-          </label>
+
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label for="panNumber" class="form-label">PAN Number <span class="text-danger">*</span></label>
+          <input id="panNumber" formControlName="panNumber" class="form-control" 
+            (input)="toUpperCase('panNumber')" style="text-transform: uppercase" />
+          <div *ngIf="isBillingFieldInvalid('panNumber')" class="text-danger small mt-1">
+            {{getBillingFieldError('panNumber')}}
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <label for="city" class="form-label">City <span class="text-danger">*</span></label>
+          <input id="city" formControlName="city" class="form-control" />
+          <div *ngIf="isBillingFieldInvalid('city')" class="text-danger small mt-1">
+            {{getBillingFieldError('city')}}
+          </div>
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label for="addressLine1" class="form-label">Address Line 1 <span class="text-danger">*</span></label>
+          <input id="addressLine1" formControlName="addressLine1" class="form-control" />
+          <div *ngIf="isBillingFieldInvalid('addressLine1')" class="text-danger small mt-1">
+            {{getBillingFieldError('addressLine1')}}
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <label for="addressLine2" class="form-label">Address Line 2</label>
+          <input id="addressLine2" formControlName="addressLine2" class="form-control" />
+          <div *ngIf="isBillingFieldInvalid('addressLine2')" class="text-danger small mt-1">
+            {{getBillingFieldError('addressLine2')}}
+          </div>
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label for="state" class="form-label">State <span class="text-danger">*</span></label>
+          <input id="state" formControlName="state" class="form-control" />
+          <div *ngIf="isBillingFieldInvalid('state')" class="text-danger small mt-1">
+            {{getBillingFieldError('state')}}
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <label for="country" class="form-label">Country <span class="text-danger">*</span></label>
+          <input id="country" formControlName="country" class="form-control" />
+          <div *ngIf="isBillingFieldInvalid('country')" class="text-danger small mt-1">
+            {{getBillingFieldError('country')}}
+          </div>
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label for="postalCode" class="form-label">Postal Code <span class="text-danger">*</span></label>
+          <input id="postalCode" formControlName="postalCode" class="form-control" />
+          <div *ngIf="isBillingFieldInvalid('postalCode')" class="text-danger small mt-1">
+            {{getBillingFieldError('postalCode')}}
+          </div>
+        </div>
+      </div>
+
+      <div class="text-end">
+        <button type="submit" class="btn button-format-solid">Save Billing Details</button>
+      </div>
+    </form>
+  </c-card>
+  <c-card class="p-4 my-3">
+    <form cForm [formGroup]="resetPasswordForm">
+      <div class="mb-2"><b>Reset Password</b></div>
+      <div class="row my-3">
+        <div class="col-md-4">
+          <label for="oldPassword" class="form-label">Current Password</label>
           <div class="input-group">
-            <input id="oldPasswordModal" [type]="visiblePasswordFields.has('old') ? 'text' : 'password'"
-              formControlName="oldPassword" class="form-control" />
+            <input id="oldPassword" [type]="visiblePasswordFields.has('old') ? 'text' : 'password'" formControlName="oldPassword"
+              class="form-control" />
             <button type="button" class="btn btn-outline-secondary" (click)="togglePassword('old')" tabindex="-1">
               <i class="bi" [ngClass]="visiblePasswordFields.has('old') ? 'bi-eye-slash' : 'bi-eye'"></i>
             </button>
@@ -308,19 +145,15 @@
           <div
             *ngIf="resetPasswordForm.get('oldPassword')?.hasError('pattern') && (submitted || resetPasswordForm.get('oldPassword')?.touched || resetPasswordForm.get('oldPassword')?.dirty)"
             class="text-danger mt-1">
-            Current password must be at least 8 characters long and include at least one uppercase letter, one
-            lowercase letter, one number, and one special character.
+            Current password must be at least 8 characters long and include at least one uppercase letter, one lowercase
+            letter, one number, and one special character.
           </div>
         </div>
-
-        <div class="col-md-6">
-          <label for="passwordModal" class="form-label">
-            <i class="bi bi-lock"></i>
-            New Password
-          </label>
+        <div class="col-md-4">
+          <label for="password" class="form-label">New Password</label>
           <div class="input-group">
-            <input id="passwordModal" [type]="visiblePasswordFields.has('new') ? 'text' : 'password'"
-              formControlName="password" class="form-control" />
+            <input id="password" [type]="visiblePasswordFields.has('new') ? 'text' : 'password'" formControlName="password"
+              class="form-control" />
             <button type="button" class="btn btn-outline-secondary" (click)="togglePassword('new')" tabindex="-1">
               <i class="bi" [ngClass]="visiblePasswordFields.has('new') ? 'bi-eye-slash' : 'bi-eye'"></i>
             </button>
@@ -336,17 +169,12 @@
             </div>
           </div>
         </div>
-
-        <div class="col-md-6">
-          <label for="confirmPasswordModal" class="form-label">
-            <i class="bi bi-check2-circle"></i>
-            Confirm Password
-          </label>
+        <div class="col-md-4">
+          <label for="confirmPassword" class="form-label">Confirm Password</label>
           <div class="input-group">
-            <input id="confirmPasswordModal" [type]="visiblePasswordFields.has('confirm') ? 'text' : 'password'"
+            <input id="confirmPassword" [type]="visiblePasswordFields.has('confirm') ? 'text' : 'password'"
               formControlName="confirmPassword" class="form-control" />
-            <button type="button" class="btn btn-outline-secondary" (click)="togglePassword('confirm')"
-              tabindex="-1">
+            <button type="button" class="btn btn-outline-secondary" (click)="togglePassword('confirm')" tabindex="-1">
               <i class="bi" [ngClass]="visiblePasswordFields.has('confirm') ? 'bi-eye-slash' : 'bi-eye'"></i>
             </button>
           </div>
@@ -355,17 +183,14 @@
             class="text-danger mt-1">
             Confirm password is required.
           </div>
-          <div *ngIf="resetPasswordForm.get('confirmPassword')?.errors?.['mismatch']"
-            class="text-danger mt-1">
-            Confirm password must match the new password.
-          </div>
+          <div *ngIf="resetPasswordForm.get('confirmPassword')?.errors?.['mismatch']" class="text-danger mt-1">Confirm
+            password must match the new password.</div>
+
         </div>
       </div>
-    <div class="form-actions reset-action-left">
-      <button type="button" class="btn btn-outline-danger" (click)="onResetPassword()">
-        Reset Password
-      </button>
-    </div>
+      <div class="text-end">
+        <button type="submit" class="btn button-format-solid" (click)="onResetPassword()">Reset Password</button>
+      </div>
     </form>
-  </div>
-</app-modal>
+  </c-card>
+</div>
