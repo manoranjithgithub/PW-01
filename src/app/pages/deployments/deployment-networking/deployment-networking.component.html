@@ -7,8 +7,8 @@
     </ng-template>
     <ng-template cTemplateId="accordionBodyTemplate">
       <div class="accordion-body" id="network-section">
-        <div class="d-flex gap-4 mb-4">
-          <div class="w-100">
+        <div class="gap-4 mb-4">
+          <div class="w-100 mb-4">
             <div class="card border h-100">
               <div class="card-body p-1 card-body-text">
                 <h6 class="card-title mb-2 fs-6 fw-bold"><i class="bi bi-globe"></i> Public Networking</h6>
@@ -25,23 +25,30 @@
                   <div class="d-flex align-items-center justify-content-between">
                     <small class="fw-bold fs-7">Domain URL</small>
                     <div class="d-flex gap-2">
-                      <div class="position-relative">
+                      <!-- <div class="position-relative">
                         <button class="btn btn-sm btn-outline-secondary" type="button" title="Copy domain"
                           (click)="copyDomain('https://' + ingressDomain, 'domain-copy')">
                           <i class="bi bi-clipboard mx-1"></i> copy
                         </button>
                         <small *ngIf="copiedButtonId === 'domain-copy'"
                           class="badge badge-success border border-success text-success ms-2 badge-copied fw-light">Copied!</small>
-                      </div>
-                      <button class="btn btn-sm btn-outline-danger" title="Delete endpoint" (click)="deleteEndpoint()"
+                      </div> -->
+                      <!-- <button class="btn btn-sm btn-outline-danger" title="Delete endpoint" (click)="deleteEndpoint()" 
                         [disabled]="formDisabled">
                         <i class="bi bi-x-circle mx-1"></i>delete
-                      </button>
+                      </button> -->
                     </div>
                   </div>
                   <div class="py-1">
                     <p class="mb-0 domain-text w-100 domain-link" (click)="open('http://' + ingressDomain)">https://{{
-                      ingressDomain }}</p>
+                      ingressDomain }}
+                      <span class="px-2" type="button" title="Copy domain"
+                        (click)="copyDomain('https://' + ingressDomain, 'domain-copy')">
+                        <i class="bi bi-clipboard mx-1"></i>
+                    </span>
+                      <small *ngIf="copiedButtonId === 'domain-copy'"
+                        class="badge badge-success border border-success text-success ms-2 badge-copied fw-light">Copied!</small>
+                    </p>
                   </div>
                   <!-- <div class="text-secondary small mt-2 fs-7" *ngIf="endpointStatus">
                     Status: <span class="badge fw-light"
@@ -82,17 +89,24 @@
                 <small class="text-muted d-block mb-3 fs-7">Access this service from within the network.</small>
                 <div class="d-flex align-items-center justify-content-between">
                   <small class="fw-bold fs-7">Internal Host</small>
-                  <div class="position-relative">
+                  <!-- <div class="position-relative">
                     <button class="btn btn-sm btn-outline-secondary" type="button" title="Copy host"
                       (click)="copyDomain('http://' + deploymentdetails?.name, 'host-copy')">
                       <i class="bi bi-clipboard mx-1"></i>copy
                     </button>
                     <small *ngIf="copiedButtonId === 'host-copy'"
                       class="badge badge-success border border-success text-success ms-2 badge-copied fw-light">Copied!</small>
-                  </div>
+                  </div> -->
                 </div>
                 <div class="py-1">
-                  <p class="mb-0 domain-text w-100">http://{{ deploymentdetails?.name }}</p>
+                  <p class="mb-0 domain-text w-100">http://{{ deploymentdetails?.name }}
+                    <span class="px-2" type="button" title="Copy host"
+                      (click)="copyDomain('http://' + deploymentdetails?.name, 'host-copy')">
+                      <i class="bi bi-clipboard mx-1"></i>
+                    </span>
+                    <small *ngIf="copiedButtonId === 'host-copy'"
+                      class="badge badge-success border border-success text-success ms-2 badge-copied fw-light">Copied!</small>
+                  </p>
                 </div>
               </div>
             </div>
@@ -129,26 +143,28 @@
                       <div class="custom-dns-layout">
                         <div class="custom-dns-left">
                           <div class="mb-2">
-                            <label class="form-label fs-7 mb-1">Host Name</label>
+                            <label class="form-label fs-7 mb-1">Domain Name</label>
 
                             <div class="input-group">
                               <input type="text" class="form-control custom-values" name="customDnsHost"
-                                placeholder="Enter hostname" formControlName="customDnsHost">
+                                placeholder="Enter domain name" formControlName="customDnsHost">
                               <button class="btn btn-primary ms-1" (click)="onCustomDnsSubmit()"
-                                [disabled]=" formDisabled || !networkSettingsForm.get('customDnsHost')?.dirty">Generate</button>
+                                [disabled]=" formDisabled || !networkSettingsForm.get('customDnsHost')?.dirty">Add
+                                Domain</button>
                             </div>
                             <div *ngIf="iscustomDnsHostError" class="text-danger small mt-1">
-                              Host name is required.
+                              Domain name is required.
                             </div>
                           </div>
-                          <div *ngIf="dnsInfo.dnsName" class="mb-2">
-                            <div class="mb-2 bg-light p-2 rounded">
+                          <div *ngIf="dnsInfo.dnsName" class="mb-2 row g-2">
+                            <div class="col-6">
+                              <div class="bg-light p-2 rounded h-100">
                               <small class="fw-bold d-block mb-1 fs-7">CName</small>
                               <div class="d-flex align-items-center">
                                 <p class="mb-0 small text-break dns-text">https://{{ ingressDomain }}</p>
                                 <div class="position-relative">
-                                  <button class="btn btn-sm btn-outline-secondary border-0" type="button" title="Copy DNS"
-                                    (click)="copyDomain(dnsInfo?.dnsName, 'dns-copy')">
+                                  <button class="btn btn-sm btn-outline-secondary border-0" type="button"
+                                    title="Copy DNS" (click)="copyDomain(dnsInfo?.dnsName, 'dns-copy')">
                                     <i class="bi bi-clipboard mx-1"></i>
                                   </button>
                                   <small *ngIf="copiedButtonId === 'dns-copy'"
@@ -156,7 +172,9 @@
                                 </div>
                               </div>
                             </div>
-                            <div class="mb-2 bg-light p-2 rounded">
+                            </div>
+                            <div class="col-6">
+                              <div class="bg-light p-2 rounded h-100">
                               <small class="fw-bold d-block mb-1 fs-7">IP Address</small>
                               <div class="">
                                 <div *ngFor="let item of ipAddresses" class="d-flex align-items-center">
@@ -164,8 +182,8 @@
                                     {{ item.ip }}
                                   </small>
                                   <div class="position-relative">
-                                    <button class="btn btn-sm btn-outline-secondary border-0" type="button" title="Copy IP"
-                                      (click)="copyDomain(item.ip, item.id)">
+                                    <button class="btn btn-sm btn-outline-secondary border-0" type="button"
+                                      title="Copy IP" (click)="copyDomain(item.ip, item.id)">
                                       <i class="bi bi-clipboard mx-1"></i>
                                     </button>
                                     <small *ngIf="copiedButtonId === item.id"
@@ -175,6 +193,7 @@
                                   </div>
                                 </div>
                               </div>
+                            </div>
                             </div>
                           </div>
                         </div>
@@ -225,7 +244,8 @@
                               <label for="username" class="form-label fs-7 mb-1">Username</label>
                               <input id="username" formControlName="username" class="form-control form-control-sm"
                                 autocomplete="off" />
-                              <div *ngIf="isInvalid('authentication.username') && submitted" class="text-danger small mt-1">
+                              <div *ngIf="isInvalid('authentication.username') && submitted"
+                                class="text-danger small mt-1">
                                 Username is required.
                               </div>
                             </div>
@@ -237,23 +257,27 @@
                                   class="form-control form-control-sm" autocomplete="new-password"
                                   (input)="onPasswordChange()" />
                                 <span class="input-group-addon" *ngIf="showPasswordIcon">
-                                  <i class="positioning glyphicon bi" [ngClass]="{'bi-eye': hide, 'bi-eye-slash': !hide}"
+                                  <i class="positioning glyphicon bi"
+                                    [ngClass]="{'bi-eye': hide, 'bi-eye-slash': !hide}"
                                     (click)="toggleVisibility()"></i>
                                 </span>
                               </div>
-                              <div *ngIf="isInvalid('authentication.password') && submitted" class="text-danger small mt-1">
+                              <div *ngIf="isInvalid('authentication.password') && submitted"
+                                class="text-danger small mt-1">
                                 Password is required.
                               </div>
                             </div>
                           </div>
 
                           <div class="d-flex gap-2 justify-content-end mt-3">
-                            <button class="btn button-format-solid btn-sm" type="button" (click)="onAuthenticationSubmit()"
+                            <button class="btn button-format-solid btn-sm" type="button"
+                              (click)="onAuthenticationSubmit()"
                               [disabled]="!networkSettingsForm.get('showAuthentication')?.value || formDisabled"
                               title="Set Authentication">
                               Set Authentication
                             </button>
-                            <button class="btn button-format-outline btn-sm" type="button" (click)="cancelAuthentication()"
+                            <button class="btn button-format-outline btn-sm" type="button"
+                              (click)="cancelAuthentication()"
                               [disabled]="!networkSettingsForm.get('showAuthentication')?.value || formDisabled"
                               title="Cancel Authentication">
                               Cancel
@@ -286,7 +310,8 @@
     <div class="dns-popover-header">Steps to setup custom DNS</div>
     <div class="dns-popover-body">
       <ng-container *ngIf="dnsInfo?.dnsName; else defaultDnsInfoContent">
-        <ng-container *ngTemplateOutlet="dnsInstructionsTemplate; context: { listClass: 'dns-popover-list' }"></ng-container>
+        <ng-container
+          *ngTemplateOutlet="dnsInstructionsTemplate; context: { listClass: 'dns-popover-list' }"></ng-container>
       </ng-container>
       <ng-template #defaultDnsInfoContent>
         <ol class="dns-popover-list">
