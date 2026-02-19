@@ -25,7 +25,7 @@ export const navItems: INavData[] = [
   },
   {
     name: 'Billing',
-    url: '/invoice-list',
+    url: '/billing',
     icon: 'bi bi-receipt'
   },
   {

@@ -25,7 +25,7 @@ export const routes: Routes = [
           import('./pages/dashboard/routes').then((m) => m.routes),
       },
       {
-        path: 'invoice-list',
+        path: 'billing',
         canActivate: [AuthGuard],
         loadChildren: () =>
           import('./pages/invoice/routes').then((m) => m.routes),

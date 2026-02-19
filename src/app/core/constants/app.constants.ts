@@ -24,7 +24,7 @@ export const pageHeaders = [
     { title: 'Create Environment', url: '/projects/create-environment', subText: 'Create your Environment' },
     { title: 'Environment Preferences', url: '/projects/environment-preferences', subText: '' },
     { title: 'Create Tool', url: '/tools/create-tool', subText: '' },
-    { title: 'Invoice List', url: '/invoice-list', subText: 'View and manage invoices for each billing cycle.' },
+    { title: 'Invoice & Payment Management', url: '/billing', subText: 'View and manage invoices for each billing cycle.' },
     { title: 'Users', url: '/users-list', subText: '' },
     { title: 'View Tool', url: '/tools/view-tool', subText: '' },
     { title: 'Edit Tool', url: '/tools/edit-tool', subText: '' },

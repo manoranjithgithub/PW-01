@@ -38,7 +38,7 @@ export class AgGridTableComponent implements OnInit {
   onGridReady(params: GridReadyEvent) {
     this.gridApi = params.api;
     this.gridReady.emit(params);
-    this.overlayMessage = `You do not have  ${this.tableName}${this.tableName === 'invoice-list' ? '.' : `, please click 'New ${this.tablebtn}' to create one.`}`;
+    this.overlayMessage = `You do not have  ${this.tableName}${this.tableName === 'billing' ? '.' : `, please click 'New ${this.tablebtn}' to create one.`}`;
 
   }
 
@@ -119,7 +119,7 @@ export class AgGridTableComponent implements OnInit {
             this.gridApi.hideOverlay();
           }
         } else {
-          this.overlayMessage = `You do not have  ${this.tableName}${this.tableName === 'invoice-list' ? '.' : `, please click 'New ${this.tablebtn}' to create one.`}`;
+          this.overlayMessage = `You do not have  ${this.tableName}${this.tableName === 'billing' ? '.' : `, please click 'New ${this.tablebtn}' to create one.`}`;
           if (this.gridApi && !this.gridApi.isDestroyed()) {
             this.gridApi.showNoRowsOverlay();
           }
