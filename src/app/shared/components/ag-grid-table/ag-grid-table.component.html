@@ -1,17 +1,46 @@
-<div class="d-flex justify-content-between align-items-center">
-  <div class="quick-filter">
-    <span>Quick Filter:</span>
-    <input type="text" id="filter-text-box" placeholder="Filter..." (input)="onFilterTextBoxChanged()"
-      class="form-control" />
+<div class="table-toolbar">
+  <div class="toolbar-left">
+    <div class="quick-filter">
+      <label for="table-filter-box" class="toolbar-label">Quick Filter</label>
+      <div class="filter-input-wrap">
+        <i class="bi bi-search"></i>
+        <input id="table-filter-box" #filterBox type="text" placeholder="Search table..."
+          (input)="onFilterTextChanged(filterBox.value)" class="form-control" />
+      </div>
+    </div>
   </div>
-  <ng-container>
+  <div class="toolbar-right">
+    <div class="pagination-toolbar" *ngIf="rowData?.length">
+      <label class="page-size-label" for="page-size-select">Rows</label>
+      <select id="page-size-select" class="form-select form-select-sm page-size-select" [value]="paginationPageSize"
+        (change)="setPageSize($any($event.target).value)">
+        <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
+      </select>
+
+      <button class="btn btn-sm btn-outline-secondary nav-btn" (click)="goToFirstPage()" [disabled]="currentPage <= 1">
+        <i class="bi bi-chevron-double-left"></i>
+      </button>
+      <button class="btn btn-sm btn-outline-secondary nav-btn" (click)="goToPreviousPage()" [disabled]="currentPage <= 1">
+        <i class="bi bi-chevron-left"></i>
+      </button>
+      <span class="page-info">Page {{ currentPage }} of {{ totalPages }}</span>
+      <button class="btn btn-sm btn-outline-secondary nav-btn" (click)="goToNextPage()" [disabled]="currentPage >= totalPages">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+      <button class="btn btn-sm btn-outline-secondary nav-btn" (click)="goToLastPage()" [disabled]="currentPage >= totalPages">
+        <i class="bi bi-chevron-double-right"></i>
+      </button>
+      <span class="row-count">{{ totalRows }} rows</span>
+    </div>
+    <ng-container>
       <div class="d-flex justify-content-end align-items-center mb-2 btn-section gap-2">
       <button class="btn button-format-solid" (click)="newDeploy()"  *ngIf="showDeployButton" [disabled]="!(permissionService.canAdminGlobal() || permissionService.canWriteForCurrentUser(getCurrentProjectId(), getCurrentEnvId()))" [attr.title]="!(permissionService.canAdminGlobal() || permissionService.canWriteForCurrentUser(getCurrentProjectId(), getCurrentEnvId())) ? 'You are not authorized to view that page.' : null"><i class="bi bi-plus"></i>
         New  Deploy</button>
       <button class="btn button-format-solid" (click)="addNewUser()" *ngIf="showAddUser" [disabled]="!permissionService.canAdminGlobal()" [attr.title]="!permissionService.canAdminGlobal() ? 'You are not authorized to view that page.' : null"><i class="bi bi-plus"></i> New 
         User</button>
     </div>
-  </ng-container>
+    </ng-container>
+  </div>
 </div>
 
 <div style="overflow-x: auto; width: 100%;">

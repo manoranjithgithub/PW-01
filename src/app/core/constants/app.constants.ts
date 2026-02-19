@@ -15,6 +15,7 @@ export const pageHeaders = [
     { title: 'Deployments', url: '/deployment', subText: 'Upload a ZIP or connect to VCS to automate deployment, configuration, and scaling.' },
     { title: 'New Deployment', url: '/deployment/create-deployment', subText: 'Deploy your app to production effortlessly' },
     { title: 'Tools', url: '/tools', subText: 'Develop tools to manage and support persistent services such as databases and build agents.' },
+    { title: 'LLM', url: '/llm-models', subText: 'Manage your account-level LLM integrations and available models.' },
     { title: 'Settings', url: '/settings', subText: '' },
     { title: 'Deployment Details', url: '/deployment/deployment-details', subText: '' },
     { title: 'Account Settings', url: '/account-settings', subText: '' },

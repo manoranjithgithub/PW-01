@@ -32,6 +32,10 @@ export class AgGridTableComponent implements OnInit {
   tableName: string = '';
   tablebtn: string = '';
   overlayMessage: string = '';
+  currentPage = 1;
+  totalPages = 1;
+  totalRows = 0;
+  pageSizeOptions = [10, 20, 50, 100];
 
   private gridApi!: GridApi;
 
@@ -39,7 +43,7 @@ export class AgGridTableComponent implements OnInit {
     this.gridApi = params.api;
     this.gridReady.emit(params);
     this.overlayMessage = `You do not have  ${this.tableName}${this.tableName === 'invoice-list' ? '.' : `, please click 'New ${this.tablebtn}' to create one.`}`;
-
+    this.updatePaginationState();
   }
 
   defaultColDef =
@@ -58,7 +62,9 @@ export class AgGridTableComponent implements OnInit {
       suppressRowTransform: true,
       enableBrowserTooltips: true,
       suppressLoadingOverlay: true,
+      suppressPaginationPanel: true,
       onGridReady: (params) => this.onGridReady(params),
+      onPaginationChanged: () => this.updatePaginationState(),
     };
     
     if (this.getRowId) {
@@ -131,11 +137,9 @@ export class AgGridTableComponent implements OnInit {
     };
   }
 
-  onFilterTextBoxChanged() {
-    this.gridApi.setGridOption(
-      "quickFilterText",
-      (document.getElementById("filter-text-box") as HTMLInputElement).value,
-    );
+  onFilterTextChanged(value: string) {
+    if (!this.gridApi) return;
+    this.gridApi.setGridOption('quickFilterText', value || '');
   }
 
   newDeploy() {
@@ -154,5 +158,44 @@ export class AgGridTableComponent implements OnInit {
   }
   get noRowsTemplate(): string {
     return `<div class="text-center py-4">${this.overlayMessage}</div>`;
+  }
+
+  setPageSize(value: string): void {
+    const parsed = Number(value);
+    if (!this.gridApi || !parsed) return;
+    this.paginationPageSize = parsed;
+    this.gridApi.setGridOption('paginationPageSize', parsed);
+    this.updatePaginationState();
+  }
+
+  goToFirstPage(): void {
+    if (!this.gridApi) return;
+    this.gridApi.paginationGoToFirstPage();
+    this.updatePaginationState();
+  }
+
+  goToPreviousPage(): void {
+    if (!this.gridApi) return;
+    this.gridApi.paginationGoToPreviousPage();
+    this.updatePaginationState();
+  }
+
+  goToNextPage(): void {
+    if (!this.gridApi) return;
+    this.gridApi.paginationGoToNextPage();
+    this.updatePaginationState();
+  }
+
+  goToLastPage(): void {
+    if (!this.gridApi) return;
+    this.gridApi.paginationGoToLastPage();
+    this.updatePaginationState();
+  }
+
+  private updatePaginationState(): void {
+    if (!this.gridApi || this.gridApi.isDestroyed()) return;
+    this.currentPage = this.gridApi.paginationGetCurrentPage() + 1;
+    this.totalPages = Math.max(this.gridApi.paginationGetTotalPages(), 1);
+    this.totalRows = this.gridApi.paginationGetRowCount();
   }
 }

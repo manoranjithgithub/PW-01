@@ -25,6 +25,11 @@ export class BreadCrumbComponent implements OnInit {
     this.breadcrumbs = this.createBreadcrumbs(this.route.root);
   }
 
+  shouldShowBreadcrumb(): boolean {
+    const currentUrl = this.router.url.split('?')[0];
+    return !currentUrl.startsWith('/llm-models');
+  }
+
   private createBreadcrumbs(route: ActivatedRoute, url: string = '', breadcrumbs: any[] = []): any[] {
     const children: ActivatedRoute[] = route.children;
 

@@ -30,4 +30,5 @@ export const environment = {
   logServiceUrl: `${base}/logs`,
   metricsUrl: `${base}/metrics/v1`,
 
+  llmGatewayBaseUrl: `${base}/llmgateway/v1`,
 };

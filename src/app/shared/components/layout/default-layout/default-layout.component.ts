@@ -213,6 +213,16 @@ export class DefaultLayoutComponent implements OnInit {
     // return this.currentUrl.includes('/project');
   }
 
+  shouldShowProjectSwitch(): boolean {
+    const url = this.router.url.split('?')[0];
+    return !url.startsWith('/llm-models');
+  }
+
+  shouldShowPageHeader(): boolean {
+    const url = this.router.url.split('?')[0];
+    return !url.startsWith('/llm-models');
+  }
+
   ngOnInit(): void {
     this.savedTheme = localStorage.getItem('theme-default') || 'light';
     this.colorMode.set(this.savedTheme);
