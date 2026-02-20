@@ -39,7 +39,7 @@
                             Environment name must be at least 3 characters long.
                         </div>
                         <div *ngIf="environmentForm.get('name')?.hasError('maxlength')" class="text-danger my-1">
-                            Maximum 40 characters only.
+                            Environment name should have a maximum length of 50 characters.
                         </div>
                         <div *ngIf="environmentForm.get('name')?.hasError('uniqueName')" class="text-danger my-1">
                             Name already exists. Please choose a different name.

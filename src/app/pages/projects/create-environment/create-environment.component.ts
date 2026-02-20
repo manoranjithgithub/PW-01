@@ -65,7 +65,7 @@ export class CreateEnvironmentComponent implements OnInit {
     this.environmentForm = this.fb.group({
       project: [this.projectName],
       name: ['', [this.shared.isValidName(),
-      Validators.maxLength(40), Validators.required, Validators.minLength(3),
+      Validators.maxLength(50), Validators.required, Validators.minLength(3),
       this.uniqueNameValidation(),
       ]],
       region: [this.regionOptions[0].name]
