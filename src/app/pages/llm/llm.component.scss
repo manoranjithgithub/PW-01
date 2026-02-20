@@ -255,6 +255,11 @@
   line-height: 1.2;
 }
 
+:host ::ng-deep .llm-action-btn.disabled-action {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 :host ::ng-deep .key-prefix-display {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   color: #1e293b;

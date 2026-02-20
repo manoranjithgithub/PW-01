@@ -96,7 +96,10 @@ export class LLMComponent implements OnInit {
       filter: false,
       width: 120,
       cellStyle: { cursor: 'pointer' },
-      cellRenderer: () => '<button class="btn btn-sm btn-outline-primary llm-action-btn">Rotate</button>',
+      cellRenderer: (params: any) => {
+        const revoked = this.isRevokedState(params.data);
+        return `<button class="btn btn-sm btn-outline-primary llm-action-btn ${revoked ? 'disabled-action' : ''}" ${revoked ? 'disabled' : ''}>Rotate</button>`;
+      },
       onCellClicked: (event: CellClickedEvent) => this.onRotateKey(event.data)
     },
     {
@@ -106,7 +109,10 @@ export class LLMComponent implements OnInit {
       filter: false,
       width: 110,
       cellStyle: { cursor: 'pointer' },
-      cellRenderer: () => '<button class="btn btn-sm btn-outline-danger llm-action-btn">Revoke</button>',
+      cellRenderer: (params: any) => {
+        const revoked = this.isRevokedState(params.data);
+        return `<button class="btn btn-sm btn-outline-danger llm-action-btn ${revoked ? 'disabled-action' : ''}" ${revoked ? 'disabled' : ''}>Revoke</button>`;
+      },
       onCellClicked: (event: CellClickedEvent) => this.onRevoke(event.data)
     }
   ];
@@ -250,6 +256,11 @@ export class LLMComponent implements OnInit {
   }
 
   onRotateKey(row: any): void {
+    if (this.isRevokedState(row)) {
+      this.toastr.info('Rotate key is disabled for revoked endpoints.');
+      return;
+    }
+
     const id = this.getLlmId(row);
     if (!id) {
       this.toastr.error('Unable to rotate key: LLM ID missing in record.', 'Error');
@@ -284,6 +295,11 @@ export class LLMComponent implements OnInit {
   }
 
   onRevoke(row: any): void {
+    if (this.isRevokedState(row)) {
+      this.toastr.info('This endpoint is already revoked.');
+      return;
+    }
+
     const id = this.getLlmId(row);
     if (!id) {
       this.toastr.error('Unable to revoke: LLM ID missing in record.', 'Error');
@@ -509,6 +525,11 @@ export class LLMComponent implements OnInit {
       row?.llmEndpointId ||
       ''
     );
+  }
+
+  private isRevokedState(row: any): boolean {
+    const rawStatus = String(row?.status || row?.state || '').toLowerCase();
+    return rawStatus.includes('revoked');
   }
 
   private getCurrentEnvId(): string | undefined {
