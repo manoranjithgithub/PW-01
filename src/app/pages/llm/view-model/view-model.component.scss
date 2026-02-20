@@ -41,17 +41,6 @@
   font-size: 13px;
 }
 
-.usage-pill {
-  border: 1px solid #c7f0d4;
-  background: #effcf4;
-  color: #15803d;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 600;
-  padding: 6px 10px;
-  white-space: nowrap;
-}
-
 .usage-meta {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -165,23 +154,6 @@
 .analytics-subtitle {
   color: #64748b;
   font-size: 13px;
-}
-
-.analytics-status-pill {
-  border: 1px solid #c7f0d4;
-  background: #effcf4;
-  color: #15803d;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 600;
-  padding: 6px 10px;
-  white-space: nowrap;
-}
-
-.analytics-status-pill.is-loading {
-  border-color: #fdd7a8;
-  background: #fff7ed;
-  color: #b45309;
 }
 
 .analytics-toolbar {

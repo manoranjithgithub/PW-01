@@ -90,9 +90,6 @@
               OpenAI-compatible API with bearer token authentication.
             </p>
           </div>
-          <span class="usage-pill">
-            Production Ready
-          </span>
         </div>
 
         <div class="usage-meta mb-3">
@@ -178,7 +175,6 @@
               <h5 class="analytics-title mb-1">Usage Analytics</h5>
               <p class="analytics-subtitle mb-0">Monitor requests, tokens, and spend for this API key.</p>
             </div>
-            <span class="analytics-status-pill" [class.is-loading]="usageLoading">{{ usageLoading ? 'Refreshing' : 'Live Data' }}</span>
           </div>
 
           <div class="analytics-toolbar mb-3" [formGroup]="usageFiltersForm">
