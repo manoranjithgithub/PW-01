@@ -43,7 +43,7 @@ export class CreateEnvironmentComponent implements OnInit {
   constructor(
     private fb: FormBuilder, private project: ProjectsService, private shared: SharedService,
     private toaster: ToastrService, private router: Router
-      , public permissionService: PermissionService
+    , public permissionService: PermissionService
   ) {
     // this.tableTheme = this.shared.getCookie('theme');
     this.tableTheme = localStorage.getItem('theme-default') || 'ag-theme-alpine';
@@ -64,9 +64,10 @@ export class CreateEnvironmentComponent implements OnInit {
 
     this.environmentForm = this.fb.group({
       project: [this.projectName],
-      name: ['default', [this.shared.isValidName(),
+      name: ['', [this.shared.isValidName(),
       Validators.maxLength(40), Validators.required, Validators.minLength(3),
-      this.uniqueNameValidation()
+      this.uniqueNameValidation(),
+      this.noWhitespaceValidator()
       ]],
       region: [this.regionOptions[0].name]
     });
@@ -97,50 +98,49 @@ export class CreateEnvironmentComponent implements OnInit {
             this.availableEnviroinments = response.data.map((item: any) => item.name.toLowerCase());
             const nameControl = this.environmentForm.get('name');
             nameControl?.updateValueAndValidity({ onlySelf: true });
-            nameControl?.markAllAsTouched()
           }
         }, error: (error) => { }
       });
     })
   }
   createEnvironment() {
-    if (this.environmentForm.valid) {
-      if (this.environmentForm.value.region == "ap-south-1 (Mumbai) - Default") {
-        this.environmentForm.value.region = 'ap-south-1';
-      }
-      if (this.environmentForm.value.name == '')
-        this.environmentForm.value.name = 'default';
-      const req = {
-        name: this.environmentForm.value.name,
-        region: this.environmentForm.value.region,
-        projectId: this.environmentForm.value.project
-      }
-      this.project.createEnvironment(req).subscribe((res: any) => {
-        if (res.status) {
-          this.toaster.success(res.message);
-          this.project.getEnvironmentsByProject(this.projectId).subscribe((envRes: any) => {
-            this.project.getAllProjects().subscribe((res: any) => {
-              const project = res.data.find((item: any) => item.id === this.environmentForm.get('project')?.value);
-              this.shared.emitEnvDDChange(envRes.data);
-              this.shared.emitProjectDDChange(project);
-              // this.shared.setCookie('project', JSON.stringify(project), 10);
-              localStorage.setItem('project', JSON.stringify(project));
-              this.shared.emitProjectValueChange(project);
-              // this.shared.setCookie('environment', JSON.stringify(res?.data), 10);
-              localStorage.setItem('environment', JSON.stringify(res?.data));
-              this.shared.emitEnvValueChange(res?.data);
-              this.router.navigate(['/projects']);
-            })
-
-          });
-
-        }
-        else {
-          this.toaster.error("Environment creation failed");
-          console.error(res.message);
-        }
-      });
+    if (this.environmentForm.invalid) {
+      this.environmentForm.markAllAsTouched();
+      return;
     }
+    if (this.environmentForm.value.region == "ap-south-1 (Mumbai) - Default") {
+      this.environmentForm.value.region = 'ap-south-1';
+    }
+    const req = {
+      name: this.environmentForm.value.name,
+      region: this.environmentForm.value.region,
+      projectId: this.environmentForm.value.project
+    }
+    this.project.createEnvironment(req).subscribe((res: any) => {
+      if (res.status) {
+        this.toaster.success(res.message);
+        this.project.getEnvironmentsByProject(this.projectId).subscribe((envRes: any) => {
+          this.project.getAllProjects().subscribe((res: any) => {
+            const project = res.data.find((item: any) => item.id === this.environmentForm.get('project')?.value);
+            this.shared.emitEnvDDChange(envRes.data);
+            this.shared.emitProjectDDChange(project);
+            // this.shared.setCookie('project', JSON.stringify(project), 10);
+            localStorage.setItem('project', JSON.stringify(project));
+            this.shared.emitProjectValueChange(project);
+            // this.shared.setCookie('environment', JSON.stringify(res?.data), 10);
+            localStorage.setItem('environment', JSON.stringify(res?.data));
+            this.shared.emitEnvValueChange(res?.data);
+            this.router.navigate(['/projects']);
+          })
+
+        });
+
+      }
+      else {
+        this.toaster.error("Environment creation failed");
+        console.error(res.message);
+      }
+    });
   }
   cancel() {
     this.isOpen = false;
@@ -196,6 +196,13 @@ export class CreateEnvironmentComponent implements OnInit {
         .includes(envName);
 
       return alreadyExists ? { uniqueName: true } : null;
+    };
+  }
+  noWhitespaceValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const isWhitespace = (control.value || '').trim().length === 0;
+      const isValid = !isWhitespace;
+      return isValid ? null : { whitespace: true };
     };
   }
 }

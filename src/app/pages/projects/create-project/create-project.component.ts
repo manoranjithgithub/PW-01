@@ -67,7 +67,7 @@ export class CreateProjectComponent implements OnInit {
     this.projectForm = this.fb.group({
       projectName: ['', [this.shared.isValidName(), Validators.maxLength(50), Validators.minLength(3), this.noWhitespaceValidator(), Validators.required]],
       projectDesc: ['', [Validators.maxLength(250)]],
-      environmentName: ['default', [this.shared.isValidName(), Validators.maxLength(50)]],
+      environmentName: ['', [this.shared.isValidName(), Validators.maxLength(50), this.noWhitespaceValidator(), Validators.required]],
       region: [this.regionOptions[0].name],
     })
 
@@ -124,11 +124,9 @@ export class CreateProjectComponent implements OnInit {
     if (this.projectForm.value.region == "ap-south-1 (Mumbai) - Default") {
       this.projectForm.value.region = 'ap-south-1';
     }
-    if (this.projectForm.value.projectName == "") {
-      this.projectForm.value.projectName = 'default';
-    }
-    if (this.projectForm.value.environmentName == "") {
-      this.projectForm.value.environmentName = 'default';
+    if (this.projectForm.invalid) {
+      this.projectForm.markAllAsTouched();
+      return;
     }
     const req = {
       name: this.projectForm.value.projectName.trim(),
