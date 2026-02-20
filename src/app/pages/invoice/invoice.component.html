@@ -3,16 +3,13 @@
     <div class="header-left">
       <div class="top-section-toggle" role="tablist" aria-label="Billing sections">
         <button type="button" [class.active]="activeTopSection === 'bill'" (click)="switchTopSection('bill')">
-          Bill
+          Bills
         </button>
         <button type="button" [class.active]="activeTopSection === 'payments'" (click)="switchTopSection('payments')">
           Payments
         </button>
       </div>
-      <!-- Scope Filters -->
-
     </div>
-
     <div class="header-actions">
       <div class="date-range-selector" *ngIf="activeTopSection === 'payments'" (click)="openDateRangePicker()">
         <i class="bi bi-calendar3"></i>
@@ -24,13 +21,6 @@
       </button>
     </div>
   </header>
-
-
-
-  <section *ngIf="activeTopSection === 'payments'">
-
-  </section>
-
   <div class="overdue-alert" *ngIf="overdueDays > 0">
     <div class="overdue-alert-content">
       <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
@@ -46,23 +36,10 @@
       Review invoices
     </button>
   </div>
-
-  <!-- Payment Overview Section -->
   <section class="payment-overview mt-4" *ngIf="activeTopSection === 'payments'">
-
-    <!-- <div class="overview-header">
-      <h2>Payment Overview</h2>
-    </div> -->
-
     <div class="overview-grid">
       <article class="overview-card total-card company-billing-card">
         <div class="card-content">
-          <!-- <div class="card-brand-row">
-            <span class="brand-chip">
-              <img src="assets/images/logo.png" alt="Nimbuz logo" class="brand-logo" />
-            </span>
-            <i class="bi bi-three-dots"></i>
-          </div> -->
           <p class="card-label">Company & Billing Info</p>
           <div class="company-title-row">
             <p class="card-value">{{ companyName || 'Not configured' }}</p>
@@ -82,10 +59,6 @@
               <span class="detail-label">Billing Address</span>
               <span class="detail-value">{{ billingAddressLabel }}</span>
             </div>
-            <!-- <div class="company-details-row">
-              <span class="detail-label">Payment Method</span>
-              <span class="detail-value">{{ paymentMethod || 'Not Set' }}</span>
-            </div> -->
           </div>
           <ng-template #billingLoadingBlock>
             <p class="muted-line">Loading billing details...</p>
@@ -105,8 +78,7 @@
             <p class="bill-strong">{{ overdueDays }} days</p>
           </div>
           <!-- <div class="item-value"> {{ billPeriodLabel }}</div> -->
-          <p class="muted-line" [style.color]="totalOutstandingBalance > 0 ? '#ff0000' : '#232323'"
-            style="margin-top: 25px;">Your account {{
+          <p class="muted-line overview-note" [style.color]="totalOutstandingBalance > 0 ? '#ff0000' : '#232323'">Your account {{
             totalOutstandingBalance > 0 ? 'has pending invoices' : 'is up to date'
             }}</p>
         </div>
@@ -139,224 +111,8 @@
             payment recorded yet' }}</p>
         </div>
       </article>
-
-      <!-- <article>
-         <div class="billing-summary-item">
-          <label>Payment Method</label>
-          <div class="item-value">{{ paymentMethod || 'Not Set' }}</div>
-          <div class="item-actions">
-            <button type="button" (click)="navigateToAccountSettings()">{{ paymentMethod ? 'Change Method' : 'Add
-              Method' }}</button>
-          </div>
-        </div>
-      </article> -->
     </div>
   </section>
-
-  <!-- <nav class="tab-nav" aria-label="Payment Tabs" *ngIf="activeTopSection === 'payments'">
-    <button type="button" [class.active]="activeTab === 'payments-due'" (click)="switchTab('payments-due')">
-      Due invoices <span>({{ filteredDuePayments.length }})</span>
-    </button>
-    <button type="button" [class.active]="activeTab === 'unapplied-funds'" (click)="switchTab('unapplied-funds')">
-      Credit notes <span>({{ filteredUnappliedFunds.length }})</span>
-    </button>
-    <button type="button" [class.active]="activeTab === 'transactions'" (click)="switchTab('transactions')">
-      Billing history <span>({{ filteredTransactions.length }})</span>
-    </button>
-  </nav> -->
-
-  <!-- <article class="tab-panel" id="payments-due-panel" *ngIf="activeTopSection === 'payments' && activeTab === 'payments-due'">
-    <div class="panel-header">
-      <div>
-        <h3>Due invoices <span>({{ filteredDuePayments.length }})</span></h3>
-        <p class="panel-desc">Search open invoices using invoice details.</p>
-      </div>
-      <div class="panel-actions">
-        <button type="button" class="outline-btn">Export <i class="bi bi-caret-down-fill"></i></button>
-        <button type="button" class="muted-btn" [disabled]="true">Stop payment</button>
-        <button type="button" class="muted-btn" [disabled]="true">Settle selected</button>
-      </div>
-    </div>
-
-    <div class="search-status-row">
-      <label class="search-wrap">
-        <i class="bi bi-search"></i>
-        <input type="text" placeholder="Search due invoices" [value]="paymentsDueFilter"
-          (input)="onFilterChange($any($event.target).value, 'payments-due')" />
-      </label>
-      <label class="status-filter">
-        <span>Status</span>
-        <select [value]="paymentsDueStatusFilter"
-          (change)="onStatusFilterChange('payments-due', $any($event.target).value)">
-          <option *ngFor="let option of statusFilterOptions" [value]="option.value">{{ option.label }}</option>
-        </select>
-      </label>
-    </div>
-
-    <div class="table-shell">
-      <table class="payments-table">
-        <thead>
-          <tr>
-            <th>Due date</th>
-            <th>Issued date</th>
-            <th>Invoice ID</th>
-            <th>Type</th>
-            <th>Status</th>
-            <th>Currency</th>
-            <th>Invoice amount</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody *ngIf="filteredDuePayments.length">
-          <tr *ngFor="let row of filteredDuePayments">
-            <td>{{ getDueDate(row) }}</td>
-            <td>{{ getIssuedDate(row) }}</td>
-            <td>{{ getRowId(row) }}</td>
-            <td>Invoice</td>
-            <td><span class="status-pill" [class]="getStatusClass(row)">{{ getStatusLabel(row) }}</span></td>
-            <td>{{ getCurrencyLabel(row) }}</td>
-            <td>{{ formatMoney(row.total || row.subtotal, row.currency) }}</td>
-            <td class="download-cell">
-              <div class="action-buttons" *ngIf="canShowPayNow(row) || row.pdf_generated_at">
-                <button type="button" class="pay-now-action-btn" *ngIf="canShowPayNow(row)" (click)="openPayNow(row)">
-                  Pay now
-                </button>
-                <button type="button" class="icon-btn" *ngIf="row.pdf_generated_at" title="View PDF" (click)="viewPdf(row)">
-                  <i class="bi bi-file-earmark-pdf-fill"></i>
-                </button>
-                <button type="button" class="icon-btn" *ngIf="row.pdf_generated_at" title="Download PDF" (click)="onDownload(row)">
-                  <i class="bi bi-download"></i>
-                </button>
-              </div>
-              <span class="text-muted" *ngIf="!canShowPayNow(row) && !row.pdf_generated_at">No actions</span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
-      <div class="table-empty" *ngIf="!filteredDuePayments.length">
-        <p class="title">No due invoices</p>
-        <p>You can review completed billing records in Billing history.</p>
-        <button type="button" class="outline-btn" (click)="switchTab('transactions')">Open Billing History</button>
-      </div>
-    </div>
-    <div class="table-footer">
-      <div class="footer-count">Total records: {{ totalRecords }}</div>
-      <div class="footer-controls">
-        <label class="page-size-label">
-          Items per page
-          <select [value]="limit" (change)="onItemsPerPageChange($any($event.target).value)">
-            <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
-          </select>
-        </label>
-        <span class="page-range">{{ pageRangeLabel }}</span>
-        <button type="button" class="page-btn" (click)="previousPage()" [disabled]="currentPage <= 1">
-          <i class="bi bi-chevron-left"></i>
-        </button>
-        <button type="button" class="page-btn" (click)="nextPage()" [disabled]="currentPage >= totalPages">
-          <i class="bi bi-chevron-right"></i>
-        </button>
-      </div>
-    </div>
-  </article> -->
-
-  <!-- <article class="tab-panel" *ngIf="activeTopSection === 'payments' && activeTab === 'unapplied-funds'">
-    <div class="panel-header">
-      <div>
-        <h3>Credit notes <span>({{ filteredUnappliedFunds.length }})</span></h3>
-        <p class="panel-desc">Review credits that are available for adjustment.</p>
-      </div>
-      <div class="panel-actions">
-        <button type="button" class="outline-btn">Export <i class="bi bi-caret-down-fill"></i></button>
-      </div>
-    </div>
-
-    <div class="search-status-row">
-      <label class="search-wrap">
-        <i class="bi bi-search"></i>
-        <input type="text" placeholder="Search credit notes" [value]="unappliedFundsFilter"
-          (input)="onFilterChange($any($event.target).value, 'unapplied-funds')" />
-      </label>
-      <label class="status-filter">
-        <span>Status</span>
-        <select [value]="unappliedStatusFilter"
-          (change)="onStatusFilterChange('unapplied-funds', $any($event.target).value)">
-          <option *ngFor="let option of statusFilterOptions" [value]="option.value">{{ option.label }}</option>
-        </select>
-      </label>
-    </div>
-
-    <div class="table-shell">
-      <table class="payments-table">
-        <thead>
-          <tr>
-            <th>Issued date</th>
-            <th>Invoice ID</th>
-            <th>Type</th>
-            <th>Bill source account ID</th>
-            <th>Status</th>
-            <th>Currency</th>
-            <th>Invoice amount</th>
-            <th>Unapplied amount</th>
-            <th>Billing period</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody *ngIf="filteredUnappliedFunds.length">
-          <tr *ngFor="let row of filteredUnappliedFunds">
-            <td>{{ getIssuedDate(row) }}</td>
-            <td>{{ getRowId(row) }}</td>
-            <td>Credit</td>
-            <td>{{ row.account_id || '--' }}</td>
-            <td><span class="status-pill" [class]="getStatusClass(row)">{{ getStatusLabel(row) }}</span></td>
-            <td>{{ getCurrencyLabel(row) }}</td>
-            <td>{{ formatMoney(row.total || row.subtotal, row.currency) }}</td>
-            <td>{{ formatMoney(row.total || 0, row.currency) }}</td>
-            <td>{{ getBillingPeriod(row) }}</td>
-            <td class="download-cell">
-              <div class="action-buttons">
-                <button type="button" class="pay-now-action-btn" (click)="openPayNow(row)">
-                  Pay now
-                </button>
-                <div *ngIf="row.pdf_generated_at">
-                  <button type="button" class="icon-btn" title="View PDF" (click)="viewPdf(row)">
-                    <i class="bi bi-file-earmark-pdf-fill"></i>
-                  </button>
-                  <button type="button" class="icon-btn" title="Download PDF" (click)="onDownload(row)">
-                    <i class="bi bi-download"></i>
-                  </button>
-                </div>
-              </div>
-              <span class="text-muted" *ngIf="!row.pdf_generated_at">No PDF</span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
-      <div class="table-empty" *ngIf="!filteredUnappliedFunds.length">
-        <p class="title">No credit notes found</p>
-        <p>There are no available credits for this period.</p>
-      </div>
-    </div>
-    <div class="table-footer">
-      <div class="footer-count">Total records: {{ totalRecords }}</div>
-      <div class="footer-controls">
-        <label class="page-size-label">
-          Items per page
-          <select [value]="limit" (change)="onItemsPerPageChange($any($event.target).value)">
-            <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
-          </select>
-        </label>
-        <span class="page-range">{{ pageRangeLabel }}</span>
-        <button type="button" class="page-btn" (click)="previousPage()" [disabled]="currentPage <= 1">
-          <i class="bi bi-chevron-left"></i>
-        </button>
-        <button type="button" class="page-btn" (click)="nextPage()" [disabled]="currentPage >= totalPages">
-          <i class="bi bi-chevron-right"></i>
-        </button>
-      </div>
-    </div>
-  </article> -->
 
   <article class="tab-panel" *ngIf="activeTopSection === 'payments' && activeTab === 'transactions'"
     id="payments-due-panel">
@@ -375,7 +131,7 @@
         <input type="text" placeholder="Search billing records" [value]="transactionsFilter"
           (input)="onFilterChange($any($event.target).value, 'transactions')" />
       </label>
-      <label class="time-window-field">
+      <label class="time-window-field filter-field">
         <span>Date Range</span>
         <label class="time-window-picker">
           <i class="bi bi-calendar3"></i>
@@ -384,16 +140,13 @@
           </select>
         </label>
       </label>
-      <label class="status-field">
+      <label class="status-field filter-field">
         <span>Status</span>
         <select [value]="transactionStatusFilter"
           (change)="onStatusFilterChange('transactions', $any($event.target).value)">
           <option *ngFor="let option of statusFilterOptions" [value]="option.value">{{ option.label }}</option>
         </select>
       </label>
-      <!-- <button type="button" class="outline-btn export-all-btn" (click)="downloadAll()">
-        Export all <i class="bi bi-caret-down-fill"></i>
-      </button> -->
     </div>
 
     <div class="table-shell">
@@ -466,41 +219,7 @@
 
   <section class="bill-layout" *ngIf="activeTopSection === 'bill'">
     <article class="tab-panel">
-      <!-- <div class="bill-topline">
-        <span>Usage snapshot</span>
-        <span>{{ billPeriodLabel }}</span>
-      </div>
-      <h3>Current cycle overview</h3>
-      <p class="panel-desc">Quick view of account usage, active workloads, and projected spend.</p> -->
-
       <div class="billing-summary-grid">
-        <!-- <div class="billing-summary-item">
-          <div class="billing-info-header">
-            <label>Billing info</label>
-            <button type="button" class="icon-btn edit-btn" (click)="navigateToAccountSettings()"
-              title="Edit billing details">
-              <i class="bi bi-pencil"></i>
-            </button>
-          </div>
-          <div *ngIf="!billingDetailsLoading" class="billing-info-content">
-            <div *ngIf="gstNumber && panNumber" class="billing-info-values">
-              <div class="billing-info-row">
-                <p class="muted-line">GST Number:</p>
-                <p class="bill-strong">{{ gstNumber }}</p>
-              </div>
-              <div class="billing-info-row">
-                <p class="muted-line">PAN Number:</p>
-                <p class="bill-strong">{{ panNumber }}</p>
-              </div>
-            </div>
-            <div *ngIf="!gstNumber || !panNumber" class="billing-info-empty">
-              <p class="muted-line">Not configured</p>
-            </div>
-          </div>
-          <div *ngIf="billingDetailsLoading">
-            <p class="muted-line">Loading...</p>
-          </div>
-        </div> -->
         <div class="billing-summary-item">
           <label>Billing Period</label>
           <div class="item-value">{{ billPeriodLabel }}</div>
@@ -531,102 +250,8 @@
           <div class="item-value">{{ billRows.length }}</div>
           <p class="muted-line">Combined deployments and tools</p>
         </div>
-
-        <!-- <div class="billing-summary-item">
-          <label>Top usage charge</label>
-          <div class="item-value">{{ formatMoney(highestServiceCharge?.amount || 0, highestServiceCharge?.currency) }}
-          </div>
-          <p class="muted-line"><b>Service Name :</b> {{ highestServiceCharge?.name || '--' }}</p>
-          <p class="muted-line">{{ highestServiceCharge?.description || 'No mapped services yet' }}</p>
-        </div> -->
-        <!-- <div class="billing-summary-item">
-          <label>Running workloads</label>
-          <div class="item-value">{{ deploymentServiceCount }}</div>
-        </div>
-        <div class="billing-summary-item">
-          <label>Projects spend</label>
-          <div class="item-value">{{ formatMoney(billEstimatedTotal) }}</div>
-        </div> -->
       </div>
     </article>
-
-    <!-- <article class="tab-panel">
-      <div class="billing-summary-grid">
-        <div class="billing-summary-item">
-          <label>Top usage charge</label>
-          <div class="item-value">{{ formatMoney(highestServiceCharge?.amount || 0, highestServiceCharge?.currency) }}</div>
-          <p class="muted-line">{{ highestServiceCharge?.description || 'No mapped services yet' }}</p>
-        </div>
-        <div class="billing-summary-item">
-          <label>Platform tools</label>
-          <div class="item-value">{{ toolServiceCount }}</div>
-          <p class="muted-line">Tool instances detected in this environment</p>
-        </div>
-        <div class="billing-summary-item">
-          <label>Total billable services</label>
-          <div class="item-value">{{ billRows.length }}</div>
-          <p class="muted-line">Combined deployments and tools</p>
-        </div>
-      </div>
-    </article> -->
-
-    <!-- <article class="tab-panel">
-      <h3>Payment & Billing Summary</h3>
-      <div class="billing-summary-grid">
-        <div class="billing-summary-item">
-          <label>Account Status</label>
-          <div class="item-value">{{ totalOutstandingBalance > 0 ? 'Outstanding' : 'Current' }}</div>
-          <p class="muted-line">Your account {{ totalOutstandingBalance > 0 ? 'has pending invoices' : 'is up to date' }}</p>
-        </div>
-        <div class="billing-summary-item">
-          <label>Total Outstanding</label>
-          <div class="item-value">{{ formatMoney(totalOutstandingBalance) }}</div>
-          <p class="muted-line">Amount due for payment</p>
-        </div>
-        <div class="billing-summary-item">
-          <label>Available Credit</label>
-          <div class="item-value">{{ formatMoney(totalAvailableFunds) }}</div>
-          <p class="muted-line">Credit balance available</p>
-        </div>
-        <div class="billing-summary-item">
-          <label>Payment Method</label>
-          <div class="item-value">{{ paymentMethod || 'Not Set' }}</div>
-          <div class="item-actions">
-            <button type="button" (click)="navigateToAccountSettings()">{{ paymentMethod ? 'Change Method' : 'Add Method' }}</button>
-          </div>
-        </div>
-      </div>
-    </article> -->
-
-    <!-- <article class="tab-panel">
-      <h3>Billing Information</h3>
-      <div class="billing-info-grid">
-        <div class="billing-info-item">
-          <label>Billing Address</label>
-          <div class="item-value">Not configured</div>
-          <div class="item-actions">
-            <button type="button" (click)="navigateToAccountSettings()">Add Address</button>
-          </div>
-        </div>
-        <div class="billing-info-item">
-          <label>Currency</label>
-          <div class="item-value"></div>
-          <p class="muted-line">Primary billing currency</p>
-        </div>
-        <div class="billing-info-item">
-          <label>Invoices</label>
-          <div class="item-value">{{ filteredTransactions.length }}</div>
-          <p class="muted-line">Total invoices on record</p>
-        </div>
-        <div class="billing-info-item">
-          <label>Email Notifications</label>
-          <div class="item-value">Enabled</div>
-          <div class="item-actions">
-            <button type="button" (click)="navigateToAccountSettings()">Manage</button>
-          </div>
-        </div>
-      </div>
-    </article> -->
 
 
 
@@ -644,19 +269,19 @@
               (input)="billServiceFilter = $any($event.target).value" />
           </label>
 
-          <label class="scope-field">
+          <label class="scope-field filter-field">
             <span>Project</span>
             <select [value]="selectedProjectId" (change)="onProjectScopeChange($any($event.target).value)">
               <option *ngFor="let project of projectOptions" [value]="project.id">{{ project.name }}</option>
             </select>
           </label>
-          <label class="scope-field">
+          <label class="scope-field filter-field">
             <span>Environment</span>
             <select [value]="selectedEnvironmentId" (change)="onEnvironmentScopeChange($any($event.target).value)">
               <option *ngFor="let env of environmentOptions" [value]="env.id">{{ env.name }}</option>
             </select>
           </label>
-          <label class="time-window-field">
+          <label class="time-window-field filter-field">
             <span>Date Range</span>
             <label class="time-window-picker">
               <i class="bi bi-calendar3"></i>
@@ -665,7 +290,7 @@
               </select>
             </label>
           </label>
-          <label class="scope-field">
+          <label class="scope-field filter-field">
             <span>Status</span>
             <select>
               <option>All services</option>
@@ -673,10 +298,6 @@
               <option>Inactive</option>
             </select>
           </label>
-          <!-- <div class="bill-total-block">
-            <span>Subtotal before taxes</span>
-            <strong>{{ formatMoney(billEstimatedTotal) }}</strong>
-          </div> -->
         </div>
 
         <div class="table-shell">
@@ -707,71 +328,5 @@
           <p>There are no deployment or tool charges for the selected environment.</p>
         </div>
       </div>
-
-      <!-- <div *ngIf="activeBillTab === 'taxes'">
-        <div class="search-subtotal-row">
-          <label class="search-wrap">
-            <i class="bi bi-search"></i>
-            <input type="text" placeholder="Search tax records" [value]="billTaxFilter"
-              (input)="billTaxFilter = $any($event.target).value" />
-          </label>
-          <div class="bill-total-block">
-            <span>Total tax amount</span>
-            <strong>{{ formatMoney(totalTaxAmount) }}</strong>
-          </div>
-        </div>
-
-        <div class="table-shell">
-          <table class="payments-table">
-            <thead>
-              <tr>
-                <th>Issued date</th>
-                <th>Invoice ID</th>
-                <th>Status</th>
-                <th>Tax</th>
-              </tr>
-            </thead>
-            <tbody *ngIf="filteredTaxRows.length">
-              <tr *ngFor="let row of filteredTaxRows">
-                <td>{{ getIssuedDate(row) }}</td>
-                <td>{{ getRowId(row) }}</td>
-                <td>{{ getStatusLabel(row) }}</td>
-                <td>{{ formatMoney(row.tax_amount, row.currency) }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div class="table-empty" *ngIf="!filteredTaxRows.length">
-          <p class="title">No tax rows found</p>
-          <p>No taxable invoices available for the selected project/environment scope.</p>
-        </div>
-      </div> -->
     </article>
   </section>
-  <!-- <article class="tab-panel support-panel">
-      <h3>Quick Actions & Help</h3>
-      <div class="quick-actions-grid">
-        <button type="button" class="action-card" (click)="switchTopSection('payments'); switchTab('transactions')">
-          <i class="bi bi-file-earmark-pdf"></i>
-          <p class="card-title">Download Invoices</p>
-          <p class="card-description">View and download your billing records</p>
-        </button>
-        <button type="button" class="action-card" (click)="navigateToAccountSettings()">
-          <i class="bi bi-gear"></i>
-          <p class="card-title">Billing Settings</p>
-          <p class="card-description">Manage your billing preferences</p>
-        </button>
-        <button type="button" class="action-card">
-          <i class="bi bi-question-circle"></i>
-          <p class="card-title">Support</p>
-          <p class="card-description">Get help with billing questions</p>
-        </button>
-        <button type="button" class="action-card">
-          <i class="bi bi-credit-card"></i>
-          <p class="card-title">Payment Options</p>
-          <p class="card-description">Choose your payment method</p>
-        </button>
-      </div>
-    </article>
-</section> -->
