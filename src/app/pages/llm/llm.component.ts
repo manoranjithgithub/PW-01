@@ -61,7 +61,9 @@ export class LLMComponent implements OnInit, OnDestroy {
       field: 'provider',
       sortable: true,
       filter: true,
-      minWidth: 170
+      width: 130,
+      minWidth: 110,
+      maxWidth: 150
     },
     {
       headerName: 'Model',
@@ -76,7 +78,9 @@ export class LLMComponent implements OnInit, OnDestroy {
       field: 'keyPrefix',
       sortable: true,
       filter: true,
-      minWidth: 180,
+      width: 145,
+      minWidth: 120,
+      maxWidth: 165,
       cellRenderer: (params: any) => {
         const keyPrefix = params.value || '-';
         return `<span class="key-prefix-text">${keyPrefix}</span>`;
