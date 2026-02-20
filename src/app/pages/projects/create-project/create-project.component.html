@@ -44,7 +44,7 @@
                             Project name should have a maximum length of 50 characters.
                         </div>
                         <div *ngIf="projectForm.get('projectName')?.hasError('invalidName')" class="text-danger my-1">
-                            Project name can only contain alphabets, numbers and hyphens (-).
+                            Project name can only contain letters, numbers, and hyphens (-). Spaces are not allowed.
                         </div>
                         <div *ngIf="projectForm.get('projectName')?.hasError('uniqueName')" class="text-danger my-1">
                             Name already exists. Please choose a different name.
