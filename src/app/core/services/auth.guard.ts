@@ -132,8 +132,9 @@ export class AuthGuard implements CanActivate {
         return false;
       }
     }
-    if (environment.production && route.routeConfig?.path?.includes('llm')) {
-      this.router.navigate(['/login']);
+    if (environment.production && url.startsWith('/llm') && !url.startsWith('/llm-models')) {
+      this.toastr.warning('LLM Deployments are not available in production.');
+      this.router.navigateByUrl('/projects', { replaceUrl: true });
       return false;
     }
     return true;
