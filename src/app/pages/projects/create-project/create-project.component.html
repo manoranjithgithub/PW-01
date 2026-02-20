@@ -32,23 +32,23 @@
                     </label>
                     <input type="text" id="projectName" name="projectName" placeholder="Enter project name"
                         formControlName="projectName" class=" form-control text-format textbox-width-sm">
-                    <div *ngIf="projectForm.get('projectName')?.hasError('maxlength')" class="text-danger my-1">
-                        Maximun 50 characters only.
-                    </div>
-                    <div *ngIf="projectForm.get('projectName')?.hasError('minlength')" class="text-danger my-1">
-                        Project name must be at least 3 characters long.
-                    </div>
-                    <div *ngIf="projectForm.get('projectName')?.hasError('invalidName') && projectForm.get('projectName')?.touched"
-                        class="text-danger my-1">
-                        Project name can only contain alphabets, numbers and hyphens (-).
-                    </div>
-                    <div *ngIf="projectForm.get('projectName')?.hasError('whitespace') && projectForm.get('projectName')?.touched"
-                        class="text-danger my-1">
-                        Project name cannot be empty.
-                    </div>
-                    <div *ngIf="projectForm.get('projectName')?.hasError('uniqueName') && projectForm.get('projectName')?.touched"
-                        class="text-danger my-1">
-                        Name already exists. Please choose a different name.
+                    <div *ngIf="projectForm.get('projectName')?.invalid && projectForm.get('projectName')?.touched"
+                        class="text-danger text-format">
+                        <div *ngIf="projectForm.get('projectName')?.hasError('required')" class="text-danger my-1">
+                            Project name cannot be empty.
+                        </div>
+                        <div *ngIf="projectForm.get('projectName')?.hasError('minlength')" class="text-danger my-1">
+                            Project name must be at least 3 characters long.
+                        </div>
+                        <div *ngIf="projectForm.get('projectName')?.hasError('maxlength')" class="text-danger my-1">
+                            Maximum 50 characters only.
+                        </div>
+                        <div *ngIf="projectForm.get('projectName')?.hasError('invalidName')" class="text-danger my-1">
+                            Project name can only contain alphabets, numbers and hyphens (-).
+                        </div>
+                        <div *ngIf="projectForm.get('projectName')?.hasError('uniqueName')" class="text-danger my-1">
+                            Name already exists. Please choose a different name.
+                        </div>
                     </div>
                 </div>
                 <div class="flex-fill">
@@ -78,19 +78,21 @@
                     </label>
                     <input type="text" id="environmentName" name="environmentName" placeholder="Enter environment name"
                         formControlName="environmentName" class="form-control  text-format">
-                    <div *ngIf="projectForm.get('environmentName')?.hasError('maxlength')" class="text-danger my-1">
-                        Maximun 50 characters only.
-                    </div>
-                    <div *ngIf="projectForm.get('environmentName')?.hasError('invalidName') && projectForm.get('environmentName')?.touched"
+                    <div *ngIf="projectForm.get('environmentName')?.invalid && projectForm.get('environmentName')?.touched"
                         class="text-danger text-format">
-                        Environment name is invalid
-                    </div>
-                    <div *ngIf="projectForm.get('environmentName')?.hasError('whitespace') && projectForm.get('environmentName')?.touched"
-                        class="text-danger my-1">
-                        Environment name cannot be empty.
-                    </div>
-                    <div *ngIf="projectForm.get('environmentName')?.hasError('minlength')" class="text-danger my-1">
-                        Environment name must be at least 3 characters long.
+                        <div *ngIf="projectForm.get('environmentName')?.hasError('required')" class="text-danger my-1">
+                            Environment name cannot be empty.
+                        </div>
+                        <div *ngIf="projectForm.get('environmentName')?.hasError('minlength')" class="text-danger my-1">
+                            Environment name must be at least 3 characters long.
+                        </div>
+                        <div *ngIf="projectForm.get('environmentName')?.hasError('maxlength')" class="text-danger my-1">
+                            Maximum 50 characters only.
+                        </div>
+                        <div *ngIf="projectForm.get('environmentName')?.hasError('invalidName')"
+                            class="text-danger my-1">
+                            Environment name is invalid.
+                        </div>
                     </div>
                 </div>
                 <div class="flex-fill spacing-left">

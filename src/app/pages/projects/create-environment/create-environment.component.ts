@@ -67,7 +67,6 @@ export class CreateEnvironmentComponent implements OnInit {
       name: ['', [this.shared.isValidName(),
       Validators.maxLength(40), Validators.required, Validators.minLength(3),
       this.uniqueNameValidation(),
-      this.noWhitespaceValidator()
       ]],
       region: [this.regionOptions[0].name]
     });
@@ -196,13 +195,6 @@ export class CreateEnvironmentComponent implements OnInit {
         .includes(envName);
 
       return alreadyExists ? { uniqueName: true } : null;
-    };
-  }
-  noWhitespaceValidator(): ValidatorFn {
-    return (control: AbstractControl): ValidationErrors | null => {
-      const isWhitespace = (control.value || '').trim().length === 0;
-      const isValid = !isWhitespace;
-      return isValid ? null : { whitespace: true };
     };
   }
 }

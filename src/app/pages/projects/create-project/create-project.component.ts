@@ -65,9 +65,9 @@ export class CreateProjectComponent implements OnInit {
     //   this.getResourceUsage(envId);
     // }
     this.projectForm = this.fb.group({
-      projectName: ['', [this.shared.isValidName(), Validators.maxLength(50), Validators.minLength(3), this.noWhitespaceValidator(), Validators.required]],
+      projectName: ['', [this.shared.isValidName(), Validators.maxLength(50), Validators.required, Validators.minLength(3)]],
       projectDesc: ['', [Validators.maxLength(250)]],
-      environmentName: ['', [this.shared.isValidName(), Validators.maxLength(50), this.noWhitespaceValidator(), Validators.required]],
+      environmentName: ['', [this.shared.isValidName(), Validators.required, Validators.minLength(3), Validators.maxLength(50)]],
       region: [this.regionOptions[0].name],
     })
 
@@ -202,14 +202,6 @@ export class CreateProjectComponent implements OnInit {
         name => name.toLowerCase() === control.value.toLowerCase()
       );
       return nameExists ? { uniqueName: true } : null;
-    };
-  }
-
-  noWhitespaceValidator(): ValidatorFn {
-    return (control: AbstractControl): ValidationErrors | null => {
-      const isWhitespace = (control.value || '').trim().length === 0;
-      const isValid = !isWhitespace;
-      return isValid ? null : { whitespace: true };
     };
   }
 }
