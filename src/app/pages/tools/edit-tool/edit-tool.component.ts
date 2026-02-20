@@ -168,7 +168,8 @@ export class EditToolComponent implements OnInit, OnDestroy {
         'mysql.primary.persistence.size',
         'postgresql.primary.persistence.size',
         'mongodb.persistence.size',
-        'postgresql.readReplicas.persistence.size'
+        'postgresql.readReplicas.persistence.size',
+        'n8n.postgresql.primary.persistence.size'
       ];
 
       const finalSchema = JSON.parse(JSON.stringify(schema));
@@ -192,7 +193,8 @@ export class EditToolComponent implements OnInit, OnDestroy {
         'mysql.primary.persistence.size',
         'postgresql.primary.persistence.size',
         'mongodb.persistence.size',
-        'postgresql.readReplicas.persistence.size'
+        'postgresql.readReplicas.persistence.size',
+        'n8n.postgresql.primary.persistence.size'
       ];
       sizeFields.forEach(key => {
         if (formValues.hasOwnProperty(key)) {
