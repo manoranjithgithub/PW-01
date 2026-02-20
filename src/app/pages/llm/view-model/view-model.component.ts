@@ -1,8 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
 import { SHARED_IMPORTS } from '../../../shared/shared-imports';
+import { ConfirmationModalComponent } from '../../../shared/components/modal/confirmation-modal/confirmation-modal.component';
 import { SharedService } from '../../../shared/services/shared.service';
 import { LLMService } from '../llm.service';
 
@@ -15,13 +17,28 @@ import { LLMService } from '../llm.service';
   providers: [LLMService]
 })
 export class ViewModelComponent implements OnInit {
+  @ViewChild('rotatedKeyModal') rotatedKeyModal!: TemplateRef<any>;
   modelData: any = null;
   loading = false;
   selectedTabIndex = 0;
   isEditingRateLimit = false;
   isSavingRateLimit = false;
-  selectedSdkTab: 'curl' | 'python' | 'javascript' = 'curl';
+  isRotatingKey = false;
+  isDeletingModel = false;
+  selectedSdkTab: 'curl' | 'python' | 'javascript' | 'go' | 'java' = 'curl';
+  rotatedKeyModalRef: NgbModalRef | null = null;
+  rotatedKeyValue = '';
+  rotatedKeyPrefix = '';
+  keyModalTitle = 'API Key Rotated';
   rateLimitForm: FormGroup;
+  usageFiltersForm: FormGroup;
+  usageLoading = false;
+  usageError = '';
+  usageLoaded = false;
+  usageSummary: any = null;
+  usageEvents: any[] = [];
+  usageFrom = '';
+  usageTo = '';
 
   constructor(
     private route: ActivatedRoute,
@@ -29,10 +46,16 @@ export class ViewModelComponent implements OnInit {
     private llmService: LLMService,
     private sharedService: SharedService,
     private fb: FormBuilder,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private modalService: NgbModal
   ) {
     this.rateLimitForm = this.fb.group({
       rateLimitPerMinute: [{ value: '', disabled: true }, [Validators.required, Validators.min(1)]]
+    });
+    this.usageFiltersForm = this.fb.group({
+      from: [this.toLocalDateTimeInput(this.getHoursAgoDate(24))],
+      to: [this.toLocalDateTimeInput(new Date())],
+      limit: [50, [Validators.required, Validators.min(1)]]
     });
   }
 
@@ -64,6 +87,9 @@ export class ViewModelComponent implements OnInit {
 
   onTabChange(index: number): void {
     this.selectedTabIndex = index;
+    if (index === 2) {
+      this.loadUsageAnalytics();
+    }
   }
 
   editRateLimit(): void {
@@ -103,7 +129,8 @@ export class ViewModelComponent implements OnInit {
 
     this.llmService.getAddedModels().subscribe({
       next: (res: any) => {
-        const items = this.normalizeArrayResponse(res).map((item: any) => this.normalizeRow(item));
+        const sourceItems = this.normalizeArrayResponse(res);
+        const items = (Array.isArray(sourceItems) ? sourceItems : []).map((item: any) => this.normalizeRow(item));
         const fresh = items.find((item: any) => this.getLlmId(item) === llmId);
         const fallbackKeyId = this.extractKeyId(fresh);
         if (!fallbackKeyId) {
@@ -122,15 +149,97 @@ export class ViewModelComponent implements OnInit {
     });
   }
 
+  rotateKey(): void {
+    if (!this.modelData || this.isRotatingKey) return;
+    const llmId = this.getLlmId(this.modelData);
+    if (!llmId) {
+      this.toastr.error('Unable to rotate key: LLM ID missing.', 'Error');
+      return;
+    }
+
+    this.isRotatingKey = true;
+    this.sharedService.show();
+    this.llmService.rotateKey(llmId).subscribe({
+      next: (res: any) => {
+        const key = this.extractRotatedKey(res);
+        const keyPrefix = this.extractRotatedKeyPrefix(res) || this.extractKeyPrefix(this.modelData);
+
+        this.toastr.success('API key rotated successfully');
+        this.rotatedKeyValue = key || '';
+        this.rotatedKeyPrefix = keyPrefix || '-';
+        this.keyModalTitle = 'API Key Rotated';
+
+        if (this.rotatedKeyValue) {
+          this.rotatedKeyModalRef = this.modalService.open(this.rotatedKeyModal, {
+            backdrop: 'static',
+            keyboard: false,
+            centered: true
+          });
+        } else {
+          this.toastr.info('Key rotated. New full key was not returned by API response.');
+        }
+
+        this.modelData = {
+          ...(this.modelData || {}),
+          keyPrefix: this.rotatedKeyPrefix
+        };
+        this.isRotatingKey = false;
+        this.sharedService.hide();
+      },
+      error: (error: Error) => {
+        this.toastr.error(error.message, 'Error');
+        this.isRotatingKey = false;
+        this.sharedService.hide();
+      }
+    });
+  }
+
+  deleteModel(): void {
+    if (!this.modelData || this.isDeletingModel) return;
+    const llmId = this.getLlmId(this.modelData);
+    if (!llmId) {
+      this.toastr.error('Unable to delete: LLM ID missing.', 'Error');
+      return;
+    }
+
+    const modalRef = this.modalService.open(ConfirmationModalComponent);
+    modalRef.componentInstance.selectedItem = 'LLM model';
+    modalRef.componentInstance.message = 'Are you sure you want to delete this LLM model?';
+
+    modalRef.result.then((result) => {
+      if (!result) return;
+      this.isDeletingModel = true;
+      this.sharedService.show();
+      this.llmService.revokeLlm(llmId).subscribe({
+        next: () => {
+          this.toastr.success('LLM model deleted successfully');
+          this.isDeletingModel = false;
+          this.sharedService.hide();
+          this.backToList();
+        },
+        error: (error: Error) => {
+          this.toastr.error(error.message, 'Error');
+          this.isDeletingModel = false;
+          this.sharedService.hide();
+        }
+      });
+    }).catch(() => { });
+  }
+
   private loadModelById(id: string): void {
     this.loading = true;
     this.sharedService.show();
 
     this.llmService.getAddedModels().subscribe({
       next: (res: any) => {
-        const items = this.normalizeArrayResponse(res).map((item: any) => this.normalizeRow(item));
+        const sourceItems = this.normalizeArrayResponse(res);
+        const items = (Array.isArray(sourceItems) ? sourceItems : []).map((item: any) => this.normalizeRow(item));
         this.modelData = items.find((item: any) => this.getLlmId(item) === id) || null;
         this.patchRateLimitForm(this.modelData);
+        this.usageLoaded = false;
+        if (this.selectedTabIndex === 2) {
+          this.loadUsageAnalytics();
+        }
         this.loading = false;
         this.sharedService.hide();
       },
@@ -161,8 +270,9 @@ export class ViewModelComponent implements OnInit {
       keyPrefix: this.extractKeyPrefix(item),
       project: this.extractProjectDisplay(item),
       environment: this.extractEnvironmentDisplay(item),
-      status: item?.status || item?.state || 'unknown',
+      status: this.normalizeDisplayStatus(item?.status || item?.state || 'unknown'),
       endpoint: item?.endpoint || item?.baseUrl || item?.apiBase || item?.url || '-',
+      rateLimitDisplayValue: this.extractRateLimitDisplay(item),
       rateLimitPerMinute: this.extractRateLimitPerMinute(item),
       createdAt: item?.createdAt || item?.created_at || item?.createdOn || item?.created_on || item?.created || item?.creationTime || null,
       updatedAt: item?.updatedAt || item?.updated_at || item?.updatedOn || item?.updated_on || item?.updated || item?.lastUpdated || null
@@ -271,7 +381,13 @@ export class ViewModelComponent implements OnInit {
   }
 
   private extractRateLimitPerMinute(row: any): number | null {
+    const keyObj = this.toObject(row?.key);
+    const llmKeyObj = this.toObject(row?.llmKey);
+    const activeKeyObj = this.toObject(row?.activeKey);
+    const apiKeyObj = this.toObject(row?.apiKey);
     const value =
+      row?.currentRateLimitPerMinute ??
+      row?.current_rate_limit_per_minute ??
       row?.rateLimitPerMinute ??
       row?.rate_limit_per_minute ??
       row?.rateLimitRPM ??
@@ -280,18 +396,26 @@ export class ViewModelComponent implements OnInit {
       row?.rate_limit ??
       row?.limits?.rateLimitPerMinute ??
       row?.limits?.rate_limit_per_minute ??
-      row?.llmKey?.rateLimitPerMinute ??
-      row?.llmKey?.rate_limit_per_minute ??
+      llmKeyObj?.rateLimitPerMinute ??
+      llmKeyObj?.rate_limit_per_minute ??
+      llmKeyObj?.currentRateLimitPerMinute ??
+      llmKeyObj?.current_rate_limit_per_minute ??
       row?.llmKeys?.[0]?.rateLimitPerMinute ??
       row?.llmKeys?.[0]?.rate_limit_per_minute ??
-      row?.activeKey?.rateLimitPerMinute ??
-      row?.activeKey?.rate_limit_per_minute ??
-      row?.key?.rateLimitPerMinute ??
-      row?.key?.rate_limit_per_minute ??
-      row?.apiKey?.rateLimitPerMinute;
-
-    const num = Number(value);
-    return Number.isFinite(num) && num >= 0 ? num : null;
+      row?.llmKeys?.[0]?.currentRateLimitPerMinute ??
+      row?.llmKeys?.[0]?.current_rate_limit_per_minute ??
+      activeKeyObj?.rateLimitPerMinute ??
+      activeKeyObj?.rate_limit_per_minute ??
+      activeKeyObj?.currentRateLimitPerMinute ??
+      activeKeyObj?.current_rate_limit_per_minute ??
+      keyObj?.rateLimitPerMinute ??
+      keyObj?.rate_limit_per_minute ??
+      keyObj?.currentRateLimitPerMinute ??
+      keyObj?.current_rate_limit_per_minute ??
+      apiKeyObj?.currentRateLimitPerMinute ??
+      apiKeyObj?.current_rate_limit_per_minute ??
+      apiKeyObj?.rateLimitPerMinute;
+    return this.parseRateLimitNumber(value);
   }
 
   private patchRateLimitForm(row: any): void {
@@ -317,6 +441,44 @@ export class ViewModelComponent implements OnInit {
         this.sharedService.hide();
       }
     });
+  }
+
+  private extractRotatedKey(res: any): string {
+    const data = res?.data && typeof res.data === 'object' ? res.data : {};
+    return (
+      data?.apiKey ||
+      data?.key ||
+      data?.secretKey ||
+      data?.token ||
+      data?.apiKey?.value ||
+      data?.key?.value ||
+      res?.apiKey ||
+      res?.key ||
+      res?.secretKey ||
+      res?.token ||
+      ''
+    );
+  }
+
+  private extractRotatedKeyPrefix(res: any): string {
+    const data = res?.data && typeof res.data === 'object' ? res.data : {};
+    return (
+      data?.keyPrefix ||
+      data?.apiKeyPrefix ||
+      data?.prefix ||
+      data?.apiKey?.prefix ||
+      data?.key?.prefix ||
+      res?.keyPrefix ||
+      res?.apiKeyPrefix ||
+      res?.prefix ||
+      ''
+    );
+  }
+
+  copyRotatedKey(): void {
+    if (!this.rotatedKeyValue) return;
+    navigator.clipboard.writeText(this.rotatedKeyValue);
+    this.toastr.success('Key copied to clipboard');
   }
 
   formatDate(value: any): string {
@@ -347,6 +509,8 @@ export class ViewModelComponent implements OnInit {
   get rateLimitDisplay(): string {
     const formValue = this.rateLimitForm.get('rateLimitPerMinute')?.value;
     if (formValue !== '' && formValue !== null && formValue !== undefined) return String(formValue);
+    const rawDisplay = this.modelData?.rateLimitDisplayValue;
+    if (rawDisplay !== '' && rawDisplay !== null && rawDisplay !== undefined) return String(rawDisplay);
     const extracted = this.extractRateLimitPerMinute(this.modelData);
     return extracted === null ? '-' : String(extracted);
   }
@@ -415,8 +579,156 @@ const response = await client.chat.completions.create({
 console.log(response.choices[0].message.content);`;
   }
 
-  setSdkTab(tab: 'curl' | 'python' | 'javascript'): void {
+  get goSnippet(): string {
+    const baseUrl = this.usageBaseUrl || 'https://your-llm-gateway.example.com';
+    const model = this.usageModel || 'your-model-id';
+    return `package main
+
+import (
+  "context"
+  "fmt"
+
+  openai "github.com/openai/openai-go"
+  "github.com/openai/openai-go/option"
+)
+
+func main() {
+  client := openai.NewClient(
+    option.WithAPIKey("<YOUR_API_KEY>"),
+    option.WithBaseURL("${baseUrl}"),
+  )
+
+  resp, err := client.Chat.Completions.New(context.Background(), openai.ChatCompletionNewParams{
+    Model: "${model}",
+    Messages: []openai.ChatCompletionMessageParamUnion{
+      openai.UserMessage("Hello"),
+    },
+  })
+  if err != nil {
+    panic(err)
+  }
+
+  fmt.Println(resp.Choices[0].Message.Content)
+}`;
+  }
+
+  get javaSnippet(): string {
+    const baseUrl = this.usageBaseUrl || 'https://your-llm-gateway.example.com';
+    const model = this.usageModel || 'your-model-id';
+    return `import com.openai.client.OpenAIClient;
+import com.openai.client.okhttp.OpenAIOkHttpClient;
+import com.openai.models.chat.completions.ChatCompletionCreateParams;
+
+public class Example {
+  public static void main(String[] args) {
+    OpenAIClient client = OpenAIOkHttpClient.builder()
+      .apiKey("<YOUR_API_KEY>")
+      .baseUrl("${baseUrl}")
+      .build();
+
+    ChatCompletionCreateParams params = ChatCompletionCreateParams.builder()
+      .model("${model}")
+      .addUserMessage("Hello")
+      .build();
+
+    var response = client.chat().completions().create(params);
+    System.out.println(response.choices().get(0).message().content().orElse(""));
+  }
+}`;
+  }
+
+  get currentSnippet(): string {
+    if (this.selectedSdkTab === 'python') return this.pythonSnippet;
+    if (this.selectedSdkTab === 'javascript') return this.jsSnippet;
+    if (this.selectedSdkTab === 'go') return this.goSnippet;
+    if (this.selectedSdkTab === 'java') return this.javaSnippet;
+    return this.curlSnippet;
+  }
+
+  copyCurrentSnippet(): void {
+    const code = this.currentSnippet;
+    if (!code) return;
+    navigator.clipboard.writeText(code);
+    this.toastr.success('Code copied to clipboard');
+  }
+
+  setSdkTab(tab: 'curl' | 'python' | 'javascript' | 'go' | 'java'): void {
     this.selectedSdkTab = tab;
+  }
+
+  loadUsageAnalytics(forceRefresh = false): void {
+    if (!this.modelData || this.usageLoading) return;
+    if (this.usageLoaded && !forceRefresh) return;
+
+    const llmId = this.getLlmId(this.modelData);
+    const keyId = this.extractKeyId(this.modelData);
+    if (!llmId || !keyId) {
+      this.usageSummary = null;
+      this.usageEvents = [];
+      this.usageError = 'Missing model or key ID required for usage analytics.';
+      return;
+    }
+
+    if (this.usageFiltersForm.invalid) {
+      this.usageFiltersForm.markAllAsTouched();
+      return;
+    }
+
+    const from = this.toIsoOrUndefined(this.usageFiltersForm.value.from);
+    const to = this.toIsoOrUndefined(this.usageFiltersForm.value.to);
+    const limit = Number(this.usageFiltersForm.value.limit || 50);
+    if (from && to && new Date(from).getTime() > new Date(to).getTime()) {
+      this.usageError = '`From` must be earlier than `To`.';
+      return;
+    }
+
+    this.usageLoading = true;
+    this.usageError = '';
+    this.sharedService.show();
+    this.llmService.getKeyUsage(llmId, keyId, { from, to, limit }).subscribe({
+      next: (res: any) => {
+        const data = (res?.data && typeof res.data === 'object') ? res.data : (res || {});
+        this.usageSummary = data?.summary || null;
+        this.usageEvents = Array.isArray(data?.events) ? data.events : [];
+        this.usageFrom = String(data?.from || from || '');
+        this.usageTo = String(data?.to || to || '');
+        this.usageLoaded = true;
+        this.usageLoading = false;
+        this.sharedService.hide();
+      },
+      error: (error: Error) => {
+        this.usageSummary = null;
+        this.usageEvents = [];
+        this.usageError = error.message || 'Failed to load usage analytics.';
+        this.usageLoading = false;
+        this.sharedService.hide();
+      }
+    });
+  }
+
+  refreshUsageAnalytics(): void {
+    this.usageLoaded = false;
+    this.loadUsageAnalytics(true);
+  }
+
+  formatDateTime(value: any): string {
+    if (!value) return '-';
+    const date = new Date(value);
+    if (isNaN(date.getTime())) return String(value);
+    return date.toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+
+  formatCost(value: any): string {
+    if (value === undefined || value === null || value === '') return '-';
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed)) return String(value);
+    return `$${parsed.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 6 })}`;
   }
 
   get detailRows(): { label: string; value: string }[] {
@@ -436,5 +748,106 @@ console.log(response.choices[0].message.content);`;
   private safeValue(value: any): string {
     if (value === undefined || value === null || value === '') return '-';
     return String(value);
+  }
+
+  private normalizeDisplayStatus(status: any): string {
+    const normalized = String(status || '').trim().toLowerCase();
+    if (!normalized) return 'unknown';
+    if (normalized === 'active') return 'running';
+    return normalized;
+  }
+
+  private extractRateLimitDisplay(row: any): string {
+    const keyObj = this.toObject(row?.key);
+    const llmKeyObj = this.toObject(row?.llmKey);
+    const activeKeyObj = this.toObject(row?.activeKey);
+    const apiKeyObj = this.toObject(row?.apiKey);
+    const candidates = [
+      row?.currentRateLimitPerMinute,
+      row?.current_rate_limit_per_minute,
+      keyObj?.currentRateLimitPerMinute,
+      keyObj?.current_rate_limit_per_minute,
+      llmKeyObj?.currentRateLimitPerMinute,
+      llmKeyObj?.current_rate_limit_per_minute,
+      activeKeyObj?.currentRateLimitPerMinute,
+      activeKeyObj?.current_rate_limit_per_minute,
+      apiKeyObj?.currentRateLimitPerMinute,
+      apiKeyObj?.current_rate_limit_per_minute,
+      row?.rateLimitPerMinute,
+      row?.rate_limit_per_minute,
+      row?.rateLimit,
+      row?.rate_limit
+    ];
+
+    for (const value of candidates) {
+      if (value === undefined || value === null || value === '') continue;
+      if (typeof value === 'object') {
+        const nested =
+          value?.value ??
+          value?.limit ??
+          value?.current ??
+          value?.count;
+        if (nested !== undefined && nested !== null && nested !== '') return String(nested);
+      }
+      return String(value);
+    }
+    return '';
+  }
+
+  private parseRateLimitNumber(value: any): number | null {
+    if (value === undefined || value === null || value === '') return null;
+    if (typeof value === 'number') return Number.isFinite(value) && value >= 0 ? value : null;
+    if (typeof value === 'object') {
+      const nested =
+        value?.value ??
+        value?.limit ??
+        value?.current ??
+        value?.count;
+      return this.parseRateLimitNumber(nested);
+    }
+    const asString = String(value).trim();
+    if (!asString) return null;
+    const direct = Number(asString);
+    if (Number.isFinite(direct) && direct >= 0) return direct;
+    const numericPart = asString.match(/-?\d+(\.\d+)?/);
+    if (!numericPart) return null;
+    const parsed = Number(numericPart[0]);
+    return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
+  }
+
+  private toObject(value: any): any {
+    if (!value) return value;
+    if (typeof value === 'object') return value;
+    if (typeof value !== 'string') return value;
+    const trimmed = value.trim();
+    if (!trimmed.startsWith('{') || !trimmed.endsWith('}')) return value;
+    try {
+      const parsed = JSON.parse(trimmed);
+      return parsed && typeof parsed === 'object' ? parsed : value;
+    } catch {
+      return value;
+    }
+  }
+
+  private getHoursAgoDate(hours: number): Date {
+    const d = new Date();
+    d.setHours(d.getHours() - hours);
+    return d;
+  }
+
+  private toLocalDateTimeInput(date: Date): string {
+    const yyyy = date.getFullYear();
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const dd = String(date.getDate()).padStart(2, '0');
+    const hh = String(date.getHours()).padStart(2, '0');
+    const min = String(date.getMinutes()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}T${hh}:${min}`;
+  }
+
+  private toIsoOrUndefined(value: any): string | undefined {
+    if (value === undefined || value === null || value === '') return undefined;
+    const date = new Date(value);
+    if (isNaN(date.getTime())) return undefined;
+    return date.toISOString();
   }
 }

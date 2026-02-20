@@ -42,6 +42,17 @@ export class LLMService {
       .pipe(catchError(this.handleError.bind(this)));
   }
 
+  getKeyUsage(id: string, keyId: string, query?: { from?: string; to?: string; limit?: number }): Observable<any> {
+    const params: any = {};
+    if (query?.from) params.from = query.from;
+    if (query?.to) params.to = query.to;
+    if (query?.limit !== undefined && query?.limit !== null) params.limit = query.limit;
+
+    return this.http
+      .get(`${this.llmGatewayBaseUrl}/llms/${id}/keys/${keyId}/usage`, { params })
+      .pipe(catchError(this.handleError.bind(this)));
+  }
+
   revokeLlm(id: string): Observable<any> {
     return this.http
       .post(`${this.llmGatewayBaseUrl}/llms/${id}/revoke`, {})
