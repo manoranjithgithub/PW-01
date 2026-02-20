@@ -132,7 +132,8 @@ export class CreateToolComponent implements OnInit, OnDestroy {
           if (field.key === 'mysql.primary.persistance.size' ||
             field.key === 'postgresql.primary.persistence.size' ||
             field.key === 'mongodb.persistence.size' ||
-            field.key === 'postgresql.readReplicas.persistence.size'
+            field.key === 'postgresql.readReplicas.persistence.size' ||
+            field.key === 'n8n.postgresql.primary.persistence.size'
           ) {
             validators.push(this.gigabyteValidator);
           }
@@ -190,7 +191,8 @@ export class CreateToolComponent implements OnInit, OnDestroy {
         'mysql.primary.persistence.size',
         'postgresql.primary.persistence.size',
         'mongodb.persistence.size',
-        'postgresql.readReplicas.persistence.size'
+        'postgresql.readReplicas.persistence.size',
+        'n8n.postgresql.primary.persistence.size'
       ];
 
       sizeFields.forEach(key => {
