@@ -149,7 +149,8 @@ export class LLMComponent implements OnInit, OnDestroy {
         const currentEnvId = this.getCurrentEnvId();
         const currentEnvName = this.getCurrentEnvName();
 
-        this.rowData = this.normalizeArrayResponse(res)
+        const sourceItems = this.normalizeArrayResponse(res);
+        this.rowData = (Array.isArray(sourceItems) ? sourceItems : [])
           .filter((item: any) => this.isForCurrentSelection(item, currentProjectId, currentProjectName, currentEnvId, currentEnvName))
           .filter((item: any) => !this.isRevokedState(item))
           .map((item: any) => ({
@@ -159,7 +160,7 @@ export class LLMComponent implements OnInit, OnDestroy {
             model: this.extractModelDisplay(item),
             endpoint: item?.endpoint || item?.baseUrl || item?.apiBase || item?.url || '-',
             keyPrefix: this.extractKeyPrefix(item),
-            status: item?.status || item?.state || 'unknown',
+            status: this.normalizeDisplayStatus(item?.status || item?.state || 'unknown'),
             createdAt: item?.createdAt || item?.created_on || item?.created || null,
             updatedAt: item?.updatedAt || item?.updated_on || item?.updated || null
           }));
@@ -387,7 +388,7 @@ export class LLMComponent implements OnInit, OnDestroy {
 
   private normalizeAvailableModels(res: any): any[] {
     const rawItems = this.normalizeModelsCollection(res);
-    const mapped = rawItems
+    const mapped = (Array.isArray(rawItems) ? rawItems : [])
       .map((item: any) => this.toModelOption(item))
       .filter((item: any) => !!item?.value);
 
@@ -855,5 +856,12 @@ export class LLMComponent implements OnInit, OnDestroy {
       }
     }
     return undefined;
+  }
+
+  private normalizeDisplayStatus(status: any): string {
+    const normalized = String(status || '').trim().toLowerCase();
+    if (!normalized) return 'unknown';
+    if (normalized === 'active') return 'running';
+    return normalized;
   }
 }
