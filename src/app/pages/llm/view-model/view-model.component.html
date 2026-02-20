@@ -1,0 +1,306 @@
+<div class="container llm-view-page">
+  <div class="tabs-header d-flex align-items-center justify-content-between gap-2 flex-wrap">
+    <c-nav variant="underline-border" class="tabs-nav">
+      <c-nav-item>
+        <a [cTabContent]="tabContent1" (click)="onTabChange(0)" [tabPaneIdx]="0" cNavLink class="px-4 py-2">
+          Settings
+        </a>
+      </c-nav-item>
+      <c-nav-item>
+        <a [cTabContent]="tabContent1" (click)="onTabChange(1)" [tabPaneIdx]="1" cNavLink class="px-4 py-2">
+          How to Use
+        </a>
+      </c-nav-item>
+      <c-nav-item>
+        <a [cTabContent]="tabContent1" (click)="onTabChange(2)" [tabPaneIdx]="2" cNavLink class="px-4 py-2">
+          Usage/Analytics
+        </a>
+      </c-nav-item>
+    </c-nav>
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+      <button class="btn button-format-solid px-4 btn-align" (click)="editRateLimit()" [disabled]="!modelData || isEditingRateLimit || isSavingRateLimit">
+        <i class="bi bi-pencil"></i> Edit
+      </button>
+      <button class="btn btn-outline-secondary px-3" (click)="rotateKey()" [disabled]="!modelData || isRotatingKey || isSavingRateLimit">
+        <i class="bi bi-arrow-repeat"></i> {{ isRotatingKey ? 'Rotating...' : 'Rotate Key' }}
+      </button>
+      <button class="btn btn-outline-danger px-3" (click)="deleteModel()" [disabled]="!modelData || isDeletingModel || isSavingRateLimit || isRotatingKey">
+        <i class="bi bi-trash"></i> {{ isDeletingModel ? 'Deleting...' : 'Delete' }}
+      </button>
+    </div>
+  </div>
+
+  <c-tab-content #tabContent1="cTabContent" [activeTabPaneIdx]="selectedTabIndex" cRounded="bottom">
+    <c-tab-pane class="p-3 preview" role="tabpanel">
+      <ng-container *ngIf="modelData; else noData">
+        <div class="row">
+          <div *ngFor="let row of detailRows" class="col-md-6 mb-3">
+            <label class="form-label">{{ row.label }}</label>
+            <input class="form-control" [value]="row.value" readonly />
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <form [formGroup]="rateLimitForm">
+              <label class="form-label">Rate Limit Per Minute</label>
+              <input
+                *ngIf="isEditingRateLimit; else rateLimitReadonly"
+                class="form-control"
+                type="number"
+                min="1"
+                formControlName="rateLimitPerMinute"
+              />
+              <ng-template #rateLimitReadonly>
+                <input class="form-control" type="text" [value]="rateLimitDisplay" readonly />
+              </ng-template>
+              <small class="text-danger" *ngIf="rateLimitForm.get('rateLimitPerMinute')?.invalid && rateLimitForm.get('rateLimitPerMinute')?.touched">
+                Provide a valid number greater than 0.
+              </small>
+            </form>
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-end gap-2 mb-3" *ngIf="isEditingRateLimit">
+          <button type="button" class="btn btn-outline-secondary" (click)="cancelRateLimitEdit()" [disabled]="isSavingRateLimit">
+            Cancel
+          </button>
+          <button type="button" class="btn button-format-solid" (click)="saveRateLimit()" [disabled]="isSavingRateLimit">
+            {{ isSavingRateLimit ? 'Saving...' : 'Save' }}
+          </button>
+        </div>
+
+        <hr class="my-4" />
+        <div class="d-flex justify-content-between">
+          <button class="btn button-format-outline" (click)="backToList()">
+            <i class="bi bi-arrow-left"></i> Models list
+          </button>
+        </div>
+      </ng-container>
+
+      <ng-template #noData>
+        <p class="text-muted mb-0">No model details found.</p>
+      </ng-template>
+    </c-tab-pane>
+
+    <c-tab-pane class="p-3 preview" role="tabpanel">
+      <div class="usage-card" *ngIf="modelData; else noHowToData">
+        <div class="usage-headline">
+          <div>
+            <h5 class="usage-title mb-1">Integration Guide</h5>
+            <p class="usage-subtitle mb-0">
+              OpenAI-compatible API with bearer token authentication.
+            </p>
+          </div>
+          <span class="usage-pill">
+            Production Ready
+          </span>
+        </div>
+
+        <div class="usage-meta mb-3">
+          <div class="usage-meta-item">
+            <small class="text-muted d-block">Base URL</small>
+            <code>{{ usageBaseUrl || '-' }}</code>
+          </div>
+          <div class="usage-meta-item">
+            <small class="text-muted d-block">Model</small>
+            <code>{{ usageModel || '-' }}</code>
+          </div>
+          <div class="usage-meta-item">
+            <small class="text-muted d-block">Auth Header</small>
+            <code>Authorization: Bearer &lt;YOUR_API_KEY&gt;</code>
+          </div>
+        </div>
+
+        <div class="sdk-tabs">
+          <button
+            type="button"
+            class="sdk-tab-btn"
+            [class.active]="selectedSdkTab === 'curl'"
+            (click)="setSdkTab('curl')"
+          >
+            cURL
+          </button>
+          <button
+            type="button"
+            class="sdk-tab-btn"
+            [class.active]="selectedSdkTab === 'python'"
+            (click)="setSdkTab('python')"
+          >
+            Python SDK
+          </button>
+          <button
+            type="button"
+            class="sdk-tab-btn"
+            [class.active]="selectedSdkTab === 'javascript'"
+            (click)="setSdkTab('javascript')"
+          >
+            JavaScript SDK
+          </button>
+          <button
+            type="button"
+            class="sdk-tab-btn"
+            [class.active]="selectedSdkTab === 'go'"
+            (click)="setSdkTab('go')"
+          >
+            Go SDK
+          </button>
+          <button
+            type="button"
+            class="sdk-tab-btn"
+            [class.active]="selectedSdkTab === 'java'"
+            (click)="setSdkTab('java')"
+          >
+            Java SDK
+          </button>
+        </div>
+
+        <div class="sdk-pane mt-3">
+          <button type="button" class="snippet-copy-btn" (click)="copyCurrentSnippet()" title="Copy code">
+            <i class="bi bi-clipboard"></i>
+          </button>
+          <pre class="api-snippet mb-0" *ngIf="selectedSdkTab === 'curl'"><code [textContent]="curlSnippet"></code></pre>
+          <pre class="api-snippet mb-0" *ngIf="selectedSdkTab === 'python'"><code [textContent]="pythonSnippet"></code></pre>
+          <pre class="api-snippet mb-0" *ngIf="selectedSdkTab === 'javascript'"><code [textContent]="jsSnippet"></code></pre>
+          <pre class="api-snippet mb-0" *ngIf="selectedSdkTab === 'go'"><code [textContent]="goSnippet"></code></pre>
+          <pre class="api-snippet mb-0" *ngIf="selectedSdkTab === 'java'"><code [textContent]="javaSnippet"></code></pre>
+        </div>
+      </div>
+
+      <ng-template #noHowToData>
+        <p class="text-muted mb-0">No usage details found.</p>
+      </ng-template>
+    </c-tab-pane>
+
+    <c-tab-pane class="p-3 preview" role="tabpanel">
+      <ng-container *ngIf="modelData; else noAnalyticsData">
+        <div class="analytics-card">
+          <div class="analytics-header">
+            <div>
+              <h5 class="analytics-title mb-1">Usage Analytics</h5>
+              <p class="analytics-subtitle mb-0">Monitor requests, tokens, and spend for this API key.</p>
+            </div>
+            <span class="analytics-status-pill" [class.is-loading]="usageLoading">{{ usageLoading ? 'Refreshing' : 'Live Data' }}</span>
+          </div>
+
+          <div class="analytics-toolbar mb-3" [formGroup]="usageFiltersForm">
+            <div class="analytics-field">
+              <label class="form-label">From</label>
+              <input class="form-control" type="datetime-local" formControlName="from" />
+            </div>
+            <div class="analytics-field">
+              <label class="form-label">To</label>
+              <input class="form-control" type="datetime-local" formControlName="to" />
+            </div>
+            <div class="analytics-field analytics-limit">
+              <label class="form-label">Limit</label>
+              <input class="form-control" type="number" min="1" formControlName="limit" />
+            </div>
+            <div class="analytics-refresh">
+              <button class="btn button-format-solid" (click)="refreshUsageAnalytics()" [disabled]="usageLoading">
+                {{ usageLoading ? 'Loading...' : 'Refresh' }}
+              </button>
+            </div>
+          </div>
+
+          <div *ngIf="usageError" class="alert alert-danger mb-3">{{ usageError }}</div>
+
+          <ng-container *ngIf="!usageError">
+            <div class="analytics-summary-grid mb-3" *ngIf="usageSummary">
+              <div class="analytics-summary-item">
+                <small class="analytics-kpi-label">Total Requests</small>
+                <strong class="analytics-kpi-value">{{ usageSummary?.totalRequests ?? 0 }}</strong>
+              </div>
+              <div class="analytics-summary-item">
+                <small class="analytics-kpi-label">Prompt Tokens</small>
+                <strong class="analytics-kpi-value">{{ usageSummary?.totalPromptTokens ?? 0 }}</strong>
+              </div>
+              <div class="analytics-summary-item">
+                <small class="analytics-kpi-label">Completion Tokens</small>
+                <strong class="analytics-kpi-value">{{ usageSummary?.totalCompletionTokens ?? 0 }}</strong>
+              </div>
+              <div class="analytics-summary-item">
+                <small class="analytics-kpi-label">Total Tokens</small>
+                <strong class="analytics-kpi-value">{{ usageSummary?.totalTokens ?? 0 }}</strong>
+              </div>
+              <div class="analytics-summary-item is-cost">
+                <small class="analytics-kpi-label">Total Cost</small>
+                <strong class="analytics-kpi-value">{{ formatCost(usageSummary?.totalCost) }}</strong>
+              </div>
+            </div>
+
+            <div class="analytics-window mb-3" *ngIf="usageFrom || usageTo">
+              <small>
+                Window: {{ formatDateTime(usageFrom) }} to {{ formatDateTime(usageTo) }}
+              </small>
+            </div>
+
+            <div class="analytics-events-wrap" *ngIf="usageEvents.length; else noUsageEvents">
+              <div class="table-responsive">
+                <table class="table table-sm analytics-table mb-0">
+                  <thead>
+                    <tr>
+                      <th>Timestamp</th>
+                      <th>Gateway Request ID</th>
+                      <th>Provider Response ID</th>
+                      <th class="text-end">Prompt</th>
+                      <th class="text-end">Completion</th>
+                      <th class="text-end">Total</th>
+                      <th class="text-end">Cost</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let event of usageEvents">
+                      <td class="ts-cell">{{ formatDateTime(event?.ts) }}</td>
+                      <td><code class="analytics-id">{{ event?.gatewayRequestId || '-' }}</code></td>
+                      <td><code class="analytics-id">{{ event?.providerResponseId || '-' }}</code></td>
+                      <td class="text-end">{{ event?.promptTokens ?? 0 }}</td>
+                      <td class="text-end">{{ event?.completionTokens ?? 0 }}</td>
+                      <td class="text-end fw-semibold">{{ event?.totalTokens ?? 0 }}</td>
+                      <td class="text-end fw-semibold">{{ formatCost(event?.cost) }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <ng-template #noUsageEvents>
+              <div class="analytics-empty">
+                <h6 class="mb-1">No Usage Events</h6>
+                <p class="mb-0 text-muted">{{ usageLoading ? 'Loading usage events...' : 'No usage events found for the selected range.' }}</p>
+              </div>
+            </ng-template>
+          </ng-container>
+        </div>
+      </ng-container>
+
+      <ng-template #noAnalyticsData>
+        <p class="text-muted mb-0">No model details found.</p>
+      </ng-template>
+    </c-tab-pane>
+  </c-tab-content>
+</div>
+
+<ng-template #rotatedKeyModal>
+  <div class="modal-header">
+    <h5 class="modal-title">{{ keyModalTitle }}</h5>
+    <button type="button" class="btn-close" aria-label="Close" (click)="rotatedKeyModalRef?.dismiss()"></button>
+  </div>
+  <div class="modal-body">
+    <p class="mb-2 text-muted">Copy this key now. For security reasons it may not be shown again.</p>
+    <div class="mb-2">
+      <small class="text-muted">Key Prefix</small>
+      <div class="key-prefix-display">{{ rotatedKeyPrefix || '-' }}</div>
+    </div>
+    <div>
+      <small class="text-muted">New API Key</small>
+      <div class="rotated-key-box">
+        <code>{{ rotatedKeyValue || '-' }}</code>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-secondary" (click)="copyRotatedKey()" [disabled]="!rotatedKeyValue">
+      <i class="bi bi-clipboard"></i> Copy Key
+    </button>
+    <button type="button" class="btn button-format-solid" (click)="rotatedKeyModalRef?.close()">Done</button>
+  </div>
+</ng-template>
