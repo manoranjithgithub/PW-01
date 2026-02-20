@@ -25,6 +25,10 @@ export class BreadCrumbComponent implements OnInit {
     this.breadcrumbs = this.createBreadcrumbs(this.route.root);
   }
 
+  shouldShowBreadcrumb(): boolean {
+    return true;
+  }
+
   private createBreadcrumbs(route: ActivatedRoute, url: string = '', breadcrumbs: any[] = []): any[] {
     const children: ActivatedRoute[] = route.children;
 

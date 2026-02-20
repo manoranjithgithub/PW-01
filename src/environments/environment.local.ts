@@ -24,4 +24,5 @@ export const environment = {
     pricingManagement: `${base}/pricing/v1`,
     userManagement: `${base}/user/v1/business/organisation`,
     logServiceUrl: `${base}/logs`,
+    llmGatewayBaseUrl: `${base}/llmgateway/v1`,
 };

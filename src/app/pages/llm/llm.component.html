@@ -1,0 +1,35 @@
+<div class="container llm-page">
+  <app-ag-grid-table [columnDefs]="columnDefs" [rowData]="rowData">
+    <button class="btn button-format-solid px-4 btn-align" (click)="goToCreateModel()">
+      <i class="bi bi-plus"></i> Add New Model
+    </button>
+  </app-ag-grid-table>
+</div>
+
+<ng-template #rotatedKeyModal>
+  <div class="modal-header">
+    <h5 class="modal-title">{{ keyModalTitle }}</h5>
+    <button type="button" class="btn-close" aria-label="Close" (click)="rotatedKeyModalRef?.dismiss()"></button>
+  </div>
+
+  <div class="modal-body">
+    <p class="mb-2 text-muted">Copy this key now. For security reasons it may not be shown again.</p>
+    <div class="mb-2">
+      <small class="text-muted">Key Prefix</small>
+      <div class="key-prefix-display">{{ rotatedKeyPrefix || '-' }}</div>
+    </div>
+    <div>
+      <small class="text-muted">New API Key</small>
+      <div class="rotated-key-box">
+        <code>{{ rotatedKeyValue }}</code>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-secondary" (click)="copyRotatedKey()">
+      <i class="bi bi-clipboard"></i> Copy Key
+    </button>
+    <button type="button" class="btn button-format-solid" (click)="rotatedKeyModalRef?.close()">Done</button>
+  </div>
+</ng-template>
