@@ -30,6 +30,12 @@ export class LLMService {
       .pipe(catchError(this.handleError.bind(this)));
   }
 
+  updateRateLimit(id: string, keyId: string, rateLimitPerMinute: number): Observable<any> {
+    return this.http
+      .put(`${this.llmGatewayBaseUrl}/llms/${id}/keys/${keyId}/rate-limit`, { rateLimitPerMinute })
+      .pipe(catchError(this.handleError.bind(this)));
+  }
+
   rotateKey(id: string): Observable<any> {
     return this.http
       .post(`${this.llmGatewayBaseUrl}/llms/${id}/rotate-key`, {})

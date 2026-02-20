@@ -1,11 +1,15 @@
-import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { CellClickedEvent, ColDef } from 'ag-grid-community';
+import { ColDef } from 'ag-grid-community';
+import { Router } from '@angular/router';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
+import { Subscription } from 'rxjs';
 import { SHARED_IMPORTS } from '../../shared/shared-imports';
+import { ActionCellRendererComponent } from '../../shared/components/action-cell-renderer/action-cell-renderer.component';
 import { SharedService } from '../../shared/services/shared.service';
 import { LLMService } from './llm.service';
+import { ConfirmationModalComponent } from '../../shared/components/modal/confirmation-modal/confirmation-modal.component';
 
 @Component({
   selector: 'app-llm',
@@ -15,7 +19,7 @@ import { LLMService } from './llm.service';
   styleUrl: './llm.component.scss',
   providers: [LLMService]
 })
-export class LLMComponent implements OnInit {
+export class LLMComponent implements OnInit, OnDestroy {
   @ViewChild('addModelModal') addModelModal!: TemplateRef<any>;
   @ViewChild('rotatedKeyModal') rotatedKeyModal!: TemplateRef<any>;
 
@@ -30,6 +34,9 @@ export class LLMComponent implements OnInit {
   rotatedKeyPrefix = '';
   keyModalTitle = 'API Key Rotated';
 
+  private projectChangeSub?: Subscription;
+  private envChangeSub?: Subscription;
+
   columnDefs: ColDef[] = [
     {
       headerName: 'Name',
@@ -38,39 +45,41 @@ export class LLMComponent implements OnInit {
       filter: true,
       minWidth: 280,
       tooltipField: 'name',
+      cellStyle: { cursor: 'pointer' },
       cellRenderer: (params: any) => {
         const name = params.value || '-';
         const createdText = this.formatDate(params.data?.createdAt);
-        const project = params.data?.project || '-';
-        const keyPrefix = params.data?.keyPrefix || '-';
         return `<div class="name-with-date">
           <span class="name-primary">${name}</span>
           ${createdText ? `<span class="name-date">Created ${createdText}</span>` : ''}
-          <div class="name-meta">
-            <span class="meta-chip"><i class="bi bi-folder2-open"></i> ${project}</span>
-            <span class="meta-chip"><i class="bi bi-key"></i> ${keyPrefix}</span>
-          </div>
         </div>`;
-      }
+      },
+      onCellClicked: (event: any) => this.handleLlmModelAction('view', event.data)
     },
     {
-      headerName: 'Provider / Model',
-      field: 'providerModel',
+      headerName: 'Provider',
+      field: 'provider',
       sortable: true,
       filter: true,
-      minWidth: 260,
-      flex: 1,
-      valueGetter: (params: any) => `${params.data?.provider || ''} ${params.data?.model || ''}`.trim(),
+      minWidth: 170
+    },
+    {
+      headerName: 'Model',
+      field: 'model',
+      sortable: true,
+      filter: true,
+      minWidth: 280,
+      flex: 1
+    },
+    {
+      headerName: 'Key',
+      field: 'keyPrefix',
+      sortable: true,
+      filter: true,
+      minWidth: 180,
       cellRenderer: (params: any) => {
-        const provider = String(params.data?.provider || '-');
-        const providerClass = `provider-pill-${provider.toLowerCase().replace(/[^a-z0-9-]+/g, '-')}`;
-        const model = params.data?.model || '-';
-        const version = params.data?.version || params.data?.modelVersion || '';
-        return `<div class="name-with-date">
-          <span class="provider-pill ${providerClass}">${provider}</span>
-          <span class="name-primary">${model}</span>
-          ${version ? `<span class="name-date">Version ${version}</span>` : ''}
-        </div>`;
+        const keyPrefix = params.value || '-';
+        return `<span class="key-prefix-text">${keyPrefix}</span>`;
       }
     },
     {
@@ -90,30 +99,15 @@ export class LLMComponent implements OnInit {
       }
     },
     {
-      headerName: 'Rotate Key',
-      field: 'rotateKey',
-      sortable: false,
-      filter: false,
-      width: 120,
+      headerName: 'Actions',
+      field: 'actions',
+      width: 100,
       cellStyle: { cursor: 'pointer' },
-      cellRenderer: (params: any) => {
-        const revoked = this.isRevokedState(params.data);
-        return `<button class="btn btn-sm btn-outline-primary llm-action-btn ${revoked ? 'disabled-action' : ''}" ${revoked ? 'disabled' : ''}>Rotate</button>`;
-      },
-      onCellClicked: (event: CellClickedEvent) => this.onRotateKey(event.data)
-    },
-    {
-      headerName: 'Revoke',
-      field: 'revoke',
-      sortable: false,
-      filter: false,
-      width: 110,
-      cellStyle: { cursor: 'pointer' },
-      cellRenderer: (params: any) => {
-        const revoked = this.isRevokedState(params.data);
-        return `<button class="btn btn-sm btn-outline-danger llm-action-btn ${revoked ? 'disabled-action' : ''}" ${revoked ? 'disabled' : ''}>Revoke</button>`;
-      },
-      onCellClicked: (event: CellClickedEvent) => this.onRevoke(event.data)
+      cellRenderer: ActionCellRendererComponent,
+      cellRendererParams: {
+        additionalParam: 'llm-models',
+        onActionClick: (action: string, row: any) => this.handleLlmModelAction(action, row)
+      }
     }
   ];
 
@@ -122,7 +116,8 @@ export class LLMComponent implements OnInit {
     private sharedService: SharedService,
     private toastr: ToastrService,
     private modalService: NgbModal,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private router: Router
   ) {
     this.addModelForm = this.fb.group({
       selectedModel: [null, Validators.required],
@@ -131,25 +126,43 @@ export class LLMComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.projectChangeSub = this.sharedService.projectValueChange$.subscribe(() => {
+      this.loadAddedModels();
+    });
+    this.envChangeSub = this.sharedService.envValueChange$.subscribe(() => {
+      this.loadAddedModels();
+    });
     this.loadAddedModels();
+  }
+
+  ngOnDestroy(): void {
+    this.projectChangeSub?.unsubscribe();
+    this.envChangeSub?.unsubscribe();
   }
 
   loadAddedModels(): void {
     this.sharedService.show();
     this.llmService.getAddedModels().subscribe({
       next: (res: any) => {
-        this.rowData = this.normalizeArrayResponse(res).map((item: any) => ({
-          ...item,
-          name: item?.name || item?.displayName || item?.id || '-',
-          provider: item?.provider || item?.vendor || '-',
-          model: this.extractModelDisplay(item),
-          endpoint: item?.endpoint || item?.baseUrl || item?.apiBase || item?.url || '-',
-          keyPrefix: this.extractKeyPrefix(item),
-          project: this.extractProjectDisplay(item),
-          status: item?.status || item?.state || 'unknown',
-          createdAt: item?.createdAt || item?.created_on || item?.created || null,
-          updatedAt: item?.updatedAt || item?.updated_on || item?.updated || null
-        }));
+        const currentProjectId = this.getCurrentProjectId();
+        const currentProjectName = this.getCurrentProjectName();
+        const currentEnvId = this.getCurrentEnvId();
+        const currentEnvName = this.getCurrentEnvName();
+
+        this.rowData = this.normalizeArrayResponse(res)
+          .filter((item: any) => this.isForCurrentSelection(item, currentProjectId, currentProjectName, currentEnvId, currentEnvName))
+          .filter((item: any) => !this.isRevokedState(item))
+          .map((item: any) => ({
+            ...item,
+            name: item?.name || item?.displayName || item?.id || '-',
+            provider: this.extractProviderDisplay(item),
+            model: this.extractModelDisplay(item),
+            endpoint: item?.endpoint || item?.baseUrl || item?.apiBase || item?.url || '-',
+            keyPrefix: this.extractKeyPrefix(item),
+            status: item?.status || item?.state || 'unknown',
+            createdAt: item?.createdAt || item?.created_on || item?.created || null,
+            updatedAt: item?.updatedAt || item?.updated_on || item?.updated || null
+          }));
         this.sharedService.hide();
       },
       error: (error: Error) => {
@@ -255,6 +268,28 @@ export class LLMComponent implements OnInit {
     this.loadAddedModels();
   }
 
+  goToCreateModel(): void {
+    this.router.navigate(['/llm-models/create-model']);
+  }
+
+  handleLlmModelAction(action: string, row: any): void {
+    if (action === 'view') {
+      const id = this.getLlmId(row);
+      this.router.navigate(['/llm-models/view-model'], {
+        queryParams: { id },
+        state: { row }
+      });
+      return;
+    }
+    if (action === 'rotateKey') {
+      this.onRotateKey(row);
+      return;
+    }
+    if (action === 'revoke') {
+      this.onRevoke(row);
+    }
+  }
+
   onRotateKey(row: any): void {
     if (this.isRevokedState(row)) {
       this.toastr.info('Rotate key is disabled for revoked endpoints.');
@@ -306,20 +341,24 @@ export class LLMComponent implements OnInit {
       return;
     }
 
-    const confirmed = window.confirm('Revoke this LLM endpoint? This action may disable access immediately.');
-    if (!confirmed) return;
+    const modalRef = this.modalService.open(ConfirmationModalComponent);
+    modalRef.componentInstance.selectedItem = 'LLM model';
+    modalRef.componentInstance.message = 'Are you sure you want to delete this LLM model?';
 
-    this.sharedService.show();
-    this.llmService.revokeLlm(id).subscribe({
-      next: () => {
-        this.toastr.success('LLM endpoint revoked successfully');
-        this.loadAddedModels();
-      },
-      error: (error: Error) => {
-        this.toastr.error(error.message, 'Error');
-        this.sharedService.hide();
-      }
-    });
+    modalRef.result.then((result) => {
+      if (!result) return;
+      this.sharedService.show();
+      this.llmService.revokeLlm(id).subscribe({
+        next: () => {
+          this.toastr.success('LLM model deleted successfully');
+          this.loadAddedModels();
+        },
+        error: (error: Error) => {
+          this.toastr.error(error.message, 'Error');
+          this.sharedService.hide();
+        }
+      });
+    }).catch(() => { });
   }
 
   trackModel(index: number, model: any): string {
@@ -565,28 +604,152 @@ export class LLMComponent implements OnInit {
     }
   }
 
-  private extractProjectDisplay(item: any): string {
+  private getCurrentEnvName(): string | undefined {
+    const stored = localStorage.getItem('environment');
+    if (!stored || stored === 'undefined') return undefined;
+    try {
+      const parsed = JSON.parse(stored);
+      return parsed?.name || parsed?.environmentName || undefined;
+    } catch {
+      return undefined;
+    }
+  }
+
+  private isForCurrentSelection(
+    item: any,
+    currentProjectId?: string,
+    currentProjectName?: string,
+    currentEnvId?: string,
+    currentEnvName?: string
+  ): boolean {
+    const projectMatch = this.isForCurrentProject(item, currentProjectId, currentProjectName);
+    const envMatch = this.isForCurrentEnvironment(item, currentEnvId, currentEnvName);
+    return projectMatch && envMatch;
+  }
+
+  private isForCurrentProject(item: any, currentProjectId?: string, currentProjectName?: string): boolean {
+    if (!currentProjectId && !currentProjectName) return true;
+
+    const itemProjectId = this.extractProjectId(item);
+    const itemProjectName = this.extractProjectName(item);
+
+    if (currentProjectId && itemProjectId) {
+      return String(itemProjectId) === String(currentProjectId);
+    }
+
+    if (currentProjectName && itemProjectName) {
+      return String(itemProjectName).toLowerCase() === String(currentProjectName).toLowerCase();
+    }
+
+    return false;
+  }
+
+  private isForCurrentEnvironment(item: any, currentEnvId?: string, currentEnvName?: string): boolean {
+    if (!currentEnvId && !currentEnvName) return true;
+
+    const itemEnvId = this.extractEnvId(item);
+    const itemEnvName = this.extractEnvName(item);
+
+    if (currentEnvId && itemEnvId) {
+      return String(itemEnvId) === String(currentEnvId);
+    }
+
+    if (currentEnvName && itemEnvName) {
+      return String(itemEnvName).toLowerCase() === String(currentEnvName).toLowerCase();
+    }
+
+    return false;
+  }
+
+  private extractProjectId(item: any): string {
     const projectObj = item?.project && typeof item.project === 'object' ? item.project : null;
-    const name =
+    return (
+      item?.projectId ||
+      item?.project_id ||
+      item?.projectID ||
+      projectObj?.id ||
+      projectObj?.projectId ||
+      ''
+    );
+  }
+
+  private extractProjectName(item: any): string {
+    const projectObj = item?.project && typeof item.project === 'object' ? item.project : null;
+    return (
       item?.projectName ||
+      item?.project_name ||
       item?.projectDisplayName ||
       projectObj?.name ||
       projectObj?.projectName ||
-      this.getCurrentProjectName();
-    const id =
-      item?.projectId ||
-      projectObj?.id ||
-      projectObj?.projectId ||
-      this.getCurrentProjectId();
+      ''
+    );
+  }
 
-    return name || id || '-';
+  private extractEnvId(item: any): string {
+    const envObj = item?.environment && typeof item.environment === 'object' ? item.environment : null;
+    return (
+      item?.envId ||
+      item?.env_id ||
+      item?.environmentId ||
+      item?.environment_id ||
+      item?.namespace ||
+      envObj?.id ||
+      envObj?.envId ||
+      ''
+    );
+  }
+
+  private extractEnvName(item: any): string {
+    const envObj = item?.environment && typeof item.environment === 'object' ? item.environment : null;
+    return (
+      item?.envName ||
+      item?.environmentName ||
+      item?.environment_name ||
+      envObj?.name ||
+      envObj?.environmentName ||
+      ''
+    );
+  }
+
+  private getProviderModelParts(item: any): { provider: string; model: string } {
+    const providerModel = String(
+      item?.provider_model ||
+      item?.providerModel ||
+      ''
+    ).trim();
+
+    if (!providerModel) {
+      return { provider: '', model: '' };
+    }
+
+    const separatorIdx = providerModel.indexOf('/');
+    if (separatorIdx > -1) {
+      return {
+        provider: providerModel.slice(0, separatorIdx).trim(),
+        model: providerModel.slice(separatorIdx + 1).trim()
+      };
+    }
+
+    return { provider: '', model: providerModel };
+  }
+
+  private extractProviderDisplay(item: any): string {
+    const fromProviderModel = this.getProviderModelParts(item).provider;
+    return String(
+      fromProviderModel ||
+      item?.provider ||
+      item?.vendor ||
+      '-'
+    );
   }
 
   private extractModelDisplay(item: any): string {
+    const fromProviderModel = this.getProviderModelParts(item).model;
     const modelObj = item?.model && typeof item.model === 'object' ? item.model : null;
     const nimbuzModelObj = item?.nimbuzModel && typeof item.nimbuzModel === 'object' ? item.nimbuzModel : null;
 
     return (
+      fromProviderModel ||
       item?.modelDisplayName ||
       item?.displayModelName ||
       modelObj?.displayName ||

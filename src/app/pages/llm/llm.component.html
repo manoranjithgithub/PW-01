@@ -1,74 +1,10 @@
 <div class="container llm-page">
-  <div class="llm-overview mb-3">
-    <div class="overview-main">
-      <div class="overview-title-wrap">
-        <div class="overview-title">LLM Models</div>
-        <div class="overview-subtitle">Manage configured models, providers, status, and endpoint setup.</div>
-      </div>
-      <div class="overview-meta">
-        <span class="meta-pill">
-        <i class="bi bi-diagram-3"></i>
-        {{ configuredModelCount }} total
-      </span>
-        <span class="meta-pill">
-        <i class="bi bi-building"></i>
-        {{ providerCount }} providers
-      </span>
-      </div>
-    </div>
-    <div class="overview-actions">
-      <button class="btn btn-outline-secondary" (click)="refresh()">
-        <i class="bi bi-arrow-clockwise"></i> Refresh
-      </button>
-      <button class="btn button-format-solid px-4" (click)="openAddModelModal()" [disabled]="loadingAvailableModels || isSubmitting">
-        <i class="bi bi-plus"></i> Add New Model
-      </button>
-    </div>
-  </div>
-
-  <app-ag-grid-table [columnDefs]="columnDefs" [rowData]="rowData"></app-ag-grid-table>
-</div>
-
-<ng-template #addModelModal>
-  <div class="modal-header">
-    <h5 class="modal-title">Add New Model</h5>
-    <button type="button" class="btn-close" aria-label="Close" (click)="addModelModalRef?.dismiss()"></button>
-  </div>
-
-  <div class="modal-body">
-    <form [formGroup]="addModelForm" class="d-flex flex-column gap-3">
-      <div>
-        <label class="form-label" for="selectedModel">Available Models</label>
-        <select id="selectedModel" class="form-select llm-model-select" formControlName="selectedModel">
-          <option [ngValue]="null" disabled>Select a model</option>
-          <option *ngFor="let model of availableModels" [ngValue]="model">
-            {{ extractModelLabel(model) }}
-          </option>
-        </select>
-        <small class="text-muted" *ngIf="!loadingAvailableModels && availableModels.length > 0">
-          Loaded {{ availableModels.length }} models.
-        </small>
-        <small class="text-muted" *ngIf="loadingAvailableModels">Loading models...</small>
-        <small class="text-muted" *ngIf="!loadingAvailableModels && availableModels.length === 0">No models available from API.</small>
-        <small class="text-danger" *ngIf="addModelForm.get('selectedModel')?.invalid && addModelForm.get('selectedModel')?.touched">
-          Model selection is required.
-        </small>
-      </div>
-
-      <div>
-        <label class="form-label" for="alias">Alias (optional)</label>
-        <input id="alias" type="text" class="form-control" formControlName="alias" placeholder="Enter display name" />
-      </div>
-    </form>
-  </div>
-
-  <div class="modal-footer">
-    <button type="button" class="btn btn-secondary" (click)="addModelModalRef?.dismiss()" [disabled]="isSubmitting">Cancel</button>
-    <button type="button" class="btn button-format-solid" (click)="submitAddModel()" [disabled]="isSubmitting || loadingAvailableModels">
-      {{ isSubmitting ? 'Saving...' : 'Save' }}
+  <app-ag-grid-table [columnDefs]="columnDefs" [rowData]="rowData">
+    <button class="btn button-format-solid px-4 btn-align" (click)="goToCreateModel()">
+      <i class="bi bi-plus"></i> Add New Model
     </button>
-  </div>
-</ng-template>
+  </app-ag-grid-table>
+</div>
 
 <ng-template #rotatedKeyModal>
   <div class="modal-header">

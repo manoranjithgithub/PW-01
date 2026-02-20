@@ -1,0 +1,68 @@
+.llm-view-page {
+  padding: 0;
+}
+
+.tabs-header {
+  border-bottom: 1px solid #dbe3ef;
+  margin-bottom: 8px;
+}
+
+.tabs-nav {
+  border-bottom: 0;
+}
+
+.preview .form-control[readonly] {
+  background-color: #f8f9fa;
+  cursor: default;
+}
+
+.usage-card {
+  border: 1px solid #e6edf5;
+  border-radius: 10px;
+  background: #fff;
+  padding: 14px;
+}
+
+.usage-meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.sdk-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sdk-tab-btn {
+  border: 1px solid #dbe3ef;
+  background: #fff;
+  color: #334155;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.sdk-tab-btn.active {
+  border-color: #ff771c;
+  background: #fff7f1;
+  color: #b45309;
+}
+
+.api-snippet {
+  border: 1px solid #dbe3ef;
+  border-radius: 8px;
+  background: #f8fafc;
+  padding: 12px;
+  overflow: auto;
+  white-space: pre;
+}
+
+@media (max-width: 768px) {
+  .usage-meta {
+    grid-template-columns: 1fr;
+  }
+}

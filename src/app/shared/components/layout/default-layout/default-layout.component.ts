@@ -214,13 +214,11 @@ export class DefaultLayoutComponent implements OnInit {
   }
 
   shouldShowProjectSwitch(): boolean {
-    const url = this.router.url.split('?')[0];
-    return !url.startsWith('/llm-models');
+    return true;
   }
 
   shouldShowPageHeader(): boolean {
-    const url = this.router.url.split('?')[0];
-    return !url.startsWith('/llm-models');
+    return true;
   }
 
   ngOnInit(): void {

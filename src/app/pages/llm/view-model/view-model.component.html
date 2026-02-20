@@ -1,0 +1,129 @@
+<div class="container llm-view-page">
+  <div class="tabs-header d-flex align-items-center justify-content-between gap-2 flex-wrap">
+    <c-nav variant="underline-border" class="tabs-nav">
+      <c-nav-item>
+        <a [cTabContent]="tabContent1" (click)="onTabChange(0)" [tabPaneIdx]="0" cNavLink class="px-4 py-2">
+          Settings
+        </a>
+      </c-nav-item>
+      <c-nav-item>
+        <a [cTabContent]="tabContent1" (click)="onTabChange(1)" [tabPaneIdx]="1" cNavLink class="px-4 py-2">
+          How to Use
+        </a>
+      </c-nav-item>
+    </c-nav>
+    <button class="btn button-format-solid px-4 btn-align" (click)="editRateLimit()" [disabled]="!modelData || isEditingRateLimit || isSavingRateLimit">
+      <i class="bi bi-pencil"></i> Edit
+    </button>
+  </div>
+
+  <c-tab-content #tabContent1="cTabContent" [activeTabPaneIdx]="selectedTabIndex" cRounded="bottom">
+    <c-tab-pane class="p-3 preview" role="tabpanel">
+      <ng-container *ngIf="modelData; else noData">
+        <div class="row">
+          <div *ngFor="let row of detailRows" class="col-md-6 mb-3">
+            <label class="form-label">{{ row.label }}</label>
+            <input class="form-control" [value]="row.value" readonly />
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <form [formGroup]="rateLimitForm">
+              <label class="form-label">Rate Limit Per Minute</label>
+              <input
+                *ngIf="isEditingRateLimit; else rateLimitReadonly"
+                class="form-control"
+                type="number"
+                min="1"
+                formControlName="rateLimitPerMinute"
+              />
+              <ng-template #rateLimitReadonly>
+                <input class="form-control" type="text" [value]="rateLimitDisplay" readonly />
+              </ng-template>
+              <small class="text-danger" *ngIf="rateLimitForm.get('rateLimitPerMinute')?.invalid && rateLimitForm.get('rateLimitPerMinute')?.touched">
+                Provide a valid number greater than 0.
+              </small>
+            </form>
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-end gap-2 mb-3" *ngIf="isEditingRateLimit">
+          <button type="button" class="btn btn-outline-secondary" (click)="cancelRateLimitEdit()" [disabled]="isSavingRateLimit">
+            Cancel
+          </button>
+          <button type="button" class="btn button-format-solid" (click)="saveRateLimit()" [disabled]="isSavingRateLimit">
+            {{ isSavingRateLimit ? 'Saving...' : 'Save' }}
+          </button>
+        </div>
+
+        <hr class="my-4" />
+        <div class="d-flex justify-content-between">
+          <button class="btn button-format-outline" (click)="backToList()">
+            <i class="bi bi-arrow-left"></i> Models list
+          </button>
+        </div>
+      </ng-container>
+
+      <ng-template #noData>
+        <p class="text-muted mb-0">No model details found.</p>
+      </ng-template>
+    </c-tab-pane>
+
+    <c-tab-pane class="p-3 preview" role="tabpanel">
+      <div class="usage-card" *ngIf="modelData; else noHowToData">
+        <h6 class="mb-2">OpenAPI-Compatible Usage</h6>
+        <p class="text-muted mb-3">
+          This endpoint follows OpenAPI-style REST usage with bearer token authentication.
+          Send your API key in the <code>Authorization</code> header and call the chat completions route.
+        </p>
+
+        <div class="usage-meta mb-3">
+          <div>
+            <small class="text-muted d-block">Base URL</small>
+            <code>{{ usageBaseUrl || '-' }}</code>
+          </div>
+          <div>
+            <small class="text-muted d-block">Model</small>
+            <code>{{ usageModel || '-' }}</code>
+          </div>
+        </div>
+
+        <div class="sdk-tabs">
+          <button
+            type="button"
+            class="sdk-tab-btn"
+            [class.active]="selectedSdkTab === 'curl'"
+            (click)="setSdkTab('curl')"
+          >
+            cURL
+          </button>
+          <button
+            type="button"
+            class="sdk-tab-btn"
+            [class.active]="selectedSdkTab === 'python'"
+            (click)="setSdkTab('python')"
+          >
+            Python SDK
+          </button>
+          <button
+            type="button"
+            class="sdk-tab-btn"
+            [class.active]="selectedSdkTab === 'javascript'"
+            (click)="setSdkTab('javascript')"
+          >
+            JavaScript SDK
+          </button>
+        </div>
+
+        <div class="sdk-pane mt-3">
+          <pre class="api-snippet mb-0" *ngIf="selectedSdkTab === 'curl'"><code [textContent]="curlSnippet"></code></pre>
+          <pre class="api-snippet mb-0" *ngIf="selectedSdkTab === 'python'"><code [textContent]="pythonSnippet"></code></pre>
+          <pre class="api-snippet mb-0" *ngIf="selectedSdkTab === 'javascript'"><code [textContent]="jsSnippet"></code></pre>
+        </div>
+      </div>
+
+      <ng-template #noHowToData>
+        <p class="text-muted mb-0">No usage details found.</p>
+      </ng-template>
+    </c-tab-pane>
+  </c-tab-content>
+</div>

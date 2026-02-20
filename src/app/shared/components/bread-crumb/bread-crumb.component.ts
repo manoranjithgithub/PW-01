@@ -26,8 +26,7 @@ export class BreadCrumbComponent implements OnInit {
   }
 
   shouldShowBreadcrumb(): boolean {
-    const currentUrl = this.router.url.split('?')[0];
-    return !currentUrl.startsWith('/llm-models');
+    return true;
   }
 
   private createBreadcrumbs(route: ActivatedRoute, url: string = '', breadcrumbs: any[] = []): any[] {

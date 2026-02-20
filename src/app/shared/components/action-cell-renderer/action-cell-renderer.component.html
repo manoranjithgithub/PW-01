@@ -24,6 +24,32 @@
     </li> -->
   </ul>
 </div>
+<div class="custom-dropdown d-inline-block" *ngIf="additionalParam === 'llm-models'">
+  <button #dropdownBtnLlmModel class="btn btn-icon" type="button" (click)="toggleDropdown($event, dropdownBtnLlmModel)">
+    <i class="bi bi-three-dots-vertical"></i>
+  </button>
+  <ul *ngIf="isDropdownOpen" #menuLlmModel class="custom-dropdown-menu floating-dropdown" [ngStyle]="dropdownStyle">
+    <li>
+      <a class="custom-dropdown-item" (click)="onOptionSelected('view')">View</a>
+    </li>
+    <li>
+      <a class="custom-dropdown-item"
+         role="button"
+         (click)="!isRevokedLlmModel() && onOptionSelected('rotateKey')"
+         [class.disabled]="isRevokedLlmModel()"
+         [attr.aria-disabled]="isRevokedLlmModel()"
+      >Rotate Key</a>
+    </li>
+    <li>
+      <a class="custom-dropdown-item"
+         role="button"
+         (click)="!isRevokedLlmModel() && onOptionSelected('revoke')"
+         [class.disabled]="isRevokedLlmModel()"
+         [attr.aria-disabled]="isRevokedLlmModel()"
+      >Delete</a>
+    </li>
+  </ul>
+</div>
 <div class="custom-dropdown d-inline-block" *ngIf="additionalParam === 'user-list'">
   <a class="mx-2 cursor-pointer"
     (click)="isUserVerified && viewPolicies()"

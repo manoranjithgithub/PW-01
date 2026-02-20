@@ -49,6 +49,9 @@ export const routes: Routes = [
       {
         path: 'llm-models',
         canActivate: [AuthGuard],
+        data: {
+          breadcrumb: 'LLM',
+        },
         loadChildren: () =>
           import('./pages/llm/routes').then((m) => m.routes),
       },
