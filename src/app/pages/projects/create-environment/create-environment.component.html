@@ -28,20 +28,22 @@
                         class="form-control  text-format">
                     <div *ngIf="environmentForm.get('name')?.invalid && environmentForm.get('name')?.touched"
                         class="text-danger text-format">
-                        <small *ngIf="environmentForm.get('name')?.hasError('required')">This is a required field
-                        </small>
-                        <small *ngIf="environmentForm.get('name')?.hasError('invalidName')">Environment name is
-                            invalid
-                        </small>
-                        <div *ngIf="environmentForm.get('name')?.hasError('minlength')" class="text-danger my-1">
-                            Project name must be at least 3 characters long.
+                        <div *ngIf="environmentForm.get('name')?.hasError('required') || environmentForm.get('name')?.hasError('whitespace')"
+                            class="text-danger my-1">
+                            Environment name cannot be empty.
                         </div>
-                        <small *ngIf="environmentForm.get('name')?.hasError('maxlength')">
-                            Maximun 40 characters only.
-                        </small>
-                        <small *ngIf="environmentForm.get('name')?.hasError('uniqueName')">
+                        <div *ngIf="environmentForm.get('name')?.hasError('invalidName')" class="text-danger my-1">
+                            Environment name is invalid.
+                        </div>
+                        <div *ngIf="environmentForm.get('name')?.hasError('minlength')" class="text-danger my-1">
+                            Environment name must be at least 3 characters long.
+                        </div>
+                        <div *ngIf="environmentForm.get('name')?.hasError('maxlength')" class="text-danger my-1">
+                            Environment name should have a maximum length of 50 characters.
+                        </div>
+                        <div *ngIf="environmentForm.get('name')?.hasError('uniqueName')" class="text-danger my-1">
                             Name already exists. Please choose a different name.
-                        </small>
+                        </div>
                     </div>
                 </div>
                 <div class="flex-fill spacing-left">
@@ -140,7 +142,7 @@
         <div class="d-flex justify-content-end  mt-4">
             <button type="button" class="btn button-format-outline mx-2" (click)="goBack()">Cancel</button>
             <button type="submit" class="btn button-format-solid"
-                [disabled]="environmentForm.invalid || !permissionService.canWriteForCurrentUser(environmentForm.get('project')?.value, null)"
+                [disabled]="!permissionService.canWriteForCurrentUser(environmentForm.get('project')?.value, null)"
                 (click)="createEnvironment()">Create Environment</button>
         </div>
     </form>
