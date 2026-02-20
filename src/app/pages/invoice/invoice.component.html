@@ -42,18 +42,18 @@
         <div class="card-content">
           <p class="card-label">Company & Billing Info</p>
           <div class="company-title-row">
-            <p class="card-value">{{ companyName || 'Not configured' }}</p>
+            <p class="card-value">{{ companyBillingInfo.companyName || 'Not configured' }}</p>
             <button type="button" class="manage-billing-btn" (click)="navigateToAccountSettings()">Manage billing
               details</button>
           </div>
           <div class="company-details-grid" *ngIf="!billingDetailsLoading; else billingLoadingBlock">
             <div class="company-details-row">
               <span class="detail-label">GST Number</span>
-              <span class="detail-value">{{ gstNumber || '--' }}</span>
+              <span class="detail-value">{{ companyBillingInfo.gstNumber || '--' }}</span>
             </div>
             <div class="company-details-row">
               <span class="detail-label">PAN Number</span>
-              <span class="detail-value">{{ panNumber || '--' }}</span>
+              <span class="detail-value">{{ companyBillingInfo.panNumber || '--' }}</span>
             </div>
             <div class="company-details-row">
               <span class="detail-label">Billing Address</span>

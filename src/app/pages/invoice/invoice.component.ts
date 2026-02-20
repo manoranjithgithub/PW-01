@@ -1,9 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
-import { AgGridTableComponent } from '../../shared/components/ag-grid-table/ag-grid-table.component';
 import { PricingsService } from './pricing.service';
-import { CellClickedEvent, ColDef } from 'ag-grid-community';
 import { ToastrService } from 'ngx-toastr';
 import { SharedService } from '../../shared/services/shared.service';
 import { UserService } from '../../core/services/user.service';
@@ -11,6 +9,7 @@ import { environment } from '../../../environments/environment';
 import { DeploymentsService } from '../deployments/deployment.service';
 import { ToolsService } from '../tools/tools.service';
 import { ProjectsService } from '../projects/projects.service';
+import { BillServiceRow, CompanyBillingInfo, InvoiceRow, ScopeOption } from '../../core/models/company-billing-info.model';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import Litepicker from 'litepicker';
@@ -22,39 +21,11 @@ type BillTab = 'service' | 'taxes';
 type TimeRangeOption = '30d' | '3m' | '6m' | 'current-month' | 'all';
 type StatusFilterOption = 'all' | 'paid' | 'due' | 'unpaid' | 'credit';
 
-interface InvoiceRow {
-  id: string | number;
-  invoiceNumber?: string;
-  subtotal?: number;
-  tax_amount?: number;
-  total?: number;
-  currency?: string;
-  status?: string;
-  period?: string;
-  issued_at?: string;
-  payment_method?: string;
-  pdf_generated_at?: string;
-  [key: string]: any;
-}
-
-interface BillServiceRow {
-  description: string;
-  usage: string;
-  amount: number;
-  source: 'deployment' | 'tool';
-  currency?: string;
-  name?: string;
-}
-
-interface ScopeOption {
-  id: string;
-  name: string;
-}
 
 @Component({
   selector: 'app-invoice',
   standalone: true,
-  imports: [CommonModule, AgGridTableComponent],
+  imports: [CommonModule],
   templateUrl: './invoice.component.html',
   styleUrl: './invoice.component.scss',
   providers: [PricingsService]
@@ -64,15 +35,10 @@ export class InvoiceComponent implements OnInit, AfterViewInit, OnDestroy {
 
   rawInvoiceData: InvoiceRow[] = [];
   tableData: InvoiceRow[] = [];
-  columnDefs: ColDef[] = [];
   activeTopSection: TopSection = 'payments';
   activeTab: PaymentTab = 'transactions';
   activeBillTab: BillTab = 'service';
-  paymentsDueFilter = '';
-  unappliedFundsFilter = '';
   transactionsFilter = '';
-  paymentsDueStatusFilter: StatusFilterOption = 'all';
-  unappliedStatusFilter: StatusFilterOption = 'all';
   transactionStatusFilter: StatusFilterOption = 'all';
   billServiceFilter = '';
   billTaxFilter = '';
@@ -100,167 +66,22 @@ export class InvoiceComponent implements OnInit, AfterViewInit, OnDestroy {
   startDate = '';
   endDate = '';
   dateRangeDisplay = 'Select date range';
-  cpuMemoryUsage = '0%';
-  cpuUsage = 45;
-  cpuUsedGB = '2.3 GB';
-  memoryUsage = 62;
-  memoryUsedGB = '3.1 GB';
-  usageTrend = '+20%';
-  companyName: string | null = null;
-  gstNumber: string | null = null;
-  panNumber: string | null = null;
-  addressLine1: string | null = null;
-  addressLine2: string | null = null;
-  city: string | null = null;
-  state: string | null = null;
-  country: string | null = null;
-  postalCode: string | null = null;
+  companyBillingInfo: CompanyBillingInfo = {
+    companyName: null,
+    gstNumber: null,
+    panNumber: null,
+    addressLine1: null,
+    addressLine2: null,
+    city: null,
+    state: null,
+    country: null,
+    postalCode: null,
+    paymentMethod: null
+  };
   accountId: string | null = null;
-  paymentMethod: string | null = null;
   billingDetailsLoading = false;
   private dateRangePicker: any = null;
-  
-  buildColumnDefs(): ColDef[] {
-    const fmt = (value: number, from: string | undefined) => {
-      const target = this.sharedService.getCurrency() || 'USD';
-      const converted = this.sharedService.convertAmount(Number(value), from || 'USD', target);
-      try {
-        return new Intl.NumberFormat('en-US', {
-          style: 'currency',
-          currency: target,
-          minimumFractionDigits: 2,
-        }).format(converted);
-      } catch (e) {
-        return String(converted);
-      }
-    };
 
-    return [
-      {
-        field: '', headerName: 'S.NO', width: 80,
-        valueGetter: (params) => {
-          const a = params.node;
-          if (!a || a.rowIndex === null) return 0;
-          return a.rowIndex + 1;
-        }
-      },
-      {
-        field: 'id', headerName: 'Invoice Number', flex: 2, tooltipField: 'invoiceNumber',
-        cellStyle: { 'white-space': 'nowrap', 'overflow': 'hidden !important', 'text-overflow': 'ellipsis' },
-      },
-      {
-        field: 'subtotal', headerName: 'Amount Payable', flex: 1,
-        valueFormatter: (params: any) => fmt(params.value, params.data?.currency)
-      },
-      {
-        field: 'tax_amount', headerName: 'Tax Amount', flex: 1,
-        valueFormatter: (params: any) => fmt(params.value, params.data?.currency)
-      },
-      
-      {
-        field: 'total', headerName: 'Outstanding Amount', flex: 1,
-        valueFormatter: (params: any) => fmt(params.value, params.data?.currency)
-      },
-      // {
-      //   field: 'currency', headerName: 'Currency', width: 120,
-      //   valueGetter: (params: any) => {
-      //     return this.sharedService.getCurrency() || 'USD';
-      //   }
-      // },
-      {
-        field: 'status',
-        headerName: 'Status',
-        flex: 1,
-        cellRenderer: (params: any) => {
-          const wrapper = document.createElement('div');
-          wrapper.style.textAlign = 'left';
-          wrapper.style.color = '#659711';
-          wrapper.style.textTransform = 'capitalize';
-
-          if (params.value === 'draft') {
-            const link = document.createElement('a');
-            link.className = 'pay-now-link';
-            link.textContent = 'Pay now';
-            link.style.textDecoration = 'underline';
-            
-            const isDisabled = !params.data?.subtotal || params.data?.subtotal <= 0;
-            if (isDisabled) {
-              link.style.color = '#ccc';
-              link.style.cursor = 'not-allowed';
-              // link.style.pointerEvents = 'none';
-              link.title = 'No amount due for payment';
-              link.style.textDecoration = 'none';
-            } else {
-              link.style.color = '#F60';
-              link.style.cursor = 'pointer';
-            }
-
-            wrapper.appendChild(link);
-          } else {
-            wrapper.textContent = params.value;
-          }
-
-          return wrapper;
-        },
-        onCellClicked: (event: CellClickedEvent) => {
-          if (event.colDef.field === 'status' && event.value === 'draft' && event.data?.subtotal > 0) {
-            this.openPayNow(event.data);
-          }
-        }
-      },
-      {
-        field: 'period', headerName: 'Invoice Period', flex: 1,
-        filter: 'agTextColumnFilter',
-        valueGetter: (params: any) => {
-          if (!params.data || !params.data.period) return '';
-          const date = new Date(params.data.period);
-          return isNaN(date.getTime()) ? '' : date.toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-          });
-        },
-        valueFormatter: (params: any) => {
-          return params.value || '';
-        },
-      },
-      {
-        field:'',
-        headerName: 'Actions',
-        width: 150,
-        cellRenderer: (params: any) => {
-          const wrapper = document.createElement('div');
-          wrapper.style.textAlign = 'center';
-          wrapper.style.display = 'flex';
-          // wrapper.style.justifyContent = 'center';
-          wrapper.style.alignItems = 'center';
-          wrapper.style.height = '100%';
-          
-          if (params.data?.pdf_generated_at) {
-            const icon = document.createElement('i');
-            icon.className = 'bi bi-file-earmark-pdf-fill';
-            icon.style.fontSize = '20px';
-            icon.style.color = '#dc3545';
-            icon.style.cursor = 'pointer';
-            icon.title = 'View PDF';
-            
-            icon.addEventListener('click', () => {
-              this.viewPdf(params.data);
-            });
-            
-            wrapper.appendChild(icon);
-          } else {
-            const noIcon = document.createElement('span');
-            noIcon.textContent = 'No PDF';
-            noIcon.style.color = '#ccc';
-            noIcon.style.fontSize = '12px';
-            wrapper.appendChild(noIcon);
-          }
-          return wrapper;
-        }
-          
-      }
-    ];
-  }
   cashfree: any;
   limit = 10;
   offset = 0;
@@ -288,16 +109,6 @@ export class InvoiceComponent implements OnInit, AfterViewInit, OnDestroy {
 
   get transactions(): InvoiceRow[] {
     return this.tableData;
-  }
-
-  get filteredDuePayments(): InvoiceRow[] {
-    const statusFiltered = this.filterByStatus(this.duePayments, this.paymentsDueStatusFilter);
-    return this.filterRecords(statusFiltered, this.paymentsDueFilter);
-  }
-
-  get filteredUnappliedFunds(): InvoiceRow[] {
-    const statusFiltered = this.filterByStatus(this.unappliedFunds, this.unappliedStatusFilter);
-    return this.filterRecords(statusFiltered, this.unappliedFundsFilter);
   }
 
   get filteredTransactions(): InvoiceRow[] {
@@ -421,12 +232,12 @@ export class InvoiceComponent implements OnInit, AfterViewInit, OnDestroy {
 
   get billingAddressLabel(): string {
     const parts = [
-      this.addressLine1,
-      this.addressLine2,
-      this.city,
-      this.state,
-      this.country,
-      this.postalCode
+      this.companyBillingInfo.addressLine1,
+      this.companyBillingInfo.addressLine2,
+      this.companyBillingInfo.city,
+      this.companyBillingInfo.state,
+      this.companyBillingInfo.country,
+      this.companyBillingInfo.postalCode
     ]
       .map((value) => (value || '').trim())
       .filter((value) => !!value);
@@ -548,10 +359,8 @@ export class InvoiceComponent implements OnInit, AfterViewInit, OnDestroy {
     this.getInvoiceList();
     this.loadBillServiceCharges();
     this.loadBillingDetails();
-    this.columnDefs = this.buildColumnDefs();
     // refresh table when currency changes by reassigning the data array
     this.sharedService.currencyChange$.subscribe(() => {
-      this.columnDefs = this.buildColumnDefs();
       this.tableData = Array.isArray(this.tableData) ? [...this.tableData] : this.tableData;
     });
     try {
@@ -587,10 +396,6 @@ export class InvoiceComponent implements OnInit, AfterViewInit, OnDestroy {
       this.dateRangePicker.destroy();
       this.dateRangePicker = null;
     }
-  }
-
-  switchTab(tab: PaymentTab): void {
-    this.activeTab = tab;
   }
 
   reviewDueInvoices(): void {
@@ -749,14 +554,7 @@ export class InvoiceComponent implements OnInit, AfterViewInit, OnDestroy {
 
   onStatusFilterChange(tab: PaymentTab, value: StatusFilterOption): void {
     const selected = value || 'all';
-    if (tab === 'payments-due') {
-      this.paymentsDueStatusFilter = selected;
-      return;
-    }
-    if (tab === 'unapplied-funds') {
-      this.unappliedStatusFilter = selected;
-      return;
-    }
+   
     this.transactionStatusFilter = selected;
   }
 
@@ -765,14 +563,6 @@ export class InvoiceComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   onFilterChange(value: string, tab: PaymentTab): void {
-    if (tab === 'payments-due') {
-      this.paymentsDueFilter = value;
-      return;
-    }
-    if (tab === 'unapplied-funds') {
-      this.unappliedFundsFilter = value;
-      return;
-    }
     this.transactionsFilter = value;
   }
 
@@ -1312,29 +1102,33 @@ export class InvoiceComponent implements OnInit, AfterViewInit, OnDestroy {
     this.userService.getBillingDetails(accountId).subscribe({
       next: (response: any) => {
         if (response?.data) {
-          this.companyName = response.data.companyName || response.data.company_name || null;
-          this.gstNumber = response.data.gstNumber || null;
-          this.panNumber = response.data.panNumber || null;
-          this.addressLine1 = response.data.addressLine1 || response.data.address_line1 || null;
-          this.addressLine2 = response.data.addressLine2 || response.data.address_line2 || null;
-          this.city = response.data.city || null;
-          this.state = response.data.state || null;
-          this.country = response.data.country || null;
-          this.postalCode = response.data.postalCode || response.data.postal_code || null;
-          this.paymentMethod = response.data.paymentMethod || response.data.payment_method || null;
+          this.companyBillingInfo = {
+            companyName: response.data.companyName || response.data.company_name || null,
+            gstNumber: response.data.gstNumber || null,
+            panNumber: response.data.panNumber || null,
+            addressLine1: response.data.addressLine1 || response.data.address_line1 || null,
+            addressLine2: response.data.addressLine2 || response.data.address_line2 || null,
+            city: response.data.city || null,
+            state: response.data.state || null,
+            country: response.data.country || null,
+            postalCode: response.data.postalCode || response.data.postal_code || null,
+            paymentMethod: response.data.paymentMethod || response.data.payment_method || null
+          };
         }
       },
       error: () => {
-        this.companyName = null;
-        this.gstNumber = null;
-        this.panNumber = null;
-        this.addressLine1 = null;
-        this.addressLine2 = null;
-        this.city = null;
-        this.state = null;
-        this.country = null;
-        this.postalCode = null;
-        this.paymentMethod = null;
+        this.companyBillingInfo = {
+          companyName: null,
+          gstNumber: null,
+          panNumber: null,
+          addressLine1: null,
+          addressLine2: null,
+          city: null,
+          state: null,
+          country: null,
+          postalCode: null,
+          paymentMethod: null
+        };
       },
       complete: () => {
         this.billingDetailsLoading = false;
@@ -1344,17 +1138,5 @@ export class InvoiceComponent implements OnInit, AfterViewInit, OnDestroy {
 
   navigateToAccountSettings(): void {
     this.router.navigate(['/account-settings']);
-  }
-
-  getCpuLinePath(): string {
-    const height = this.cpuUsage * 0.95;
-    const y = 100 - height;
-    return `M 10,${y} L 100,${y} L 100,100 L 10,100 Z`;
-  }
-
-  getMemoryLinePath(): string {
-    const height = this.memoryUsage * 0.95;
-    const y = 100 - height;
-    return `M 100,${y} L 190,${y} L 190,100 L 100,100 Z`;
   }
 }
