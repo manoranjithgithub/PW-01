@@ -39,13 +39,14 @@ export class ViewToolComponent implements OnInit, OnDestroy {
   viewdata: any;
   toolViewName: any;
   hide: { [key: string]: boolean } = {};
-  selectedResource: ResourceInfo = { cpuVcpu: '', memoryGb: '', instanceHourRate: 0, currency: '' };
+  selectedResource: { [key: string]: ResourceInfo | undefined } = { key: { cpuVcpu: '', memoryGb: '', instanceHourRate: 0 } };
   resources: any[] = [];
   selectedTabIndex: number = 0;
 
 
   get hourlyInstanceRate(): number {
-    return Number(this.selectedResource?.instanceHourRate ?? 0);
+    const resource = Object.values(this.selectedResource).find(res => res?.instanceHourRate);
+    return resource ? Number(resource.instanceHourRate) : 0;
   }
 
   get monthlyInstanceRate(): number {
@@ -111,8 +112,8 @@ export class ViewToolComponent implements OnInit, OnDestroy {
           const initialValue = field.value || field.default_value || '';
           const control = new FormControl({ value: initialValue, disabled: true });
           group[controlKey] = control;
-          if (field.label === 'Instance Type') {
-            this.selectedResource = this.resources.find(resource => resource.instanceType === initialValue) || { cpuVcpu: '', memoryGb: '', instanceHourRate: 0 };
+          if (field.function === 'resource') {
+            this.selectedResource[field.label] = this.resources.find(resource => resource.instanceType === initialValue) || { cpuVcpu: '', memoryGb: '', instanceHourRate: 0 };
           }
           this.formStructure.push(field);
         }
@@ -232,4 +233,8 @@ export class ViewToolComponent implements OnInit, OnDestroy {
   editTool() {
     this.route.navigate(['/tools/edit-tool'], { queryParams: { selectedEdit: this.toolName } });
   }
+  getMonthlyRate(fieldKey: string): number {
+  const rate = Number(this.selectedResource[fieldKey]?.instanceHourRate ?? 0);
+  return rate * 720;
+}
 }

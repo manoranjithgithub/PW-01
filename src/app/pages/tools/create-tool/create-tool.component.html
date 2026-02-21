@@ -39,9 +39,9 @@
                     <label class="form-label text-capitalize d-flex justify-content-between" [for]="field.key">
                         <span>{{ field.label }} <span class="text-danger">*</span></span>
                         <span class="text-gray ml-auto text-nowrap"
-                            *ngIf="field.label === 'Instance Type' && selectedResource">
-                            ( <span class="mx-1"><b>CPU:</b> {{selectedResource.cpuVcpu}}</span>
-                            <span class="mx-1"><b>Memory:</b> {{selectedResource.memoryGb}}</span>
+                            *ngIf="field.function  === 'resource' && selectedResource">
+                            ( <span class="mx-1"><b>CPU:</b> {{selectedResource[field.label]?.cpuVcpu}}</span>
+                            <span class="mx-1"><b>Memory:</b> {{selectedResource[field.label]?.memoryGb}}</span>
                             )
                             <!-- <span class="mx-1"><b>Price:</b> {{selectedResource.instanceHourRate | currency :
                                 selectedResource.currency}}</span> -->
@@ -67,17 +67,16 @@
                         </div>
                         <div class="position-relative" *ngSwitchCase="'select'">
                             <select class="form-select" [formControlName]="field.key" [id]="field.key"
-                                (change)="onFieldChange($event,field.label)">
+                                (change)="onFieldChange($event, field.function, field.label)" >
                                 <option *ngFor="let option of getInstanceTypes(field.options)" [value]="option.instanceType">{{option.instanceType}}</option>
                             </select>
                             <span class=" d-flex  justify-content-end align-items-end" style="font-size: 12px;"
-                                *ngIf="field.label === 'Instance Type' && selectedResource">
-                                <span class="me-2"><b>Instance Price :</b></span>
-                                <span>{{ formatCurrency(hourlyInstanceRate, selectedResource.currency) }} /
+                                *ngIf="field.function === 'resource' && selectedResource">
+                                <span class="me-2"><b>Instance Price : </b></span>
+                                <span>
+                                    {{ formatCurrency(selectedResource[field.label]?.instanceHourRate || 0, selectedResource[field.label]?.currency) }} /
                                     hr<br>
-                                    {{ formatCurrency(monthlyInstanceRate,
-                                    selectedResource.currency)
-                                    }} /mo</span>
+                                    {{ formatCurrency(selectedResource[field.label]?.instanceHourRate || 0 * 720, selectedResource[field.label]?.currency || 'USD') }} /mo</span>
                             </span>
                         </div>
                     </ng-container>

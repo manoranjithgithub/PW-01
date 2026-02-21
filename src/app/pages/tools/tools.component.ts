@@ -319,7 +319,7 @@ export class ToolsComponent implements OnInit, OnDestroy {
   }
   getToolIcon(toolName: string): string {
     const name = toolName.toLowerCase();
-
+    console.log('Determining icon for tool:', toolName);
     if (name.includes('cloudbeaver')) {
       return 'assets/images/icons/cloudbeaver.png';
     }
@@ -331,6 +331,8 @@ export class ToolsComponent implements OnInit, OnDestroy {
     }
     if (name.includes('mongodb')) {
       return 'assets/images/icons/mongodb.svg';
+    } if (name.includes('n8n')) {
+      return 'assets/images/icons/n8n.png';
     }
     return 'assets/images/icons/default-tool.png';
   }
