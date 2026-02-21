@@ -78,7 +78,8 @@
             <p class="bill-strong">{{ overdueDays }} days</p>
           </div>
           <!-- <div class="item-value"> {{ billPeriodLabel }}</div> -->
-          <p class="muted-line overview-note" [style.color]="totalOutstandingBalance > 0 ? '#ff0000' : '#232323'">Your account {{
+          <p class="muted-line overview-note" [style.color]="totalOutstandingBalance > 0 ? '#ff0000' : '#232323'"
+            style="margin-top: 25px;">Your account {{
             totalOutstandingBalance > 0 ? 'has pending invoices' : 'is up to date'
             }}</p>
         </div>
