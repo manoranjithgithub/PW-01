@@ -40,7 +40,8 @@ export interface FormField {
   validation?: any,
   placeholder?: string;
   update?: boolean;
-  ui:boolean
+  ui:boolean,
+  function?: string;
 }
 
 export interface DeploymentOptions {
@@ -56,4 +57,5 @@ export interface ResourceInfo {
   instanceHourRate: string | number;
   currency?: string;
   monthlyInstanceRate?: string | number;
+  key?: string;
 }

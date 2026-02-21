@@ -21,7 +21,7 @@
             </button>
         </c-nav-item>
     </c-nav>
- 
+
     <c-tab-content #tabContent1="cTabContent" [activeTabPaneIdx]="selectedTabIndex" cRounded="bottom">
         <c-tab-pane class="p-3 preview" role="tabpanel">
             <form [formGroup]="form">
@@ -33,32 +33,41 @@
                     <div *ngFor="let field of formStructure" class="col-md-6">
                         <label class="form-label text-capitalize d-flex justify-content-between" [for]="field.key">
                             <span>{{ field.label }}<span class="text-danger">*</span></span>
-                            <span class="text-gray ml-auto text-nowrap" *ngIf="field.label === 'Instance Type' && selectedResource">
-                                (<span class="mx-1"><b>CPU:</b> {{selectedResource.cpuVcpu}}</span>
-                                <span class="mx-1"><b>Memory:</b> {{selectedResource.memoryGb}}</span>
+                            <span class="text-gray ml-auto text-nowrap"
+                                *ngIf="field.function === 'resource' && selectedResource[field.label]">
+                                (<span class="mx-1"><b>CPU:</b> {{selectedResource[field.label]?.cpuVcpu}}</span>
+                                <span class="mx-1"><b>Memory:</b> {{selectedResource[field.label]?.memoryGb}}</span>
                                 )
                             </span>
                         </label>
                         <div class="my-1">
                             <ng-container [ngSwitch]="field.type">
-                                <input class="form-control" *ngSwitchCase="'text'" [formControlName]="field.key" [id]="field.key" type="text">
+                                <input class="form-control" *ngSwitchCase="'text'" [formControlName]="field.key"
+                                    [id]="field.key" type="text">
 
                                 <div class="position-relative" *ngSwitchCase="'select'">
                                     <select class="form-control" [formControlName]="field.key" [id]="field.key">
-                                        <option *ngFor="let option of field.options" [value]="option">{{ option }}</option>
+                                        <option *ngFor="let option of field.options" [value]="option">{{ option }}
+                                        </option>
                                     </select>
-                                    <span class=" d-flex  justify-content-end align-items-end" style="font-size: 12px;" *ngIf="field.label === 'Instance Type' && selectedResource">
+                                    <span class=" d-flex  justify-content-end align-items-end" style="font-size: 12px;"
+                                        *ngIf="field.function === 'resource' && selectedResource[field.label]">
                                         <span class="me-2"><b>Instance Price :</b></span>
-                                        <span>{{ formatCurrency(hourlyInstanceRate, selectedResource.currency) }} / hr<br>
-                                            {{ formatCurrency(monthlyInstanceRate, selectedResource.currency) }} /mo</span>
+                                        <span>{{ formatCurrency(selectedResource[field.label]?.instanceHourRate || 0,
+                                            selectedResource[field.label]?.currency) }} / hr<br>
+                                            {{ formatCurrency(getMonthlyRate(field.label), selectedResource[field.label]?.currency) }} /mo</span>
                                     </span>
                                 </div>
 
                                 <div class="input-group" *ngSwitchCase="'password'">
-                                    <input id="{{field.key}}" [formControlName]="field.key" [type]="hide[field.key] ? 'password' : 'text'" class="form-control" autocomplete="new-password" />
+                                    <input id="{{field.key}}" [formControlName]="field.key"
+                                        [type]="hide[field.key] ? 'password' : 'text'" class="form-control"
+                                        autocomplete="new-password" />
 
                                     <span class="input-group-addon">
-                                        <i class="positioning glyphicon bi" [ngClass]="{'bi-eye': !hide[field.key], 'bi-eye-slash': hide[field.key]}" (click)="toggleVisibility(field.key)"></i>
+                                        <i class="positioning glyphicon bi"
+                                            [ngClass]="{'bi-eye': !hide[field.key], 'bi-eye-slash': hide[field.key]}"
+                                            (click)="toggleVisibility(field.key)"></i>
                                     </span>
                                 </div>
                             </ng-container>
