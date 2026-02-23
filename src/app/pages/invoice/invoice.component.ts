@@ -6,8 +6,6 @@ import { ToastrService } from 'ngx-toastr';
 import { SharedService } from '../../shared/services/shared.service';
 import { UserService } from '../../core/services/user.service';
 import { environment } from '../../../environments/environment';
-import { DeploymentsService } from '../deployments/deployment.service';
-import { ToolsService } from '../tools/tools.service';
 import { ProjectsService } from '../projects/projects.service';
 import { BillServiceRow, CompanyBillingInfo, InvoiceRow, ScopeOption } from '../../core/models/company-billing-info.model';
 import { forkJoin, of } from 'rxjs';
@@ -94,8 +92,6 @@ export class InvoiceComponent implements OnInit, AfterViewInit, OnDestroy {
     private sharedService: SharedService,
     private userService: UserService,
     private router: Router,
-    private deploymentsService: DeploymentsService,
-    private toolsService: ToolsService,
     private projectsService: ProjectsService
   ) { }
 
@@ -165,38 +161,52 @@ export class InvoiceComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.getAmount(lastPaid.total || lastPaid.subtotal);
   }
 
-  get lastInvoiceActivityDate(): string {
-    if (!this.transactions.length) {
-      return '--';
-    }
-    const dates = this.transactions
-      .map((row) => this.getInvoiceDate(row))
-      .filter((date): date is Date => !!date)
-      .sort((a, b) => b.getTime() - a.getTime());
-
-    if (!dates.length) {
-      return '--';
-    }
-
-    return dates[0].toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
-  }
-
   get filteredBillRows(): BillServiceRow[] {
     const query = (this.billServiceFilter || '').trim().toLowerCase();
+    const rowsWithUptime = this.billRows.filter((row) => this.getBillRowUptimeHours(row) > 0);
     if (!query) {
-      return this.billRows;
+      return rowsWithUptime;
     }
-    return this.billRows.filter((row) =>
+    return rowsWithUptime.filter((row) =>
       `${row.description} ${row.usage}`.toLowerCase().includes(query)
     );
   }
 
   get billEstimatedTotal(): number {
     return this.billRows.reduce((sum, item) => sum + this.getAmount(item.amount), 0);
+  }
+
+  get filteredBillInstanceSubtotal(): number {
+    return this.filteredBillRows.reduce((sum, row) => sum + this.getAmount(row.instanceCost), 0);
+  }
+
+  get filteredBillCpuSubtotal(): number {
+    return this.filteredBillRows.reduce((sum, row) => sum + this.getAmount(row.cpuCost), 0);
+  }
+
+  get filteredBillMemorySubtotal(): number {
+    return this.filteredBillRows.reduce((sum, row) => sum + this.getAmount(row.memoryCost), 0);
+  }
+
+  get filteredBillChargeSubtotal(): number {
+    return this.filteredBillRows.reduce((sum, row) => sum + this.getAmount(row.amount), 0);
+  }
+
+  get billChargesTotal(): number {
+    return this.duePayments.reduce((sum, row) => sum + this.getAmount(row.subtotal), 0);
+  }
+
+  get billTaxesTotal(): number {
+    return this.duePayments.reduce((sum, row) => sum + this.getAmount(row.tax_amount), 0);
+  }
+
+  get billCreditsApplied(): number {
+    const grossDue = this.billChargesTotal + this.billTaxesTotal;
+    return Math.max(0, grossDue - this.totalOutstandingBalance);
+  }
+
+  get billTotalDue(): number {
+    return this.totalOutstandingBalance;
   }
 
   get taxRows(): InvoiceRow[] {
@@ -244,6 +254,17 @@ export class InvoiceComponent implements OnInit, AfterViewInit, OnDestroy {
     return parts.length ? parts.join(', ') : '--';
   }
 
+  maskSensitiveId(value: string | null | undefined): string {
+    const normalized = (value || '').trim();
+    if (!normalized) {
+      return '--';
+    }
+    if (normalized.length <= 5) {
+      return normalized;
+    }
+    return `${normalized.charAt(0)}${'*'.repeat(normalized.length - 5)}${normalized.slice(-4)}`;
+  }
+
   get overdueDays(): number {
     if (!this.duePayments.length) {
       return 0;
@@ -279,7 +300,7 @@ export class InvoiceComponent implements OnInit, AfterViewInit, OnDestroy {
 
   get pendingAmount(): number {
     return this.transactions
-      .filter((row) => (row.status || '').toLowerCase() === 'pending')
+      .filter((row) => (row.status || '').toLowerCase() === 'draft' || (row.status || '').toLowerCase() === 'unpaid')
       .reduce((sum, row) => sum + this.getAmount(row.total), 0);
   }
 
@@ -322,12 +343,13 @@ export class InvoiceComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.billRows.filter((row) => row.source === 'tool').length;
   }
 
-  get highestServiceCharge(): BillServiceRow | null {
-    if (!this.billRows.length) {
-      return null;
-    }
-    return [...this.billRows].sort((a, b) => b.amount - a.amount)[0];
+  get toolServiceCostTotal(): number {
+    return this.billRows
+      .filter((row) => row.source === 'tool')
+      .reduce((sum, row) => sum + this.getAmount(row.amount), 0);
   }
+
+
 
   get currentPage(): number {
     return Math.floor(this.offset / this.limit) + 1;
@@ -354,7 +376,7 @@ export class InvoiceComponent implements OnInit, AfterViewInit, OnDestroy {
     this.startDate = this.getDefaultStartDate();
     this.endDate = this.getDefaultEndDate();
     this.dateRangeDisplay = this.formatDateRangeDisplay();
-    
+
     this.initializeScopeFilters();
     this.getInvoiceList();
     this.loadBillServiceCharges();
@@ -399,8 +421,8 @@ export class InvoiceComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   reviewDueInvoices(): void {
-    // this.activeTopSection = 'payments';
-    // this.activeTab = 'payments-due';
+    this.activeTopSection = 'payments';
+    this.activeTab = 'transactions';
     setTimeout(() => {
       const duePanel = document.getElementById('payments-due-panel');
       duePanel?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -554,7 +576,7 @@ export class InvoiceComponent implements OnInit, AfterViewInit, OnDestroy {
 
   onStatusFilterChange(tab: PaymentTab, value: StatusFilterOption): void {
     const selected = value || 'all';
-   
+
     this.transactionStatusFilter = selected;
   }
 
@@ -566,9 +588,6 @@ export class InvoiceComponent implements OnInit, AfterViewInit, OnDestroy {
     this.transactionsFilter = value;
   }
 
-  goToNewDeployModel(data: any) {
-    console.log('Navigating to new deployment modal with data:', data);
-  }
 
   getRowId(row: InvoiceRow): string {
     return row.invoiceNumber || String(row.id || '--');
@@ -590,31 +609,6 @@ export class InvoiceComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  getDueDate(row: InvoiceRow): string {
-    return this.getIssuedDate(row);
-  }
-
-  getBillingPeriod(row: InvoiceRow): string {
-    if (!row.period) {
-      return '--';
-    }
-    const date = new Date(row.period);
-    if (isNaN(date.getTime())) {
-      return '--';
-    }
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short'
-    });
-  }
-
-  getPaymentMethod(row: InvoiceRow): string {
-    return row.payment_method || 'BankRedirect';
-  }
-
-  getCurrencyLabel(row: InvoiceRow): string {
-    return row.currency || this.sharedService.getCurrency() || 'USD';
-  }
 
   getStatusLabel(row: InvoiceRow): string {
     const value = (row.status || '').toLowerCase();
@@ -661,19 +655,6 @@ export class InvoiceComponent implements OnInit, AfterViewInit, OnDestroy {
   refreshInvoices(): void {
     this.getInvoiceList();
     this.loadBillServiceCharges();
-  }
-
-  printPage(): void {
-    window.print();
-  }
-
-  downloadAll(): void {
-    const rows = this.filteredTransactions.filter((row) => !!row.pdf_generated_at);
-    if (!rows.length) {
-      this.toastr.info('No PDFs available to download');
-      return;
-    }
-    rows.forEach((row) => this.viewPdf(row));
   }
 
   onDownload(row: InvoiceRow): void {
@@ -778,11 +759,6 @@ export class InvoiceComponent implements OnInit, AfterViewInit, OnDestroy {
       });
     }
   }
-  onPageChange(event: { limit: number; offset: number }) {
-    this.limit = event.limit;
-    this.offset = event.offset;
-    this.getInvoiceList();
-  }
 
   private isDuePayment(invoice: InvoiceRow): boolean {
     const status = (invoice.status || '').toLowerCase();
@@ -807,6 +783,18 @@ export class InvoiceComponent implements OnInit, AfterViewInit, OnDestroy {
   private getAmount(value: any): number {
     const amount = Number(value || 0);
     return Number.isFinite(amount) ? amount : 0;
+  }
+
+  private getBillRowUptimeHours(row: BillServiceRow): number {
+    const raw = row?.uptimeHours;
+    if (typeof raw === 'number') {
+      return Number.isFinite(raw) ? raw : 0;
+    }
+    if (typeof raw === 'string') {
+      const parsed = parseFloat(raw);
+      return Number.isFinite(parsed) ? parsed : 0;
+    }
+    return 0;
   }
 
   private filterByTimeRange(records: InvoiceRow[]): InvoiceRow[] {
@@ -906,8 +894,11 @@ export class InvoiceComponent implements OnInit, AfterViewInit, OnDestroy {
         { id: 'all', name: 'All environments' },
         ...(storedEnv?.id ? [{ id: String(storedEnv.id), name: storedEnv.name || storedEnv.id }] : [])
       ];
-      if (!this.environmentOptions.some((env) => env.id === this.selectedEnvironmentId)) {
-        this.selectedEnvironmentId = 'all';
+      if (
+        this.selectedEnvironmentId === 'all' ||
+        !this.environmentOptions.some((env) => env.id === this.selectedEnvironmentId)
+      ) {
+        this.selectedEnvironmentId = this.getDefaultEnvironmentId(this.environmentOptions);
       }
       this.applyInvoiceScopeFilter();
       this.loadBillServiceCharges();
@@ -922,8 +913,11 @@ export class InvoiceComponent implements OnInit, AfterViewInit, OnDestroy {
           ...environments.map((item: any) => ({ id: String(item.id), name: item.name || item.id }))
         ];
 
-        if (!this.environmentOptions.some((env) => env.id === this.selectedEnvironmentId)) {
-          this.selectedEnvironmentId = 'all';
+        if (
+          this.selectedEnvironmentId === 'all' ||
+          !this.environmentOptions.some((env) => env.id === this.selectedEnvironmentId)
+        ) {
+          this.selectedEnvironmentId = this.getDefaultEnvironmentId(this.environmentOptions);
         }
 
         this.applyInvoiceScopeFilter();
@@ -941,29 +935,17 @@ export class InvoiceComponent implements OnInit, AfterViewInit, OnDestroy {
   private applyInvoiceScopeFilter(): void {
     let rows = [...this.rawInvoiceData];
 
-    // if (this.selectedProjectId !== 'all') {
-    //   rows = rows.filter((row) =>
-    //     this.matchesScope(row, ['projectId', 'project_id', 'projectID'], this.selectedProjectId)
-    //   );
-    // }
-
-    // if (this.selectedEnvironmentId !== 'all') {
-    //   rows = rows.filter((row) =>
-    //     this.matchesScope(row, ['environmentId', 'environment_id', 'envId', 'env_id'], this.selectedEnvironmentId)
-    //   );
-    // }
     this.tableData = rows;
-    console.log('Filtered invoice rows based on scope:', this.tableData);
 
     this.totalRecords = rows.length;
   }
 
-  private matchesScope(row: Record<string, any>, keys: string[], selectedId: string): boolean {
-    return keys.some((key) => {
-      const value = row[key];
-      return value != null && String(value) === selectedId;
-    });
+  private getDefaultEnvironmentId(options: ScopeOption[]): string {
+    const firstSpecific = options.find((env) => env.id !== 'all');
+    return firstSpecific?.id || 'all';
   }
+
+
 
   private safeParseLocalStorage(key: string): any {
     try {
@@ -974,80 +956,99 @@ export class InvoiceComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private loadBillServiceCharges(): void {
+    const accountId = localStorage.getItem('accountId') || this.sharedService.getUser()?.id || '';
     const envIds = this.getScopedEnvironmentIds();
-    if (!envIds.length) {
+    if (!accountId || !envIds.length) {
       this.billRows = [];
+      this.billLoading = false;
       return;
     }
 
     this.billLoading = true;
+    const envNameMap = this.environmentOptions.reduce((acc: Record<string, string>, env) => {
+      acc[env.id] = env.name;
+      return acc;
+    }, {});
 
-    forkJoin({
-      catalog: this.deploymentsService.getInstanceTypes().pipe(catchError(() => of({ data: [] }))),
-      envBatches: forkJoin(
-        envIds.map((envId) =>
-          forkJoin({
-            envId: of(envId),
-            deployments: this.deploymentsService.getDeployments(envId).pipe(catchError(() => of({ data: [] }))),
-            tools: this.toolsService.getToolsList(envId).pipe(catchError(() => of({ data: [] })))
-          })
-        )
+    forkJoin(
+      envIds.map((envId) =>
+        forkJoin({
+          envId: of(envId),
+          costs: this.http.getCostByService(
+            accountId,
+            this.selectedEnvironmentId,
+            this.startDate,
+            this.endDate,
+            this.selectedProjectId
+          ).pipe(catchError(() => of({ data: [] }))),
+          deployments: this.http.getDeployments(envId).pipe(catchError(() => of({ data: [] }))),
+          // tools: this.http.getToolsList(envId).pipe(catchError(() => of({ data: [] })))
+        })
       )
-    }).subscribe({
-      next: ({ catalog, envBatches }: any) => {
-        const pricingCatalog = Array.isArray(catalog?.data) ? catalog.data : [];
-        const rateMap = this.getInstanceRateMap(pricingCatalog);
-        const envNameMap = this.environmentOptions.reduce((acc: Record<string, string>, env) => {
-          acc[env.id] = env.name;
-          return acc;
-        }, {});
-
-        const rows: BillServiceRow[] = [];
-        (envBatches || []).forEach((batch: any) => {
-          const envId = String(batch?.envId || '');
+    ).subscribe({
+      next: (responses: any[]) => {
+        const responseRows = responses.map((response: any) => {
+          const envId = String(response?.envId || '');
           const envName = envNameMap[envId] || envId;
-          const deploymentRows = Array.isArray(batch?.deployments?.data) ? batch.deployments.data : [];
-          const toolRows = Array.isArray(batch?.tools?.data) ? batch.tools.data : [];
-
-          deploymentRows.forEach((item: any) => {
-            rows.push(this.createBillServiceRow(item, 'deployment', rateMap, envName));
-          });
-          toolRows.forEach((item: any) => {
-            rows.push(this.createBillServiceRow(item, 'tool', rateMap, envName));
-          });
+          const deploymentNameById = this.buildNameMap(response?.deployments?.data, ['id', 'deploymentId'], ['name', 'deploymentName']);
+          // const toolNameById = this.buildNameMap(response?.tools?.data, ['id', 'toolId'], ['name', 'toolName']);
+          const toolNameById = {};
+          const items = this.extractCostByServiceItems(response?.costs);
+          return { envName, deploymentNameById, toolNameById, items };
         });
+        
+        const deploymentIds = Array.from(new Set(
+          responseRows.flatMap(({ items }) =>
+            items
+              .map((item: any) => item?.deploymentId ?? item?.deployment_id)
+              .filter((id: any) => id !== undefined && id !== null && id !== '')
+              .map((id: any) => String(id))
+          )
+        ));
 
-        this.billRows = rows;
+        const setRows = (resolvedDeploymentNames: Record<string, string>) => {
+          const rows: BillServiceRow[] = [];
+          responseRows.forEach(({ envName, deploymentNameById, toolNameById, items }) => {
+            const mergedDeploymentNames = { ...deploymentNameById, ...resolvedDeploymentNames };
+            items.forEach((item: any) => {
+              rows.push(this.mapCostByServiceItem(item, envName, mergedDeploymentNames, toolNameById));
+            });
+          });
+          this.billRows = rows;
+          this.billLoading = false;
+        };
+
+        if (!deploymentIds.length) {
+          setRows({});
+          return;
+        }
+
+        forkJoin(
+          deploymentIds.map((id) =>
+            this.http.getDeploymentById(id).pipe(catchError(() => of({ data: null })))
+          )
+        ).subscribe({
+          next: (deploymentResponses: any[]) => {
+            const resolvedDeploymentNames = deploymentIds.reduce((acc: Record<string, string>, id, index) => {
+              const deployment = deploymentResponses[index]?.data;
+              const name = deployment?.name || deployment?.deploymentName;
+              if (name) {
+                acc[id] = name;
+              }
+              return acc;
+            }, {});
+            setRows(resolvedDeploymentNames);
+          },
+          error: () => {
+            setRows({});
+          }
+        });
       },
       error: () => {
         this.billRows = [];
-      },
-      complete: () => {
         this.billLoading = false;
       }
     });
-  }
-
-  private createBillServiceRow(
-    item: any,
-    source: 'deployment' | 'tool',
-    rateMap: Record<string, { rate: number; currency?: string }>,
-    envName: string
-  ): BillServiceRow {
-    const name = item?.name || item?.deploymentName || item?.toolName || 'Unnamed service';
-    const instanceType = this.getInstanceType(item);
-    const fromRate = instanceType ? rateMap[instanceType] : undefined;
-    const apiAmount = this.getAmount(item?.totalCost ?? item?.estimatedCost ?? item?.total_cost ?? item?.cost);
-    const estimatedFromRate = this.getAmount((fromRate?.rate || 0) * 730);
-
-    return {
-      name,
-      description: `${source === 'deployment' ? 'Deployment' : 'Tool'}: ${name}`,
-      usage: `${envName}${instanceType ? ` | ${instanceType}` : ''}`,
-      amount: apiAmount > 0 ? apiAmount : estimatedFromRate,
-      source,
-      currency: fromRate?.currency || item?.currency || 'USD'
-    };
   }
 
   private getScopedEnvironmentIds(): string[] {
@@ -1066,33 +1067,169 @@ export class InvoiceComponent implements OnInit, AfterViewInit, OnDestroy {
     return storedEnvironment?.id ? [String(storedEnvironment.id)] : [];
   }
 
-  private getInstanceRateMap(catalog: any[]): Record<string, { rate: number; currency?: string }> {
-    return catalog.reduce((acc: Record<string, { rate: number; currency?: string }>, item: any) => {
-      const key = item?.instanceType;
-      if (!key) {
-        return acc;
+  private extractCostByServiceItems(response: any): any[] {
+    const payload = response?.data ?? response ?? {};
+    const projects = Array.isArray(payload?.projects) ? payload.projects : [];
+    if (projects.length) {
+      const flattened: any[] = [];
+      projects.forEach((project: any) => {
+        const environments = Array.isArray(project?.environments) ? project.environments : [];
+        environments.forEach((environment: any) => {
+          const deployments = Array.isArray(environment?.deployments) ? environment.deployments : [];
+          deployments.forEach((deployment: any) => {
+            flattened.push({
+              ...deployment,
+              projectId: project?.projectId || deployment?.projectId,
+              environmentId: environment?.environmentId || deployment?.environmentId,
+              source: deployment?.source || 'deployment'
+            });
+          });
+
+          const tools = Array.isArray(environment?.tools) ? environment.tools : [];
+          tools.forEach((tool: any) => {
+            flattened.push({
+              ...tool,
+              projectId: project?.projectId || tool?.projectId,
+              environmentId: environment?.environmentId || tool?.environmentId,
+              source: tool?.source || 'tool'
+            });
+          });
+        });
+      });
+      return flattened;
+    }
+
+    if (Array.isArray(payload)) {
+      return payload;
+    }
+
+    const candidates = [
+      payload?.cost_by_service,
+      payload?.costByService,
+      payload?.services,
+      payload?.items,
+      payload?.totals,
+      payload?.data
+    ];
+
+    for (const candidate of candidates) {
+      if (Array.isArray(candidate)) {
+        return candidate;
       }
-      const rate = this.getAmount(item?.instanceHourRate ?? item?.price);
-      acc[key] = { rate, currency: item?.currency || 'USD' };
+    }
+
+    return [];
+  }
+
+  private mapCostByServiceItem(
+    item: any,
+    envName: string,
+    deploymentNameById: Record<string, string>,
+    toolNameById: Record<string, string>
+  ): BillServiceRow {
+    const deploymentId = item?.deploymentId || item?.deployment_id || item?.id;
+    const toolId = item?.toolId || item?.tool_id || item?.id;
+    const deploymentKey = deploymentId !== undefined && deploymentId !== null ? String(deploymentId) : '';
+    const toolKey = toolId !== undefined && toolId !== null ? String(toolId) : '';
+    const deploymentDisplayName = item?.dep?.deploymentName ||
+      item?.dep?.name ||
+      item?.deployment?.deploymentName ||
+      item?.deployment?.name;
+    const toolDisplayName = item?.tool?.toolName || item?.tool?.name;
+    const defaultName = item?.service_name ||
+      item?.serviceName ||
+      item?.service ||
+      item?.name ||
+      (deploymentKey ? deploymentNameById[deploymentKey] : undefined) ||
+      (toolKey ? toolNameById[toolKey] : undefined) ||
+      item?.deploymentName ||
+      item?.toolName ||
+      item?.resource_name ||
+      'Unnamed service';
+    const source = this.inferServiceSource(item, defaultName);
+    const name = source === 'deployment'
+      ? (deploymentDisplayName || defaultName)
+      : source === 'tool'
+        ? (toolDisplayName || defaultName)
+        : defaultName;
+    const instanceType = item?.instanceType || item?.instance_type || item?.resource_type || '';
+    const usageValue = item?.usage ?? item?.usageQuantity ?? item?.quantity;
+    const uptimeHours = this.getAmount(item?.uptimeHours ?? item?.uptime_hours);
+    const usageParts = [];
+    if (instanceType) {
+      usageParts.push(String(instanceType));
+    }
+    if (usageValue !== undefined && usageValue !== null && usageValue !== '') {
+      usageParts.push(`usage: ${usageValue}`);
+    }
+    // if (uptimeHours > 0) {
+    //   usageParts.push(`uptime: ${uptimeHours.toFixed(2)}h`);
+    // }
+    if (this.getAmount(item?.costCpu) > 0) {
+      usageParts.push(`cpu: ${this.getAmount(item.costCpu).toFixed(4)}`);
+    }
+    if (this.getAmount(item?.costMem) > 0) {
+      usageParts.push(`mem: ${this.getAmount(item.costMem).toFixed(4)}`);
+    }
+    if (this.getAmount(item?.costInstance) > 0) {
+      usageParts.push(`instance: ${this.getAmount(item.costInstance).toFixed(4)}`);
+    }
+    const cpuCost = this.getAmount(item?.costCpu);
+    const memoryCost = this.getAmount(item?.costMem);
+    const instanceCost = this.getAmount(item?.costInstance);
+    return {
+      name,
+      description: `${source === 'tool' ? 'Tool' : 'Deployment'}: ${name}`,
+      usage: usageParts.join(' | '),
+      amount: this.getAmount(
+        item?.total_cost ??
+        item?.totalCost ??
+        item?.projected_total ??
+        item?.projectedCost ??
+        item?.cost ??
+        item?.amount ??
+        item?.charge ??
+        item?.costCpu ??
+        item?.costMem ??
+        item?.costInstance,
+      ),
+      source,
+      currency: item?.currency || 'USD',
+      uptimeHours: `${uptimeHours.toFixed(2)}h`,
+      instanceCost,
+      cpuCost,
+      memoryCost
+    };
+  }
+
+  private inferServiceSource(item: any, name: string): 'deployment' | 'tool' {
+    const hint = `${item?.source || ''} ${item?.service_type || ''} ${item?.type || ''} ${name}`.toLowerCase();
+    if (item?.toolId || item?.tool_id || hint.includes('tool')) {
+      return 'tool';
+    }
+    if (item?.deploymentId || item?.deployment_id || hint.includes('deployment')) {
+      return 'deployment';
+    }
+    return hint.includes('tool') ? 'tool' : 'deployment';
+  }
+
+  private buildNameMap(items: any[], idKeys: string[], nameKeys: string[]): Record<string, string> {
+    const list = Array.isArray(items) ? items : [];
+    return list.reduce((acc: Record<string, string>, item: any) => {
+      const id = idKeys.map((key) => item?.[key]).find((value) => value !== undefined && value !== null);
+      const name = nameKeys.map((key) => item?.[key]).find((value) => typeof value === 'string' && value.trim());
+      if (id !== undefined && id !== null && name) {
+        acc[String(id)] = name;
+      }
       return acc;
     }, {});
   }
 
-  private getInstanceType(item: any): string {
-    return (
-      item?.instanceType ||
-      item?.application?.instanceType ||
-      item?.schema?.instanceType ||
-      item?.resource?.instanceType ||
-      ''
-    );
-  }
-
   private loadBillingDetails(): void {
     this.billingDetailsLoading = true;
-    const accountId = localStorage.getItem('accountId')     
+    const accountId = localStorage.getItem('accountId')
       || this.sharedService.getUser()?.id;
-    
+
     if (!accountId) {
       this.billingDetailsLoading = false;
       return;

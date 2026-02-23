@@ -49,11 +49,11 @@
           <div class="company-details-grid" *ngIf="!billingDetailsLoading; else billingLoadingBlock">
             <div class="company-details-row">
               <span class="detail-label">GST Number</span>
-              <span class="detail-value">{{ companyBillingInfo.gstNumber || '--' }}</span>
+              <span class="detail-value">{{ maskSensitiveId(companyBillingInfo.gstNumber) }}</span>
             </div>
             <div class="company-details-row">
               <span class="detail-label">PAN Number</span>
-              <span class="detail-value">{{ companyBillingInfo.panNumber || '--' }}</span>
+              <span class="detail-value">{{ maskSensitiveId(companyBillingInfo.panNumber) }}</span>
             </div>
             <div class="company-details-row">
               <span class="detail-label">Billing Address</span>
@@ -230,21 +230,25 @@
           <label>Bill Summary</label>
           <div class="breakdown-row">
             <span>Total Charges</span>
-            <strong>{{ formatMoney(billEstimatedTotal) }}</strong>
+            <strong>{{ formatMoney(billChargesTotal) }}</strong>
           </div>
           <div class="breakdown-row">
             <span>Taxes</span>
-            <strong>{{ formatMoney(totalTaxAmount) }}</strong>
+            <strong>{{ formatMoney(billTaxesTotal) }}</strong>
+          </div>
+          <div class="breakdown-row">
+            <span>Credits applied</span>
+            <strong>-{{ formatMoney(billCreditsApplied) }}</strong>
           </div>
           <div class="breakdown-row total-due-row">
             <span>Total Due</span>
-            <strong>{{ formatMoney(billEstimatedTotal + totalTaxAmount) }}</strong>
+            <strong>{{ formatMoney(billTotalDue) }}</strong>
           </div>
         </div>
         <div class="billing-summary-item">
           <label>Platform tools</label>
-          <div class="item-value">{{ toolServiceCount }}</div>
-          <p class="muted-line">Tool instances detected in this environment</p>
+          <div class="item-value">{{ formatMoney(toolServiceCostTotal) }}</div>
+          <p class="muted-line">Total tool cost from charges by service</p>
         </div>
         <div class="billing-summary-item">
           <label>Total billable services</label>
@@ -306,17 +310,40 @@
             <thead>
               <tr>
                 <th>Service</th>
-                <th>Usage details</th>
+                <th>Instance</th>
+                <th>CPU</th>
+                <th>Memory</th>
+                <th>Uptime Hours</th>
                 <th>Charge</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let row of filteredBillRows">
-                <td>{{ row.description }}</td>
-                <td>{{ row.usage }}</td>
+                <td>
+                  <div class="service-cell">
+                    <span>{{ row.name || row.description }}</span>
+                    <span class="service-type-badge" [class.tool]="row.source === 'tool'">
+                      {{ row.source === 'tool' ? 'Tool' : 'Application' }}
+                    </span>
+                  </div>
+                </td>
+                <td>{{ formatMoney(row.instanceCost || 0, row.currency) }}</td>
+                <td>{{ formatMoney(row.cpuCost || 0, row.currency) }}</td>
+                <td>{{ formatMoney(row.memoryCost || 0, row.currency) }}</td>
+                <td>{{ row.uptimeHours }}</td>
                 <td>{{ formatMoney(row.amount, row.currency) }}</td>
               </tr>
             </tbody>
+            <tfoot *ngIf="filteredBillRows.length">
+              <tr class="subtotal-row">
+                <td><strong>Subtotal</strong></td>
+                <td><strong>{{ formatMoney(filteredBillInstanceSubtotal) }}</strong></td>
+                <td><strong>{{ formatMoney(filteredBillCpuSubtotal) }}</strong></td>
+                <td><strong>{{ formatMoney(filteredBillMemorySubtotal) }}</strong></td>
+                <td>-</td>
+                <td><strong>{{ formatMoney(filteredBillChargeSubtotal) }}</strong></td>
+              </tr>
+            </tfoot>
           </table>
         </div>
 

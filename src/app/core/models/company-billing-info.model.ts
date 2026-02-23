@@ -33,6 +33,10 @@ export interface BillServiceRow {
   source: 'deployment' | 'tool';
   currency?: string;
   name?: string;
+  uptimeHours?: string | number;
+  instanceCost?: number;
+  cpuCost?: number;
+  memoryCost?: number;
 }
 
 export interface ScopeOption {
