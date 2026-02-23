@@ -24,8 +24,13 @@ export const navItems: INavData[] = [
     icon: 'bi bi-tools'
   },
   {
+    name: 'LLM',
+    url: '/llm-models',
+    icon: 'bi bi-cpu'
+  },
+  {
     name: 'Billing',
-    url: '/invoice-list',
+    url: '/billing',
     icon: 'bi bi-receipt'
   },
   {

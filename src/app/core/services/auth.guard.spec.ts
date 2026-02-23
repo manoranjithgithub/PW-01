@@ -115,11 +115,22 @@ describe('AuthGuard', () => {
     expect(routerSpy.navigateByUrl).toHaveBeenCalledWith('/deployment', { replaceUrl: true });
   });
 
-  it('redirects when production and llm route present', () => {
+  it('blocks llm deployments routes in production', () => {
     authSpy.isAuthenticated.and.returnValue(true);
     (environment as any).production = true;
-    const routeSnap = { routeConfig: { path: 'llm/some' } } as ActivatedRouteSnapshot;
+    const routeSnap = { routeConfig: { path: 'llm' } } as ActivatedRouteSnapshot;
     const res = guard.canActivate(routeSnap, mkState('/llm/whatever'));
     expect(res).toBeFalse();
+    expect(toastSpy.warning).toHaveBeenCalled();
+    expect(routerSpy.navigateByUrl).toHaveBeenCalledWith('/projects', { replaceUrl: true });
+  });
+
+  it('allows llm-models routes in production', () => {
+    authSpy.isAuthenticated.and.returnValue(true);
+    (environment as any).production = true;
+    const routeSnap = { routeConfig: { path: 'llm-models' } } as ActivatedRouteSnapshot;
+    const res = guard.canActivate(routeSnap, mkState('/llm-models'));
+    expect(res).toBeTrue();
+    expect(routerSpy.navigate).not.toHaveBeenCalled();
   });
 });

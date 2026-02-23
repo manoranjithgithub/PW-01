@@ -35,12 +35,13 @@ export class EditToolComponent implements OnInit, OnDestroy {
   toolViewName: any;
   paramsEdit: any;
   hide: { [key: string]: boolean } = {};
-  selectedResource: ResourceInfo = { cpuVcpu: '', memoryGb: '', instanceHourRate: 0 };
+  selectedResource: { [key: string]: ResourceInfo | undefined } = { key: { cpuVcpu: '', memoryGb: '', instanceHourRate: 0 } };
   resources: any[] = [];
   selectedTabIndex: number = 0;
 
   get hourlyInstanceRate(): number {
-    return Number(this.selectedResource?.instanceHourRate ?? 0);
+    const resource = Object.values(this.selectedResource).find(res => res?.instanceHourRate);
+    return resource ? Number(resource.instanceHourRate) : 0;
   }
 
   get monthlyInstanceRate(): number {
@@ -121,8 +122,8 @@ export class EditToolComponent implements OnInit, OnDestroy {
           }
 
           const initialValue = field.value || field.default_value || '';
-          if (field.label === 'Instance Type') {
-            this.selectedResource = this.resources.find(resource => resource.instanceType === initialValue) || { cpuVcpu: '', memoryGb: '', instanceHourRate: 0 };
+          if (field.function === 'resource') {
+            this.selectedResource[field.label] = this.resources.find(resource => resource.instanceType === initialValue) || { cpuVcpu: '', memoryGb: '', instanceHourRate: 0 };
           }
           const control = new FormControl(initialValue, validators);
           group[field.key] = control;
@@ -168,7 +169,8 @@ export class EditToolComponent implements OnInit, OnDestroy {
         'mysql.primary.persistence.size',
         'postgresql.primary.persistence.size',
         'mongodb.persistence.size',
-        'postgresql.readReplicas.persistence.size'
+        'postgresql.readReplicas.persistence.size',
+        'n8n.postgresql.primary.persistence.size'
       ];
 
       const finalSchema = JSON.parse(JSON.stringify(schema));
@@ -192,7 +194,8 @@ export class EditToolComponent implements OnInit, OnDestroy {
         'mysql.primary.persistence.size',
         'postgresql.primary.persistence.size',
         'mongodb.persistence.size',
-        'postgresql.readReplicas.persistence.size'
+        'postgresql.readReplicas.persistence.size',
+        'n8n.postgresql.primary.persistence.size'
       ];
       sizeFields.forEach(key => {
         if (formValues.hasOwnProperty(key)) {
@@ -287,10 +290,10 @@ export class EditToolComponent implements OnInit, OnDestroy {
   toggleVisibility(key: string): void {
     this.hide[key] = !this.hide[key];
   }
-  onFieldChange(event: Event, field: any) {
+  onFieldChange(event: Event, field: any, label: string): void {
     const value = (event.target as HTMLSelectElement).value;
-    if (field === 'Instance Type') {
-      this.selectedResource = this.resources.find(resource => resource.instanceType === value);
+    if (field === 'resource') {
+      this.selectedResource[label] = this.resources.find(resource => resource.instanceType === value);
     }
   }
   'formatCurrency'(value: any | undefined, fromCurrency?: string): string {

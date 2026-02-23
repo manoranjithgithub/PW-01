@@ -147,6 +147,15 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
   }
 
   onActionSelected(action: string): void {
+    if (this.additionalParam === 'llm-models') {
+      if (this.params?.onActionClick) {
+        this.params.onActionClick(action, this.params?.data);
+      } else if (action === 'view') {
+        const id = this.params?.data?.id || this.params?.data?._id || this.params?.data?.llmId || this.params?.data?.llm_id;
+        this.route.navigate(['/llm-models/view-model'], { queryParams: { id }, state: { row: this.params?.data } });
+      }
+      return;
+    }
     switch (action) {
       case 'edit':
         this.edit(this.params.data);
@@ -167,6 +176,11 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
         this.pause(this.params.data, 'Resume');
         break;
     }
+  }
+
+  isRevokedLlmModel(): boolean {
+    const rawStatus = String(this.params?.data?.status || this.params?.data?.state || '').toLowerCase();
+    return rawStatus.includes('revoked');
   }
 
   viewLogs() {

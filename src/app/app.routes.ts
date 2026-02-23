@@ -25,7 +25,7 @@ export const routes: Routes = [
           import('./pages/dashboard/routes').then((m) => m.routes),
       },
       {
-        path: 'invoice-list',
+        path: 'billing',
         canActivate: [AuthGuard],
         loadChildren: () =>
           import('./pages/invoice/routes').then((m) => m.routes),
@@ -45,6 +45,15 @@ export const routes: Routes = [
         canActivate: [AuthGuard],
         loadChildren: () =>
           import('./pages/tools/routes').then((m) => m.routes),
+      },
+      {
+        path: 'llm-models',
+        canActivate: [AuthGuard],
+        data: {
+          breadcrumb: 'LLM',
+        },
+        loadChildren: () =>
+          import('./pages/llm/routes').then((m) => m.routes),
       },
       {
         path: 'account-settings',
