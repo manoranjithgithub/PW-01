@@ -213,6 +213,14 @@ export class DefaultLayoutComponent implements OnInit {
     // return this.currentUrl.includes('/project');
   }
 
+  shouldShowProjectSwitch(): boolean {
+    return true;
+  }
+
+  shouldShowPageHeader(): boolean {
+    return true;
+  }
+
   ngOnInit(): void {
     this.savedTheme = localStorage.getItem('theme-default') || 'light';
     this.colorMode.set(this.savedTheme);

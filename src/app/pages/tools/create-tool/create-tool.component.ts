@@ -45,7 +45,7 @@ export class CreateToolComponent implements OnInit, OnDestroy {
   };
   toolNames: any = [];
   hide: { [key: string]: boolean } = {};
-  selectedResource: ResourceInfo = { cpuVcpu: '', memoryGb: '', instanceHourRate: 0 };
+  selectedResource: { [key: string]: ResourceInfo | undefined } = { key: { cpuVcpu: '', memoryGb: '', instanceHourRate: 0 } };
   resources: any[] = [];
 
   constructor(private http: ToolsService, private ac: ActivatedRoute,
@@ -132,7 +132,8 @@ export class CreateToolComponent implements OnInit, OnDestroy {
           if (field.key === 'mysql.primary.persistance.size' ||
             field.key === 'postgresql.primary.persistence.size' ||
             field.key === 'mongodb.persistence.size' ||
-            field.key === 'postgresql.readReplicas.persistence.size'
+            field.key === 'postgresql.readReplicas.persistence.size' ||
+            field.key === 'n8n.postgresql.primary.persistence.size'
           ) {
             validators.push(this.gigabyteValidator);
           }
@@ -140,9 +141,9 @@ export class CreateToolComponent implements OnInit, OnDestroy {
           if (field.type === 'password') {
             this.hide[field.key] = true;
           }
-          if (field.label === 'Instance Type') {
+          if (field.function === 'resource') {
             field.default_value = field.options[0];
-            this.selectedResource = this.resources.find(resource => resource.instanceType === field.options[0]) || { cpuVcpu: '', memoryGb: '', instanceHourRate: 0 };
+            this.selectedResource[field.label] = this.resources.find(resource => resource.instanceType === field.options[0]) || { cpuVcpu: '', memoryGb: '', instanceHourRate: 0 };
           }
           const control = new FormControl(field.default_value || '', validators);
 
@@ -190,7 +191,8 @@ export class CreateToolComponent implements OnInit, OnDestroy {
         'mysql.primary.persistence.size',
         'postgresql.primary.persistence.size',
         'mongodb.persistence.size',
-        'postgresql.readReplicas.persistence.size'
+        'postgresql.readReplicas.persistence.size',
+        'n8n.postgresql.primary.persistence.size'
       ];
 
       sizeFields.forEach(key => {
@@ -277,10 +279,11 @@ export class CreateToolComponent implements OnInit, OnDestroy {
   toggleVisibility(key: string): void {
     this.hide[key] = !this.hide[key];
   }
-  onFieldChange(event: Event, field: any) {
+  onFieldChange(event: Event, field: any, key: string): void {
     const value = (event.target as HTMLSelectElement).value;
-    if (field === 'Instance Type') {
-      this.selectedResource = this.resources.find(resource => resource.instanceType === value);
+    if (field === 'resource') {
+      this.selectedResource[key] = this.resources.find(resource => resource.instanceType === value);
+      console.log('Selected resource for key', key, ':', this.selectedResource);
     }
   }
   uniqueNameValidator(existingNames: string[]): ValidatorFn {
@@ -294,7 +297,8 @@ export class CreateToolComponent implements OnInit, OnDestroy {
   }
 
   get hourlyInstanceRate(): number {
-    return Number(this.selectedResource?.instanceHourRate ?? 0);
+    const resource = Object.values(this.selectedResource).find(res => res?.instanceHourRate);
+    return resource ? Number(resource.instanceHourRate) : 0;
   }
 
   get monthlyInstanceRate(): number {

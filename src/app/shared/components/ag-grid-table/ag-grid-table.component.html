@@ -10,6 +10,7 @@
         New  Deploy</button>
       <button class="btn button-format-solid" (click)="addNewUser()" *ngIf="showAddUser" [disabled]="!permissionService.canAdminGlobal()" [attr.title]="!permissionService.canAdminGlobal() ? 'You are not authorized to view that page.' : null"><i class="bi bi-plus"></i> New 
         User</button>
+      <ng-content></ng-content>
     </div>
   </ng-container>
 </div>

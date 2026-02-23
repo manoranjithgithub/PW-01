@@ -1,0 +1,72 @@
+<div class="container llm-configure-page">
+  <div class="create-card" *ngIf="selectedModel && !modelCreated">
+    <div class="mb-3">
+      <h5 class="mb-1">Configure Model</h5>
+      <p class="text-muted mb-0">Review selected model and configure endpoint details.</p>
+    </div>
+
+    <div class="model-summary mb-4">
+      <div class="summary-wide">
+        <small class="text-muted">Pricing</small>
+        <div class="price-list" *ngIf="getModelPriceRows(selectedModel).length > 0; else noPricing">
+          <div class="price-chip" *ngFor="let price of getModelPriceRows(selectedModel)">
+            <span class="price-label">{{ price.label }}</span>
+            <span class="price-value">{{ price.value }}</span>
+          </div>
+        </div>
+        <ng-template #noPricing>
+          <div class="summary-value">Not provided</div>
+        </ng-template>
+      </div>
+    </div>
+
+    <form [formGroup]="form">
+      <div class="row g-3">
+        <div class="col-12 col-md-6">
+          <label class="form-label" for="name">Name</label>
+          <input id="name" type="text" class="form-control" formControlName="name" placeholder="Enter endpoint name" />
+          <small class="text-danger" *ngIf="form.get('name')?.invalid && form.get('name')?.touched">Name is required.</small>
+        </div>
+        <div class="col-12 col-md-6">
+          <label class="form-label" for="rateLimitPerMinute">Rate Limit Per Minute</label>
+          <input id="rateLimitPerMinute" type="number" class="form-control" formControlName="rateLimitPerMinute" min="1" />
+          <small class="text-danger" *ngIf="form.get('rateLimitPerMinute')?.invalid && form.get('rateLimitPerMinute')?.touched">Provide a valid number greater than 0.</small>
+        </div>
+      </div>
+
+      <hr class="my-4" />
+      <div class="d-flex justify-content-between">
+        <button class="btn button-format-outline" type="button" (click)="backToSelection()">
+          <i class="bi bi-arrow-left"></i> Back
+        </button>
+        <button class="btn button-format-solid" type="button" (click)="submit()" [disabled]="isSubmitting">
+          {{ isSubmitting ? 'Saving...' : 'Create Model' }}
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <div class="create-card" *ngIf="modelCreated">
+    <h5 class="mb-3">Model Added</h5>
+    <p class="text-muted mb-2" *ngIf="generatedKey; else noKeyReturned">Copy this key now. For security reasons it may not be shown again.</p>
+    <ng-template #noKeyReturned>
+      <p class="text-muted mb-2">Model created successfully. API key was not returned in the create response.</p>
+    </ng-template>
+    <div class="mb-2">
+      <small class="text-muted">Key Prefix</small>
+      <div class="key-prefix-display">{{ generatedKeyPrefix || '-' }}</div>
+    </div>
+    <div class="mb-4">
+      <small class="text-muted">New API Key</small>
+      <div class="rotated-key-box">
+        <code>{{ generatedKey || '-' }}</code>
+      </div>
+    </div>
+    <div class="d-flex justify-content-between">
+      <button type="button" class="btn btn-outline-secondary" (click)="copyGeneratedKey()" [disabled]="!generatedKey">
+        <i class="bi bi-clipboard"></i> Copy Key
+      </button>
+      <button type="button" class="btn button-format-solid" (click)="backToList()">Done</button>
+    </div>
+  </div>
+</div>

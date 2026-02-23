@@ -29,4 +29,5 @@ export const environment = {
   userManagement: `${base}/user/v1/business/organisation`,
   logServiceUrl: `${base}/logs`,
   metricsUrl: `${base}/metrics/v1`,
+  llmGatewayBaseUrl: `${base}/llmgateway/v1`,
 };
