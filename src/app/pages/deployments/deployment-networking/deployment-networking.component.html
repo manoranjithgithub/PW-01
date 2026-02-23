@@ -139,7 +139,7 @@
                       </label>
                     </div>
 
-                    <fieldset [disabled]="!networkSettingsForm.get('customDns')?.value" class="custom-domain-section">
+                    <fieldset [disabled]="!networkSettingsForm.get('customDns')?.value" class="custom-domain-section" *ngIf="networkSettingsForm.get('customDns')?.value">
                       <div class="custom-dns-layout">
                         <div class="custom-dns-left">
                           <div class="mb-2">

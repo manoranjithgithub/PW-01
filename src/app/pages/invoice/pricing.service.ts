@@ -9,10 +9,11 @@ import { environment } from '../../../environments/environment';
 })
 export class PricingsService {
   private pricingManagement = environment.pricingManagement;
+  private deploymentManagement = environment.deploymentManagement;
 
   constructor(public http: HttpClient) { }
 
-  getInvoiceList(accountId: string, limit:number, offset:number) {
+  getInvoiceList(accountId: string, limit: number, offset: number) {
     return this.http.get(`${this.pricingManagement}/invoices?account_id=${accountId}&limit=${limit}&offset=${offset}`)
       .pipe(
         catchError(this.handleError.bind(this))
@@ -32,6 +33,54 @@ export class PricingsService {
       );
   }
 
+  getDeployments(envId: string) {
+    return this.http.get(`${this.deploymentManagement}/deployments?environmentId=${envId}`)
+      .pipe(
+        catchError(this.handleError.bind(this))
+      );
+  }
+  getToolsList(env: string) {
+    return this.http.get(`${this.deploymentManagement}/tools/installed/${env}`).pipe(
+      catchError(this.handleError.bind(this))
+    );
+  }
+  getInstanceTypes() {
+    return this.http.get(`${this.pricingManagement}/public/pricing-catalog`)
+      .pipe(
+        catchError(this.handleError.bind(this))
+      );
+  }
+  getCostByService(accountId: string, envId: string, fromDate: string, toDate: string, projectId: string ) {
+    let params = new HttpParams()
+      .set('accountId', accountId)
+      .set('from', fromDate)
+      .set('to', toDate);
+    if (projectId && projectId !== 'all') {
+      params = params.set('environmentId', envId);
+    }
+    return this.http.get(`${this.pricingManagement}/costs/costexplorer?`, { params })
+      .pipe(
+        catchError(this.handleError.bind(this))
+      );
+  }
+
+  getDeploymentById(deploymentId: string) {
+    const envId = JSON.parse(localStorage.getItem('environment') || '{}').id;
+    const projectId = JSON.parse(localStorage.getItem('project') || '{}').id;
+
+    return this.http.get(`${this.deploymentManagement}/deployments?deploymentId=${deploymentId}&environmentId=${envId}&projectId=${projectId}`)
+      .pipe(
+        catchError(this.handleError.bind(this))
+      );
+  }
+  getToolById(env: string, id: any) {
+    const projectId = JSON.parse(localStorage.getItem('project') || '{}').id;
+    return this.http.get(`${this.deploymentManagement}/tools/values?environmentId=${env}&name=${id}&projectId=${projectId}`)
+      .pipe(
+        catchError(this.handleError.bind(this))
+      );
+  }
+
   private handleError(error: HttpErrorResponse) {
     let errorMessage = 'Something went wrong. Please try again later.';
 
@@ -40,7 +89,7 @@ export class PricingsService {
         errorMessage = error.error.error.details;
       } else if (error.error.message) {
         errorMessage = error.error.message;
-      }else if (typeof error.error?.error === 'string') {
+      } else if (typeof error.error?.error === 'string') {
         errorMessage = error.error.error;
       }
     }
