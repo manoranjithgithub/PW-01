@@ -11,10 +11,40 @@
       </div>
     </div>
     <div class="header-actions">
-      <div class="date-range-selector" *ngIf="activeTopSection === 'payments'" (click)="openDateRangePicker()">
+      <div class="date-range-selector" *ngIf="activeTopSection === 'bill'" (click)="toggleMonthPicker($event)">
         <i class="bi bi-calendar3"></i>
-        <span>{{ dateRangeDisplay }}</span>
-        <input type="text" #dateRangePickerInput class="date-range-picker-input" readonly />
+        <span class="month-year-label">{{ selectedMonthLabel }}</span>
+
+        <div class="month-picker-panel" *ngIf="monthPickerOpen" (click)="$event.stopPropagation()">
+          <div class="month-picker-row">
+            <label for="monthPickerMonth">Month</label>
+            <select
+              id="monthPickerMonth"
+              [(ngModel)]="monthPickerMonth"
+              (change)="onMonthPickerMonthChange(($any($event.target)).value)"
+            >
+              <option *ngFor="let month of monthOptions" [ngValue]="month.value" [disabled]="isMonthDisabled(month.value)">
+                {{ month.label }}
+              </option>
+            </select>
+          </div>
+          <div class="month-picker-row">
+            <label for="monthPickerYear">Year</label>
+            <select
+              id="monthPickerYear"
+              [(ngModel)]="monthPickerYear"
+              (change)="onMonthPickerYearChange(($any($event.target)).value)"
+            >
+              <option *ngFor="let year of yearOptions" [ngValue]="year">{{ year }}</option>
+            </select>
+          </div>
+          <div class="month-picker-actions">
+            <button type="button" class="month-picker-cancel" (click)="onCancelMonthPicker($event)">Cancel</button>
+            <button type="button" class="month-picker-apply" (click)="onApplyMonthPicker($event)">
+              Apply
+            </button>
+          </div>
+        </div>
       </div>
       <button type="button" class="outline-btn" (click)="refreshInvoices()">
         Refresh <i class="bi bi-arrow-clockwise"></i>
@@ -252,7 +282,7 @@
         </div>
         <div class="billing-summary-item">
           <label>Total billable services</label>
-          <div class="item-value">{{ billRows.length }}</div>
+          <div class="item-value">{{ totalBillableServicesCount }}</div>
           <p class="muted-line">Combined deployments and tools</p>
         </div>
       </div>
@@ -286,7 +316,7 @@
               <option *ngFor="let env of environmentOptions" [value]="env.id">{{ env.name }}</option>
             </select>
           </label>
-          <label class="time-window-field filter-field">
+          <!-- <label class="time-window-field filter-field">
             <span>Date Range</span>
             <label class="time-window-picker">
               <i class="bi bi-calendar3"></i>
@@ -294,7 +324,7 @@
                 <option *ngFor="let option of timeRangeOptions" [value]="option.value">{{ option.label }}</option>
               </select>
             </label>
-          </label>
+          </label> -->
           <label class="scope-field filter-field">
             <span>Status</span>
             <select>

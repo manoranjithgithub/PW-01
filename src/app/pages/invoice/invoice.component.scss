@@ -75,7 +75,7 @@
       font-size: 14px;
     }
 
-    span {
+    .month-year-label {
       white-space: nowrap;
     }
 
@@ -83,14 +83,80 @@
       background: #fff3e8;
       border-color: #ff9966;
     }
-  }
 
-  .date-range-picker-input {
-    height: 0;
-    opacity: 0;
-    pointer-events: none;
-    position: absolute;
-    width: 0;
+    .month-picker-panel {
+      background: #fff;
+      border: 1px solid #ffd8bd;
+      border-radius: 12px;
+      box-shadow: 0 10px 24px rgba(31, 41, 55, 0.14);
+      cursor: default;
+      min-width: 220px;
+      padding: 10px;
+      position: absolute;
+      right: 0;
+      top: calc(100% + 8px);
+      z-index: 20;
+    }
+
+    .month-picker-row {
+      align-items: center;
+      display: grid;
+      gap: 8px;
+      grid-template-columns: 56px 1fr;
+      margin-bottom: 8px;
+
+      label {
+        color: #4b5563;
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      select {
+        background: #fff7f0;
+        border: 1px solid #ffd8bd;
+        border-radius: 8px;
+        color: #1f2937;
+        font-size: 13px;
+        font-weight: 500;
+        min-height: 34px;
+        outline: none;
+        padding: 0 8px;
+
+        &:focus {
+          border-color: var(--brand-primary);
+          box-shadow: 0 0 0 3px rgba(255, 102, 0, 0.12);
+        }
+      }
+    }
+
+    .month-picker-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+      margin-top: 8px;
+    }
+
+    .month-picker-cancel,
+    .month-picker-apply {
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 600;
+      min-height: 34px;
+      padding: 0 14px;
+    }
+
+    .month-picker-cancel {
+      background: #fff;
+      border: 1px solid #ffd8bd;
+      color: #4b5563;
+    }
+
+    .month-picker-apply {
+      background: var(--brand-primary);
+      border: 1px solid var(--brand-primary);
+      color: #fff;
+    }
+
   }
 
   .tab-panel {
@@ -1161,4 +1227,8 @@
       width: 100%;
     }
   }
+}
+
+::ng-deep .litepicker .container__days {
+  display: none !important;
 }

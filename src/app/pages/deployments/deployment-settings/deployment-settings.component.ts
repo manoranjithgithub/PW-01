@@ -174,7 +174,10 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
       buildCommand: ['', Validators.maxLength(250)],
       startCommand: ['', Validators.maxLength(250)],
       installCommand: ['', Validators.maxLength(250)],
-      dockerfilePath: ['', Validators.maxLength(250)],
+      folderPath: [null],
+      dockerFileName: [null],
+      // dockerfilePath: ['', Validators.maxLength(250)],
+
     })
 
     this.sourceSettingsForm = this.fb.group({
@@ -184,7 +187,9 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
       branchName: [{ value: '', disabled: true }],
       fileInput: ['', [Validators.required, this.fileValidator.bind(this)]],
       fileName: [{ value: '', disabled: true }],
-      dockerfilePath: ['', Validators.maxLength(250)],
+      // dockerfilePath: ['', Validators.maxLength(250)],
+      dockerFileName: [{ value: '', disabled: true }],
+      folderPath: [{ value: '', disabled: true }],
       vcsAutoDeploy: [false],
     });
     this.freezeAddNewData = this.currentStatus && this.currentStatus?.toLowerCase() === 'building' ? true : false;
@@ -309,7 +314,9 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
           buildCommand: res.data.buildConfig?.buildCommand,
           startCommand: res.data.buildConfig?.startCommand,
           installCommand: res.data.buildConfig?.installCommand,
-          dockerfilePath: res.data.sourceCode?.dockerfilePath || '',
+          // dockerfilePath: res.data.sourceCode?.dockerfilePath || '',
+          folderPath: res.data.sourceCode?.folderPath || '',
+          dockerFileName: res.data.sourceCode?.dockerFileName || '',
         });
 
         const initialValues = this.generalSettingsForm.value;
@@ -323,7 +330,9 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
           repoUrl: repoUrl,
           branchName: branchName,
           fileName: res.data.sourceCode?.s3FileKey ? res.data.sourceCode?.s3FileKey : '',
-          dockerfilePath: res.data.sourceCode?.dockerfilePath || '',
+          // dockerfilePath: res.data.sourceCode?.dockerfilePath || '',
+          dockerFileName: res.data.sourceCode?.dockerFileName || '',
+          folderPath: res.data.sourceCode?.folderPath || '',
           vcsAutoDeploy: res.data.sourceCode?.vcsAutoDeploy || false,
         });
         if (res.data.sourceCode?.type.toLowerCase() === "file") {
@@ -496,7 +505,9 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
       type: sourceFormValue.type,
       gitUrl: this.buildGitUrl(),
       s3FileKey: fileName ? this.s3FileKey : null,
-      dockerfilePath: sourceFormValue.dockerfilePath
+      // dockerfilePath: sourceFormValue.dockerfilePath
+        folderPath: sourceFormValue.folderPath,
+        dockerFileName: sourceFormValue.dockerFileName,
     };
     const hpa= {
       hpaEnabled: formValue.hpaEnabled,
@@ -505,10 +516,14 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
     };
 
     const isDockerfilePathChanged =
-      formValue.dockerfilePath !== sourceFormValue.dockerfilePath;
+      // formValue.dockerfilePath !== sourceFormValue.dockerfilePath;
+        formValue.folderPath !== sourceFormValue.folderPath ||
+        formValue.dockerFileName !== sourceFormValue.dockerFileName;
 
     if (isDockerfilePathChanged) {
-      baseData.dockerfilePath = formValue.dockerfilePath;
+      // baseData.dockerfilePath = formValue.dockerfilePath;
+        baseData.folderPath = formValue.folderPath;
+        baseData.dockerFileName = formValue.dockerFileName;
     }
 
     const sourceCode = isDockerfilePathChanged
@@ -805,7 +820,9 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
         type: this.deploymentdetails?.sourceCode?.type || 'vcs',
         gitUrl: this.deploymentdetails?.sourceCode?.gitUrl || '',
         s3FileKey: this.deploymentdetails?.sourceCode?.s3FileKey || '',
-        dockerfilePath: this.deploymentdetails?.sourceCode?.dockerfilePath || '',
+        // dockerfilePath: this.deploymentdetails?.sourceCode?.dockerfilePath || '',
+        folderPath: this.deploymentdetails?.sourceCode?.folderPath || '',
+        dockerFileName: this.deploymentdetails?.sourceCode?.dockerFileName || '',
        }
     }).subscribe((res: any) => {
       if (res.status.toLowerCase() === "success") {
