@@ -33,10 +33,10 @@
                         <small *ngIf="copiedButtonId === 'domain-copy'"
                           class="badge badge-success border border-success text-success ms-2 badge-copied fw-light">Copied!</small>
                       </div> -->
-                      <button class="btn btn-sm btn-outline-danger" title="Delete endpoint" (click)="deleteEndpoint()" 
+                      <!-- <button class="btn btn-sm btn-outline-danger" title="Delete endpoint" (click)="deleteEndpoint()" 
                         [disabled]="formDisabled">
                         <i class="bi bi-x-circle mx-1"></i>delete
-                      </button>
+                      </button> -->
                     </div>
                   </div>
                   <div class="py-1">
@@ -48,6 +48,9 @@
                     </span>
                       <small *ngIf="copiedButtonId === 'domain-copy'"
                         class="badge badge-success border border-success text-success ms-2 badge-copied fw-light">Copied!</small>
+                        <span class="text-danger text-decoration-none" title="Delete endpoint" (click)="deleteEndpoint()">
+                        <i class="bi bi-x-circle mx-1"></i>
+                  </span>
                     </p>
                   </div>
                   <!-- <div class="text-secondary small mt-2 fs-7" *ngIf="endpointStatus">
