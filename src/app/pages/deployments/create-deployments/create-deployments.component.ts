@@ -150,7 +150,9 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
       storage: [null, Validators.pattern('^[0-9]+$')],
       healthEndpoint: [null, Validators.maxLength(250)],
       zipFilename: [{ value: null, disabled: true }],
-      dockerfilePath: [null],
+      // dockerfilePath: [null],
+      folderPath: [null],
+      dockerFileName: [null],
       port: ['', [Validators.maxLength(5), Validators.pattern('^[0-9]+$'),
       Validators.min(1), Validators.max(65535)
       ]],
@@ -752,8 +754,11 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
         type: this.selectedVCS === 'zip' ? 'file' : 'vcs',
         gitUrl: this.buildGitUrl(),
         s3FileKey: null,
-        dockerfilePath: this.stepOneForm.value.dockerfilePath || null,
+        // dockerfilePath: this.stepOneForm.value.dockerfilePath || null,
+        folderPath: this.stepOneForm.value.folderPath || null,
+        dockerFileName: this.stepOneForm.value.dockerFileName || null,
         vcsAutoDeploy: this.stepOneForm.value.vcsAutoDeploy || false,
+        
       },
       application: {
         replicas: this.stepOneForm.value.replicas || 0,

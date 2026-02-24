@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { PricingsService } from './pricing.service';
 import { ToastrService } from 'ngx-toastr';
@@ -10,30 +10,28 @@ import { ProjectsService } from '../projects/projects.service';
 import { BillServiceRow, CompanyBillingInfo, InvoiceRow, ScopeOption } from '../../core/models/company-billing-info.model';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import Litepicker from 'litepicker';
+import { FormsModule } from '@angular/forms';
 declare const Cashfree: any;
 
 type PaymentTab = 'payments-due' | 'unapplied-funds' | 'transactions';
 type TopSection = 'bill' | 'payments';
 type BillTab = 'service' | 'taxes';
 type TimeRangeOption = '30d' | '3m' | '6m' | 'current-month' | 'all';
-type StatusFilterOption = 'all' | 'paid' | 'due' | 'unpaid' | 'credit';
+type StatusFilterOption = 'all' | 'tool' | 'application';
 
 
 @Component({
   selector: 'app-invoice',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule,FormsModule],
   templateUrl: './invoice.component.html',
   styleUrl: './invoice.component.scss',
   providers: [PricingsService]
 })
-export class InvoiceComponent implements OnInit, AfterViewInit, OnDestroy {
-  @ViewChild('dateRangePickerInput', { static: false }) dateRangePickerInput?: ElementRef<HTMLInputElement>;
-
+export class InvoiceComponent implements OnInit {
   rawInvoiceData: InvoiceRow[] = [];
   tableData: InvoiceRow[] = [];
-  activeTopSection: TopSection = 'payments';
+  activeTopSection: TopSection = 'bill';
   activeTab: PaymentTab = 'transactions';
   activeBillTab: BillTab = 'service';
   transactionsFilter = '';
@@ -49,10 +47,8 @@ export class InvoiceComponent implements OnInit, AfterViewInit, OnDestroy {
   ];
   readonly statusFilterOptions: Array<{ value: StatusFilterOption; label: string }> = [
     { value: 'all', label: 'All status' },
-    { value: 'paid', label: 'Paid' },
-    { value: 'due', label: 'Unpaid' },
-    { value: 'unpaid', label: 'Unpaid' },
-    { value: 'credit', label: 'Credit' }
+    { value: 'tool', label: 'Tools' },
+    { value: 'application', label: 'Application' }
   ];
   billRows: BillServiceRow[] = [];
   billLoading = false;
@@ -61,9 +57,26 @@ export class InvoiceComponent implements OnInit, AfterViewInit, OnDestroy {
   selectedProjectId = 'all';
   selectedEnvironmentId = 'all';
   selectedDate = new Date().toISOString().split('T')[0];
+  selectedMonth = '';
+  monthPickerOpen = false;
+  monthPickerMonth = new Date().getMonth() + 1;
+  monthPickerYear = new Date().getFullYear();
+  readonly monthOptions: Array<{ value: number; label: string }> = [
+    { value: 1, label: 'Jan' },
+    { value: 2, label: 'Feb' },
+    { value: 3, label: 'Mar' },
+    { value: 4, label: 'Apr' },
+    { value: 5, label: 'May' },
+    { value: 6, label: 'Jun' },
+    { value: 7, label: 'Jul' },
+    { value: 8, label: 'Aug' },
+    { value: 9, label: 'Sep' },
+    { value: 10, label: 'Oct' },
+    { value: 11, label: 'Nov' },
+    { value: 12, label: 'Dec' }
+  ];
   startDate = '';
   endDate = '';
-  dateRangeDisplay = 'Select date range';
   companyBillingInfo: CompanyBillingInfo = {
     companyName: null,
     gstNumber: null,
@@ -78,7 +91,6 @@ export class InvoiceComponent implements OnInit, AfterViewInit, OnDestroy {
   };
   accountId: string | null = null;
   billingDetailsLoading = false;
-  private dateRangePicker: any = null;
 
   cashfree: any;
   limit = 10;
@@ -193,20 +205,20 @@ export class InvoiceComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   get billChargesTotal(): number {
-    return this.duePayments.reduce((sum, row) => sum + this.getAmount(row.subtotal), 0);
+    return this.selectedMonthInvoices.reduce((sum, row) => sum + this.getAmount(row.subtotal), 0);
   }
 
   get billTaxesTotal(): number {
-    return this.duePayments.reduce((sum, row) => sum + this.getAmount(row.tax_amount), 0);
+    return this.selectedMonthInvoices.reduce((sum, row) => sum + this.getAmount(row.tax_amount), 0);
   }
 
   get billCreditsApplied(): number {
     const grossDue = this.billChargesTotal + this.billTaxesTotal;
-    return Math.max(0, grossDue - this.totalOutstandingBalance);
+    return Math.max(0, grossDue - this.billTotalDue);
   }
 
   get billTotalDue(): number {
-    return this.totalOutstandingBalance;
+    return this.selectedMonthDueInvoices.reduce((sum, row) => sum + this.getAmount(row.total || row.subtotal), 0);
   }
 
   get taxRows(): InvoiceRow[] {
@@ -222,9 +234,11 @@ export class InvoiceComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   get billPeriodLabel(): string {
-    const now = new Date();
-    const start = new Date(now.getFullYear(), now.getMonth(), 1);
-    const end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    const start = this.parseDateValue(this.startDate);
+    const end = this.parseDateValue(this.endDate);
+    if (!start || !end) {
+      return '--';
+    }
     const startLabel = start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     const endLabel = end.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     return `${startLabel} - ${endLabel}`;
@@ -340,13 +354,17 @@ export class InvoiceComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   get toolServiceCount(): number {
-    return this.billRows.filter((row) => row.source === 'tool').length;
+    return this.monthScopedBillRows.filter((row) => row.source === 'tool').length;
   }
 
   get toolServiceCostTotal(): number {
-    return this.billRows
+    return this.monthScopedBillRows
       .filter((row) => row.source === 'tool')
       .reduce((sum, row) => sum + this.getAmount(row.amount), 0);
+  }
+
+  get totalBillableServicesCount(): number {
+    return this.monthScopedBillRows.length;
   }
 
 
@@ -371,11 +389,51 @@ export class InvoiceComponent implements OnInit, AfterViewInit, OnDestroy {
     return `${start}-${end} of ${this.totalRecords}`;
   }
 
+  get yearOptions(): number[] {
+    const currentYear = new Date().getFullYear();
+    const years: number[] = [];
+    for (let year = currentYear; year >= 2000; year -= 1) {
+      years.push(year);
+    }
+    return years;
+  }
+
+  get selectedMonthLabel(): string {
+    const [yearText, monthText] = (this.selectedMonth || '').split('-');
+    const year = Number(yearText);
+    const month = Number(monthText);
+    if (!year || !month) {
+      return 'Select month';
+    }
+    const monthLabel = this.monthOptions.find((item) => item.value === month)?.label;
+    return monthLabel ? `${monthLabel} ${year}` : 'Select month';
+  }
+
+  get selectedMonthInvoices(): InvoiceRow[] {
+    const start = this.parseDateValue(this.startDate);
+    const end = this.parseDateValue(this.endDate);
+    if (!start || !end) {
+      return [];
+    }
+    return this.transactions.filter((row) => {
+      const rowDate = this.getInvoiceDate(row);
+      console.log(rowDate)
+      return rowDate ? rowDate >= start && rowDate <= end : false;
+    });
+  }
+
+  get selectedMonthDueInvoices(): InvoiceRow[] {
+    return this.selectedMonthInvoices.filter((row) => this.isDuePayment(row));
+  }
+
+  get monthScopedBillRows(): BillServiceRow[] {
+    return this.billRows.filter((row) => this.getBillRowUptimeHours(row) > 0);
+  }
+
   ngOnInit(): void {
-    // Initialize date range
-    this.startDate = this.getDefaultStartDate();
-    this.endDate = this.getDefaultEndDate();
-    this.dateRangeDisplay = this.formatDateRangeDisplay();
+    this.selectedMonth = this.getCurrentMonthValue();
+    this.syncMonthPickerFromSelected();
+    this.applyMonthSelection(this.selectedMonth);
 
     this.initializeScopeFilters();
     this.getInvoiceList();
@@ -407,17 +465,6 @@ export class InvoiceComponent implements OnInit, AfterViewInit, OnDestroy {
     //   console.warn('Payment Dismissed:', event);
     //   this.toastr.warning('Payment Dismissed');
     // });
-  }
-
-  ngAfterViewInit(): void {
-    this.initializeDateRangePicker();
-  }
-
-  ngOnDestroy(): void {
-    if (this.dateRangePicker?.destroy) {
-      this.dateRangePicker.destroy();
-      this.dateRangePicker = null;
-    }
   }
 
   reviewDueInvoices(): void {
@@ -480,98 +527,150 @@ export class InvoiceComponent implements OnInit, AfterViewInit, OnDestroy {
     const date = new Date();
     date.setMonth(date.getMonth() - 3);
     date.setDate(1);
-    return date.toISOString().split('T')[0];
+    return this.formatDateAsYMD(date);
   }
 
   getDefaultEndDate(): string {
     const now = new Date();
     const end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-    return end.toISOString().split('T')[0];
+    return this.formatDateAsYMD(end);
   }
 
-  formatDateRangeDisplay(): string {
-    const start = new Date(this.startDate);
-    const end = new Date(this.endDate);
-    const startLabel = start.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-    const endLabel = end.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-    return `${startLabel} - ${endLabel}`;
+  getCurrentMonthValue(): string {
+    const now = new Date();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    return `${now.getFullYear()}-${month}`;
   }
 
-  openDateRangePicker(): void {
-    this.initializeDateRangePicker();
-    if (this.dateRangePicker?.show) {
-      this.dateRangePicker.show();
-    }
-  }
-
-  onDateRangeChange(event: any): void {
-    const value = event.target.value;
-    if (value) {
-      this.startDate = value.split(' - ')[0] || this.startDate;
-      this.endDate = value.split(' - ')[1] || this.endDate;
-      this.dateRangeDisplay = this.formatDateRangeDisplay();
-      this.refreshInvoices();
-    }
-  }
-
-  private initializeDateRangePicker(): void {
-    if (this.dateRangePicker || !this.dateRangePickerInput?.nativeElement) {
+  onMonthChange(value: string): void {
+    if (!value) {
       return;
     }
-
-    this.dateRangePicker = new Litepicker({
-      element: this.dateRangePickerInput.nativeElement,
-      singleMode: false,
-      numberOfMonths: 2,
-      numberOfColumns: 2,
-      autoApply: true,
-      format: 'MMM YYYY',
-      startDate: this.startDate,
-      endDate: this.endDate,
-      setup: (picker: any) => {
-        picker.on('selected', (start: any, end: any) => {
-          const nextStart = this.getPickerDateValue(start);
-          const nextEnd = this.getPickerDateValue(end);
-          if (!nextStart || !nextEnd) {
-            return;
-          }
-          this.startDate = this.toMonthStart(nextStart);
-          this.endDate = this.toMonthEnd(nextEnd);
-          this.dateRangeDisplay = this.formatDateRangeDisplay();
-          this.refreshInvoices();
-        });
-      }
-    });
+    const [yearText, monthText] = value.split('-');
+    const year = Number(yearText);
+    const month = Number(monthText);
+    if (!year || !month) {
+      return;
+    }
+    const bounded = this.clampToAllowedMonth(year, month);
+    const normalized = `${bounded.year}-${String(bounded.month).padStart(2, '0')}`;
+    this.selectedMonth = normalized;
+    this.applyMonthSelection(normalized);
+    this.syncMonthPickerFromSelected();
+    this.refreshInvoices();
   }
 
-  private getPickerDateValue(value: any): string {
-    if (!value) {
-      return '';
+  toggleMonthPicker(event: MouseEvent): void {
+    event.stopPropagation();
+    if (this.monthPickerOpen) {
+      return;
     }
-    if (typeof value.format === 'function') {
-      return value.format('YYYY-MM-DD');
-    }
-    const parsed = new Date(value);
-    if (isNaN(parsed.getTime())) {
-      return '';
-    }
-    return parsed.toISOString().split('T')[0];
+    this.syncMonthPickerFromSelected();
+    this.monthPickerOpen = true;
   }
 
-  private toMonthStart(value: string): string {
-    const date = new Date(value);
-    if (isNaN(date.getTime())) {
-      return value;
+  onMonthPickerMonthChange(value: string): void {
+    const parsed = Number(value);
+    if (!parsed) {
+      return;
     }
-    return new Date(date.getFullYear(), date.getMonth(), 1).toISOString().split('T')[0];
+    const bounded = this.clampToAllowedMonth(this.monthPickerYear, parsed);
+    this.monthPickerYear = bounded.year;
+    this.monthPickerMonth = bounded.month;
   }
 
-  private toMonthEnd(value: string): string {
-    const date = new Date(value);
-    if (isNaN(date.getTime())) {
-      return value;
+  onMonthPickerYearChange(value: string): void {
+    const parsed = Number(value);
+    if (!parsed) {
+      return;
     }
-    return new Date(date.getFullYear(), date.getMonth() + 1, 0).toISOString().split('T')[0];
+    const bounded = this.clampToAllowedMonth(parsed, this.monthPickerMonth);
+    this.monthPickerYear = bounded.year;
+    this.monthPickerMonth = bounded.month;
+  }
+
+  applyMonthPickerSelection(): void {
+    const parsedMonth = Number(this.monthPickerMonth);
+    const parsedYear = Number(this.monthPickerYear);
+    if (!parsedMonth || !parsedYear) {
+      return;
+    }
+    const bounded = this.clampToAllowedMonth(parsedYear, parsedMonth);
+    this.monthPickerMonth = bounded.month;
+    this.monthPickerYear = bounded.year;
+
+    const month = String(this.monthPickerMonth).padStart(2, '0');
+    const value = `${this.monthPickerYear}-${month}`;
+    this.selectedMonth = value;
+    this.applyMonthSelection(value);
+    this.refreshInvoices();
+    this.monthPickerOpen = false;
+  }
+
+  onApplyMonthPicker(event: MouseEvent): void {
+    event.stopPropagation();
+    this.applyMonthPickerSelection();
+  }
+
+  onCancelMonthPicker(event: MouseEvent): void {
+    event.stopPropagation();
+    this.closeMonthPicker();
+  }
+
+  closeMonthPicker(): void {
+    this.monthPickerOpen = false;
+    this.syncMonthPickerFromSelected();
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement | null;
+    if (!target?.closest('.date-range-selector')) {
+      this.closeMonthPicker();
+    }
+  }
+
+  private applyMonthSelection(value: string): void {
+    const [yearText, monthText] = value.split('-');
+    const year = Number(yearText);
+    const month = Number(monthText);
+    if (!year || !month) {
+      return;
+    }
+    const start = new Date(year, month - 1, 1);
+    const end = new Date(year, month, 0);
+    this.startDate = this.formatDateAsYMD(start);
+    this.endDate = this.formatDateAsYMD(end);
+  }
+
+  private syncMonthPickerFromSelected(): void {
+    const [yearText, monthText] = (this.selectedMonth || '').split('-');
+    const year = Number(yearText);
+    const month = Number(monthText);
+    if (!year || !month) {
+      const now = new Date();
+      this.monthPickerYear = now.getFullYear();
+      this.monthPickerMonth = now.getMonth() + 1;
+      return;
+    }
+    const bounded = this.clampToAllowedMonth(year, month);
+    this.monthPickerYear = bounded.year;
+    this.monthPickerMonth = bounded.month;
+  }
+
+  isMonthDisabled(month: number): boolean {
+    const now = new Date();
+    return this.monthPickerYear === now.getFullYear() && month > now.getMonth() + 1;
+  }
+
+  private clampToAllowedMonth(year: number, month: number): { year: number; month: number } {
+    const now = new Date();
+    const normalizedYear = Math.min(Math.max(2000, year), now.getFullYear());
+    const normalizedMonth = Math.min(Math.max(1, month), 12);
+    if (normalizedYear === now.getFullYear() && normalizedMonth > now.getMonth() + 1) {
+      return { year: normalizedYear, month: now.getMonth() + 1 };
+    }
+    return { year: normalizedYear, month: normalizedMonth };
   }
 
   onStatusFilterChange(tab: PaymentTab, value: StatusFilterOption): void {
@@ -827,15 +926,14 @@ export class InvoiceComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     return records.filter((row) => {
-      const normalized = this.getNormalizedStatus(row);
-      if (status === 'due') {
-        return normalized === 'due' || normalized === 'draft';
-      }
-      if (status === 'credit') {
-        return normalized === 'credit' || normalized === 'unapplied';
-      }
-      return normalized === status;
+      const category = this.getTransactionCategory(row);
+      return status === category;
     });
+  }
+
+  private getTransactionCategory(row: InvoiceRow): 'tool' | 'application' {
+    const hint = `${row?.['source'] || ''} ${row?.['type'] || ''} ${row?.['category'] || ''} ${row?.['description'] || ''} ${row?.['name'] || ''}`.toLowerCase();
+    return hint.includes('tool') ? 'tool' : 'application';
   }
 
   private getNormalizedStatus(row: InvoiceRow): string {
@@ -851,8 +949,31 @@ export class InvoiceComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!value) {
       return null;
     }
+    console.log(value)
     const date = new Date(value);
     return isNaN(date.getTime()) ? null : date;
+  }
+
+  private parseDateValue(value: string): Date | null {
+    if (!value) {
+      return null;
+    }
+    const [yearText, monthText, dayText] = value.split('-');
+    const year = Number(yearText);
+    const month = Number(monthText);
+    const day = Number(dayText);
+    if (!year || !month || !day) {
+      return null;
+    }
+    const date = new Date(year, month - 1, day);
+    return isNaN(date.getTime()) ? null : date;
+  }
+
+  private formatDateAsYMD(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 
   private initializeScopeFilters(): void {
@@ -996,7 +1117,7 @@ export class InvoiceComponent implements OnInit, AfterViewInit, OnDestroy {
           const items = this.extractCostByServiceItems(response?.costs);
           return { envName, deploymentNameById, toolNameById, items };
         });
-        
+
         const deploymentIds = Array.from(new Set(
           responseRows.flatMap(({ items }) =>
             items

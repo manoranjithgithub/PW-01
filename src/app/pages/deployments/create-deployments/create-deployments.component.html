@@ -204,7 +204,7 @@
                   Invalid Port Number Entered: must be between 1 and 65535.
                 </div>
               </div>
-              <div class="col-md-4">
+              <!-- <div class="col-md-4">
                 <label class="form-label">Dockerfile Path
                   <span [cTooltip]="'Please provide the path to the Dockerfile that needs to be deployed.'"
                     cTooltipPlacement="top" class="text-warning cursor mx-1">
@@ -212,6 +212,14 @@
                   </span>
                 </label>
                 <input type="text" class="form-control" formControlName="dockerfilePath">
+              </div> -->
+              <div class="col-md-4">
+                <label class="form-label">Docker File Name</label>
+                <input type="text" class="form-control" formControlName="dockerFileName">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Folder Path</label>
+                <input type="text" class="form-control" formControlName="folderPath">
               </div>
               <div class="col-md-4">
                 <label class="form-label">Health Endpoint</label>
