@@ -294,11 +294,27 @@
                 </div>
               </div> -->
               <div class="d-flex gap-2">
-                <div class="flex-fill mb-3">
+                <!-- <div class="flex-fill mb-3">
                   <label for="dockerfilePath" class="custom-label">Dockerfile Path</label>
                   <input id="dockerfilePath" type="text" formControlName="dockerfilePath"
                     class="form-control custom-values" [readonly]="zipUpload && !vcsDeploy">
                   <div class="text-danger my-1" *ngIf="isError('dockerfilePath', 'maxlength')">
+                    Maximum 250 characters allowed.
+                  </div>
+                </div> -->
+                <div class="flex-fill mb-3">
+                  <label for="folderPath" class="custom-label">Folder Path</label>
+                  <input id="folderPath" type="text" formControlName="folderPath" class="form-control custom-values"
+                    [readonly]="zipUpload && !vcsDeploy">
+                  <div class="text-danger my-1" *ngIf="isError('folderPath', 'maxlength')">
+                    Maximum 250 characters allowed.
+                  </div>
+                </div>
+                <div class="flex-fill mb-3">
+                  <label for="dockerFileName" class="custom-label">Dockerfile Name</label>
+                  <input id="dockerFileName" type="text" formControlName="dockerFileName"
+                    class="form-control custom-values" [readonly]="zipUpload && !vcsDeploy">
+                  <div class="text-danger my-1" *ngIf="isError('dockerFileName', 'maxlength')">
                     Maximum 250 characters allowed.
                   </div>
                 </div>

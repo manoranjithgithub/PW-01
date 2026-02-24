@@ -76,15 +76,15 @@ describe('AgGridTableComponent', () => {
     localStorage.removeItem('project');
   });
 
-  it('onGridReady sets overlayMessage for invoice-list', () => {
-    component.tableName = 'invoice-list';
+  it('onGridReady sets overlayMessage for billing', () => {
+    component.tableName = 'billing';
     const fakeApi: any = {
       showNoRowsOverlay: jasmine.createSpy('showNoRowsOverlay'),
       hideOverlay: jasmine.createSpy('hideOverlay'),
       isDestroyed: () => false
     };
     component.onGridReady({ api: fakeApi } as any);
-    expect(component.overlayMessage).toContain('invoice-list');
+    expect(component.overlayMessage).toContain('billing');
   });
 
   it('should create', () => {

@@ -1,6 +1,390 @@
-<!-- <div id="cf-dropin-container"></div> -->
+<section class="payments-page">
+  <header class="payments-header">
+    <div class="header-left">
+      <div class="top-section-toggle" role="tablist" aria-label="Billing sections">
+        <button type="button" [class.active]="activeTopSection === 'bill'" (click)="switchTopSection('bill')">
+          Bills
+        </button>
+        <button type="button" [class.active]="activeTopSection === 'payments'" (click)="switchTopSection('payments')">
+          Payments
+        </button>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div class="date-range-selector" *ngIf="activeTopSection === 'bill'" (click)="toggleMonthPicker($event)">
+        <i class="bi bi-calendar3"></i>
+        <span class="month-year-label">{{ selectedMonthLabel }}</span>
 
-<app-ag-grid-table [rowData]="tableData" [columnDefs]="columnDefs" [showProjectButton]="false"
-    [showDeployButton]="false" (goToNewDeployModel)="goToNewDeployModel($event)"></app-ag-grid-table>
+        <div class="month-picker-panel" *ngIf="monthPickerOpen" (click)="$event.stopPropagation()">
+          <div class="month-picker-row">
+            <label for="monthPickerMonth">Month</label>
+            <select
+              id="monthPickerMonth"
+              [(ngModel)]="monthPickerMonth"
+              (change)="onMonthPickerMonthChange(($any($event.target)).value)"
+            >
+              <option *ngFor="let month of monthOptions" [ngValue]="month.value" [disabled]="isMonthDisabled(month.value)">
+                {{ month.label }}
+              </option>
+            </select>
+          </div>
+          <div class="month-picker-row">
+            <label for="monthPickerYear">Year</label>
+            <select
+              id="monthPickerYear"
+              [(ngModel)]="monthPickerYear"
+              (change)="onMonthPickerYearChange(($any($event.target)).value)"
+            >
+              <option *ngFor="let year of yearOptions" [ngValue]="year">{{ year }}</option>
+            </select>
+          </div>
+          <div class="month-picker-actions">
+            <button type="button" class="month-picker-cancel" (click)="onCancelMonthPicker($event)">Cancel</button>
+            <button type="button" class="month-picker-apply" (click)="onApplyMonthPicker($event)">
+              Apply
+            </button>
+          </div>
+        </div>
+      </div>
+      <button type="button" class="outline-btn" (click)="refreshInvoices()">
+        Refresh <i class="bi bi-arrow-clockwise"></i>
+      </button>
+    </div>
+  </header>
+  <div class="overdue-alert" *ngIf="overdueDays > 0">
+    <div class="overdue-alert-content">
+      <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+      <div>
+        <p class="overdue-alert-title">Payment overdue</p>
+        <p class="overdue-alert-text">
+          Your payment of {{ formatMoney(totalOutstandingBalance) }} is {{ overdueDays }} day{{ overdueDays === 1 ? ''
+          : 's' }} overdue.
+        </p>
+      </div>
+    </div>
+    <button type="button" class="overdue-alert-btn" (click)="reviewDueInvoices()">
+      Review invoices
+    </button>
+  </div>
+  <section class="payment-overview mt-4" *ngIf="activeTopSection === 'payments'">
+    <div class="overview-grid">
+      <article class="overview-card total-card company-billing-card">
+        <div class="card-content">
+          <p class="card-label">Company & Billing Info</p>
+          <div class="company-title-row">
+            <p class="card-value">{{ companyBillingInfo.companyName || 'Not configured' }}</p>
+            <button type="button" class="manage-billing-btn" (click)="navigateToAccountSettings()">Manage billing
+              details</button>
+          </div>
+          <div class="company-details-grid" *ngIf="!billingDetailsLoading; else billingLoadingBlock">
+            <div class="company-details-row">
+              <span class="detail-label">GST Number</span>
+              <span class="detail-value">{{ maskSensitiveId(companyBillingInfo.gstNumber) }}</span>
+            </div>
+            <div class="company-details-row">
+              <span class="detail-label">PAN Number</span>
+              <span class="detail-value">{{ maskSensitiveId(companyBillingInfo.panNumber) }}</span>
+            </div>
+            <div class="company-details-row">
+              <span class="detail-label">Billing Address</span>
+              <span class="detail-value">{{ billingAddressLabel }}</span>
+            </div>
+          </div>
+          <ng-template #billingLoadingBlock>
+            <p class="muted-line">Loading billing details...</p>
+          </ng-template>
+        </div>
+      </article>
+
+      <article>
+        <div class="billing-summary-item">
+          <label>Payment Overview</label>
+          <div class="billing-info-row d-flex align-items-center gap-1">
+            <p class="muted-line">Next due date: </p>
+            <p class="bill-strong">{{ nextDueDate }}</p>
+          </div>
+          <div class="billing-info-row d-flex align-items-center gap-1">
+            <p class="muted-line">Overdue: </p>
+            <p class="bill-strong">{{ overdueDays }} days</p>
+          </div>
+          <!-- <div class="item-value"> {{ billPeriodLabel }}</div> -->
+          <p class="muted-line overview-note" [style.color]="totalOutstandingBalance > 0 ? '#ff0000' : '#232323'"
+            style="margin-top: 25px;">Your account {{
+            totalOutstandingBalance > 0 ? 'has pending invoices' : 'is up to date'
+            }}</p>
+        </div>
+      </article>
+
+      <article>
+        <div class="billing-summary-item">
+          <label>Total Outstanding</label>
+          <div class="item-value">{{ formatMoney(totalOutstandingBalance) }}</div>
+          <p class="muted-line">Amount due for payment</p>
+          <div class="item-actions" *ngIf="totalOutstandingBalance > 0">
+            <button type="button" (click)="payOutstandingNow()">Pay now</button>
+          </div>
+        </div>
+      </article>
+
+      <article>
+        <div class="billing-summary-item">
+          <label>Available Credit</label>
+          <div class="item-value">{{ formatMoney(totalAvailableFunds) }}</div>
+          <p class="muted-line">Credit balance available</p>
+        </div>
+      </article>
+
+      <article>
+        <div class="billing-summary-item">
+          <label>Last Payment</label>
+          <div class="item-value">{{ lastPaymentDateLabel }}</div>
+          <p class="muted-line">{{ lastPaidInvoice ? formatMoney(lastPaymentAmount, lastPaidInvoice.currency) : 'No
+            payment recorded yet' }}</p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <article class="tab-panel" *ngIf="activeTopSection === 'payments' && activeTab === 'transactions'"
+    id="payments-due-panel">
+    <div class="panel-header">
+      <div>
+        <h3>Invoice history <span>({{ filteredTransactions.length }})</span></h3>
+        <p class="panel-desc">
+          A complete log of invoice and payment activity for this account.
+        </p>
+      </div>
+    </div>
+
+    <div class="search-status-row transaction-filter-row">
+      <label class="search-wrap">
+        <i class="bi bi-search"></i>
+        <input type="text" placeholder="Search billing records" [value]="transactionsFilter"
+          (input)="onFilterChange($any($event.target).value, 'transactions')" />
+      </label>
+      <label class="time-window-field filter-field">
+        <span>Date Range</span>
+        <label class="time-window-picker">
+          <i class="bi bi-calendar3"></i>
+          <select [value]="selectedTimeRange" (change)="onTimeRangeChange($any($event.target).value)">
+            <option *ngFor="let option of timeRangeOptions" [value]="option.value">{{ option.label }}</option>
+          </select>
+        </label>
+      </label>
+      <label class="status-field filter-field">
+        <span>Status</span>
+        <select [value]="transactionStatusFilter"
+          (change)="onStatusFilterChange('transactions', $any($event.target).value)">
+          <option *ngFor="let option of statusFilterOptions" [value]="option.value">{{ option.label }}</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="table-shell">
+      <table class="payments-table">
+        <thead>
+          <tr>
+            <th>Issued date</th>
+            <th>Type</th>
+            <th>ID</th>
+            <th>Subtotal</th>
+            <th>Tax</th>
+            <th>Credit</th>
+            <th>Outstanding</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody *ngIf="filteredTransactions.length">
+          <tr *ngFor="let row of filteredTransactions">
+            <td>{{ getIssuedDate(row) }}</td>
+            <td>Invoice</td>
+            <td>{{ getRowId(row) }}</td>
+            <td>{{ formatMoney(row.subtotal || 0, row.currency) }}</td>
+            <td>{{ formatMoney(row.tax_amount || 0, row.currency) }}</td>
+            <td>{{ formatMoney(0, row.currency) }}</td>
+            <td>{{ formatMoney(row.total || row.subtotal, row.currency) }}</td>
+            <td><span class="status-pill" [class]="getStatusClass(row)">{{ getStatusLabel(row) }}</span></td>
+            <td class="download-cell">
+              <div class="action-buttons">
+                <!-- <button type="button" class="pay-now-action-btn" (click)="openPayNow(row)">
+                  Pay now
+                </button> -->
+                <button type="button" class="icon-btn" title="View PDF" (click)="viewPdf(row)">
+                  <i class="bi bi-file-earmark-pdf-fill"></i>
+                </button>
+                <button type="button" class="icon-btn" title="Download PDF" (click)="onDownload(row)">
+                  <i class="bi bi-download"></i>
+                </button>
+              </div>
+              <!-- <span class="text-muted" *ngIf="!row.pdf_generated_at">No PDF</span> -->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="table-empty" *ngIf="!filteredTransactions.length">
+        <p class="title">No billing records found</p>
+        <p>Try changing your search text or date window.</p>
+      </div>
+    </div>
+    <div class="table-footer">
+      <div class="footer-count">Total records: {{ totalRecords }}</div>
+      <div class="footer-controls">
+        <label class="page-size-label">
+          Items per page
+          <select [value]="limit" (change)="onItemsPerPageChange($any($event.target).value)">
+            <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
+          </select>
+        </label>
+        <span class="page-range">{{ pageRangeLabel }}</span>
+        <button type="button" class="page-btn" (click)="previousPage()" [disabled]="currentPage <= 1">
+          <i class="bi bi-chevron-left"></i>
+        </button>
+        <button type="button" class="page-btn" (click)="nextPage()" [disabled]="currentPage >= totalPages">
+          <i class="bi bi-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+  </article>
+
+  <section class="bill-layout" *ngIf="activeTopSection === 'bill'">
+    <article class="tab-panel">
+      <div class="billing-summary-grid">
+        <div class="billing-summary-item">
+          <label>Billing Period</label>
+          <div class="item-value">{{ billPeriodLabel }}</div>
+          <p class="muted-line">Last charged on Feb 10, 2026</p>
+        </div>
+        <div class="billing-summary-item bill-total-breakdown">
+          <label>Bill Summary</label>
+          <div class="breakdown-row">
+            <span>Total Charges</span>
+            <strong>{{ formatMoney(billChargesTotal) }}</strong>
+          </div>
+          <div class="breakdown-row">
+            <span>Taxes</span>
+            <strong>{{ formatMoney(billTaxesTotal) }}</strong>
+          </div>
+          <div class="breakdown-row">
+            <span>Credits applied</span>
+            <strong>-{{ formatMoney(billCreditsApplied) }}</strong>
+          </div>
+          <div class="breakdown-row total-due-row">
+            <span>Total Due</span>
+            <strong>{{ formatMoney(billTotalDue) }}</strong>
+          </div>
+        </div>
+        <div class="billing-summary-item">
+          <label>Platform tools</label>
+          <div class="item-value">{{ formatMoney(toolServiceCostTotal) }}</div>
+          <p class="muted-line">Total tool cost from charges by service</p>
+        </div>
+        <div class="billing-summary-item">
+          <label>Total billable services</label>
+          <div class="item-value">{{ totalBillableServicesCount }}</div>
+          <p class="muted-line">Combined deployments and tools</p>
+        </div>
+      </div>
+    </article>
 
 
+
+    <article class="tab-panel">
+      <nav class="tab-nav bill-subtabs" aria-label="Bill Tabs">
+        <button type="button" [class.active]="activeBillTab === 'service'" (click)="switchBillTab('service')">Charges by
+          service</button>
+        <!-- <button type="button" [class.active]="activeBillTab === 'taxes'" (click)="switchBillTab('taxes')">Taxes</button> -->
+      </nav>
+      <div *ngIf="activeBillTab === 'service'">
+        <div class="search-status-row transaction-filter-row bill-service-row">
+          <label class="search-wrap">
+            <i class="bi bi-search"></i>
+            <input type="text" placeholder="Search service entries" [value]="billServiceFilter"
+              (input)="billServiceFilter = $any($event.target).value" />
+          </label>
+
+          <label class="scope-field filter-field">
+            <span>Project</span>
+            <select [value]="selectedProjectId" (change)="onProjectScopeChange($any($event.target).value)">
+              <option *ngFor="let project of projectOptions" [value]="project.id">{{ project.name }}</option>
+            </select>
+          </label>
+          <label class="scope-field filter-field">
+            <span>Environment</span>
+            <select [value]="selectedEnvironmentId" (change)="onEnvironmentScopeChange($any($event.target).value)">
+              <option *ngFor="let env of environmentOptions" [value]="env.id">{{ env.name }}</option>
+            </select>
+          </label>
+          <!-- <label class="time-window-field filter-field">
+            <span>Date Range</span>
+            <label class="time-window-picker">
+              <i class="bi bi-calendar3"></i>
+              <select [value]="selectedTimeRange" (change)="onTimeRangeChange($any($event.target).value)">
+                <option *ngFor="let option of timeRangeOptions" [value]="option.value">{{ option.label }}</option>
+              </select>
+            </label>
+          </label> -->
+          <label class="scope-field filter-field">
+            <span>Status</span>
+            <select>
+              <option>All services</option>
+              <option>Active</option>
+              <option>Inactive</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="table-shell">
+          <table class="payments-table">
+            <thead>
+              <tr>
+                <th>Service</th>
+                <th>Instance</th>
+                <th>CPU</th>
+                <th>Memory</th>
+                <th>Uptime Hours</th>
+                <th>Charge</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of filteredBillRows">
+                <td>
+                  <div class="service-cell">
+                    <span>{{ row.name || row.description }}</span>
+                    <span class="service-type-badge" [class.tool]="row.source === 'tool'">
+                      {{ row.source === 'tool' ? 'Tool' : 'Application' }}
+                    </span>
+                  </div>
+                </td>
+                <td>{{ formatMoney(row.instanceCost || 0, row.currency) }}</td>
+                <td>{{ formatMoney(row.cpuCost || 0, row.currency) }}</td>
+                <td>{{ formatMoney(row.memoryCost || 0, row.currency) }}</td>
+                <td>{{ row.uptimeHours }}</td>
+                <td>{{ formatMoney(row.amount, row.currency) }}</td>
+              </tr>
+            </tbody>
+            <tfoot *ngIf="filteredBillRows.length">
+              <tr class="subtotal-row">
+                <td><strong>Subtotal</strong></td>
+                <td><strong>{{ formatMoney(filteredBillInstanceSubtotal) }}</strong></td>
+                <td><strong>{{ formatMoney(filteredBillCpuSubtotal) }}</strong></td>
+                <td><strong>{{ formatMoney(filteredBillMemorySubtotal) }}</strong></td>
+                <td>-</td>
+                <td><strong>{{ formatMoney(filteredBillChargeSubtotal) }}</strong></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
+        <div class="table-empty" *ngIf="billLoading">
+          <p class="title">Preparing billing view</p>
+          <p>Collecting deployment and tool usage from live sources...</p>
+        </div>
+        <div class="table-empty" *ngIf="!billLoading && !filteredBillRows.length">
+          <p class="title">No billable entries found</p>
+          <p>There are no deployment or tool charges for the selected environment.</p>
+        </div>
+      </div>
+    </article>
+  </section>

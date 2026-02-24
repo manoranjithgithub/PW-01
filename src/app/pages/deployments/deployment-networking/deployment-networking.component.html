@@ -9,7 +9,7 @@
       <div class="accordion-body" id="network-section">
         <div class="gap-4 mb-4">
           <div class="w-100 mb-4">
-            <div class="card border h-100">
+            <div class="card border">
               <div class="card-body p-1 card-body-text">
                 <h6 class="card-title mb-2 fs-6 fw-bold"><i class="bi bi-globe"></i> Public Networking</h6>
                 <small class="text-muted d-block mb-3 fs-7">Access to this service publicly through HTTP/TCP.</small>
@@ -33,10 +33,10 @@
                         <small *ngIf="copiedButtonId === 'domain-copy'"
                           class="badge badge-success border border-success text-success ms-2 badge-copied fw-light">Copied!</small>
                       </div> -->
-                      <!-- <button class="btn btn-sm btn-outline-danger" title="Delete endpoint" (click)="deleteEndpoint()" 
+                      <button class="btn btn-sm btn-outline-danger" title="Delete endpoint" (click)="deleteEndpoint()" 
                         [disabled]="formDisabled">
                         <i class="bi bi-x-circle mx-1"></i>delete
-                      </button> -->
+                      </button>
                     </div>
                   </div>
                   <div class="py-1">
@@ -83,7 +83,7 @@
           </div>
 
           <div class="w-100">
-            <div class="card border h-100">
+            <div class="card border ">
               <div class="card-body p-1 card-body-text">
                 <h6 class="card-title mb-2 fs-6 fw-bold"><i class="bi bi-shield-lock"></i> Private Networking</h6>
                 <small class="text-muted d-block mb-3 fs-7">Access this service from within the network.</small>
@@ -117,7 +117,7 @@
           <form cForm [formGroup]="networkSettingsForm">
             <div class="d-flex gap-4 mb-4">
               <div class="w-100 min-vh-auto">
-                <div class="card border h-100">
+                <div class="card border">
                   <div class="card-body p-1 card-body-text">
                     <div class="d-flex align-items-center justify-content-between mb-3">
                       <div>
@@ -139,7 +139,7 @@
                       </label>
                     </div>
 
-                    <fieldset [disabled]="!networkSettingsForm.get('customDns')?.value" class="custom-domain-section">
+                    <fieldset [disabled]="!networkSettingsForm.get('customDns')?.value" class="custom-domain-section" *ngIf="networkSettingsForm.get('customDns')?.value">
                       <div class="custom-dns-layout">
                         <div class="custom-dns-left">
                           <div class="mb-2">
