@@ -97,7 +97,7 @@ export class EnvironmentVariablesComponent implements OnInit {
 
   createRule(): FormGroup {
     return this.fb.group({
-      name: ['', [Validators.required, Validators.pattern('^[A-Za-z0-9._-]+$')]],
+      name: ['', [Validators.required, Validators.pattern('^[A-Za-z0-9._-]+$'), this.duplicateNameValidator.bind(this)]],
       value: ['', Validators.required],
     }, { validators: this.nameValueDependencyValidator });
   }
@@ -192,6 +192,16 @@ export class EnvironmentVariablesComponent implements OnInit {
     }
 
     return null;
+  }
+
+  duplicateNameValidator(control: AbstractControl): ValidationErrors | null {
+    const value = control.value;
+    if (!value) {
+      return null;
+    }
+    
+    const isDuplicate = this.envList.some((env: any) => env.EnvVariable === value);
+    return isDuplicate ? { duplicateName: true } : null;
   }
 
   editDetails(index: number): void {

@@ -133,7 +133,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
       storage: [null, Validators.pattern("^[0-9]+$")],
       name: ['', [Validators.required]],
       modelId: ['', Validators.required],
-      replicas: [1, [Validators.required]],
+      replicas: [1, [Validators.required, Validators.min(1)]],
       instanceType: ['Nvidia L2', Validators.required],
       contextLength: [512, [Validators.required]],
       storageSize: [10, [Validators.required]],

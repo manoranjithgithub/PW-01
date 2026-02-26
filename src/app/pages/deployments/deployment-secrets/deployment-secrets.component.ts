@@ -212,6 +212,10 @@ export class DeploymentSecretsComponent implements OnInit {
       return { valueRequired: true };
     }
 
+    if (value && !name) {
+      return { nameRequired: true };
+    }
+
     return null;
   }
 
