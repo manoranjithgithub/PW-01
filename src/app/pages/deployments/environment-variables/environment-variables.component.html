@@ -25,9 +25,19 @@
                   placeholder="VARIABLE_NAME">
                 <div class="ps-1  my-1" style="min-height: 1.25rem;">
                   <small
+                    *ngIf="rule.get('name')?.invalid && (rule.get('name')?.dirty || rule.get('value')?.value) && rule.get('name')?.errors?.['required']"
+                    class="text-danger">
+                    Variable name is required.
+                  </small>
+                  <small
                     *ngIf="rule.get('name')?.invalid && rule.get('name')?.dirty && rule.get('name')?.errors?.['pattern']"
                     class="text-danger">
                     Only letters (A-Z, a-z, 0-9) and special characters (_ ,.) are allowed.
+                  </small>
+                  <small
+                    *ngIf="rule.get('name')?.invalid && rule.get('name')?.errors?.['duplicateName']"
+                    class="text-danger">
+                    Variable name already exists.
                   </small>
                 </div>
               </div>
@@ -37,9 +47,12 @@
                 <label class="custom-label mb-2">Value</label>
                 <input type="text" formControlName="value" class="form-control custom-values" placeholder="VALUE">
                 <div class="ps-1 my-1" style="min-height: 1.25rem;">
-                  <small *ngIf="rule.errors?.['valueRequired'] && (rule.dirty || rule.touched)" class="text-danger">
-                    Value is required if name is provided.
+                  <small *ngIf="rule.get('value')?.invalid && rule.get('value')?.dirty && rule.get('value')?.errors?.['required']" class="text-danger">
+                    Variable value is required.
                   </small>
+                  <!-- <small *ngIf="rule.errors?.['valueRequired'] && (rule.dirty || rule.touched)" class="text-danger">
+                    Value is required if name is provided.
+                  </small> -->
                 </div>
               </div>
 
@@ -106,6 +119,6 @@
 </form>
 
 <app-modal #rawEditorModel [modalConfig]="modalConfig">
-  <app-raw-editor (closeModal)="closeModal($event)" [data]="envList" (variablesUpdated)="onVariablesUpdated($event)">
+  <app-raw-editor (closeModal)="closeModal($event)" [data]="envList" [itemName]="'environment variable'" (variablesUpdated)="onVariablesUpdated($event)">
   </app-raw-editor>
 </app-modal>
