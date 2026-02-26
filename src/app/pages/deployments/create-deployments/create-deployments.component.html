@@ -98,11 +98,10 @@
                 <label class="form-label">Name <span class="required text-danger">*</span></label>
                 <input type="text" class="form-control" formControlName="name" (blur)="checkAvailablity()">
                 <div class="text-danger my-1" *ngIf="isError('name', 'required')">
-                  This field is required.
+                  Deployment name is required.
                 </div>
                 <div class="text-danger my-1" *ngIf="isError('name','pattern')">
-                  Name must start with a lowercase letter and contain only lowercase letters, numbers, and hyphens (-).
-                  Consecutive hyphens, uppercase letters, and names starting with a number or hyphen are not allowed.
+                 Deployment name can contain only lowercase letters, numbers, and hyphens.
                 </div>
                 <div class="text-danger my-1" *ngIf="isError('name','nameValidation')"> Name is already taken</div>
                 <div class="text-danger my-1" *ngIf="isError('name', 'maxlength')">
@@ -129,8 +128,12 @@
                 <ng-container *ngIf="!isAutoScaleEnabled">
                   <input type="text" class="form-control" formControlName="replicas" *ngIf="!isAutoScaleEnabled">
                   <div class="text-danger my-1"
-                    *ngIf="isError('replicas', 'pattern') && !isError('replicas', 'required') && !isAutoScaleEnabled">
-                    Only numbers are allowed.
+                    *ngIf="isError('replicas', 'pattern') && !isError('replicas', 'min') && !isAutoScaleEnabled">
+                    Replicas must be a number.
+                  </div>
+                  <div class="text-danger my-1"
+                    *ngIf="isError('replicas', 'min') && !isAutoScaleEnabled">
+                    Replicas must be at least 1.
                   </div>
                 </ng-container>
                 <ng-container *ngIf="isAutoScaleEnabled">
@@ -214,11 +217,21 @@
                 <input type="text" class="form-control" formControlName="dockerfilePath">
               </div> -->
               <div class="col-md-4">
-                <label class="form-label">Folder Path</label>
+                <label class="form-label">Folder Path
+                  <span [cTooltip]="'Specify the folder path relative to the repository root where the docker files are located.'"
+                    cTooltipPlacement="top" class="text-warning cursor mx-1">
+                    <i class="bi bi-exclamation-circle"></i>
+                  </span>
+                </label>
                 <input type="text" class="form-control" formControlName="folderPath">
               </div>
                <div class="col-md-4">
-                <label class="form-label">Docker File Name</label>
+                <label class="form-label">Docker File Name
+                  <span [cTooltip]="'Specify the name of the Dockerfile (e.g., Dockerfile, Dockerfile.prod).'"
+                    cTooltipPlacement="top" class="text-warning cursor mx-1">
+                    <i class="bi bi-exclamation-circle"></i>
+                  </span>
+                </label>
                 <input type="text" class="form-control" formControlName="dockerFileName">
               </div>
               <div class="col-md-4">
@@ -226,6 +239,9 @@
                 <input type="text" class="form-control" formControlName="healthEndpoint" placeholder="/health">
                 <div *ngIf="isError('healthEndpoint','maxlength')" class="text-danger my-1">
                   Maximun 250 characters only.
+                </div>
+                <div *ngIf="isError('healthEndpoint','pattern')" class="text-danger my-1">
+                  Health endpoint must start with /.
                 </div>
               </div>
               <div class="col-md-4">

@@ -138,7 +138,7 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
         ],
       ],
       vcsAutoDeploy: [false],
-      replicas: ['1', [Validators.pattern('^[0-9]+$')]],
+      replicas: ['1', [Validators.pattern('^[0-9]+$'), Validators.min(1)]],
       hpaEnabled: [false],
       hpaMinReplicas: ['', [Validators.pattern('^[0-9]+$'), Validators.min(1)]],
       hpaMaxReplicas: ['', [Validators.pattern('^[0-9]+$')]],
@@ -148,7 +148,7 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
       installCommand: [null],
       ephemeralStorage: ['2', Validators.pattern('^[0-9]*\\.?[0-9]+$')],
       storage: [null, Validators.pattern('^[0-9]+$')],
-      healthEndpoint: [null, Validators.maxLength(250)],
+      healthEndpoint: [null, [Validators.maxLength(250), Validators.pattern('^/.*')]],
       zipFilename: [{ value: null, disabled: true }],
       // dockerfilePath: [null],
       folderPath: [null],
@@ -850,7 +850,7 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
       this.stepOneForm.get('hpaMaxReplicas')?.updateValueAndValidity();
     } else {
       this.stepOneForm.get('replicas')?.setValue('1');
-      this.stepOneForm.get('replicas')?.setValidators([Validators.pattern('^[0-9]+$')]);
+      this.stepOneForm.get('replicas')?.setValidators([Validators.pattern('^[0-9]+$'), Validators.min(1)]);
       this.stepOneForm.get('replicas')?.updateValueAndValidity();
       this.stepOneForm.get('hpaMinReplicas')?.setValue('');
       this.stepOneForm.get('hpaMaxReplicas')?.setValue('');
