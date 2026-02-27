@@ -4,6 +4,14 @@
     Environment variables count has exhausted. Please upgrade to nimbuz business
   </div>
 </c-alert>
+
+<c-alert color="warning" *ngIf="isBuilding">
+  <div class="warn-text">
+    <i class="bi bi-exclamation-triangle-fill"></i>
+    Environment variables cannot be edited while the application is building
+  </div>
+</c-alert>
+
 <form [formGroup]="newVariableForm">
   <div class="card-child">
     <fieldset [disabled]="freezeAddNewData" class="mb-2">
@@ -71,7 +79,7 @@
         </div>
 
           <div class="d-flex justify-content-end gap-3 add-variables mt-3">
-          <button type="button" class="btn button-format-solid custom-label" (click)="(permissionService.canWriteGlobal() || permissionService.canAdminGlobal()) && addVariable()" [disabled]="!newVariableForm.valid || !(permissionService.canWriteGlobal() || permissionService.canAdminGlobal())" [attr.title]="(!newVariableForm.valid || !(permissionService.canWriteGlobal() || permissionService.canAdminGlobal())) ? 'You are not authorized to view that page.' : null">Add Env to
+          <button type="button" class="btn button-format-solid custom-label" (click)="(permissionService.canWriteGlobal() || permissionService.canAdminGlobal()) && addVariable()" [disabled]=" !(permissionService.canWriteGlobal() || permissionService.canAdminGlobal())">Add Env to
             List</button>
           <button type="button" class="btn btn-light btn-sm" (click)="cancelVariableForm()">Cancel</button>
         </div>

@@ -95,6 +95,7 @@ export class DeploymentNetworkingComponent implements OnInit {
     const hasProtocol = value.includes('https://') || value.includes('http://');
     return hasProtocol ? { protocolNotAllowed: true } : null;
   }
+  isBuilding: boolean = false;
 
   constructor(private fb: FormBuilder, private deploymentService: DeploymentsService,
     private toaster: ToastrService, private modalService: NgbModal, private ac: ActivatedRoute,
@@ -115,7 +116,7 @@ export class DeploymentNetworkingComponent implements OnInit {
     });
 
     this.freezeAddNewData = this.currentStatus && this.currentStatus?.toLowerCase() === 'building' ? true : false;
-
+    this.isBuilding = this.currentStatus && this.currentStatus?.toLowerCase() === 'building' ? true : false;
     const shouldDisable = this.freezeAddNewData || !(this.permissionService.canWriteGlobal() || this.permissionService.canAdminGlobal() || this.permissionService.canDeleteForCurrentUser(null, null));
     this.formDisabled = shouldDisable;
     if (shouldDisable) {
@@ -137,6 +138,7 @@ export class DeploymentNetworkingComponent implements OnInit {
         };
         this.getDeploymentById();
         this.freezeAddNewData = res.data?.status.toLowerCase() === 'stopped' || this.currentStatus?.toLowerCase() === 'building' ? true : false;
+        this.isBuilding = this.currentStatus?.toLowerCase() === 'building' ? true : false;        
         const shouldDisable = this.freezeAddNewData || !(this.permissionService.canWriteGlobal() || this.permissionService.canAdminGlobal() || this.permissionService.canDeleteForCurrentUser(null, null));
         this.formDisabled = shouldDisable;
       })

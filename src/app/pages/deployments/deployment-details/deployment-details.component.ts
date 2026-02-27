@@ -54,6 +54,7 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
   @Output() closeModalEvent = new EventEmitter<void>();
 
   @ViewChild(EnvironmentVariablesComponent) envVarChild!: EnvironmentVariablesComponent;
+  @ViewChild(DeploymentSecretsComponent) secretsChild!: DeploymentSecretsComponent;
   @ViewChild(DeploymentConfigMapsComponent) configMapChild!: DeploymentConfigMapsComponent;
 
   selectedTabIndex = 0;
@@ -200,7 +201,11 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
 
   goToNextTab(): void {
     if (this.selectedTabIndex === 1) {
+      this.envVarChild.savePendingFormData();
       this.envVarChild.createEnvironmentVariable();
+    }
+    if (this.selectedTabIndex === 2) {
+      this.secretsChild.savePendingFormData();
     }
     if (this.selectedTabIndex === 3) {
       this.configMapChild.updateConfigFile();
