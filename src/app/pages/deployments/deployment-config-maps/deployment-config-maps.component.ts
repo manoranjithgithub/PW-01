@@ -21,6 +21,7 @@ export class DeploymentConfigMapsComponent implements OnInit {
 
   fileName: string | null = null;
   freezeAddNewData: boolean = false;
+  isBuilding: boolean = false;
   parsedConfigData: any;
   selectedFileName = '';
   base64Snippet = '';
@@ -32,6 +33,8 @@ export class DeploymentConfigMapsComponent implements OnInit {
 
   ngOnInit(): void {
     this.freezeAddNewData = this.currentStatus && this.currentStatus === 'Building' ? true : false;
+    this.isBuilding = this.currentStatus && this.currentStatus === 'Building' ? true : false;
+    
     this.fileUploadForm = this.fb.group({
       fileInput: [''],
       filePath: [''],
@@ -50,6 +53,7 @@ export class DeploymentConfigMapsComponent implements OnInit {
       if (depolyementId) {
         this.deploymentsService.getDeploymentById(depolyementId).subscribe((res: any) => {
           this.deploymentdetails = res.data;
+          this.isBuilding = this.currentStatus?.toLowerCase() === 'building' ? true : false;
           const freezeAddNewData = res.data?.status.toLowerCase() === 'stopped' || this.currentStatus?.toLowerCase() === 'building' ? true : false;
           const shouldDisable = freezeAddNewData || !(this.permissionService.canWriteGlobal() || this.permissionService.canAdminGlobal() || this.permissionService.canDeleteForCurrentUser(null, null));
           if (shouldDisable) {

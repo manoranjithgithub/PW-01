@@ -23,7 +23,7 @@
         <div class="container">
           <div class="row">
             <div class="col-md-4" style="margin-top:1px">
-              <mat-label class="form-label">Choose a deployment type</mat-label>
+              <mat-label class="form-label">Choose a deployment type <span class="required text-danger">*</span></mat-label>
               <mat-select formControlName="type" id="deployOptions" class="form-select mt-2">
                 <mat-option value="" disabled selected hidden>Choose a type to continue</mat-option>
                 <mat-option *ngFor="let option of deployOptions" [value]="option.value" (click)="selectedType(option)">
@@ -32,7 +32,9 @@
                   {{ option.name }}
                 </mat-option>
               </mat-select>
-
+              <div class="text-danger my-1" *ngIf="isError('type', 'required')">
+                Please select a VCS provider.
+              </div>
             </div>
             <div class="col-md-8" *ngIf=" selectedVCS && (selectedVCS === 'github' || selectedVCS === 'gitlab')">
               <div class="d-flex justify-content-between gap-2">
@@ -49,7 +51,7 @@
                 </div>
                 <div class="w-100">
                   <div class="d-flex justify-content-between auto-scale-toggle">
-                    <label class="form-label mx-0">Select the branch
+                    <label class="form-label mx-0">Select the branch <span class="required text-danger">*</span>
                       <span
                         [cTooltip]="'Enable Auto Deploy to automatically deploys changes when new commits are pushed to the selected branch.'"
                         cTooltipPlacement="top" class="text-warning cursor mx-1">
@@ -71,8 +73,8 @@
                       {{ option }}
                     </option>
                   </select>
-                  <div class="text-danger" *ngIf="isError('branchName', 'required')">
-                    This field is required.
+                  <div class="text-danger my-1" *ngIf="isError('branchName', 'required')">
+                    Please select a branch.
                   </div>
                 </div>
               </div>
@@ -352,8 +354,8 @@
       <div class="">
         <button class="btn button-format-solid"
           (click)="next(currentStep === 4 ? 'Submit' : (currentStep === 3 ? 'Review' : 'Save & Continue'))"
-          [disabled]="stepOneForm.invalid || submitted || !(permissionService.canWriteGlobal() || permissionService.canAdminGlobal())"
-          [attr.title]="(stepOneForm.invalid || submitted || !(permissionService.canWriteGlobal() || permissionService.canAdminGlobal())) ? 'You are not authorized to view that page.' : null">
+          [disabled]="submitted || !(permissionService.canWriteGlobal() || permissionService.canAdminGlobal())"
+          [attr.title]="(submitted || !(permissionService.canWriteGlobal() || permissionService.canAdminGlobal())) ? 'You are not authorized to view that page.' : null">
           {{ currentStep === 4 ? 'Submit' : (currentStep === 3 ? 'Review' : 'Save & Continue') }}
         </button>
       </div>
@@ -368,9 +370,19 @@
           <input type="file" id="zipfileInput" formControlName="zipfileInput" class="form-control mt-2"
             [accept]="'.zip,.tar'" (change)="onZipFileSelect($event)" />
           <div
-            *ngIf="zipUploadForm.get('zipfileInput')?.hasError('invalidFileType') && zipUploadForm.get('zipfileInput')?.touched"
-            class="alert alert-danger mt-4">
+            *ngIf="zipUploadForm.get('zipfileInput')?.hasError('required') && (zipUploadForm.get('zipfileInput')?.dirty || zipUploadForm.get('zipfileInput')?.touched)"
+            class="text-danger mt-2">
+            Please choose a valid ZIP or TAR file.
+          </div>
+          <div
+            *ngIf="zipUploadForm.get('zipfileInput')?.hasError('invalidFileType')"
+            class="text-danger mt-2">
             Invalid file type. Only .zip and .tar files are allowed.
+          </div>
+          <div
+            *ngIf="zipUploadForm.get('zipfileInput')?.hasError('fileSizeExceeded')"
+            class="text-danger mt-2">
+            File size exceeds the allowed limit.
           </div>
         </div>
         <div class="d-flex justify-content-center mt-2">

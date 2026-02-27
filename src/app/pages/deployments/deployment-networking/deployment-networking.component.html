@@ -1,3 +1,8 @@
+<c-alert color="warning" *ngIf="isBuilding">
+  <div class="warn-text">
+    <i class="bi bi-exclamation-triangle-fill"></i> Networking cannot be edited while the application is building
+  </div>
+</c-alert>
 <c-accordion class="accordion-gap">
   <c-accordion-item #item2="cAccordionItem" [visible]="true">
     <ng-template cTemplateId="accordionHeaderTemplate">
@@ -159,7 +164,8 @@
                             <div *ngIf="iscustomDnsHostError" class="text-danger small mt-1">
                               Domain name is required.
                             </div>
-                            <div *ngIf="networkSettingsForm.get('customDnsHost')?.hasError('protocolNotAllowed') && networkSettingsForm.get('customDnsHost')?.dirty"
+                            <div
+                              *ngIf="networkSettingsForm.get('customDnsHost')?.hasError('protocolNotAllowed') && networkSettingsForm.get('customDnsHost')?.dirty"
                               class="text-danger small mt-1">
                               Please remove https:// or http:// from the domain name.
                             </div>

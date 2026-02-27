@@ -97,6 +97,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
   ingressDomain: string = '';
   @Input() currentStatus: string = '';
   freezeAddNewData: boolean = false;
+  isBuilding: boolean = false;
   public formDisabled: boolean = false;
   endpointStatus: string = '';
   s3FileKey: string = '';
@@ -110,6 +111,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['currentStatus']) {
       this.freezeAddNewData = this.currentStatus && this.currentStatus?.toLowerCase() === 'building' ? true : false;
+      this.isBuilding = this.currentStatus?.toLowerCase() === 'building' ? true : false;
       this.formDisabled = this.freezeAddNewData || !(this.permissionService.canWriteGlobal() || this.permissionService.canAdminGlobal() || this.permissionService.canDeleteForCurrentUser(null, null));
       if (this.formDisabled) {
         this.generalSettingsForm?.disable?.();
@@ -196,6 +198,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
 
     const shouldDisable = this.freezeAddNewData || !(this.permissionService.canWriteGlobal() || this.permissionService.canAdminGlobal() || this.permissionService.canDeleteForCurrentUser(null, null));
     this.formDisabled = shouldDisable;
+    this.isBuilding = this.currentStatus?.toLowerCase() === 'building' ? true : false;
     if (shouldDisable) {
       this.generalSettingsForm?.disable?.();
       this.sourceSettingsForm?.disable?.();

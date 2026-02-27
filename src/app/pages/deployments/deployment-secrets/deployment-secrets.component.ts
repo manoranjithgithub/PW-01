@@ -50,6 +50,7 @@ export class DeploymentSecretsComponent implements OnInit {
   isEditSecret: boolean = false;
   @Input() currentStatus: string = '';
   freezeAddNewData: boolean = false;
+  isBuilding: boolean = false;
 
   constructor(private fb: FormBuilder, private deploymentsService: DeploymentsService, 
     private toaster: ToastrService, private modalService: NgbModal,
@@ -60,6 +61,7 @@ export class DeploymentSecretsComponent implements OnInit {
 
   ngOnInit() {
     this.freezeAddNewData = this.currentStatus && this.currentStatus?.toLowerCase() === 'building' ? true : false;
+    this.isBuilding = this.currentStatus?.toLowerCase() === 'building' ? true : false;
     const resourceUsage = JSON.parse(localStorage.getItem('resourceUsage') || '[]');
     const deploymentResource = resourceUsage.find(
       (res: any) => res.resource_type === 'secrets'
@@ -81,6 +83,7 @@ export class DeploymentSecretsComponent implements OnInit {
           const freezeAddNewData = res.data?.status.toLowerCase() === 'stopped' || this.currentStatus?.toLowerCase() === 'building' ? true : false;
           const shouldDisable = freezeAddNewData || !(this.permissionService.canWriteGlobal() || this.permissionService.canAdminGlobal() || this.permissionService.canDeleteForCurrentUser(null, null));
           this.freezeAddNewData = shouldDisable;
+          this.isBuilding = this.currentStatus?.toLowerCase() === 'building' ? true : false;
           this.handleSecretListLoading();
         });
       } else {
@@ -122,39 +125,52 @@ export class DeploymentSecretsComponent implements OnInit {
   }
 
   addSecret() {
-    this.showSecretForm = false;
-
-    if (this.secretForm.valid) {
-      const rules = this.secretForm.value.rules;
-      if (this.editIndex && this.editIndex >= 0) {
-        const updatedSecret = {
-          EnvVariable: rules[0].name,
-          Value: rules[0].value
-        };
-
-        this.secretList[this.editIndex] = updatedSecret;
-        this.editIndex = null;
-      } else {
-        const newSecrets = rules.map((rule: any) => ({
-          EnvVariable: rule.name,
-          Value: rule.value
-        }));
-
-        this.secretList = [...this.secretList, ...newSecrets];
-      }
-
-      const uniqueMap = new Map<string, any>();
-      this.secretList.forEach((item: any) => {
-        uniqueMap.set(item.EnvVariable, item);
+    if (!this.secretForm.valid) {
+      // Mark all fields as dirty to show validation errors
+      this.rulesFormArray.controls.forEach((group: AbstractControl) => {
+        const formGroup = group as FormGroup;
+        Object.keys(formGroup.controls).forEach((key: string) => {
+          const control = formGroup.get(key);
+          if (control) {
+            control.markAsDirty();
+            control.markAsTouched();
+          }
+        });
       });
-      this.secretList = Array.from(uniqueMap.values());
-      this.secretDetails.emit({ data: this.secretList });
+      return;
+    }
+
+    this.showSecretForm = false;
+    const rules = this.secretForm.value.rules;
+    if (this.editIndex && this.editIndex >= 0) {
+      const updatedSecret = {
+        EnvVariable: rules[0].name,
+        Value: rules[0].value
+      };
+
+      this.secretList[this.editIndex] = updatedSecret;
+      this.editIndex = null;
+    } else {
+      const newSecrets = rules.map((rule: any) => ({
+        EnvVariable: rule.name,
+        Value: rule.value
+      }));
+
+      this.secretList = [...this.secretList, ...newSecrets];
+    }
+
+    const uniqueMap = new Map<string, any>();
+    this.secretList.forEach((item: any) => {
+      uniqueMap.set(item.EnvVariable, item);
+    });
+    this.secretList = Array.from(uniqueMap.values());
+    this.secretDetails.emit({ data: this.secretList });
 
 
       this.addEnvVariables(this.secretList);
       this.rulesFormArray.clear();
     }
-  }
+  
   openRawEditor() {
     this.rawEditorModel.open();
   }
@@ -166,6 +182,13 @@ export class DeploymentSecretsComponent implements OnInit {
     this.secretList = updated;
     this.addSecret();
   }
+
+  savePendingFormData(): void {
+    if (this.showSecretForm && this.secretForm.valid) {
+      this.addSecret();
+    }
+  }
+
   addEnvVariables(data: any) {
     const req = {
       secret: data.reduce((acc: any, item: any) => {
@@ -178,7 +201,12 @@ export class DeploymentSecretsComponent implements OnInit {
     if (this.deploymentId) {
       this.deploymentsService.updateDeployment(this.deploymentId, req).subscribe({
         next: (res: any) => {
-          // this.secretList = [...envVariables];
+          this.secretList = this.mapEnvVariables(res.data.secret || {});
+          this.deploymentdetails.secret = res.data.secret || {};
+          // Emit updated data in review flow (canAddVariables=false)
+          if (!this.canAddVariables) {
+            this.secretDetails.emit({ data: this.secretList });
+          }
         },
         error: (err) => {
           this.toaster.error(err);
@@ -253,7 +281,12 @@ export class DeploymentSecretsComponent implements OnInit {
           if (this.deploymentId) {
             this.deploymentsService.updateDeployment(this.deploymentId, req).subscribe({
               next: (res: any) => {
-                // this.secretList = this.mapEnvVariables(res.data.secret || {});
+                this.secretList = this.mapEnvVariables(res.data.secret || {});
+                this.deploymentdetails.secret = res.data.secret || {};
+                if (!this.canAddVariables) {
+                  this.secretDetails.emit({ data: this.secretList });
+                }
+                this.toaster.success('Secret deleted successfully');
               },
               error: (err) => {
                 this.toaster.error(err);
@@ -265,6 +298,7 @@ export class DeploymentSecretsComponent implements OnInit {
   }
 
   private handleSecretListLoading(): void {
+    this.secretList = [];
     if (!this.deploymentdetails?.name) return;
     if (!this.canAddVariables && this.secretDataFromParent?.data) {
       // const newVariables = this.mapEnvVariables(this.secretDataFromParent.data);

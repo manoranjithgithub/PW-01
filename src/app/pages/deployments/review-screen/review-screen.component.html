@@ -4,7 +4,8 @@
     <hr class="mb-4">
     <div class="d-flex justify-content-between">
         <h6 class="fw-bold mb-3">General</h6>
-        <button *ngIf="permissionService.canWriteGlobal() || permissionService.canAdminGlobal()" (click)="edit(0)" class="btn"><i class="bi bi-pencil-square edit-icon"></i></button>
+        <button *ngIf="permissionService.canWriteGlobal() || permissionService.canAdminGlobal()" (click)="edit(0)"
+            class="btn"><i class="bi bi-pencil-square edit-icon"></i></button>
     </div>
     <div class="row mb-4">
         <div class="col-md-6">
@@ -31,7 +32,8 @@
     <hr class="mb-4">
     <div class="d-flex justify-content-between">
         <h6 class="fw-bold mb-3">Configuration</h6>
-        <button *ngIf="permissionService.canWriteGlobal() || permissionService.canAdminGlobal()" (click)="edit(0)" class="btn"><i class="bi bi-pencil-square edit-icon"></i></button>
+        <button *ngIf="permissionService.canWriteGlobal() || permissionService.canAdminGlobal()" (click)="edit(0)"
+            class="btn"><i class="bi bi-pencil-square edit-icon"></i></button>
     </div>
     <div class="row mb-4">
         <div class="col-md-6">
@@ -44,6 +46,10 @@
         </div>
     </div>
     <div class="row mb-4">
+        <div class="col-md-6">
+            <label class="mb-1">Instance type</label>
+            <span class="d-block">{{generalDetails?.instanceType?.instanceType }}</span>
+        </div>
         <div class="col-md-6" *ngIf="!isAutoScaleEnabled">
             <label class="mb-1">Replicas</label>
             <span class="d-block">{{generalDetails?.replicas }}</span>
@@ -56,27 +62,22 @@
             <label class="mb-1">Min Replicas</label>
             <span class="d-block">{{generalDetails?.hpaMinReplicas }}</span>
         </div>
-    </div>
-    <div class="row mb-4" *ngIf="isAutoScaleEnabled">
-        <div class="col-md-6">
+        <div class="col-md-6" *ngIf="isAutoScaleEnabled">
             <label class="mb-1">Max Replicas</label>
             <span class="d-block">{{generalDetails?.hpaMaxReplicas }}</span>
         </div>
+    </div>
+
+    <div class="row mb-4">
         <div class="col-md-6">
-            <label class="mb-1">Instance type</label>
-            <span class="d-block">{{generalDetails?.instanceType?.instanceType }}</span>
+            <label class="mb-1">Folder path</label>
+            <span class="d-block">{{generalDetails?.folderPath ? generalDetails?.folderPath : ' - '}}</span>
+        </div>
+        <div class="col-md-6">
+            <label class="mb-1">Docker File Name</label>
+            <span class="d-block">{{generalDetails?.dockerFileName ? generalDetails?.dockerFileName : ' - '}}</span>
         </div>
     </div>
-    <!--<div class="row mb-4">
-        <div class="col-md-6">
-            <label class="mb-1">Build command</label>
-            <span class="d-block">{{generalDetails?.buildCommand ? generalDetails?.buildCommand : ' - '}}</span>
-        </div>
-        <div class="col-md-6">
-            <label class="mb-1">Start command</label>
-            <span class="d-block">{{generalDetails?.startCommand ? generalDetails?.startCommand : ' - '}}</span>
-        </div>
-    </div> -->
     <div class="row mb-4">
         <!-- <div class="col-md-6">
             <label class="mb-1">Install command</label>
@@ -93,7 +94,7 @@
         </div>
     </div>
     <div class="row mb-4">
-        
+
         <div class="col-md-6">
             <label class="mb-1">Ephemeral storage</label>
             <span class="d-block">{{generalDetails?.ephemeralStorage ? generalDetails?.ephemeralStorage : ' -
@@ -105,7 +106,8 @@
     <div class="">
         <div class="d-flex justify-content-between">
             <h6 class="fw-bold mb-3">Environment variables</h6>
-            <button *ngIf="permissionService.canWriteGlobal() || permissionService.canAdminGlobal()" (click)="edit(1)" class="btn"><i class="bi bi-pencil-square edit-icon"></i></button>
+            <button *ngIf="permissionService.canWriteGlobal() || permissionService.canAdminGlobal()" (click)="edit(1)"
+                class="btn"><i class="bi bi-pencil-square edit-icon"></i></button>
         </div>
         <div class="row mb-4" *ngIf="hasData(envData.data);else noEnv">
             <!-- <div class="col-md-6">
@@ -133,7 +135,8 @@
     <div class="" *ngIf="secretData">
         <div class="d-flex justify-content-between">
             <h6 class="fw-bold mb-3">Secrets</h6>
-            <button *ngIf="permissionService.canWriteGlobal() || permissionService.canAdminGlobal()" (click)="edit(2)" class="btn"><i class="bi bi-pencil-square edit-icon"></i></button>
+            <button *ngIf="permissionService.canWriteGlobal() || permissionService.canAdminGlobal()" (click)="edit(2)"
+                class="btn"><i class="bi bi-pencil-square edit-icon"></i></button>
         </div>
         <div class="row mb-4" *ngIf="hasData(secretData?.data);else noSecrets">
             <!-- <div class="col-md-6">
@@ -144,7 +147,8 @@
                 <div *ngFor="let entry of objectKeys(secretData?.data)" class="col-md-6">
                     <div class="env-row">
                         <label class="env-label">{{secretData?.data[entry].EnvVariable}} :</label>
-                        <span class="env-value" title="{{secretData?.data[entry].Value}}">{{secretData?.data[entry].Value}}</span>
+                        <span class="env-value"
+                            title="{{secretData?.data[entry].Value}}">{{secretData?.data[entry].Value}}</span>
                     </div>
                 </div>
             </div>
@@ -158,7 +162,8 @@
     <div class="">
         <div class="d-flex justify-content-between">
             <h6 class="fw-bold mb-3">Config as file</h6>
-            <button *ngIf="permissionService.canWriteGlobal() || permissionService.canAdminGlobal()" (click)="edit(3)" class="btn"><i class="bi bi-pencil-square edit-icon"></i></button>
+            <button *ngIf="permissionService.canWriteGlobal() || permissionService.canAdminGlobal()" (click)="edit(3)"
+                class="btn"><i class="bi bi-pencil-square edit-icon"></i></button>
         </div>
         <div class="row mb-4" *ngIf="hasData(configFileData);else noFiles">
             <div class="col-md-6">

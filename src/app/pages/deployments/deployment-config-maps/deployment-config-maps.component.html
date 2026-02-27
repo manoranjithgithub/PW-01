@@ -1,3 +1,9 @@
+<c-alert color="warning" *ngIf="isBuilding">
+  <div class="warn-text">
+    <i class="bi bi-exclamation-triangle-fill"></i> Config maps cannot be edited while the application is
+    building
+  </div>
+</c-alert>
 <div class="card-child">
   <c-card-group *ngIf="!deploymentdetails">
     <c-card>
@@ -45,7 +51,9 @@
                     </div>
                     <div *ngIf="selectedFileName" class="file-preview">
                       <div class="file-content">
-                        <div class="file-name"><p class="mb-0"><i class="bi bi-file-earmark-text"></i></p>{{ selectedFileName }}</div>
+                        <div class="file-name">
+                          <p class="mb-0"><i class="bi bi-file-earmark-text"></i></p>{{ selectedFileName }}
+                        </div>
                         <div class="file-hint">{{ base64Snippet }}</div>
                         <span class="delete-icon" (click)="clearFile()" title="Remove">
                           <i class="bi bi-x-circle-fill"></i>
