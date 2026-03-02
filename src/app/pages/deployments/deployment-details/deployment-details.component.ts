@@ -223,6 +223,8 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
     const modalRef = this.modalService.open(ConfirmationModalComponent);
     modalRef.componentInstance.selectedItem = 'Deployment';
     modalRef.componentInstance.message = 'Are you sure you want to proceed?';
+    modalRef.componentInstance.requireConfirmation = true;
+    modalRef.componentInstance.confirmationWord = this.appName || 'the deployment';
 
     modalRef.result.then(result => {
       if (result) {

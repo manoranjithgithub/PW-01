@@ -33,8 +33,8 @@ export class PricingsService {
       );
   }
 
-  getDeployments(envId: string) {
-    return this.http.get(`${this.deploymentManagement}/deployments?environmentId=${envId}`)
+  getDeployments(projectId: string, envId: string) {
+    return this.http.get(`${this.deploymentManagement}/deployments?projectId=${projectId}`)
       .pipe(
         catchError(this.handleError.bind(this))
       );
@@ -50,12 +50,12 @@ export class PricingsService {
         catchError(this.handleError.bind(this))
       );
   }
-  getCostByService(accountId: string, envId: string, fromDate: string, toDate: string, projectId: string ) {
+  getCostByService(accountId: string,  fromDate: string, toDate: string, envId?: string, projectId?: string ) {
     let params = new HttpParams()
       .set('accountId', accountId)
       .set('from', fromDate)
       .set('to', toDate);
-    if (projectId && projectId !== 'all') {
+    if (projectId && projectId !== 'all' && envId) {
       params = params.set('environmentId', envId);
     }
     return this.http.get(`${this.pricingManagement}/costs/costexplorer?`, { params })
