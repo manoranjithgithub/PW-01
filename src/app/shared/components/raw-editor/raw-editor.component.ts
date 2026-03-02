@@ -13,12 +13,16 @@ import { FormsModule } from '@angular/forms';
 export class RawEditorComponent implements OnChanges {
 
   @Input() data: { EnvVariable: string; Value: string }[] = [];
+  @Input() itemName: string = 'environment variable';
 
 
   activeTab: 'env' | 'json' = 'env';
   envData: string = ' ';
   jsonData: string = '';
   isJsonValid: boolean = true;
+  isEnvValid: boolean = true;
+  envFormatError: string = '';
+  jsonFormatError: string = '';
   @Output() closeModal = new EventEmitter<boolean>();
   @Output() variablesUpdated = new EventEmitter<{ EnvVariable: string; Value: string }[]>();
   highlightedText = '';
@@ -51,7 +55,17 @@ export class RawEditorComponent implements OnChanges {
   }
 
   updateVariables() {
-    // console.log('Updated Variables:', this.activeTab === 'env' ? this.envData : this.jsonData);
+    // Validate based on active tab
+    if (this.activeTab === 'env') {
+      if (!this.isEnvValid) {
+        return;
+      }
+    } else {
+      if (!this.isJsonValid) {
+        return;
+      }
+    }
+    
     try {
       const parsed = JSON.parse(this.jsonData);
       const result: { EnvVariable: string; Value: string }[] = Object.entries(parsed).map(
@@ -71,17 +85,31 @@ export class RawEditorComponent implements OnChanges {
     try {
       JSON.parse(this.jsonData);
       this.isJsonValid = true;
+      this.jsonFormatError = '';
     } catch (error) {
       this.isJsonValid = false;
+      this.jsonFormatError = `Invalid ${this.itemName} JSON format`;
     }
-  } onDataChange(value: string) {
+  }
+
+  onDataChange(value: string) {
     if (this.activeTab === 'env') {
       this.envData = value;
-      try {
-        this.jsonData = this.envToJson(value);
-        this.isJsonValid = true;
-      } catch {
-        this.isJsonValid = false;
+      const validationResult = this.validateEnvFormat(value);
+      if (validationResult.isValid) {
+        try {
+          this.jsonData = this.envToJson(value);
+          this.isJsonValid = true;
+          this.isEnvValid = true;
+          this.envFormatError = '';
+        } catch {
+          this.isJsonValid = false;
+          this.isEnvValid = false;
+          this.envFormatError = `Invalid ${this.itemName} format`;
+        }
+      } else {
+        this.isEnvValid = false;
+        this.envFormatError = `Invalid ${this.itemName} format`;
       }
     } else {
       this.jsonData = value;
@@ -89,8 +117,10 @@ export class RawEditorComponent implements OnChanges {
         const parsed = JSON.parse(value);
         this.envData = this.jsonToEnv(value);
         this.isJsonValid = true;
+        this.jsonFormatError = '';
       } catch {
         this.isJsonValid = false;
+        this.jsonFormatError = `Invalid ${this.itemName} JSON format`;
       }
     }
     this.highlightedText = this.applyHighlight(value);
@@ -149,6 +179,28 @@ export class RawEditorComponent implements OnChanges {
       return json.replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
   }
+  validateEnvFormat(envString: string): { isValid: boolean; error: string } {
+    if (!envString || envString.trim() === '') {
+      return { isValid: true, error: '' };
+    }
+
+    const lines = envString.split('\n').filter(line => line.trim() !== '');
+    
+    for (const line of lines) {
+      // Allow comments
+      if (line.trim().startsWith('#')) {
+        continue;
+      }
+      // Check for valid env format: KEY=VALUE or KEY="VALUE"
+      const pattern = /^[\w.-]+=(.*)$/;
+      if (!pattern.test(line.trim())) {
+        return { isValid: false, error: 'Invalid environment variable format' };
+      }
+    }
+    
+    return { isValid: true, error: '' };
+  }
+
   closeRawEditor() {
     this.closeModal.emit(true);
   }

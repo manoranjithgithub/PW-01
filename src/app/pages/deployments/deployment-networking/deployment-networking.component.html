@@ -1,3 +1,8 @@
+<c-alert color="warning" *ngIf="isBuilding">
+  <div class="warn-text">
+    <i class="bi bi-exclamation-triangle-fill"></i> Networking cannot be edited while the application is building
+  </div>
+</c-alert>
 <c-accordion class="accordion-gap">
   <c-accordion-item #item2="cAccordionItem" [visible]="true">
     <ng-template cTemplateId="accordionHeaderTemplate">
@@ -9,7 +14,7 @@
       <div class="accordion-body" id="network-section">
         <div class="gap-4 mb-4">
           <div class="w-100 mb-4">
-            <div class="card border h-100">
+            <div class="card border">
               <div class="card-body p-1 card-body-text">
                 <h6 class="card-title mb-2 fs-6 fw-bold"><i class="bi bi-globe"></i> Public Networking</h6>
                 <small class="text-muted d-block mb-3 fs-7">Access to this service publicly through HTTP/TCP.</small>
@@ -40,14 +45,17 @@
                     </div>
                   </div>
                   <div class="py-1">
-                    <p class="mb-0 domain-text w-100 domain-link" (click)="open('http://' + ingressDomain)">https://{{
-                      ingressDomain }}
-                      <span class="px-2" type="button" title="Copy domain"
+                    <p class="mb-0 domain-text w-100 domain-link">
+                      <span  (click)="open('http://' + ingressDomain)">{{ 'https://' + ingressDomain }}</span>
+                      <span type="button" title="Copy domain"
                         (click)="copyDomain('https://' + ingressDomain, 'domain-copy')">
                         <i class="bi bi-clipboard mx-1"></i>
-                    </span>
+                      </span>
                       <small *ngIf="copiedButtonId === 'domain-copy'"
                         class="badge badge-success border border-success text-success ms-2 badge-copied fw-light">Copied!</small>
+                      <span class="text-danger text-decoration-none" title="Delete endpoint" (click)="deleteEndpoint()">
+                        <i class="bi bi-trash mx-1"></i> 
+                      </span>
                     </p>
                   </div>
                   <!-- <div class="text-secondary small mt-2 fs-7" *ngIf="endpointStatus">
@@ -83,7 +91,7 @@
           </div>
 
           <div class="w-100">
-            <div class="card border h-100">
+            <div class="card border ">
               <div class="card-body p-1 card-body-text">
                 <h6 class="card-title mb-2 fs-6 fw-bold"><i class="bi bi-shield-lock"></i> Private Networking</h6>
                 <small class="text-muted d-block mb-3 fs-7">Access this service from within the network.</small>
@@ -117,7 +125,7 @@
           <form cForm [formGroup]="networkSettingsForm">
             <div class="d-flex gap-4 mb-4">
               <div class="w-100 min-vh-auto">
-                <div class="card border h-100">
+                <div class="card border">
                   <div class="card-body p-1 card-body-text">
                     <div class="d-flex align-items-center justify-content-between mb-3">
                       <div>
@@ -139,7 +147,8 @@
                       </label>
                     </div>
 
-                    <fieldset [disabled]="!networkSettingsForm.get('customDns')?.value" class="custom-domain-section" *ngIf="networkSettingsForm.get('customDns')?.value">
+                    <fieldset [disabled]="!networkSettingsForm.get('customDns')?.value" class="custom-domain-section"
+                      *ngIf="networkSettingsForm.get('customDns')?.value">
                       <div class="custom-dns-layout">
                         <div class="custom-dns-left">
                           <div class="mb-2">
@@ -147,53 +156,58 @@
 
                             <div class="input-group">
                               <input type="text" class="form-control custom-values" name="customDnsHost"
-                                placeholder="Enter domain name" formControlName="customDnsHost">
+                                placeholder="example.com" formControlName="customDnsHost">
                               <button class="btn btn-primary ms-1" (click)="onCustomDnsSubmit()"
-                                [disabled]=" formDisabled || !networkSettingsForm.get('customDnsHost')?.dirty">Add
+                                [disabled]=" formDisabled || !networkSettingsForm.get('customDnsHost')?.dirty || networkSettingsForm.get('customDnsHost')?.invalid">Add
                                 Domain</button>
                             </div>
                             <div *ngIf="iscustomDnsHostError" class="text-danger small mt-1">
                               Domain name is required.
                             </div>
+                            <div
+                              *ngIf="networkSettingsForm.get('customDnsHost')?.hasError('protocolNotAllowed') && networkSettingsForm.get('customDnsHost')?.dirty"
+                              class="text-danger small mt-1">
+                              Please remove https:// or http:// from the domain name.
+                            </div>
                           </div>
                           <div *ngIf="dnsInfo.dnsName" class="mb-2 row g-2">
                             <div class="col-6">
                               <div class="bg-light p-2 rounded h-100">
-                              <small class="fw-bold d-block mb-1 fs-7">CName</small>
-                              <div class="d-flex align-items-center">
-                                <p class="mb-0 small text-break dns-text">https://{{ ingressDomain }}</p>
-                                <div class="position-relative">
-                                  <button class="btn btn-sm btn-outline-secondary border-0" type="button"
-                                    title="Copy DNS" (click)="copyDomain(dnsInfo?.dnsName, 'dns-copy')">
-                                    <i class="bi bi-clipboard mx-1"></i>
-                                  </button>
-                                  <small *ngIf="copiedButtonId === 'dns-copy'"
-                                    class="badge badge-success border border-success text-success ms-2 badge-copied fw-light">Copied!</small>
-                                </div>
-                              </div>
-                            </div>
-                            </div>
-                            <div class="col-6">
-                              <div class="bg-light p-2 rounded h-100">
-                              <small class="fw-bold d-block mb-1 fs-7">IP Address</small>
-                              <div class="">
-                                <div *ngFor="let item of ipAddresses" class="d-flex align-items-center">
-                                  <small class=" d-block dns-text">
-                                    {{ item.ip }}
-                                  </small>
+                                <small class="fw-bold d-block mb-1 fs-7">CName</small>
+                                <div class="d-flex align-items-center">
+                                  <p class="mb-0 small text-break dns-text">{{ ingressDomain }}</p>
                                   <div class="position-relative">
                                     <button class="btn btn-sm btn-outline-secondary border-0" type="button"
-                                      title="Copy IP" (click)="copyDomain(item.ip, item.id)">
+                                      title="Copy DNS" (click)="copyDomain(ingressDomain, 'dns-copy')">
                                       <i class="bi bi-clipboard mx-1"></i>
                                     </button>
-                                    <small *ngIf="copiedButtonId === item.id"
-                                      class="badge bg-light border border-success text-success ms-2 badge-copied fw-light">
-                                      Copied!
-                                    </small>
+                                    <small *ngIf="copiedButtonId === 'dns-copy'"
+                                      class="badge badge-success border border-success text-success ms-2 badge-copied fw-light">Copied!</small>
                                   </div>
                                 </div>
                               </div>
                             </div>
+                            <div class="col-6">
+                              <div class="bg-light p-2 rounded h-100">
+                                <small class="fw-bold d-block mb-1 fs-7">IP Address</small>
+                                <div class="">
+                                  <div *ngFor="let item of ipAddresses" class="d-flex align-items-center">
+                                    <small class=" d-block dns-text">
+                                      {{ item.ip }}
+                                    </small>
+                                    <div class="position-relative">
+                                      <button class="btn btn-sm btn-outline-secondary border-0" type="button"
+                                        title="Copy IP" (click)="copyDomain(item.ip, item.id)">
+                                        <i class="bi bi-clipboard mx-1"></i>
+                                      </button>
+                                      <small *ngIf="copiedButtonId === item.id"
+                                        class="badge bg-light border border-success text-success ms-2 badge-copied fw-light">
+                                        Copied!
+                                      </small>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -364,7 +378,25 @@
     <div class="dns-method-block">
       <p class="dns-method-title mb-0">{{ method.title }}</p>
       <ol [ngClass]="[listClass, 'mb-0']">
-        <li *ngFor="let instruction of method.instructions">{{ instruction }}</li>
+        <li *ngFor="let instruction of method.instructions; let isLastInstruction = last; let instructionIndex = index">
+          {{ instruction }}
+          <!-- Show IP addresses with copy icons after "Point your A record..." instruction -->
+          <div *ngIf="method.title === 'Using A Record (IP Addresses)' && instructionIndex === 0" class="mt-2 ms-3">
+            <div class="d-flex align-items-center gap-3 flex-wrap">
+              <div *ngFor="let item of ipAddresses" class="d-flex align-items-center gap-2">
+                <span>{{ item.ip }}</span>
+                <button class="btn btn-sm btn-outline-secondary border-0" type="button" title="Copy IP"
+                  (click)="copyDomain(item.ip, item.id)">
+                  <i class="bi bi-clipboard"></i>
+                </button>
+                <small *ngIf="copiedButtonId === item.id"
+                  class="badge bg-light border border-success text-success badge-copied fw-light">
+                  Copied!
+                </small>
+              </div>
+            </div>
+          </div>
+        </li>
       </ol>
     </div>
 

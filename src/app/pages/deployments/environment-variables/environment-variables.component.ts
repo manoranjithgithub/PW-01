@@ -47,6 +47,7 @@ export class EnvironmentVariablesComponent implements OnInit {
   isEditEnv: boolean = false;
   @Input() currentStatus: string = '';
   freezeAddNewData: boolean = false;
+  isBuilding: boolean = false;
   deploymentId: string = '';
 
   constructor(private fb: FormBuilder, private deploymentsService: DeploymentsService,
@@ -58,6 +59,7 @@ export class EnvironmentVariablesComponent implements OnInit {
 
   ngOnInit() {
     this.freezeAddNewData = this.currentStatus && this.currentStatus?.toLowerCase() === 'building' ? true : false;
+    this.isBuilding = this.currentStatus?.toLowerCase() === 'building' ? true : false;
     const resourceUsage = JSON.parse(localStorage.getItem('resourceUsage') || '[]');
 
     this.newVariableForm = this.fb.group({
@@ -74,6 +76,7 @@ export class EnvironmentVariablesComponent implements OnInit {
           const freezeAddNewData = res.data?.status.toLowerCase() === 'stopped' || this.currentStatus?.toLowerCase() === 'building' ? true : false;
           const shouldDisable = freezeAddNewData || !(this.permissionService.canWriteGlobal() || this.permissionService.canAdminGlobal() || this.permissionService.canDeleteForCurrentUser(null, null));
           this.freezeAddNewData = shouldDisable;
+          this.isBuilding = this.currentStatus?.toLowerCase() === 'building' ? true : false;
           this.loadEnvironmentVariables();
         });
       } else {
@@ -97,7 +100,7 @@ export class EnvironmentVariablesComponent implements OnInit {
 
   createRule(): FormGroup {
     return this.fb.group({
-      name: ['', [Validators.required, Validators.pattern('^[A-Za-z0-9._-]+$')]],
+      name: ['', [Validators.required, Validators.pattern('^[A-Za-z0-9._-]+$'), this.duplicateNameValidator.bind(this)]],
       value: ['', Validators.required],
     }, { validators: this.nameValueDependencyValidator });
   }
@@ -119,36 +122,49 @@ export class EnvironmentVariablesComponent implements OnInit {
   }
 
   addVariable() {
-    this.showNewVariableForm = false;
-    if (this.newVariableForm.valid) {
-      const rules = this.newVariableForm.value.rules;
-
-      if (this.editIndex && this.editIndex >= 0) {
-        const updatedVar = {
-          EnvVariable: rules[0].name,
-          Value: rules[0].value
-        };
-
-        this.envList[this.editIndex] = updatedVar;
-        this.editIndex = null;
-      } else {
-        const newVars = rules.map((rule: any) => ({
-          EnvVariable: rule.name,
-          Value: rule.value
-        }));
-
-        this.envList = [...this.envList, ...newVars];
-      }
-
-      const uniqueMap = new Map<string, any>();
-      this.envList.forEach((item: any) => {
-        uniqueMap.set(item.EnvVariable, item);
-      });
-      this.envList = Array.from(uniqueMap.values());
-
-      this.addEnvVariables(this.envList);
-      this.rulesFormArray.clear();
+    if (!this.newVariableForm.valid) {
+      // Mark all fields as dirty to show validation errors
+      this.rulesFormArray.controls.forEach((group: AbstractControl) => {
+          const formGroup = group as FormGroup;
+          Object.keys(formGroup.controls).forEach((key: string) => {
+            const control = formGroup.get(key);
+            if (control) {
+              control.markAsDirty();
+              control.markAsTouched();
+            }
+          });
+        });
+      return;
     }
+
+    this.showNewVariableForm = false;
+    const rules = this.newVariableForm.value.rules;
+
+    if (this.editIndex && this.editIndex >= 0) {
+      const updatedVar = {
+        EnvVariable: rules[0].name,
+        Value: rules[0].value
+      };
+
+      this.envList[this.editIndex] = updatedVar;
+      this.editIndex = null;
+    } else {
+      const newVars = rules.map((rule: any) => ({
+        EnvVariable: rule.name,
+        Value: rule.value
+      }));
+
+      this.envList = [...this.envList, ...newVars];
+    }
+
+    const uniqueMap = new Map<string, any>();
+    this.envList.forEach((item: any) => {
+      uniqueMap.set(item.EnvVariable, item);
+    });
+    this.envList = Array.from(uniqueMap.values());
+
+    this.addEnvVariables(this.envList);
+    this.rulesFormArray.clear();
   }
 
   openRawEditor() {
@@ -194,6 +210,16 @@ export class EnvironmentVariablesComponent implements OnInit {
     return null;
   }
 
+  duplicateNameValidator(control: AbstractControl): ValidationErrors | null {
+    const value = control.value;
+    if (!value) {
+      return null;
+    }
+    
+    const isDuplicate = this.envList.some((env: any) => env.EnvVariable === value);
+    return isDuplicate ? { duplicateName: true } : null;
+  }
+
   editDetails(index: number): void {
     const secret = this.envList[index];
 
@@ -229,12 +255,16 @@ export class EnvironmentVariablesComponent implements OnInit {
             this.deploymentsService.updateDeployment(this.deploymentId, req).subscribe({
               next: (res: any) => {
                 this.envList = this.mapEnvVariables(res.data.environment || {});
+                this.deploymentdetails.environment = res.data.environment || {};
+                this.envDetails.emit({ data: this.envList });
                 this.toaster.success('Environment variable deleted successfully');
               },
               error: (err) => {
                 this.toaster.error(err);
               }
             });
+          }else{
+            this.envDetails.emit({ data: this.envList });
           }
 
         }
@@ -242,20 +272,28 @@ export class EnvironmentVariablesComponent implements OnInit {
   }
 
   private loadEnvironmentVariables(): void {
+    this.envList = [];
+    
     if (this.storedEnvironment && this.canAddVariables && this.deploymentdetails) {
       // this.deploymentsService
       //   .getConfigList(this.storedEnvironment.id, this.deploymentdetails.name)
       //   .subscribe((res: any) => {
       const envVariables = this.mapEnvVariables(this.deploymentdetails.environment || {});
-      this.envList = [...this.envList, ...envVariables];
+      this.envList = envVariables;
       //   });
     }
 
     if (!this.canAddVariables && this.envDataFromParent?.data) {
       const envVariables = this.mapEnvVariables(this.envDataFromParent.data);
-      this.envList = [...this.envList, ...envVariables];
+      this.envList = envVariables;
     }
   }
+  savePendingFormData(): void {
+    if (this.showNewVariableForm && this.newVariableForm.valid) {
+      this.addVariable();
+    }
+  }
+
   createEnvironmentVariable() {
     if (!this.updatedReq || (this.updatedReq.data && Object.keys(this.updatedReq.data).length === 0)) {
       return
@@ -265,6 +303,8 @@ export class EnvironmentVariablesComponent implements OnInit {
     }
     this.deploymentsService.updateDeployment(this.deploymentId, req).subscribe({
       next: (res: any) => {
+        this.envList = this.mapEnvVariables(res.data.environment || {});
+        this.deploymentdetails.environment = res.data.environment || {};
         this.toaster.success('Environment variables updated successfully');
       },
       error: (err) => {

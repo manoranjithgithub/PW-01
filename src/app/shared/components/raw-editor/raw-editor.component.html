@@ -10,22 +10,30 @@
 
     <div class="editor-wrapper">
         <!-- <pre class="highlighted" [innerHTML]="highlightedContent"></pre> -->
-       
+
         <!-- <div class="highlight-layer" [innerHTML]="highlightedText"></div> -->
         <textarea class="editor-textarea" [ngModel]="activeTab === 'env' ? envData : jsonData"
             (ngModelChange)="onDataChange($event)">
         </textarea>
     </div>
-
+    <p>
+        <small class="text-danger" *ngIf="activeTab === 'env' && !isEnvValid">
+            {{ envFormatError }}
+        </small>
+        <small class="text-danger" *ngIf="activeTab === 'json' && !isJsonValid">
+            {{ jsonFormatError }}
+        </small>
+    </p>
     <div class="button-container">
         <span class="copy-button" (click)="copyToClipboard()">
             Copy ENV
             <span *ngIf="copied" class="popover-message right">Copied!</span>
-          </span>
+        </span>
         <div class="action-buttons">
             <button class="cancel-button" (click)="closeRawEditor()">Cancel</button>
             <button class="btn btn-primary" (click)="updateVariables()"
-                [disabled]="activeTab === 'json' && !isJsonValid">Update Variables</button>
+                [disabled]="(activeTab === 'json' && !isJsonValid) || (activeTab === 'env' && !isEnvValid)">Update
+                Variables</button>
         </div>
     </div>
 </div>

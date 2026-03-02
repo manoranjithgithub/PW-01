@@ -10,6 +10,11 @@
     Instance Type.
   </div>
 </c-alert>
+<c-alert color="warning" *ngIf="isBuilding">
+  <div class="warn-text">
+    <i class="bi bi-exclamation-triangle-fill"></i> Deployment settings cannot be edited while the application is building
+  </div>
+</c-alert>
 <fieldset [disabled]="formDisabled" class="card-child">
   <c-accordion class="accordion-gap">
     <c-accordion-item #item0="cAccordionItem" [visible]="true">
@@ -70,13 +75,13 @@
               </ng-container>
               <div *ngIf="zipUpload && !vcsDeploy" class="d-flex gap-2">
                 <div class="flex-fill mb-3">
-                  <label for="fileInput" class="custom-label">Select a file to upload (.zip, .tar, .rar):</label>
+                  <label for="fileInput" class="custom-label">Select a file to upload (.zip, .tar):</label>
                   <input type="file" id="fileInput" formControlName="fileInput" class="form-control custom-label"
-                    [accept]="'.zip,.tar,.rar'" (change)="onFileSelect($event)" />
+                    [accept]="'.zip,.tar'" (change)="onFileSelect($event)" />
                   <div
                     *ngIf="sourceSettingsForm.get('fileInput')?.hasError('invalidFileType') && sourceSettingsForm.get('fileInput')?.touched"
                     class="text-danger">
-                    Invalid file type. Only .zip, .tar and .rar files are allowed.
+                    Invalid file type. Only .zip, .tar files are allowed.
                   </div>
                 </div>
 
@@ -178,7 +183,10 @@
                     <div
                       *ngIf="generalSettingsForm.get('replicas')?.invalid && generalSettingsForm.get('replicas')?.touched"
                       class="text-danger text-format">
-                      <small>Replicas is required</small>
+                      <small *ngIf="generalSettingsForm.get('replicas')?.hasError('required')">Replicas is
+                        required</small>
+                      <small *ngIf="generalSettingsForm.get('replicas')?.hasError('min')">Replicas must be at least
+                        1.</small>
                     </div>
                   </ng-container>
                   <ng-container *ngIf="isAutoScaleEnabled">
@@ -189,17 +197,17 @@
                           <input type="text" class="form-control custom-values" formControlName="hpaMinReplicas"
                             placeholder="Min">
                         </div>
-                        <div class="text-danger text-format" *ngIf="isError('hpaMinReplicas', 'required')">
-                          <small>This field is required.</small>
+                        <div class="text-danger text-format my-1" *ngIf="isError('hpaMinReplicas', 'required')">
+                          <small>Replicas is required.</small>
                         </div>
-                        <div class="text-danger text-format"
+                        <div class="text-danger text-format my-1"
                           *ngIf="isError('hpaMinReplicas', 'pattern') && !isError('hpaMinReplicas', 'required')">
-                          <small>Only numbers are allowed.</small>
+                          <small>Replicas must be a number</small>
                         </div>
-                        <div class="text-danger text-format"
+                        <!-- <div class="text-danger text-format mt-1"
                           *ngIf="isError('hpaMinReplicas', 'min') && !isError('hpaMinReplicas', 'required')">
                           <small>Minimum value should be 1.</small>
-                        </div>
+                        </div> -->
                       </div>
                       <div class="w-100">
                         <div class="input-group">
@@ -294,11 +302,39 @@
                 </div>
               </div> -->
               <div class="d-flex gap-2">
-                <div class="flex-fill mb-3">
+                <!-- <div class="flex-fill mb-3">
                   <label for="dockerfilePath" class="custom-label">Dockerfile Path</label>
                   <input id="dockerfilePath" type="text" formControlName="dockerfilePath"
                     class="form-control custom-values" [readonly]="zipUpload && !vcsDeploy">
                   <div class="text-danger my-1" *ngIf="isError('dockerfilePath', 'maxlength')">
+                    Maximum 250 characters allowed.
+                  </div>
+                </div> -->
+                <div class="flex-fill mb-3">
+                  <label for="folderPath" class="custom-label">Folder Path
+                    <span
+                      [cTooltip]="'Specify the folder path relative to the repository root where the docker files are located.'"
+                      cTooltipPlacement="top" class="text-warning cursor mx-1">
+                      <i class="bi bi-exclamation-circle"></i>
+                    </span>
+                  </label>
+                  <input id="folderPath" type="text" formControlName="folderPath" class="form-control custom-values"
+                    [readonly]="zipUpload && !vcsDeploy">
+                  <div class="text-danger my-1" *ngIf="isError('folderPath', 'maxlength')">
+                    Maximum 250 characters allowed.
+                  </div>
+                </div>
+                <div class="flex-fill mb-3">
+                  <label for="dockerFileName" class="custom-label">Dockerfile Name
+                    <span
+                      [cTooltip]="'Specify the docker file name. Default is Dockerfile.'"
+                      cTooltipPlacement="top" class="text-warning cursor mx-1">
+                      <i class="bi bi-exclamation-circle"></i>
+                    </span>
+                  </label>
+                  <input id="dockerFileName" type="text" formControlName="dockerFileName"
+                    class="form-control custom-values" [readonly]="zipUpload && !vcsDeploy">
+                  <div class="text-danger my-1" *ngIf="isError('dockerFileName', 'maxlength')">
                     Maximum 250 characters allowed.
                   </div>
                 </div>
@@ -307,6 +343,12 @@
                   </label>
                   <input id="healthEndpoint" type="text" for="healthEndpoint" formControlName="healthEndpoint"
                     placeholder="/health" class="form-control custom-values custom-txt-width w-100">
+                  <div *ngIf="isError('healthEndpoint', 'maxlength')" class="text-danger text-format mt-1">
+                    <small>Maximum 250 characters allowed.</small>
+                  </div>
+                  <div *ngIf="isError('healthEndpoint', 'pattern')" class="text-danger text-format mt-1">
+                    <small>Health endpoint must start with /.</small>
+                  </div>
                 </div>
               </div>
 

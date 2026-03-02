@@ -299,6 +299,11 @@
   text-decoration: underline;
   font-weight: 500;
   cursor: pointer;
+  .bi {
+    font-size: 18px;
+    padding-left: 10px;
+    cursor: pointer;
+  }
 }
 
 .bg-light {
@@ -502,4 +507,7 @@
     gap: 10px;
     flex-direction: column;
   }
+}
+.text-decoration-none{
+  text-decoration: none !important;
 }

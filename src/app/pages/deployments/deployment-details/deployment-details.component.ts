@@ -54,6 +54,7 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
   @Output() closeModalEvent = new EventEmitter<void>();
 
   @ViewChild(EnvironmentVariablesComponent) envVarChild!: EnvironmentVariablesComponent;
+  @ViewChild(DeploymentSecretsComponent) secretsChild!: DeploymentSecretsComponent;
   @ViewChild(DeploymentConfigMapsComponent) configMapChild!: DeploymentConfigMapsComponent;
 
   selectedTabIndex = 0;
@@ -200,7 +201,11 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
 
   goToNextTab(): void {
     if (this.selectedTabIndex === 1) {
+      this.envVarChild.savePendingFormData();
       this.envVarChild.createEnvironmentVariable();
+    }
+    if (this.selectedTabIndex === 2) {
+      this.secretsChild.savePendingFormData();
     }
     if (this.selectedTabIndex === 3) {
       this.configMapChild.updateConfigFile();
@@ -218,6 +223,8 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
     const modalRef = this.modalService.open(ConfirmationModalComponent);
     modalRef.componentInstance.selectedItem = 'Deployment';
     modalRef.componentInstance.message = 'Are you sure you want to proceed?';
+    modalRef.componentInstance.requireConfirmation = true;
+    modalRef.componentInstance.confirmationWord = this.appName || 'the deployment';
 
     modalRef.result.then(result => {
       if (result) {

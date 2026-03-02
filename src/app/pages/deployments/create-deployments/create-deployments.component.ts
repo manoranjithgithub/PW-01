@@ -138,7 +138,7 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
         ],
       ],
       vcsAutoDeploy: [false],
-      replicas: ['1', [Validators.pattern('^[0-9]+$')]],
+      replicas: ['1', [Validators.pattern('^[0-9]+$'), Validators.min(1)]],
       hpaEnabled: [false],
       hpaMinReplicas: ['', [Validators.pattern('^[0-9]+$'), Validators.min(1)]],
       hpaMaxReplicas: ['', [Validators.pattern('^[0-9]+$')]],
@@ -148,9 +148,11 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
       installCommand: [null],
       ephemeralStorage: ['2', Validators.pattern('^[0-9]*\\.?[0-9]+$')],
       storage: [null, Validators.pattern('^[0-9]+$')],
-      healthEndpoint: [null, Validators.maxLength(250)],
+      healthEndpoint: [null, [Validators.maxLength(250), Validators.pattern('^/.*')]],
       zipFilename: [{ value: null, disabled: true }],
-      dockerfilePath: [null],
+      // dockerfilePath: [null],
+      folderPath: [null],
+      dockerFileName: [null],
       port: ['', [Validators.maxLength(5), Validators.pattern('^[0-9]+$'),
       Validators.min(1), Validators.max(65535)
       ]],
@@ -163,7 +165,7 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
       filePath: [''],
     });
     this.zipUploadForm = this._fb.group({
-      zipfileInput: [''],
+      zipfileInput: ['', Validators.required],
     });
   }
 
@@ -374,12 +376,22 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
       if (!isValidExtension) {
         return { invalidFileType: true };
       }
-      if (file.size > 500_000_000) {
+      return null;
+    };
+  }
+
+  fileSizeValidator(maxSizeInBytes: number = 500_000_000) {
+    return (control: AbstractControl): ValidationErrors | null => {
+      if (!this.selectedFile) {
+        return null;
+      }
+      if (this.selectedFile.size > maxSizeInBytes) {
         return { fileSizeExceeded: true };
       }
       return null;
     };
   }
+  
 
   onZipUpload(): void {
     if (this.zipUploadForm.invalid) {
@@ -412,27 +424,22 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
     zipfileinput?.setValidators([
       Validators.required,
       this.fileValidator(allowedExtensions),
+      this.fileSizeValidator(500_000_000),
     ]);
     zipfileinput?.updateValueAndValidity();
     const zipfileInputControl = this.zipUploadForm.get('zipfileinput');
     if (file) {
       this.selectedFile = file;
       if (file.size > 500_000_000) {
-        this.toaster.error('File size too large.');
-        this.fileError = 'File size large';
+        // this.toaster.error('File size exceeds the allowed limit.');
+        this.fileError = 'File size exceeds the allowed limit.';
+        // Re-validate to trigger fileSizeExceeded error
+        zipfileinput?.updateValueAndValidity();
       } else {
         if (!zipfileInputControl?.errors?.['invalidFileType']) {
           this.stepOneForm.get('zipFilename')?.patchValue(file.name);
           const fileNameWithoutExtension = this.removeFileExtension(file.name);
           this.stepOneForm.get('name')?.setValue(fileNameWithoutExtension);
-          // this.stepOneForm.get('name')?.setValidators([
-          //   Validators.required,
-          //   Validators.maxLength(40),
-          //   this.isNameAvailable(true),
-          //   Validators.pattern(VALIDATION_REGEX.APP_NAME),
-          // ]);
-          // this.stepOneForm.markAllAsTouched();
-          // this.stepOneForm.get('name')?.updateValueAndValidity();
           this.fileError = '';
         } else {
           this.fileError = 'Please upload valid file type';
@@ -510,6 +517,22 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
       return;
     }
     switch (this.currentStep) {
+      case 0:
+        // On step 0 (General), mark all fields as touched if form is invalid to show validation errors
+        if (this.stepOneForm.invalid) {
+          this.stepOneForm.markAllAsTouched();
+          return;
+        }
+        // If ZIP deployment is selected, validate that a file is selected
+        if (this.selectedVCS === 'zip') {
+          if (this.zipUploadForm.invalid) {
+            this.zipUploadForm.markAllAsTouched();
+            this.fileError = 'Please choose a valid ZIP or TAR file';
+            this.zipDeploymentModel.open();
+            return;
+          }
+        }
+        break;
       case 1:
         this.child.addVariable();
         break;
@@ -752,8 +775,11 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
         type: this.selectedVCS === 'zip' ? 'file' : 'vcs',
         gitUrl: this.buildGitUrl(),
         s3FileKey: null,
-        dockerfilePath: this.stepOneForm.value.dockerfilePath || null,
+        // dockerfilePath: this.stepOneForm.value.dockerfilePath || null,
+        folderPath: this.stepOneForm.value.folderPath || null,
+        dockerFileName: this.stepOneForm.value.dockerFileName || null,
         vcsAutoDeploy: this.stepOneForm.value.vcsAutoDeploy || false,
+        
       },
       application: {
         replicas: this.stepOneForm.value.replicas || 0,
@@ -845,7 +871,7 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
       this.stepOneForm.get('hpaMaxReplicas')?.updateValueAndValidity();
     } else {
       this.stepOneForm.get('replicas')?.setValue('1');
-      this.stepOneForm.get('replicas')?.setValidators([Validators.pattern('^[0-9]+$')]);
+      this.stepOneForm.get('replicas')?.setValidators([Validators.pattern('^[0-9]+$'), Validators.min(1)]);
       this.stepOneForm.get('replicas')?.updateValueAndValidity();
       this.stepOneForm.get('hpaMinReplicas')?.setValue('');
       this.stepOneForm.get('hpaMaxReplicas')?.setValue('');
