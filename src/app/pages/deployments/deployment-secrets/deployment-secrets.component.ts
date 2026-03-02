@@ -207,9 +207,10 @@ export class DeploymentSecretsComponent implements OnInit {
           if (!this.canAddVariables) {
             this.secretDetails.emit({ data: this.secretList });
           }
+          this.toaster.success('Secrets updated successfully');
         },
         error: (err) => {
-          this.toaster.error(err);
+          // this.toaster.error(err);
         }
       });
     }

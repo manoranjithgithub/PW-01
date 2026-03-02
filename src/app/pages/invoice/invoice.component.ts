@@ -1097,12 +1097,12 @@ export class InvoiceComponent implements OnInit {
           envId: of(envId),
           costs: this.http.getCostByService(
             accountId,
-            this.selectedEnvironmentId,
             this.startDate,
             this.endDate,
-            this.selectedProjectId
+            // this.selectedEnvironmentId
+            // this.selectedProjectId
           ).pipe(catchError(() => of({ data: [] }))),
-          deployments: this.http.getDeployments(envId).pipe(catchError(() => of({ data: [] }))),
+          // deployments: this.http.getDeployments(this.selectedProjectId,envId).pipe(catchError(() => of({ data: [] }))),
           // tools: this.http.getToolsList(envId).pipe(catchError(() => of({ data: [] })))
         })
       )
