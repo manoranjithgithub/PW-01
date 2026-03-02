@@ -10,6 +10,12 @@
                         placeholder="Select project name">
                         <option *ngFor="let data of projectList" [value]="data.id">{{ data.name }}</option>
                     </select>
+                    <div *ngIf="environmentForm.get('project')?.invalid && environmentForm.get('project')?.touched"
+                        class="text-danger text-format">
+                        <div *ngIf="environmentForm.get('project')?.hasError('required')" class="text-danger my-1">
+                            Project name is required.
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

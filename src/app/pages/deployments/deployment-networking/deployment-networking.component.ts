@@ -95,6 +95,7 @@ export class DeploymentNetworkingComponent implements OnInit {
     const hasProtocol = value.includes('https://') || value.includes('http://');
     return hasProtocol ? { protocolNotAllowed: true } : null;
   }
+  isBuilding: boolean = false;
 
   constructor(private fb: FormBuilder, private deploymentService: DeploymentsService,
     private toaster: ToastrService, private modalService: NgbModal, private ac: ActivatedRoute,
@@ -115,7 +116,7 @@ export class DeploymentNetworkingComponent implements OnInit {
     });
 
     this.freezeAddNewData = this.currentStatus && this.currentStatus?.toLowerCase() === 'building' ? true : false;
-
+    this.isBuilding = this.currentStatus && this.currentStatus?.toLowerCase() === 'building' ? true : false;
     const shouldDisable = this.freezeAddNewData || !(this.permissionService.canWriteGlobal() || this.permissionService.canAdminGlobal() || this.permissionService.canDeleteForCurrentUser(null, null));
     this.formDisabled = shouldDisable;
     if (shouldDisable) {
@@ -137,6 +138,7 @@ export class DeploymentNetworkingComponent implements OnInit {
         };
         this.getDeploymentById();
         this.freezeAddNewData = res.data?.status.toLowerCase() === 'stopped' || this.currentStatus?.toLowerCase() === 'building' ? true : false;
+        this.isBuilding = this.currentStatus?.toLowerCase() === 'building' ? true : false;        
         const shouldDisable = this.freezeAddNewData || !(this.permissionService.canWriteGlobal() || this.permissionService.canAdminGlobal() || this.permissionService.canDeleteForCurrentUser(null, null));
         this.formDisabled = shouldDisable;
       })
@@ -246,11 +248,38 @@ export class DeploymentNetworkingComponent implements OnInit {
     this.isHostDisabled = !(event.target as HTMLInputElement).checked;
     const hostControl = this.networkSettingsForm.get('host');
     if (this.isHostDisabled) {
-      hostControl?.disable();
-      this.networkSettingsForm.get('customDnsHost')?.setValue('')
-      this.networkSettingsForm.markAsPristine();
-      this.dnsInfo = { dnsName: '', ipAddress: '' };
-      this.onNetworkingSubmit()
+      // Show confirmation modal only if they have already added a domain
+      if (this.showCustomDnsHost) {
+        const modalRef = this.modalService.open(ConfirmationModalComponent);
+        modalRef.componentInstance.selectedItem = 'Custom DNS';
+        modalRef.componentInstance.message = 'Are you sure you want to disable custom DNS? This will remove your custom domain settings.';
+
+        modalRef.result.then(
+          (result) => {
+            if (result) {
+              // User confirmed
+              hostControl?.disable();
+              this.networkSettingsForm.get('customDnsHost')?.setValue('')
+              this.networkSettingsForm.markAsPristine();
+              this.dnsInfo = { dnsName: '', ipAddress: '' };
+              this.onNetworkingSubmit()
+            } else {
+              // User cancelled - revert the checkbox state
+              this.isHostDisabled = false;
+              const customDnsControl = this.networkSettingsForm.get('customDns');
+              if (customDnsControl) {
+                customDnsControl.setValue(true, { emitEvent: false });
+              }
+            }
+          });
+      } else {
+        // No domain added yet, proceed directly
+        hostControl?.disable();
+        this.networkSettingsForm.get('customDnsHost')?.setValue('')
+        this.networkSettingsForm.markAsPristine();
+        this.dnsInfo = { dnsName: '', ipAddress: '' };
+        // this.onNetworkingSubmit()
+      }
     } else {
       hostControl?.enable();
     }

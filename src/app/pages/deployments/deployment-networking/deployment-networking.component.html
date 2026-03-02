@@ -1,3 +1,8 @@
+<c-alert color="warning" *ngIf="isBuilding">
+  <div class="warn-text">
+    <i class="bi bi-exclamation-triangle-fill"></i> Networking cannot be edited while the application is building
+  </div>
+</c-alert>
 <c-accordion class="accordion-gap">
   <c-accordion-item #item2="cAccordionItem" [visible]="true">
     <ng-template cTemplateId="accordionHeaderTemplate">
@@ -40,16 +45,16 @@
                     </div>
                   </div>
                   <div class="py-1">
-                    <p class="mb-0 domain-text w-100 domain-link" (click)="open('http://' + ingressDomain)">https://{{
-                      ingressDomain }}
-                      <span class="px-2" type="button" title="Copy domain"
+                    <p class="mb-0 domain-text w-100 domain-link">
+                      <span  (click)="open('http://' + ingressDomain)">{{ 'https://' + ingressDomain }}</span>
+                      <span type="button" title="Copy domain"
                         (click)="copyDomain('https://' + ingressDomain, 'domain-copy')">
                         <i class="bi bi-clipboard mx-1"></i>
                       </span>
                       <small *ngIf="copiedButtonId === 'domain-copy'"
                         class="badge badge-success border border-success text-success ms-2 badge-copied fw-light">Copied!</small>
                       <span class="text-danger text-decoration-none" title="Delete endpoint" (click)="deleteEndpoint()">
-                        <i class="bi bi-x-circle mx-1"></i>
+                        <i class="bi bi-trash mx-1"></i> 
                       </span>
                     </p>
                   </div>
@@ -159,7 +164,8 @@
                             <div *ngIf="iscustomDnsHostError" class="text-danger small mt-1">
                               Domain name is required.
                             </div>
-                            <div *ngIf="networkSettingsForm.get('customDnsHost')?.hasError('protocolNotAllowed') && networkSettingsForm.get('customDnsHost')?.dirty"
+                            <div
+                              *ngIf="networkSettingsForm.get('customDnsHost')?.hasError('protocolNotAllowed') && networkSettingsForm.get('customDnsHost')?.dirty"
                               class="text-danger small mt-1">
                               Please remove https:// or http:// from the domain name.
                             </div>
@@ -172,7 +178,7 @@
                                   <p class="mb-0 small text-break dns-text">{{ ingressDomain }}</p>
                                   <div class="position-relative">
                                     <button class="btn btn-sm btn-outline-secondary border-0" type="button"
-                                      title="Copy DNS" (click)="copyDomain(dnsInfo?.dnsName, 'dns-copy')">
+                                      title="Copy DNS" (click)="copyDomain(ingressDomain, 'dns-copy')">
                                       <i class="bi bi-clipboard mx-1"></i>
                                     </button>
                                     <small *ngIf="copiedButtonId === 'dns-copy'"

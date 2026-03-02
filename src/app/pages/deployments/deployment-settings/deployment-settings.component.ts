@@ -54,7 +54,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
 
   zipUpload: boolean = false;
   vcsDeploy: boolean = false;
-  allowedFileTypes: string[] = ['.zip', '.tar', '.rar'];
+  allowedFileTypes: string[] = ['.zip', '.tar'];
   fileError: string = '';
   selectedFile: File | null = null;
   serviceList: any;
@@ -97,6 +97,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
   ingressDomain: string = '';
   @Input() currentStatus: string = '';
   freezeAddNewData: boolean = false;
+  isBuilding: boolean = false;
   public formDisabled: boolean = false;
   endpointStatus: string = '';
   s3FileKey: string = '';
@@ -110,6 +111,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['currentStatus']) {
       this.freezeAddNewData = this.currentStatus && this.currentStatus?.toLowerCase() === 'building' ? true : false;
+      this.isBuilding = this.currentStatus?.toLowerCase() === 'building' ? true : false;
       this.formDisabled = this.freezeAddNewData || !(this.permissionService.canWriteGlobal() || this.permissionService.canAdminGlobal() || this.permissionService.canDeleteForCurrentUser(null, null));
       if (this.formDisabled) {
         this.generalSettingsForm?.disable?.();
@@ -196,6 +198,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
 
     const shouldDisable = this.freezeAddNewData || !(this.permissionService.canWriteGlobal() || this.permissionService.canAdminGlobal() || this.permissionService.canDeleteForCurrentUser(null, null));
     this.formDisabled = shouldDisable;
+    this.isBuilding = this.currentStatus?.toLowerCase() === 'building' ? true : false;
     if (shouldDisable) {
       this.generalSettingsForm?.disable?.();
       this.sourceSettingsForm?.disable?.();
@@ -215,7 +218,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
       })
     });
 
-    this.getDeployments();
+    // this.getDeployments();
 
     const resourceUsage = JSON.parse(localStorage.getItem('resourceUsage') || '[]');
     const cpuResource = resourceUsage.find(
@@ -506,24 +509,24 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
       gitUrl: this.buildGitUrl(),
       s3FileKey: fileName ? this.s3FileKey : null,
       // dockerfilePath: sourceFormValue.dockerfilePath
-        folderPath: sourceFormValue.folderPath,
-        dockerFileName: sourceFormValue.dockerFileName,
+      folderPath: sourceFormValue.folderPath,
+      dockerFileName: sourceFormValue.dockerFileName,
     };
-    const hpa= {
+    const hpa = {
       hpaEnabled: formValue.hpaEnabled,
-      hpaMinReplicas: formValue.hpaEnabled ? formValue.hpaMinReplicas :1,
-      hpaMaxReplicas: formValue.hpaEnabled ? formValue.hpaMaxReplicas :1,
+      hpaMinReplicas: formValue.hpaEnabled ? formValue.hpaMinReplicas : 1,
+      hpaMaxReplicas: formValue.hpaEnabled ? formValue.hpaMaxReplicas : 1,
     };
 
     const isDockerfilePathChanged =
       // formValue.dockerfilePath !== sourceFormValue.dockerfilePath;
-        formValue.folderPath !== sourceFormValue.folderPath ||
-        formValue.dockerFileName !== sourceFormValue.dockerFileName;
+      formValue.folderPath !== sourceFormValue.folderPath ||
+      formValue.dockerFileName !== sourceFormValue.dockerFileName;
 
     if (isDockerfilePathChanged) {
       // baseData.dockerfilePath = formValue.dockerfilePath;
-        baseData.folderPath = formValue.folderPath;
-        baseData.dockerFileName = formValue.dockerFileName;
+      baseData.folderPath = formValue.folderPath;
+      baseData.dockerFileName = formValue.dockerFileName;
     }
 
     const sourceCode = isDockerfilePathChanged
@@ -671,21 +674,17 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
     this.closeModalEvent.emit();
   }
 
-  getDeployments(): void {
-    // const environment = this.sharedService.getCookie('environment');
-    const environment = localStorage.getItem('environment');
-    const envId = environment ? JSON.parse(environment).id : null;
-    if (envId) {
-      this.deploymentService.getDeployments(envId).subscribe((res: any) => {
-        if (res.status === "Success") {
-          this.serviceList = res.data;
-        }
-      },
-        err => {
+  // getDeployments(): void {
 
-        });
-    }
-  }
+  //   this.deploymentService.getDeployments(this.getCurrentEnvId(), this.getCurrentProjectId()).subscribe((res: any) => {
+  //     if (res.status === "Success") {
+  //       this.serviceList = res.data;
+  //     }
+  //   },
+  //     err => {
+
+  //     });
+  // }
 
   copyDomainValue(inputElement: HTMLInputElement): void {
     inputElement.select();
@@ -815,7 +814,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
   onVcsAutoDeployChange() {
     const vcsAutoDeploy = this.sourceSettingsForm.get('vcsAutoDeploy')?.value;
     this.deploymentService.updateDeployment(this.deploymentdetails?.id, {
-      sourceCode: { 
+      sourceCode: {
         vcsAutoDeploy: vcsAutoDeploy,
         type: this.deploymentdetails?.sourceCode?.type || 'vcs',
         gitUrl: this.deploymentdetails?.sourceCode?.gitUrl || '',
@@ -823,7 +822,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
         // dockerfilePath: this.deploymentdetails?.sourceCode?.dockerfilePath || '',
         folderPath: this.deploymentdetails?.sourceCode?.folderPath || '',
         dockerFileName: this.deploymentdetails?.sourceCode?.dockerFileName || '',
-       }
+      }
     }).subscribe((res: any) => {
       if (res.status.toLowerCase() === "success") {
         this.toaster.success('VCS Auto Deploy setting updated successfully');

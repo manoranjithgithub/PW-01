@@ -10,6 +10,11 @@
     Instance Type.
   </div>
 </c-alert>
+<c-alert color="warning" *ngIf="isBuilding">
+  <div class="warn-text">
+    <i class="bi bi-exclamation-triangle-fill"></i> Deployment settings cannot be edited while the application is building
+  </div>
+</c-alert>
 <fieldset [disabled]="formDisabled" class="card-child">
   <c-accordion class="accordion-gap">
     <c-accordion-item #item0="cAccordionItem" [visible]="true">
@@ -70,13 +75,13 @@
               </ng-container>
               <div *ngIf="zipUpload && !vcsDeploy" class="d-flex gap-2">
                 <div class="flex-fill mb-3">
-                  <label for="fileInput" class="custom-label">Select a file to upload (.zip, .tar, .rar):</label>
+                  <label for="fileInput" class="custom-label">Select a file to upload (.zip, .tar):</label>
                   <input type="file" id="fileInput" formControlName="fileInput" class="form-control custom-label"
-                    [accept]="'.zip,.tar,.rar'" (change)="onFileSelect($event)" />
+                    [accept]="'.zip,.tar'" (change)="onFileSelect($event)" />
                   <div
                     *ngIf="sourceSettingsForm.get('fileInput')?.hasError('invalidFileType') && sourceSettingsForm.get('fileInput')?.touched"
                     class="text-danger">
-                    Invalid file type. Only .zip, .tar and .rar files are allowed.
+                    Invalid file type. Only .zip, .tar files are allowed.
                   </div>
                 </div>
 
