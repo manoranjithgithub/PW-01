@@ -17,7 +17,7 @@ type PaymentTab = 'payments-due' | 'unapplied-funds' | 'transactions';
 type TopSection = 'bill' | 'payments';
 type BillTab = 'service' | 'taxes';
 type TimeRangeOption = '30d' | '3m' | '6m' | 'current-month' | 'all';
-type StatusFilterOption = 'all' | 'tool' | 'application';
+type StatusFilterOption = 'all' | 'paid' | 'unpaid';
 
 
 @Component({
@@ -40,15 +40,15 @@ export class InvoiceComponent implements OnInit {
   billTaxFilter = '';
   selectedTimeRange: TimeRangeOption = '3m';
   readonly timeRangeOptions: Array<{ value: TimeRangeOption; label: string }> = [
-    { value: 'current-month', label: 'Current month' },
     { value: '3m', label: 'Last 3 months' },
+    { value: 'current-month', label: 'Current month' },
     { value: '6m', label: 'Last 6 months' },
     { value: 'all', label: 'All time' }
   ];
   readonly statusFilterOptions: Array<{ value: StatusFilterOption; label: string }> = [
     { value: 'all', label: 'All status' },
-    { value: 'tool', label: 'Tools' },
-    { value: 'application', label: 'Application' }
+    { value: 'paid', label: 'Paid' },
+    { value: 'unpaid', label: 'Unpaid' }
   ];
   billRows: BillServiceRow[] = [];
   billLoading = false;
@@ -77,6 +77,7 @@ export class InvoiceComponent implements OnInit {
   ];
   startDate = '';
   endDate = '';
+  lastChargedDate: Date | null = null;
   companyBillingInfo: CompanyBillingInfo = {
     companyName: null,
     gstNumber: null,
@@ -96,6 +97,9 @@ export class InvoiceComponent implements OnInit {
   limit = 10;
   offset = 0;
   totalRecords = 0;
+  billLimit = 10;
+  billOffset = 0;
+  billTotalRecords = 0;
   readonly pageSizeOptions = [10, 20, 50, 100];
 
   constructor(
@@ -184,6 +188,32 @@ export class InvoiceComponent implements OnInit {
     );
   }
 
+  get paginatedBillRows(): BillServiceRow[] {
+    const start = this.billOffset;
+    const end = start + this.billLimit;
+    return this.filteredBillRows.slice(start, end);
+  }
+
+  get billCurrentPage(): number {
+    return Math.floor(this.billOffset / this.billLimit) + 1;
+  }
+
+  get billTotalPages(): number {
+    if (!this.filteredBillRows.length) {
+      return 1;
+    }
+    return Math.max(1, Math.ceil(this.filteredBillRows.length / this.billLimit));
+  }
+
+  get billPageRangeLabel(): string {
+    if (!this.filteredBillRows.length) {
+      return '0-0 of 0';
+    }
+    const start = this.billOffset + 1;
+    const end = Math.min(this.billOffset + this.billLimit, this.filteredBillRows.length);
+    return `${start}-${end} of ${this.filteredBillRows.length}`;
+  }
+
   get billEstimatedTotal(): number {
     return this.billRows.reduce((sum, item) => sum + this.getAmount(item.amount), 0);
   }
@@ -242,6 +272,13 @@ export class InvoiceComponent implements OnInit {
     const startLabel = start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     const endLabel = end.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     return `${startLabel} - ${endLabel}`;
+  }
+
+  get lastChargedDateLabel(): string {
+    if (!this.lastChargedDate) {
+      return '--';
+    }
+    return this.lastChargedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   }
 
   get nextDueDate(): string {
@@ -417,7 +454,6 @@ export class InvoiceComponent implements OnInit {
     }
     return this.transactions.filter((row) => {
       const rowDate = this.getInvoiceDate(row);
-      console.log(rowDate)
       return rowDate ? rowDate >= start && rowDate <= end : false;
     });
   }
@@ -687,6 +723,29 @@ export class InvoiceComponent implements OnInit {
     this.transactionsFilter = value;
   }
 
+  onBillItemsPerPageChange(value: string): void {
+    const pageSize = Number(value);
+    if (!Number.isFinite(pageSize) || pageSize <= 0 || pageSize === this.billLimit) {
+      return;
+    }
+    this.billLimit = pageSize;
+    this.billOffset = 0;
+  }
+
+  billPreviousPage(): void {
+    if (this.billCurrentPage <= 1) {
+      return;
+    }
+    this.billOffset = Math.max(0, this.billOffset - this.billLimit);
+  }
+
+  billNextPage(): void {
+    if (this.billCurrentPage >= this.billTotalPages) {
+      return;
+    }
+    this.billOffset = this.billOffset + this.billLimit;
+  }
+
 
   getRowId(row: InvoiceRow): string {
     return row.invoiceNumber || String(row.id || '--');
@@ -926,8 +985,13 @@ export class InvoiceComponent implements OnInit {
     }
 
     return records.filter((row) => {
-      const category = this.getTransactionCategory(row);
-      return status === category;
+      const rowStatus = (row.status || '').toLowerCase();
+      if (status === 'paid') {
+        return rowStatus === 'paid';
+      } else if (status === 'unpaid') {
+        return rowStatus === 'draft' || rowStatus === 'unpaid';
+      }
+      return true;
     });
   }
 
@@ -949,7 +1013,6 @@ export class InvoiceComponent implements OnInit {
     if (!value) {
       return null;
     }
-    console.log(value)
     const date = new Date(value);
     return isNaN(date.getTime()) ? null : date;
   }
@@ -1352,7 +1415,7 @@ export class InvoiceComponent implements OnInit {
       || this.sharedService.getUser()?.id;
 
     if (!accountId) {
-      this.billingDetailsLoading = false;
+      // this.billingDetailsLoading = false;
       return;
     }
 

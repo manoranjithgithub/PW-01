@@ -112,6 +112,8 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
 
   selectedFileName = '';
   base64Snippet = '';
+  selectedFileSize: number = 0;
+  selectedFileTime: Date = new Date();
   isAutoScaleEnabled: boolean = false;
 
   constructor(
@@ -713,6 +715,34 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
       .reduce((acc, [k, v]) => ({ ...acc, [k]: v }), {});
   }
 
+  getFileType(fileName: string | undefined): string {
+    if (!fileName) return '';
+    const extension = fileName.split('.').pop()?.toUpperCase() || '';
+    return extension;
+  }
+
+  formatFileSize(bytes: number | undefined): string {
+    if (!bytes) return '0 B';
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    if (bytes === 0) return '0 B';
+    const i = Math.floor(Math.log(bytes) / Math.log(1024));
+    return Math.round((bytes / Math.pow(1024, i)) * 10) / 10 + ' ' + sizes[i];
+  }
+
+  getFileTimeAgo(uploadDate: Date | undefined): string {
+    if (!uploadDate) return '';
+    const now = new Date();
+    const seconds = Math.floor((now.getTime() - uploadDate.getTime()) / 1000);
+    
+    if (seconds < 60) return 'just now';
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+    const days = Math.floor(hours / 24);
+    return `${days} day${days > 1 ? 's' : ''} ago`;
+  }
+
   clearFile() {
     this.selectedConfigFile = null;
     ['fileInput', 'filePath'].forEach((controlName) => {
@@ -726,6 +756,8 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
     this.selectedFileName = '';
     this.parsedConfigData = null;
     this.base64Snippet = '';
+    this.selectedFileSize = 0;
+    this.selectedFileTime = new Date();
     const fileInputElement = document.getElementById(
       'fileInput'
     ) as HTMLInputElement | null;
@@ -820,6 +852,8 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
 
     const file = input.files[0];
     this.selectedFileName = file.name;
+    this.selectedFileSize = file.size;
+    this.selectedFileTime = new Date();
     const fileReader = new FileReader();
 
     fileReader.onload = () => {

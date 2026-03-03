@@ -23,6 +23,7 @@ export interface InvoiceRow {
   issued_at?: string;
   payment_method?: string;
   pdf_generated_at?: string;
+  credit_applied?: number;
   [key: string]: any;
 }
 

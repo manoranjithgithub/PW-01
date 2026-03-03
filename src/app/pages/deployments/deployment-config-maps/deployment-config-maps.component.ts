@@ -25,6 +25,8 @@ export class DeploymentConfigMapsComponent implements OnInit {
   parsedConfigData: any;
   selectedFileName = '';
   base64Snippet = '';
+  selectedFileSize: number = 0;
+  selectedFileTime: Date = new Date();
 
   constructor(private fb: FormBuilder,
     private deploymentsService: DeploymentsService, private ac: ActivatedRoute, private toaster: ToastrService,
@@ -76,6 +78,8 @@ export class DeploymentConfigMapsComponent implements OnInit {
     if (!input.files?.length) return;
     const file = input.files[0];
     this.selectedFileName = file.name;
+    this.selectedFileSize = file.size;
+    this.selectedFileTime = new Date();
     const fileReader = new FileReader();
 
     fileReader.onload = () => {
@@ -147,6 +151,34 @@ export class DeploymentConfigMapsComponent implements OnInit {
     };
   }
 
+  getFileType(fileName: string | undefined): string {
+    if (!fileName) return '';
+    const extension = fileName.split('.').pop()?.toUpperCase() || '';
+    return extension;
+  }
+
+  formatFileSize(bytes: number | undefined): string {
+    if (!bytes) return '0 B';
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    if (bytes === 0) return '0 B';
+    const i = Math.floor(Math.log(bytes) / Math.log(1024));
+    return Math.round((bytes / Math.pow(1024, i)) * 10) / 10 + ' ' + sizes[i];
+  }
+
+  getFileTimeAgo(uploadDate: Date | undefined): string {
+    if (!uploadDate) return '';
+    const now = new Date();
+    const seconds = Math.floor((now.getTime() - uploadDate.getTime()) / 1000);
+    
+    if (seconds < 60) return 'just now';
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+    const days = Math.floor(hours / 24);
+    return `${days} day${days > 1 ? 's' : ''} ago`;
+  }
+
   clearFile() {
     this.fileUploadForm.get('fileInput')?.reset();
     this.fileUploadForm.get('fileName')?.reset();
@@ -159,6 +191,8 @@ export class DeploymentConfigMapsComponent implements OnInit {
     this.selectedFileName = '';
     this.parsedConfigData = null;
     this.base64Snippet = '';
+    this.selectedFileSize = 0;
+    this.selectedFileTime = new Date();
     const req = {
       config: {
         path: this.fileUploadForm.get('filePath')?.value,
