@@ -23,7 +23,7 @@ type StatusFilterOption = 'all' | 'paid' | 'unpaid';
 @Component({
   selector: 'app-invoice',
   standalone: true,
-  imports: [CommonModule,FormsModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './invoice.component.html',
   styleUrl: './invoice.component.scss',
   providers: [PricingsService]
@@ -281,6 +281,14 @@ export class InvoiceComponent implements OnInit {
     return this.lastChargedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   }
 
+  get billingPeriodEndDateLabel(): string {
+    const end = this.parseDateValue(this.endDate);
+    if (!end) {
+      return '--';
+    }
+    return end.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
   get nextDueDate(): string {
     const now = new Date();
     const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
@@ -400,30 +408,46 @@ export class InvoiceComponent implements OnInit {
       .reduce((sum, row) => sum + this.getAmount(row.amount), 0);
   }
 
+  get deploymentServiceCostTotal(): number {
+    return this.monthScopedBillRows
+      .filter((row) => row.source === 'deployment')
+      .reduce((sum, row) => sum + this.getAmount(row.amount), 0);
+  }
+
   get totalBillableServicesCount(): number {
     return this.monthScopedBillRows.length;
   }
 
+  get filteredTransactionRecords(): InvoiceRow[] {
+    const start = this.offset;
+    const end = start + this.limit;
+    return this.filteredTransactions.slice(start, end);
+  }
 
+  get filteredTransactionCount(): number {
+    return this.filteredTransactions.length;
+  }
 
   get currentPage(): number {
     return Math.floor(this.offset / this.limit) + 1;
   }
 
   get totalPages(): number {
-    if (!this.totalRecords) {
+    const count = this.filteredTransactionCount;
+    if (!count) {
       return 1;
     }
-    return Math.max(1, Math.ceil(this.totalRecords / this.limit));
+    return Math.max(1, Math.ceil(count / this.limit));
   }
 
   get pageRangeLabel(): string {
-    if (!this.totalRecords) {
+    const count = this.filteredTransactionCount;
+    if (!count) {
       return '0-0 of 0';
     }
     const start = this.offset + 1;
-    const end = Math.min(this.offset + this.limit, this.totalRecords);
-    return `${start}-${end} of ${this.totalRecords}`;
+    const end = Math.min(this.offset + this.limit, count);
+    return `${start}-${end} of ${count}`;
   }
 
   get yearOptions(): number[] {
@@ -544,6 +568,7 @@ export class InvoiceComponent implements OnInit {
 
   onTimeRangeChange(value: TimeRangeOption): void {
     this.selectedTimeRange = value || '3m';
+    this.offset = 0;
   }
 
   getCurrentDate(): string {
@@ -711,8 +736,8 @@ export class InvoiceComponent implements OnInit {
 
   onStatusFilterChange(tab: PaymentTab, value: StatusFilterOption): void {
     const selected = value || 'all';
-
     this.transactionStatusFilter = selected;
+    this.offset = 0;
   }
 
   switchBillTab(tab: BillTab): void {
@@ -721,6 +746,7 @@ export class InvoiceComponent implements OnInit {
 
   onFilterChange(value: string, tab: PaymentTab): void {
     this.transactionsFilter = value;
+    this.offset = 0;
   }
 
   onBillItemsPerPageChange(value: string): void {
@@ -816,7 +842,29 @@ export class InvoiceComponent implements OnInit {
   }
 
   onDownload(row: InvoiceRow): void {
-    this.viewPdf(row);
+    if (!row?.id) {
+      this.toastr.error('Invoice ID not found');
+      return;
+    }
+    this.http.getPdfInvoice(String(row.id)).subscribe({
+      next: (response: any) => {
+        const fileUrl = response?.data?.url;
+
+        if (!fileUrl) {
+          this.toastr.error('PDF URL not available');
+          return;
+        }
+
+        const link = document.createElement('a');
+        link.href = fileUrl;
+        link.target = '_blank';
+        link.rel = 'noopener';
+        link.click();
+      },
+      error: () => {
+        this.toastr.error('Failed to fetch PDF');
+      }
+    });
   }
 
   payOutstandingNow(): void {
@@ -884,7 +932,7 @@ export class InvoiceComponent implements OnInit {
       this.toastr.error('Invoice ID not found');
       return;
     }
-    this.http.getPdfInvoice(data.id).subscribe({
+    this.http.getPdfInvoice(String(data.id)).subscribe({
       next: (response: any) => {
         if (response?.data?.url) {
           window.open(response.data.url, '_blank');
@@ -896,7 +944,7 @@ export class InvoiceComponent implements OnInit {
         this.toastr.error(error.message || 'Failed to fetch PDF');
       },
       complete: () => {
-        window.location.reload();
+        // window.location.reload();
       }
     });
   }
