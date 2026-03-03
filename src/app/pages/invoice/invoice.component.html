@@ -200,14 +200,15 @@
             <td>{{ getRowId(row) }}</td>
             <td>{{ formatMoney(row.subtotal || 0, row.currency) }}</td>
             <td>{{ formatMoney(row.tax_amount || 0, row.currency) }}</td>
-            <td>{{ formatMoney(0, row.currency) }}</td>
-            <td>{{ formatMoney(row.total || row.subtotal, row.currency) }}</td>
+            <td>{{ formatMoney(row.credit_applied ||0, row.currency) }}</td>
+            <td>{{ formatMoney((row.subtotal || 0) + (row.tax_amount || 0) - (row.credit_applied || 0), row.currency) }}</td>
             <td>
-              <button type="button" class="status-pill pay-now-action-btn status-due" *ngIf="canShowPayNow(row)" (click)="openPayNow(row)" title="Pay invoice">
+              <span class="status-pill" *ngIf="((row.subtotal || 0) + (row.tax_amount || 0) - (row.credit_applied || 0)) === 0" [class]="'status-paid'">Paid</span>
+              <button type="button" class="status-pill pay-now-action-btn status-due" *ngIf="canShowPayNow(row) && ((row.subtotal || 0) + (row.tax_amount || 0) - (row.credit_applied || 0)) > 0" (click)="openPayNow(row)" title="Pay invoice">
                 <!-- <i class="bi bi-credit-card"></i> -->
                 Pay now
               </button>
-              <span class="status-pill" [class]="getStatusClass(row)" *ngIf="!canShowPayNow(row)">{{ getStatusLabel(row) }}</span>
+              <span class="status-pill" [class]="getStatusClass(row)" *ngIf="!canShowPayNow(row) && ((row.subtotal || 0) + (row.tax_amount || 0) - (row.credit_applied || 0)) > 0">{{ getStatusLabel(row) }}</span>
             </td>
             <td class="download-cell">
               <div class="action-buttons">
