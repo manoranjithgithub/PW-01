@@ -1415,7 +1415,7 @@ export class InvoiceComponent implements OnInit {
       || this.sharedService.getUser()?.id;
 
     if (!accountId) {
-      this.billingDetailsLoading = false;
+      // this.billingDetailsLoading = false;
       return;
     }
 
