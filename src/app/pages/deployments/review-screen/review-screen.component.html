@@ -166,13 +166,20 @@
                 class="btn"><i class="bi bi-pencil-square edit-icon"></i></button>
         </div>
         <div class="row mb-4" *ngIf="hasData(configFileData);else noFiles">
-            <div class="col-md-6">
-                <label class="mb-1">Path Name</label>
-                <span class="d-block">{{configFileData?.filePath}}</span>
-            </div>
-            <div class="col-md-6">
-                <label class="mb-1">Selected File</label>
-                <span class="d-block">{{getFileNameOnly(configFileData?.fileInput)}}</span>
+            <div class="col-md-12">
+                <div class="file-preview-card">
+                    <div class="file-icon">
+                        <i class="bi bi-file-earmark"></i>
+                    </div>
+                    <div class="file-info">
+                        <div class="file-name">{{ getFileNameOnly(configFileData?.fileInput) }}</div>
+                        <div class="file-meta">
+                            <span *ngIf="configFileData?.fileSize" class="file-size">{{ formatFileSize(configFileData?.fileSize) }}</span>
+                            <span *ngIf="configFileData?.uploadedAt" class="file-date">{{ getFileTimeAgo(configFileData?.uploadedAt) }}</span>
+                        </div>
+                    </div>
+                    <div class="file-badge">{{ getFileType(configFileData?.fileInput) }}</div>
+                </div>
             </div>
         </div>
         <ng-template #noFiles>
