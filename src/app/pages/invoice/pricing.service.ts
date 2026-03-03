@@ -32,6 +32,14 @@ export class PricingsService {
         catchError(this.handleError.bind(this))
       );
   }
+  downloadPdfInvoice(invoiceId: string): Observable<any> {
+    return this.http.get(`${this.pricingManagement}/invoices/${invoiceId}/presign`, {
+    responseType: 'blob'
+  })
+      .pipe(
+        catchError(this.handleError.bind(this))
+      );
+  }
 
   getDeployments(projectId: string, envId: string) {
     return this.http.get(`${this.deploymentManagement}/deployments?projectId=${projectId}`)
