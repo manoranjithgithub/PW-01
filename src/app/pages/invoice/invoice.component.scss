@@ -512,12 +512,19 @@ $error-text: #b21b1b;
   }
 
   .status-pill {
+    align-items: center;
     display: inline-flex;
     font-size: 11px;
     font-weight: 700;
+    gap: 6px;
     line-height: 1;
     padding: 6px 10px;
     border-radius: 4px;
+    border: none;
+
+    i {
+      font-size: 11px;
+    }
   }
 
   .status-paid {
@@ -635,6 +642,44 @@ $error-text: #b21b1b;
       margin: 0;
     }
 
+    .status-summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .summary-stat {
+      background: #fff;
+      border: 1px solid #e9ecef;
+      border-radius: 8px;
+      padding: 12px;
+      text-align: center;
+    }
+
+    .summary-label {
+      color: #6c757d;
+      font-size: 11px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .summary-value {
+      color: #2f200f;
+      font-size: 18px;
+      font-weight: 700;
+
+      &.text-warning {
+        color: #d97400;
+      }
+
+      &.text-danger {
+        color: #c41c3b;
+      }
+    }
+
     .item-actions {
       margin-top: 14px;
 
@@ -712,23 +757,31 @@ $error-text: #b21b1b;
     }
   }
 
-  .action-buttons {
+  .usage-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .usage-info {
+    align-items: center;
+    display: inline-flex;
+    font-size: 12px;
+    gap: 6px;
+    color: #232323;
+
+    i {
+      font-size: 13px;
+      opacity: 0.7;
+    }
+  }
+
+  .status-cell {
     align-items: center;
     display: flex;
     gap: 8px;
-
-    .pay-now-action-btn {
-      background: linear-gradient(135deg, #ff9d4d, #ff6a1f);
-      border: 0;
-      border-radius: 999px;
-      color: #fff;
-      cursor: pointer;
-      font-size: 11px;
-      font-weight: 700;
-      min-height: 28px;
-      padding: 0 10px;
-      white-space: nowrap;
-    }
+    min-height: 28px;
+    padding: 4px 0;
   }
 
   .action-buttons {
@@ -737,15 +790,16 @@ $error-text: #b21b1b;
     gap: 8px;
 
     .pay-now-action-btn {
-      background: linear-gradient(135deg, #ff9d4d, #ff6a1f);
-      border: 0;
-      border-radius: 999px;
-      color: #fff;
       cursor: pointer;
-      font-size: 11px;
-      font-weight: 700;
-      min-height: 28px;
-      padding: 0 10px;
+      transition: all 0.2s ease;
+
+      &:hover {
+        opacity: 0.8;
+      }
+
+      &:active {
+        opacity: 0.7;
+      }
     }
   }
 
@@ -944,7 +998,7 @@ $error-text: #b21b1b;
       color: #fff;
       cursor: pointer;
       font-size: 12px;
-      font-weight: 600;
+      // font-weight: 600;
       min-height: 32px;
       padding: 0 14px;
       transition: all 0.25s ease;

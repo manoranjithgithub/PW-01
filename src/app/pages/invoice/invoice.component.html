@@ -70,21 +70,23 @@
     <div class="overview-grid">
       <article class="overview-card total-card company-billing-card">
         <div class="card-content">
-          <p class="card-label">Company & Billing Info</p>
-          <div class="company-title-row">
-            <p class="card-value">{{ companyBillingInfo.companyName || 'Not configured' }}</p>
+          <div class="d-flex justify-content-between align-items-center">
+            <p class="card-label">Company & Billing Info</p>
             <button type="button" class="manage-billing-btn" (click)="navigateToAccountSettings()">Manage billing
               details</button>
+          </div>
+          <div class="company-title-row">
+            <p class="card-value">{{ companyBillingInfo.companyName || 'Not configured' }}</p>
           </div>
           <div class="company-details-grid" *ngIf="!billingDetailsLoading; else billingLoadingBlock">
             <div class="company-details-row">
               <span class="detail-label">GST Number</span>
               <span class="detail-value">{{ maskSensitiveId(companyBillingInfo.gstNumber) }}</span>
             </div>
-            <div class="company-details-row">
+            <!-- <div class="company-details-row">
               <span class="detail-label">PAN Number</span>
               <span class="detail-value">{{ maskSensitiveId(companyBillingInfo.panNumber) }}</span>
-            </div>
+            </div> -->
             <div class="company-details-row">
               <span class="detail-label">Billing Address</span>
               <span class="detail-value">{{ billingAddressLabel }}</span>
@@ -108,10 +110,9 @@
             <p class="bill-strong">{{ overdueDays }} days</p>
           </div>
           <!-- <div class="item-value"> {{ billPeriodLabel }}</div> -->
-          <p class="muted-line overview-note" [style.color]="totalOutstandingBalance > 0 ? '#ff0000' : '#232323'"
-            style="margin-top: 25px;">Your account {{
+          <!-- <p class="muted-line overview-note" [style.color]="totalOutstandingBalance > 0 ? '#ff0000' : '#232323'">Your account {{
             totalOutstandingBalance > 0 ? 'has pending invoices' : 'is up to date'
-            }}</p>
+            }}</p> -->
         </div>
       </article>
 
@@ -120,9 +121,9 @@
           <label>Total Outstanding</label>
           <div class="item-value">{{ formatMoney(totalOutstandingBalance) }}</div>
           <p class="muted-line">Amount due for payment</p>
-          <div class="item-actions" *ngIf="totalOutstandingBalance > 0">
+          <!-- <div class="item-actions" *ngIf="totalOutstandingBalance > 0">
             <button type="button" (click)="payOutstandingNow()">Pay now</button>
-          </div>
+          </div> -->
         </div>
       </article>
 
@@ -164,12 +165,9 @@
       </label>
       <label class="time-window-field filter-field">
         <span>Date Range</span>
-        <label class="time-window-picker">
-          <i class="bi bi-calendar3"></i>
-          <select [value]="selectedTimeRange" (change)="onTimeRangeChange($any($event.target).value)">
-            <option *ngFor="let option of timeRangeOptions" [value]="option.value">{{ option.label }}</option>
-          </select>
-        </label>
+        <select [value]="selectedTimeRange" (change)="onTimeRangeChange($any($event.target).value)">
+          <option *ngFor="let option of timeRangeOptions" [value]="option.value">{{ option.label }}</option>
+        </select>
       </label>
       <label class="status-field filter-field">
         <span>Status</span>
@@ -204,12 +202,15 @@
             <td>{{ formatMoney(row.tax_amount || 0, row.currency) }}</td>
             <td>{{ formatMoney(0, row.currency) }}</td>
             <td>{{ formatMoney(row.total || row.subtotal, row.currency) }}</td>
-            <td><span class="status-pill" [class]="getStatusClass(row)">{{ getStatusLabel(row) }}</span></td>
+            <td>
+              <button type="button" class="status-pill pay-now-action-btn status-due" *ngIf="canShowPayNow(row)" (click)="openPayNow(row)" title="Pay invoice">
+                <!-- <i class="bi bi-credit-card"></i> -->
+                Pay now
+              </button>
+              <span class="status-pill" [class]="getStatusClass(row)" *ngIf="!canShowPayNow(row)">{{ getStatusLabel(row) }}</span>
+            </td>
             <td class="download-cell">
               <div class="action-buttons">
-                <!-- <button type="button" class="pay-now-action-btn" (click)="openPayNow(row)">
-                  Pay now
-                </button> -->
                 <button type="button" class="icon-btn" title="View PDF" (click)="viewPdf(row)">
                   <i class="bi bi-file-earmark-pdf-fill"></i>
                 </button>
@@ -217,7 +218,6 @@
                   <i class="bi bi-download"></i>
                 </button>
               </div>
-              <!-- <span class="text-muted" *ngIf="!row.pdf_generated_at">No PDF</span> -->
             </td>
           </tr>
         </tbody>
@@ -254,7 +254,7 @@
         <div class="billing-summary-item">
           <label>Billing Period</label>
           <div class="item-value">{{ billPeriodLabel }}</div>
-          <p class="muted-line">Last charged on Feb 10, 2026</p>
+          <p class="muted-line">Last charged on {{ lastChargedDateLabel }}</p>
         </div>
         <div class="billing-summary-item bill-total-breakdown">
           <label>Bill Summary</label>
@@ -329,8 +329,8 @@
             <span>Status</span>
             <select>
               <option>All services</option>
-              <option>Active</option>
-              <option>Inactive</option>
+              <option>Application</option>
+              <option>Tools</option>
             </select>
           </label>
         </div>
@@ -348,7 +348,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let row of filteredBillRows">
+              <tr *ngFor="let row of paginatedBillRows">
                 <td>
                   <div class="service-cell">
                     <span>{{ row.name || row.description }}</span>
@@ -375,6 +375,24 @@
               </tr>
             </tfoot>
           </table>
+        </div>
+        <div class="table-footer">
+          <div class="footer-count">Total records: {{ filteredBillRows.length }}</div>
+          <div class="footer-controls">
+            <label class="page-size-label">
+              Items per page
+              <select [value]="billLimit" (change)="onBillItemsPerPageChange($any($event.target).value)">
+                <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
+              </select>
+            </label>
+            <span class="page-range">{{ billPageRangeLabel }}</span>
+            <button type="button" class="page-btn" (click)="billPreviousPage()" [disabled]="billCurrentPage <= 1">
+              <i class="bi bi-chevron-left"></i>
+            </button>
+            <button type="button" class="page-btn" (click)="billNextPage()" [disabled]="billCurrentPage >= billTotalPages">
+              <i class="bi bi-chevron-right"></i>
+            </button>
+          </div>
         </div>
 
         <div class="table-empty" *ngIf="billLoading">
