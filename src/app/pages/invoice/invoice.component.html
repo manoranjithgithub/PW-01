@@ -79,7 +79,7 @@
             <p class="card-value mb-1">{{ companyBillingInfo.companyName || 'No Company & Billing Information Added' }}</p>
             <p class="muted-line" *ngIf="!companyBillingInfo.companyName">Add your company details in <button type="button" class="link-btn" (click)="navigateToAccountSettings()">account settings</button> to personalize your billing invoices</p>
           </div>
-          <div class="company-details-list" *ngIf="!billingDetailsLoading && companyBillingInfo.companyName; else billingLoadingBlock">
+          <div class="company-details-list" *ngIf="!billingDetailsLoading; else billingLoadingBlock">
             <div class="company-details-row">
               <span class="detail-label">GST Number</span>
               <span class="detail-value">{{ maskSensitiveId(companyBillingInfo.gstNumber) }}</span>
