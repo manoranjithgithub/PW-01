@@ -1462,6 +1462,7 @@ export class InvoiceComponent implements OnInit {
         this.billingDetailsLoading = false;
       }
     });
+    this.billingDetailsLoading = false;
   }
 
   navigateToAccountSettings(): void {
