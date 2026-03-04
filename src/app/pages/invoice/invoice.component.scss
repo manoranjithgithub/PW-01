@@ -348,6 +348,14 @@ $error-text: #b21b1b;
         box-shadow: 0 0 0 3px rgba(255, 102, 0, 0.15);
         outline: none;
       }
+
+      &:disabled {
+        background: #f5f5f5;
+        border-color: #e5e5e5;
+        color: #999;
+        cursor: not-allowed;
+        opacity: 0.6;
+      }
     }
   }
 
@@ -977,7 +985,7 @@ $error-text: #b21b1b;
 
     .card-value {
       color: #7a411d;
-      font-size: 26px;
+      font-size: 22px;
       font-weight: 800;
       letter-spacing: 0.2px;
       margin-bottom: 2px;
@@ -989,6 +997,26 @@ $error-text: #b21b1b;
       flex-wrap: nowrap;
       gap: 12px;
       justify-content: space-between;
+
+      &.centered {
+        flex-direction: column;
+        justify-content: center;
+        text-align: center;
+        gap: 8px;
+        min-height: 120px;
+
+        .card-value {
+          margin-bottom: 0;
+          color: rgba(128, 75, 36, 0.85);
+          font-size: 16px;
+        }
+
+        .muted-line {
+          color: rgba(128, 75, 36, 0.65);
+          font-size: 12px;
+          line-height: 1.4;
+        }
+      }
     }
 
     .manage-billing-btn {
@@ -1009,12 +1037,40 @@ $error-text: #b21b1b;
       }
     }
 
+    .link-btn {
+      background: none;
+      border: none;
+      color: #ff6a1f;
+      cursor: pointer;
+      font-size: inherit;
+      // font-weight: 600;
+      padding: 0;
+      text-decoration: underline;
+      transition: all 0.2s ease;
+
+      &:hover {
+        color: #ff9d4d;
+      }
+
+      &:active {
+        opacity: 0.8;
+      }
+    }
+
     .company-details-grid {
       border-top: 1px solid rgba(191, 132, 88, 0.2);
       display: grid;
       gap: 8px;
       padding-top: 12px;
     }
+
+    // .company-details-list {
+    //   border-top: 1px solid rgba(191, 132, 88, 0.2);
+    //   display: flex;
+    //   flex-direction: column;
+    //   gap: 12px;
+    //   padding-top: 12px;
+    // }
 
     .company-details-row {
       align-items: flex-start;
@@ -1025,7 +1081,13 @@ $error-text: #b21b1b;
       gap: 10px;
       grid-template-columns: 150px 1fr;
       padding: 8px 10px;
+      margin: 5px auto;
     }
+
+    // .company-details-list .company-details-row {
+    //   grid-template-columns: 1fr;
+    //   gap: 6px;
+    // }
 
     .detail-label {
       color: rgba(128, 75, 36, 0.85);
@@ -1034,6 +1096,11 @@ $error-text: #b21b1b;
       letter-spacing: 0.45px;
       text-transform: uppercase;
     }
+
+    // .company-details-list .detail-label {
+    //   display: block;
+    //   margin-bottom: 2px;
+    // }
 
     .detail-value {
       color: #4f2a11;

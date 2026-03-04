@@ -17,7 +17,7 @@ type PaymentTab = 'payments-due' | 'unapplied-funds' | 'transactions';
 type TopSection = 'bill' | 'payments';
 type BillTab = 'service' | 'taxes';
 type TimeRangeOption = '30d' | '3m' | '6m' | 'current-month' | 'all';
-type StatusFilterOption = 'all' | 'paid' | 'unpaid';
+type StatusFilterOption = 'all' | 'paid' | 'draft' | 'unpaid';
 
 
 @Component({
@@ -48,7 +48,7 @@ export class InvoiceComponent implements OnInit {
   readonly statusFilterOptions: Array<{ value: StatusFilterOption; label: string }> = [
     { value: 'all', label: 'All status' },
     { value: 'paid', label: 'Paid' },
-    { value: 'unpaid', label: 'Unpaid' }
+    { value: 'draft', label: 'Unpaid' }
   ];
   billRows: BillServiceRow[] = [];
   billLoading = false;
@@ -81,14 +81,12 @@ export class InvoiceComponent implements OnInit {
   companyBillingInfo: CompanyBillingInfo = {
     companyName: null,
     gstNumber: null,
-    panNumber: null,
     addressLine1: null,
     addressLine2: null,
     city: null,
     state: null,
     country: null,
     postalCode: null,
-    paymentMethod: null
   };
   accountId: string | null = null;
   billingDetailsLoading = false;
@@ -1036,7 +1034,7 @@ export class InvoiceComponent implements OnInit {
       const rowStatus = (row.status || '').toLowerCase();
       if (status === 'paid') {
         return rowStatus === 'paid';
-      } else if (status === 'unpaid') {
+      } else if (status === 'draft' || status === 'unpaid') {
         return rowStatus === 'draft' || rowStatus === 'unpaid';
       }
       return true;
@@ -1091,8 +1089,8 @@ export class InvoiceComponent implements OnInit {
     const storedProject = this.safeParseLocalStorage('project');
     const storedEnvironment = this.safeParseLocalStorage('environment');
 
-    this.selectedProjectId = storedProject?.id || 'all';
-    this.selectedEnvironmentId = storedEnvironment?.id || 'all';
+    // this.selectedProjectId = storedProject?.id || 'all';
+    // this.selectedEnvironmentId = storedEnvironment?.id || 'all';
 
     this.loadProjectOptions();
   }
@@ -1121,19 +1119,64 @@ export class InvoiceComponent implements OnInit {
 
   private loadEnvironmentOptionsByProject(projectId: string): void {
     if (!projectId || projectId === 'all') {
-      const storedEnv = this.safeParseLocalStorage('environment');
-      this.environmentOptions = [
-        { id: 'all', name: 'All environments' },
-        ...(storedEnv?.id ? [{ id: String(storedEnv.id), name: storedEnv.name || storedEnv.id }] : [])
-      ];
-      if (
-        this.selectedEnvironmentId === 'all' ||
-        !this.environmentOptions.some((env) => env.id === this.selectedEnvironmentId)
-      ) {
-        this.selectedEnvironmentId = this.getDefaultEnvironmentId(this.environmentOptions);
-      }
-      this.applyInvoiceScopeFilter();
-      this.loadBillServiceCharges();
+      // Load all projects and collect their environments
+      this.projectsService.getAllProjects().subscribe({
+        next: (res: any) => {
+          const projects = Array.isArray(res?.data) ? res.data : [];
+          if (!projects.length) {
+            this.environmentOptions = [{ id: 'all', name: 'All environments' }];
+            this.selectedEnvironmentId = 'all';
+            this.applyInvoiceScopeFilter();
+            this.loadBillServiceCharges();
+            return;
+          }
+
+          forkJoin(
+            projects.map((project: any) =>
+              this.projectsService.getAllEnvironmentsByProject(String(project.id)).pipe(
+                catchError(() => of({ data: [] }))
+              )
+            )
+          ).subscribe({
+            next: (envResponses: any) => {
+              const envMap = new Map<string, string>();
+              (envResponses as any[]).forEach((envResponse: any) => {
+                const envs = Array.isArray(envResponse?.data) ? envResponse.data : [];
+                envs.forEach((env: any) => {
+                  const envId = String(env.id);
+                  envMap.set(envId, env.name || envId);
+                });
+              });
+
+              this.environmentOptions = [
+                { id: 'all', name: 'All environments' },
+                ...Array.from(envMap.entries()).map(([id, name]) => ({ id, name }))
+              ];
+
+              if (
+                this.selectedEnvironmentId === 'all' ||
+                !this.environmentOptions.some((env) => env.id === this.selectedEnvironmentId)
+              ) {
+                this.selectedEnvironmentId = this.getDefaultEnvironmentId(this.environmentOptions);
+              }
+              this.applyInvoiceScopeFilter();
+              this.loadBillServiceCharges();
+            },
+            error: () => {
+              this.environmentOptions = [{ id: 'all', name: 'All environments' }];
+              this.selectedEnvironmentId = 'all';
+              this.applyInvoiceScopeFilter();
+              this.loadBillServiceCharges();
+            }
+          });
+        },
+        error: () => {
+          this.environmentOptions = [{ id: 'all', name: 'All environments' }];
+          this.selectedEnvironmentId = 'all';
+          this.applyInvoiceScopeFilter();
+          this.loadBillServiceCharges();
+        }
+      });
       return;
     }
 
@@ -1189,92 +1232,29 @@ export class InvoiceComponent implements OnInit {
 
   private loadBillServiceCharges(): void {
     const accountId = localStorage.getItem('accountId') || this.sharedService.getUser()?.id || '';
-    const envIds = this.getScopedEnvironmentIds();
-    if (!accountId || !envIds.length) {
+    if (!accountId) {
       this.billRows = [];
       this.billLoading = false;
       return;
     }
-
     this.billLoading = true;
-    const envNameMap = this.environmentOptions.reduce((acc: Record<string, string>, env) => {
-      acc[env.id] = env.name;
-      return acc;
-    }, {});
 
-    forkJoin(
-      envIds.map((envId) =>
-        forkJoin({
-          envId: of(envId),
-          costs: this.http.getCostByService(
-            accountId,
-            this.startDate,
-            this.endDate,
-            // this.selectedEnvironmentId
-            // this.selectedProjectId
-          ).pipe(catchError(() => of({ data: [] }))),
-          // deployments: this.http.getDeployments(this.selectedProjectId,envId).pipe(catchError(() => of({ data: [] }))),
-          // tools: this.http.getToolsList(envId).pipe(catchError(() => of({ data: [] })))
-        })
-      )
+    this.http.getCostByService(
+      accountId,
+      this.startDate,
+      this.endDate,
+      this.selectedEnvironmentId !== 'all' && this.selectedProjectId !== 'all' ? String(this.selectedEnvironmentId) : undefined,
+      this.selectedProjectId !== 'all' ? String(this.selectedProjectId) : undefined
+    ).pipe(
+      catchError(() => of({ data: [] }))
     ).subscribe({
-      next: (responses: any[]) => {
-        const responseRows = responses.map((response: any) => {
-          const envId = String(response?.envId || '');
-          const envName = envNameMap[envId] || envId;
-          const deploymentNameById = this.buildNameMap(response?.deployments?.data, ['id', 'deploymentId'], ['name', 'deploymentName']);
-          // const toolNameById = this.buildNameMap(response?.tools?.data, ['id', 'toolId'], ['name', 'toolName']);
-          const toolNameById = {};
-          const items = this.extractCostByServiceItems(response?.costs);
-          return { envName, deploymentNameById, toolNameById, items };
-        });
-
-        const deploymentIds = Array.from(new Set(
-          responseRows.flatMap(({ items }) =>
-            items
-              .map((item: any) => item?.deploymentId ?? item?.deployment_id)
-              .filter((id: any) => id !== undefined && id !== null && id !== '')
-              .map((id: any) => String(id))
-          )
-        ));
-
-        const setRows = (resolvedDeploymentNames: Record<string, string>) => {
-          const rows: BillServiceRow[] = [];
-          responseRows.forEach(({ envName, deploymentNameById, toolNameById, items }) => {
-            const mergedDeploymentNames = { ...deploymentNameById, ...resolvedDeploymentNames };
-            items.forEach((item: any) => {
-              rows.push(this.mapCostByServiceItem(item, envName, mergedDeploymentNames, toolNameById));
-            });
-          });
-          this.billRows = rows;
-          this.billLoading = false;
-        };
-
-        if (!deploymentIds.length) {
-          setRows({});
-          return;
-        }
-
-        forkJoin(
-          deploymentIds.map((id) =>
-            this.http.getDeploymentById(id).pipe(catchError(() => of({ data: null })))
-          )
-        ).subscribe({
-          next: (deploymentResponses: any[]) => {
-            const resolvedDeploymentNames = deploymentIds.reduce((acc: Record<string, string>, id, index) => {
-              const deployment = deploymentResponses[index]?.data;
-              const name = deployment?.name || deployment?.deploymentName;
-              if (name) {
-                acc[id] = name;
-              }
-              return acc;
-            }, {});
-            setRows(resolvedDeploymentNames);
-          },
-          error: () => {
-            setRows({});
-          }
-        });
+      next: (response: any) => {
+        const items = this.extractCostByServiceItems(response);
+        const rows: BillServiceRow[] = items.map((item: any) =>
+          this.mapCostByServiceItem(item, '', {}, {})
+        );
+        this.billRows = rows;
+        this.billLoading = false;
       },
       error: () => {
         this.billRows = [];
@@ -1359,10 +1339,10 @@ export class InvoiceComponent implements OnInit {
     deploymentNameById: Record<string, string>,
     toolNameById: Record<string, string>
   ): BillServiceRow {
-    const deploymentId = item?.deploymentId || item?.deployment_id || item?.id;
-    const toolId = item?.toolId || item?.tool_id || item?.id;
+    const deploymentId = item?.deploymentId;
+    // const toolId = item?.toolId || item?.tool_id || item?.id;
     const deploymentKey = deploymentId !== undefined && deploymentId !== null ? String(deploymentId) : '';
-    const toolKey = toolId !== undefined && toolId !== null ? String(toolId) : '';
+    // const toolKey = toolId !== undefined && toolId !== null ? String(toolId) : '';
     const deploymentDisplayName = item?.dep?.deploymentName ||
       item?.dep?.name ||
       item?.deployment?.deploymentName ||
@@ -1373,7 +1353,7 @@ export class InvoiceComponent implements OnInit {
       item?.service ||
       item?.name ||
       (deploymentKey ? deploymentNameById[deploymentKey] : undefined) ||
-      (toolKey ? toolNameById[toolKey] : undefined) ||
+      // (toolKey ? toolNameById[toolKey] : undefined) ||
       item?.deploymentName ||
       item?.toolName ||
       item?.resource_name ||
@@ -1414,13 +1394,7 @@ export class InvoiceComponent implements OnInit {
       description: `${source === 'tool' ? 'Tool' : 'Deployment'}: ${name}`,
       usage: usageParts.join(' | '),
       amount: this.getAmount(
-        item?.total_cost ??
-        item?.totalCost ??
-        item?.projected_total ??
-        item?.projectedCost ??
         item?.cost ??
-        item?.amount ??
-        item?.charge ??
         item?.costCpu ??
         item?.costMem ??
         item?.costInstance,
@@ -1445,17 +1419,6 @@ export class InvoiceComponent implements OnInit {
     return hint.includes('tool') ? 'tool' : 'deployment';
   }
 
-  private buildNameMap(items: any[], idKeys: string[], nameKeys: string[]): Record<string, string> {
-    const list = Array.isArray(items) ? items : [];
-    return list.reduce((acc: Record<string, string>, item: any) => {
-      const id = idKeys.map((key) => item?.[key]).find((value) => value !== undefined && value !== null);
-      const name = nameKeys.map((key) => item?.[key]).find((value) => typeof value === 'string' && value.trim());
-      if (id !== undefined && id !== null && name) {
-        acc[String(id)] = name;
-      }
-      return acc;
-    }, {});
-  }
 
   private loadBillingDetails(): void {
     this.billingDetailsLoading = true;
@@ -1463,7 +1426,7 @@ export class InvoiceComponent implements OnInit {
       || this.sharedService.getUser()?.id;
 
     if (!accountId) {
-      // this.billingDetailsLoading = false;
+      this.billingDetailsLoading = false;
       return;
     }
 
@@ -1474,14 +1437,12 @@ export class InvoiceComponent implements OnInit {
           this.companyBillingInfo = {
             companyName: response.data.companyName || response.data.company_name || null,
             gstNumber: response.data.gstNumber || null,
-            panNumber: response.data.panNumber || null,
             addressLine1: response.data.addressLine1 || response.data.address_line1 || null,
             addressLine2: response.data.addressLine2 || response.data.address_line2 || null,
             city: response.data.city || null,
             state: response.data.state || null,
             country: response.data.country || null,
             postalCode: response.data.postalCode || response.data.postal_code || null,
-            paymentMethod: response.data.paymentMethod || response.data.payment_method || null
           };
         }
       },
@@ -1489,14 +1450,12 @@ export class InvoiceComponent implements OnInit {
         this.companyBillingInfo = {
           companyName: null,
           gstNumber: null,
-          panNumber: null,
           addressLine1: null,
           addressLine2: null,
           city: null,
           state: null,
           country: null,
           postalCode: null,
-          paymentMethod: null
         };
       },
       complete: () => {
