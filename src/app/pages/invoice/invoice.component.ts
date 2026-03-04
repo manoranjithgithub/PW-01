@@ -474,6 +474,7 @@ export class InvoiceComponent implements OnInit {
     if (!start || !end) {
       return [];
     }
+    console.log(this.transactions, start, end);
     return this.transactions.filter((row) => {
       const rowDate = this.getInvoiceDate(row);
       return rowDate ? rowDate >= start && rowDate <= end : false;
