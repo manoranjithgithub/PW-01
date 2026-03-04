@@ -63,8 +63,11 @@ export class PricingsService {
       .set('accountId', accountId)
       .set('from', fromDate)
       .set('to', toDate);
-    if (projectId && projectId !== 'all' && envId) {
+    if (envId) {
       params = params.set('environmentId', envId);
+    }
+    if (projectId) {
+      params = params.set('projectId', projectId);
     }
     return this.http.get(`${this.pricingManagement}/costs/costexplorer?`, { params })
       .pipe(

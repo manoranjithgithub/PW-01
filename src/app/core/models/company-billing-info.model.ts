@@ -1,14 +1,13 @@
 export interface CompanyBillingInfo {
   companyName: string | null;
   gstNumber: string | null;
-  panNumber: string | null;
+  panNumber?: string | null;
   addressLine1: string | null;
   addressLine2: string | null;
   city: string | null;
   state: string | null;
   country: string | null;
   postalCode: string | null;
-  paymentMethod: string | null;
 }
 
 export interface InvoiceRow {
