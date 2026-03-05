@@ -232,20 +232,43 @@ export class InvoiceComponent implements OnInit {
     return this.filteredBillRows.reduce((sum, row) => sum + this.getAmount(row.amount), 0);
   }
 
+  get isCurrentMonthSelected(): boolean {
+    return this.selectedMonth === this.getCurrentMonthValue();
+  }
+
   get billChargesTotal(): number {
+    if (this.isCurrentMonthSelected) {
+      // Show charges from bill service rows for current month
+      return this.monthScopedBillRows.reduce((sum, row) => sum + this.getAmount(row.amount), 0);
+    }
+    // Show charges from invoices for selected month
     return this.selectedMonthInvoices.reduce((sum, row) => sum + this.getAmount(row.subtotal), 0);
   }
 
   get billTaxesTotal(): number {
+    if (this.isCurrentMonthSelected) {
+      // No tax information in bill service rows
+      return 0;
+    }
+    // Show taxes from invoices for selected month
     return this.selectedMonthInvoices.reduce((sum, row) => sum + this.getAmount(row.tax_amount), 0);
   }
 
   get billCreditsApplied(): number {
+    if (this.isCurrentMonthSelected) {
+      // No credits applicable for current month charges
+      return 0;
+    }
     const grossDue = this.billChargesTotal + this.billTaxesTotal;
     return Math.max(0, grossDue - this.billTotalDue);
   }
 
   get billTotalDue(): number {
+    if (this.isCurrentMonthSelected) {
+      // No due amount for current month (still in progress)
+      return 0;
+    }
+    // Show due amount from invoices for selected month
     return this.selectedMonthDueInvoices.reduce((sum, row) => sum + this.getAmount(row.total || row.subtotal), 0);
   }
 
@@ -262,11 +285,17 @@ export class InvoiceComponent implements OnInit {
   }
 
   get billPeriodLabel(): string {
-    const start = this.parseDateValue(this.startDate);
-    const end = this.parseDateValue(this.endDate);
-    if (!start || !end) {
+    const [yearText, monthText] = (this.selectedMonth || '').split('-');
+    const year = Number(yearText);
+    const month = Number(monthText);
+    if (!year || !month) {
       return '--';
     }
+
+    // Show the selected month's period
+    const start = new Date(year, month - 1, 1);
+    const end = new Date(year, month, 0);
+
     const startLabel = start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     const endLabel = end.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     return `${startLabel} - ${endLabel}`;
@@ -280,10 +309,22 @@ export class InvoiceComponent implements OnInit {
   }
 
   get billingPeriodEndDateLabel(): string {
-    const end = this.parseDateValue(this.endDate);
-    if (!end) {
+    const [yearText, monthText] = (this.selectedMonth || '').split('-');
+    const year = Number(yearText);
+    const month = Number(monthText);
+    if (!year || !month) {
       return '--';
     }
+
+    // Show the previous month's end date
+    let prevMonth = month - 1;
+    let prevYear = year;
+    if (prevMonth < 1) {
+      prevMonth = 12;
+      prevYear = year - 1;
+    }
+
+    const end = new Date(prevYear, prevMonth, 0);
     return end.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   }
 
@@ -845,7 +886,7 @@ export class InvoiceComponent implements OnInit {
       this.toastr.error('Invoice ID not found');
       return;
     }
-    this.http.getPdfInvoice(String(row.id)).subscribe({
+    this.http.downloadPdfInvoice(String(row.id)).subscribe({
       next: (response: any) => {
         const fileUrl = response?.data?.url;
 
@@ -856,7 +897,7 @@ export class InvoiceComponent implements OnInit {
 
         const link = document.createElement('a');
         link.href = fileUrl;
-        link.target = '_blank';
+        // link.target = '_blank';
         link.rel = 'noopener';
         link.click();
       },

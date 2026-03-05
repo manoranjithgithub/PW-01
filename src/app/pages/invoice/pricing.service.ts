@@ -33,9 +33,7 @@ export class PricingsService {
       );
   }
   downloadPdfInvoice(invoiceId: string): Observable<any> {
-    return this.http.get(`${this.pricingManagement}/invoices/${invoiceId}/presign`, {
-    responseType: 'blob'
-  })
+    return this.http.get(`${this.pricingManagement}/invoices/${invoiceId}/presign?download=true`)
       .pipe(
         catchError(this.handleError.bind(this))
       );
