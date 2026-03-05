@@ -1,0 +1,80 @@
+<section class="payments-page">
+  <header class="payments-header">
+    <div class="header-left">
+      <div class="top-section-toggle" role="tablist" aria-label="Billing sections">
+        <button type="button" [class.active]="activeTopSection === 'bill'" (click)="switchTopSection('bill')">
+          Bills
+        </button>
+        <button type="button" [class.active]="activeTopSection === 'payments'" (click)="switchTopSection('payments')">
+          Payments
+        </button>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div class="date-range-selector" *ngIf="activeTopSection === 'bill'"
+        (click)="toggleMonthPicker($event)" role="button" tabindex="0">
+        <i class="bi bi-calendar3"></i>
+        <span class="month-year-label">{{ selectedMonthLabel }}</span>
+
+        <div class="month-picker-panel" *ngIf="monthPickerOpen" (click)="$event.stopPropagation()">
+          <div class="month-picker-row">
+            <label for="monthPickerMonth">Month</label>
+            <select
+              id="monthPickerMonth"
+              [(ngModel)]="monthPickerMonth"
+              (change)="onMonthPickerMonthChange(($any($event.target)).value)"
+            >
+              <option *ngFor="let month of monthOptions" [ngValue]="month.value" [disabled]="isMonthDisabled(month.value)">
+                {{ month.label }}
+              </option>
+            </select>
+          </div>
+          <div class="month-picker-row">
+            <label for="monthPickerYear">Year</label>
+            <select
+              id="monthPickerYear"
+              [(ngModel)]="monthPickerYear"
+              (change)="onMonthPickerYearChange(($any($event.target)).value)"
+            >
+              <option *ngFor="let year of yearOptions" [ngValue]="year">{{ year }}</option>
+            </select>
+          </div>
+          <div class="month-picker-actions">
+            <button type="button" class="month-picker-cancel" (click)="onCancelMonthPicker($event)">Cancel</button>
+            <button type="button" class="month-picker-apply" (click)="onApplyMonthPicker($event)">
+              Apply
+            </button>
+          </div>
+        </div>
+      </div>
+      <button type="button" class="outline-btn" (click)="refresh()">
+        Refresh <i class="bi bi-arrow-clockwise"></i>
+      </button>
+    </div>
+  </header>
+
+  <div class="overdue-alert" *ngIf="overdueDays > 0 && totalOutstandingBalance > 0">
+    <div class="overdue-alert-content">
+      <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+      <div>
+        <p class="overdue-alert-title">Payment overdue</p>
+        <p class="overdue-alert-text">
+          Your payment is {{ overdueDays }} day{{ overdueDays === 1 ? '' : 's' }} overdue.
+        </p>
+      </div>
+    </div>
+    <button type="button" class="overdue-alert-btn" (click)="reviewDueInvoices()">
+      Review payments
+    </button>
+  </div>
+
+  <!-- Bills Section -->
+  <div *ngIf="activeTopSection === 'bill'">
+    <app-bills></app-bills>
+  </div>
+
+  <!-- Payments Section -->
+  <div *ngIf="activeTopSection === 'payments'">
+    <app-payments></app-payments>
+  </div>
+</section>
