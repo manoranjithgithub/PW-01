@@ -28,7 +28,7 @@ export const routes: Routes = [
         path: 'billing',
         canActivate: [AuthGuard],
         loadChildren: () =>
-          import('./pages/invoice/routes').then((m) => m.routes),
+          import('./pages/billing/routes').then((m) => m.routes),
       },
       {
         path: 'deployment',

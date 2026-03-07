@@ -1,0 +1,168 @@
+<ng-container *ngIf="true">
+  <section class="bill-layout">
+    <article class="tab-panel">
+      <div class="billing-summary-grid">
+        <div class="billing-summary-item">
+          <label>Billing Period</label>
+          <div class="item-value">{{ billPeriodLabel }}</div>
+          <p class="muted-line">Last charged on {{ billingPeriodEndDateLabel }}</p>
+        </div>
+        <div class="billing-summary-item bill-total-breakdown">
+          <label>Bill Summary</label>
+          <div class="breakdown-row">
+            <span>Total Charges</span>
+            <strong>{{ formatMoney(billChargesTotal) }}</strong>
+          </div>
+          <div class="breakdown-row">
+            <span>Taxes</span>
+            <strong>{{ formatMoney(billTaxesTotal) }}</strong>
+          </div>
+          <div class="breakdown-row">
+            <span>Credits applied</span>
+            <strong>-{{ formatMoney(billCreditsApplied) }}</strong>
+          </div>
+          <div class="breakdown-row total-due-row" *ngIf="!isCurrentMonthSelected && billOutstandingAmount > 0">
+            <span>Outstanding Amount</span>
+            <strong>{{ formatMoney(billOutstandingAmount) }}</strong>
+          </div>
+        </div>
+        <div class="billing-summary-item bill-total-breakdown">
+          <label>Service Costs</label>
+          <div class="breakdown-row">
+            <span>Applications</span>
+            <strong>{{ formatMoney(deploymentServiceCostTotal) }}</strong>
+          </div>
+          <div class="breakdown-row">
+            <span>Tools</span>
+            <strong>{{ formatMoney(toolServiceCostTotal) }}</strong>
+          </div>
+          <div class="breakdown-row total-due-row">
+            <span>Total Service Cost</span>
+            <strong>{{ formatMoney(deploymentServiceCostTotal + toolServiceCostTotal) }}</strong>
+          </div>
+        </div>
+        <div class="billing-summary-item bill-total-breakdown">
+          <label>Total billable services</label>
+          <div class="breakdown-row">
+            <span>Applications</span>
+            <strong>{{ deploymentServiceCount }}</strong>
+          </div>
+          <div class="breakdown-row">
+            <span>Tools</span>
+            <strong>{{ toolServiceCount }}</strong>
+          </div>
+          <div class="breakdown-row total-due-row">
+            <span>Total Services</span>
+            <strong>{{ deploymentServiceCount + toolServiceCount }}</strong>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="tab-panel">
+      <nav class="tab-nav bill-subtabs" aria-label="Bill Tabs">
+        <button type="button" [class.active]="activeBillTab === 'service'" (click)="switchBillTab('service')">Charges by
+          service</button>
+      </nav>
+      <div *ngIf="activeBillTab === 'service'">
+        <div class="search-status-row transaction-filter-row bill-service-row">
+          <label class="search-wrap">
+            <i class="bi bi-search"></i>
+            <input type="text" placeholder="Search service entries" [value]="billServiceFilter"
+              (input)="billServiceFilter = $any($event.target).value" />
+          </label>
+
+          <label class="scope-field filter-field">
+            <span>Project</span>
+            <select [value]="selectedProjectId" (change)="onProjectScopeChange($any($event.target).value)">
+              <option *ngFor="let project of projectOptions" [value]="project.id">{{ project.name }}</option>
+            </select>
+          </label>
+          <label class="scope-field filter-field">
+            <span>Environment</span>
+            <select [value]="selectedEnvironmentId" (change)="onEnvironmentScopeChange($any($event.target).value)">
+              <option *ngFor="let env of environmentOptions" [value]="env.id">{{ env.name }}</option>
+            </select>
+          </label>
+          <label class="scope-field filter-field">
+            <span>Status</span>
+            <select>
+              <option>All services</option>
+              <option>Application</option>
+              <option>Tools</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="table-shell">
+          <table class="payments-table">
+            <thead>
+              <tr>
+                <th>Service</th>
+                <th>Instance</th>
+                <th>CPU</th>
+                <th>Memory</th>
+                <th>Uptime Hours</th>
+                <th>Charge</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of paginatedBillRows">
+                <td>
+                  <div class="service-cell">
+                    <span>{{ row.name || row.description }}</span>
+                    <span class="service-type-badge" [class.tool]="row.source !== 'application'">
+                      {{ row.source === 'application' ? 'Application' : 'Tool' }}
+                    </span>
+                  </div>
+                </td>
+                <td>{{ formatMoney(row.instanceCost || 0, row.currency) }}</td>
+                <td>{{ formatMoney(row.cpuCost || 0, row.currency) }}</td>
+                <td>{{ formatMoney(row.memoryCost || 0, row.currency) }}</td>
+                <td>{{ row.uptimeHours }}</td>
+                <td>{{ formatMoney(row.amount, row.currency) }}</td>
+              </tr>
+            </tbody>
+            <tfoot *ngIf="filteredBillRows.length">
+              <tr class="subtotal-row">
+                <td><strong>Subtotal</strong></td>
+                <td><strong>{{ formatMoney(filteredBillInstanceSubtotal) }}</strong></td>
+                <td><strong>{{ formatMoney(filteredBillCpuSubtotal) }}</strong></td>
+                <td><strong>{{ formatMoney(filteredBillMemorySubtotal) }}</strong></td>
+                <td>-</td>
+                <td><strong>{{ formatMoney(filteredBillChargeSubtotal) }}</strong></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+        <div class="table-footer">
+          <div class="footer-count">Total records: {{ filteredBillRows.length }}</div>
+          <div class="footer-controls">
+            <label class="page-size-label">
+              Items per page
+              <select [value]="billLimit" (change)="onBillItemsPerPageChange($any($event.target).value)">
+                <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
+              </select>
+            </label>
+            <span class="page-range">{{ billPageRangeLabel }}</span>
+            <button type="button" class="page-btn" (click)="billPreviousPage()" [disabled]="billCurrentPage <= 1">
+              <i class="bi bi-chevron-left"></i>
+            </button>
+            <button type="button" class="page-btn" (click)="billNextPage()" [disabled]="billCurrentPage >= billTotalPages">
+              <i class="bi bi-chevron-right"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="table-empty" *ngIf="billLoading">
+          <p class="title">Preparing billing view</p>
+          <p>Collecting deployment and tool usage from live sources...</p>
+        </div>
+        <div class="table-empty" *ngIf="!billLoading && !filteredBillRows.length">
+          <p class="title">No billable entries found</p>
+          <p>There are no deployment or tool charges for the selected environment.</p>
+        </div>
+      </div>
+    </article>
+  </section>
+</ng-container>
