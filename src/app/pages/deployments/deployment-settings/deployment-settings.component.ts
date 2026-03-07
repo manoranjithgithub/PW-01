@@ -301,7 +301,6 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
         const repoUrl = cleanUrl;
         const branchName = branch || '';
         const patchInstanceType = this.resources.find(resource => resource.instanceType === res.data.application?.instanceType);
-
         this.generalSettingsForm.patchValue({
           name: res.data.name,
           instanceType: patchInstanceType,
@@ -735,7 +734,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
       this.generalSettingsForm.get('hpaMinReplicas')?.updateValueAndValidity();
       this.generalSettingsForm.get('hpaMaxReplicas')?.updateValueAndValidity();
     } else {
-      this.generalSettingsForm.get('replicas')?.setValue('1');
+      // this.generalSettingsForm.get('replicas')?.setValue(value ? value : '1');
       this.generalSettingsForm.get('replicas')?.setValidators([Validators.required, Validators.min(1)]);
       this.generalSettingsForm.get('replicas')?.updateValueAndValidity();
       // this.generalSettingsForm.get('hpaMinReplicas')?.setValue('');

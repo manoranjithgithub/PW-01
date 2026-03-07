@@ -25,7 +25,7 @@ export const pageHeaders = [
     { title: 'Create Environment', url: '/projects/create-environment', subText: 'Create your Environment' },
     { title: 'Environment Preferences', url: '/projects/environment-preferences', subText: '' },
     { title: 'Create Tool', url: '/tools/create-tool', subText: '' },
-    { title: 'Invoice & Payment Management', url: '/billing', subText: 'View and manage invoices for each billing cycle.' },
+    { title: 'Bills & Payment Management', url: '/billing', subText: 'View and manage invoices for each billing cycle.' },
     { title: 'Create Model', url: '/llm-models/create-model', subText: '' },
     { title: 'Configure Model', url: '/llm-models/create-model/configure', subText: '' },
     { title: 'View Model', url: '/llm-models/view-model', subText: '' },
