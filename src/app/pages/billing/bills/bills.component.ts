@@ -1,8 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, HostListener, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, HostListener, Input, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { PricingsService } from '../pricing.service';
-import { ToastrService } from 'ngx-toastr';
 import { SharedService } from '../../../shared/services/shared.service';
 import { ProjectsService } from '../../projects/projects.service';
 import { BillServiceRow, ScopeOption, InvoiceRow } from '../../../core/models/company-billing-info.model';
@@ -11,7 +9,6 @@ import { catchError } from 'rxjs/operators';
 import { FormsModule } from '@angular/forms';
 
 type BillTab = 'service' | 'taxes';
-type TimeRangeOption = '30d' | '3m' | '6m' | 'current-month' | 'all';
 
 interface MonthOption {
   value: number;
@@ -26,7 +23,7 @@ interface MonthOption {
   styleUrl: './bills.component.scss',
   providers: [PricingsService]
 })
-export class BillsComponent implements OnInit {
+export class BillsComponent implements OnInit, OnChanges {
   billRows: BillServiceRow[] = [];
   billLoading = false;
   activeBillTab: BillTab = 'service';
@@ -34,6 +31,8 @@ export class BillsComponent implements OnInit {
   billTaxFilter = '';
   selectedMonth = '';
   monthlyInvoiceData: InvoiceRow | null = null;
+
+  @Input() invoiceList: InvoiceRow[] = [];
 
   projectOptions: ScopeOption[] = [{ id: 'all', name: 'All projects' }];
   environmentOptions: ScopeOption[] = [{ id: 'all', name: 'All environments' }];
@@ -70,9 +69,7 @@ export class BillsComponent implements OnInit {
 
   constructor(
     private http: PricingsService,
-    private toastr: ToastrService,
     private sharedService: SharedService,
-    private router: Router,
     private projectsService: ProjectsService
   ) { }
 
@@ -95,7 +92,6 @@ export class BillsComponent implements OnInit {
     if (this.isCurrentMonthSelected) {
       return this.monthScopedBillRows.reduce((sum, row) => sum + this.getAmount(row.amount), 0);
     }
-    // For previous months, use invoice subtotal
     return this.getAmount(this.monthlyInvoiceData?.subtotal || 0);
   }
 
@@ -103,7 +99,6 @@ export class BillsComponent implements OnInit {
     if (this.isCurrentMonthSelected) {
       return 0;
     }
-    // For previous months, use invoice tax amount
     return this.getAmount(this.monthlyInvoiceData?.tax_amount || 0);
   }
 
@@ -111,7 +106,6 @@ export class BillsComponent implements OnInit {
     if (this.isCurrentMonthSelected) {
       return 0;
     }
-    // For previous months, use invoice credit applied
     return this.getAmount(this.monthlyInvoiceData?.credit_applied || 0);
   }
 
@@ -119,7 +113,6 @@ export class BillsComponent implements OnInit {
     if (this.isCurrentMonthSelected) {
       return 0;
     }
-    // For previous months, show outstanding amount based on invoice status
     if (!this.monthlyInvoiceData) {
       return 0;
     }
@@ -127,7 +120,6 @@ export class BillsComponent implements OnInit {
     if (status === 'paid') {
       return 0;
     }
-    // Outstanding is total amount if unpaid or draft
     return this.getAmount(this.monthlyInvoiceData?.total || 0);
   }
 
@@ -181,11 +173,11 @@ export class BillsComponent implements OnInit {
   }
 
   get deploymentServiceCount(): number {
-    return this.billRows.filter((row) => row.source === 'deployment').length;
+    return this.billRows.filter((row) => row.source === 'application').length;
   }
 
   get toolServiceCount(): number {
-    return this.monthScopedBillRows.filter((row) => row.source === 'tool').length;
+    return this.monthScopedBillRows.filter((row) => row.source !== 'application').length;
   }
 
   get toolServiceCostTotal(): number {
@@ -196,7 +188,7 @@ export class BillsComponent implements OnInit {
 
   get deploymentServiceCostTotal(): number {
     return this.monthScopedBillRows
-      .filter((row) => row.source === 'deployment')
+      .filter((row) => row.source === 'application')
       .reduce((sum, row) => sum + this.getAmount(row.amount), 0);
   }
 
@@ -284,6 +276,12 @@ export class BillsComponent implements OnInit {
     });
   }
 
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['invoiceList']) {
+      this.loadMonthlyInvoiceData();
+    }
+  }
+
   switchBillTab(tab: BillTab): void {
     this.activeBillTab = tab;
   }
@@ -299,14 +297,6 @@ export class BillsComponent implements OnInit {
   onEnvironmentScopeChange(value: string): void {
     this.selectedEnvironmentId = value || 'all';
     this.billOffset = 0;
-    this.loadBillServiceCharges();
-  }
-
-  resetScopeFilters(): void {
-    this.selectedProjectId = 'all';
-    this.selectedEnvironmentId = 'all';
-    this.billOffset = 0;
-    this.loadEnvironmentOptionsByProject('all');
     this.loadBillServiceCharges();
   }
 
@@ -424,7 +414,12 @@ export class BillsComponent implements OnInit {
   }
 
   refreshBills(): void {
+    this.selectedMonth = this.getCurrentMonthValue();
+    this.syncMonthPickerFromSelected();
+    this.applyMonthSelection(this.selectedMonth);
+    this.billOffset = 0;
     this.loadBillServiceCharges();
+    this.loadMonthlyInvoiceData();
   }
 
   private getCurrentMonthValue(): string {
@@ -630,7 +625,7 @@ export class BillsComponent implements OnInit {
       next: (response: any) => {
         const items = this.extractCostByServiceItems(response);
         const rows: BillServiceRow[] = items.map((item: any) =>
-          this.mapCostByServiceItem(item, '', {}, {})
+          this.mapCostByServiceItem(item)
         );
         this.billRows = rows;
         this.billLoading = false;
@@ -698,28 +693,12 @@ export class BillsComponent implements OnInit {
 
   private mapCostByServiceItem(
     item: any,
-    envName: string,
-    deploymentNameById: Record<string, string>,
-    toolNameById: Record<string, string>
   ): BillServiceRow {
-    const deploymentId = item?.deploymentId;
-    const deploymentKey = deploymentId !== undefined && deploymentId !== null ? String(deploymentId) : '';
-    const deploymentDisplayName = item?.dep?.deploymentName ||
-      item?.dep?.name ||
-      item?.deployment?.deploymentName ||
-      item?.deployment?.name;
-    const toolDisplayName = item?.tool?.toolName || item?.tool?.name;
-    const defaultName = item?.service_name ||
-      item?.serviceName ||
-      item?.service ||
-      item?.name ||
-      (deploymentKey ? deploymentNameById[deploymentKey] : undefined) ||
-      item?.deploymentName ||
-      item?.toolName ||
-      item?.resource_name ||
-      'Unnamed service';
-    const source = this.inferServiceSource(item, defaultName);
-    const name = source === 'deployment'
+    const deploymentDisplayName = item?.deployment?.name;
+    const toolDisplayName = item?.tool?.name;
+    const defaultName = 'Unnamed service';
+    const source = item?.deploymentType === 'application' ? 'application' : 'tool';
+    const name = source === 'application'
       ? (deploymentDisplayName || defaultName)
       : source === 'tool'
         ? (toolDisplayName || defaultName)
@@ -748,7 +727,7 @@ export class BillsComponent implements OnInit {
     const instanceCost = this.getAmount(item?.costInstance);
     return {
       name,
-      description: `${source === 'tool' ? 'Tool' : 'Deployment'}: ${name}`,
+      description: `${source === 'tool' ? 'Tool' : 'Application'}: ${name}`,
       usage: usageParts.join(' | '),
       amount: this.getAmount(
         item?.cost ??
@@ -765,56 +744,44 @@ export class BillsComponent implements OnInit {
     };
   }
 
-  private inferServiceSource(item: any, name: string): 'deployment' | 'tool' {
-    const hint = `${item?.source || ''} ${item?.service_type || ''} ${item?.type || ''} ${name}`.toLowerCase();
-    if (item?.toolId || item?.tool_id || hint.includes('tool')) {
-      return 'tool';
-    }
-    if (item?.deploymentId || item?.deployment_id || hint.includes('deployment')) {
-      return 'deployment';
-    }
-    return hint.includes('tool') ? 'tool' : 'deployment';
-  }
-
   private loadMonthlyInvoiceData(): void {
-    const accountId = localStorage.getItem('accountId') || this.sharedService.getUser()?.id || '';
-    if (!accountId) {
-      this.monthlyInvoiceData = null;
-      return;
-    }
-
-    // Only load invoice data for non-current months
     if (this.isCurrentMonthSelected) {
       this.monthlyInvoiceData = null;
       return;
     }
 
-    // Fetch all invoices and filter by selected month
-    this.http.getInvoiceList(accountId, 1000, 0).pipe(
-      catchError(() => of({ data: [] }))
-    ).subscribe({
-      next: (response: any) => {
-        const invoices = Array.isArray(response?.data) ? response.data : [];
-        
-        // Filter invoice by selected month based on issued_at date
-        const [selectedYear, selectedMonth] = (this.selectedMonth || '').split('-');
-        const selectedMonthNum = Number(selectedMonth);
-        const selectedYearNum = Number(selectedYear);
+    const invoices = Array.isArray(this.invoiceList) ? this.invoiceList : [];
+    
+    if (!invoices.length) {
+      this.monthlyInvoiceData = null;
+      return;
+    }
 
-        const monthInvoice = invoices.find((invoice: InvoiceRow) => {
-          if (!invoice?.issued_at) {
-            return false;
-          }
-          const invoiceDate = new Date(invoice.issued_at);
-          return invoiceDate.getFullYear() === selectedYearNum &&
-                 invoiceDate.getMonth() + 1 === selectedMonthNum;
-        });
+    const [selectedYear, selectedMonth] = (this.selectedMonth || '').split('-');
+    const selectedMonthNum = Number(selectedMonth);
+    const selectedYearNum = Number(selectedYear);
 
-        this.monthlyInvoiceData = monthInvoice || null;
-      },
-      error: () => {
-        this.monthlyInvoiceData = null;
+    if (!selectedMonthNum || !selectedYearNum) {
+      this.monthlyInvoiceData = null;
+      return;
+    }
+
+    const monthInvoice = invoices.find((invoice: InvoiceRow) => {
+      const dateStr = invoice?.issued_at || invoice?.period;
+      if (!dateStr) {
+        return false;
       }
+      
+      const invoiceDate = new Date(dateStr as string);
+      
+      if (isNaN(invoiceDate.getTime())) {
+        return false;
+      }
+
+      return invoiceDate.getFullYear() === selectedYearNum &&
+             invoiceDate.getMonth() + 1 === selectedMonthNum;
     });
+
+    this.monthlyInvoiceData = monthInvoice || null;
   }
 }

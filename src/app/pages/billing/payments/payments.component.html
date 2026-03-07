@@ -66,7 +66,7 @@
     </div>
   </section>
 
-  <article class="tab-panel" *ngIf="activeTab === 'transactions'"
+  <article class="tab-panel"
     id="payments-due-panel">
     <div class="panel-header">
       <div>
@@ -81,7 +81,7 @@
       <label class="search-wrap">
         <i class="bi bi-search"></i>
         <input type="text" placeholder="Search billing records" [value]="transactionsFilter"
-          (input)="onFilterChange($any($event.target).value, 'transactions')" />
+          (input)="onFilterChange($any($event.target).value)" />
       </label>
       <label class="time-window-field filter-field">
         <span>Date Range</span>
@@ -92,7 +92,7 @@
       <label class="status-field filter-field">
         <span>Status</span>
         <select [value]="transactionStatusFilter"
-          (change)="onStatusFilterChange('transactions', $any($event.target).value)">
+          (change)="onStatusFilterChange($any($event.target).value)">
           <option *ngFor="let option of statusFilterOptions" [value]="option.value">{{ option.label }}</option>
         </select>
       </label>
@@ -117,17 +117,17 @@
           <tr *ngFor="let row of filteredTransactionRecords">
             <td>{{ getIssuedDate(row) }}</td>
             <td>Billing</td>
-            <td>{{ getRowId(row) }}</td>
+            <td>{{ row.id }}</td>
             <td>{{ formatMoney(row.subtotal || 0, row.currency) }}</td>
             <td>{{ formatMoney(row.tax_amount || 0, row.currency) }}</td>
             <td>{{ formatMoney(row.credit_applied ||0, row.currency) }}</td>
             <td>{{ row.status !== 'paid' ? formatMoney(row.total) : 0}}</td>
             <td>
               <span class="status-pill" *ngIf="row.status === 'paid'" [class]="'status-paid'">Paid</span>
-              <button type="button" class="status-pill pay-now-action-btn status-due" *ngIf="canShowPayNow(row) && row.status !== 'paid'" (click)="openPayNow(row)" title="Pay billing">
+              <button type="button" class="status-pill pay-now-action-btn status-due" *ngIf="canShowPayNow(row) && row.status === 'draft'" (click)="openPayNow(row)" title="Pay billing">
                 Pay now
               </button>
-              <span class="status-pill" [class]="getStatusClass(row)" *ngIf="!canShowPayNow(row) && row.status !== 'paid'">{{ getStatusLabel(row) }}</span>
+              <span class="status-pill status-default" *ngIf="row.status !== 'paid' && row.status !== 'draft'">{{ row.status }}</span>
             </td>
             <td class="download-cell">
               <div class="action-buttons">

@@ -5,13 +5,11 @@ import { PricingsService } from '../pricing.service';
 import { ToastrService } from 'ngx-toastr';
 import { SharedService } from '../../../shared/services/shared.service';
 import { UserService } from '../../../core/services/user.service';
-import { ProjectsService } from '../../projects/projects.service';
 import { CompanyBillingInfo, InvoiceRow } from '../../../core/models/company-billing-info.model';
 import { FormsModule } from '@angular/forms';
 
 declare const Cashfree: any;
 
-type PaymentTab = 'payments-due' | 'unapplied-funds' | 'transactions';
 type StatusFilterOption = 'all' | 'paid' | 'draft' | 'unpaid';
 type TimeRangeOption = '30d' | '3m' | '6m' | 'current-month' | 'all';
 
@@ -24,20 +22,18 @@ type TimeRangeOption = '30d' | '3m' | '6m' | 'current-month' | 'all';
   providers: [PricingsService]
 })
 export class PaymentsComponent implements OnInit {
-  rawInvoiceData: InvoiceRow[] = [];
   tableData: InvoiceRow[] = [];
-  activeTab: PaymentTab = 'transactions';
   transactionsFilter = '';
   transactionStatusFilter: StatusFilterOption = 'all';
   selectedTimeRange: TimeRangeOption = '3m';
-  
+
   readonly timeRangeOptions: Array<{ value: TimeRangeOption; label: string }> = [
     { value: '3m', label: 'Last 3 months' },
     { value: 'current-month', label: 'Current month' },
     { value: '6m', label: 'Last 6 months' },
     { value: 'all', label: 'All time' }
   ];
-  
+
   readonly statusFilterOptions: Array<{ value: StatusFilterOption; label: string }> = [
     { value: 'all', label: 'All status' },
     { value: 'paid', label: 'Paid' },
@@ -54,7 +50,7 @@ export class PaymentsComponent implements OnInit {
     country: null,
     postalCode: null,
   };
-  
+
   accountId: string | null = null;
   billingDetailsLoading = false;
   cashfree: any;
@@ -69,7 +65,6 @@ export class PaymentsComponent implements OnInit {
     private sharedService: SharedService,
     private userService: UserService,
     private router: Router,
-    private projectsService: ProjectsService
   ) { }
 
   get duePayments(): InvoiceRow[] {
@@ -96,10 +91,6 @@ export class PaymentsComponent implements OnInit {
 
   get totalAvailableFunds(): number {
     return this.unappliedFunds.reduce((sum, invoice) => sum + this.getAmount(invoice.total), 0);
-  }
-
-  get paidInvoicesCount(): number {
-    return this.transactions.filter((row) => (row.status || '').toLowerCase() === 'paid').length;
   }
 
   get lastPaidInvoice(): InvoiceRow | null {
@@ -212,26 +203,6 @@ export class PaymentsComponent implements OnInit {
     return this.paidAmount + this.unpaidAmount + this.pendingAmount;
   }
 
-  get paidPercentage(): number {
-    const total = this.totalInvoiceAmount;
-    return total > 0 ? Math.round((this.paidAmount / total) * 100) : 0;
-  }
-
-  get unpaidPercentage(): number {
-    const total = this.totalInvoiceAmount;
-    return total > 0 ? Math.round((this.unpaidAmount / total) * 100) : 0;
-  }
-
-  get pendingPercentage(): number {
-    const total = this.totalInvoiceAmount;
-    return total > 0 ? Math.round((this.pendingAmount / total) * 100) : 0;
-  }
-
-  get overduePercentage(): number {
-    const total = this.totalInvoiceAmount;
-    return total > 0 ? Math.round((this.overdueAmount / total) * 100) : 0;
-  }
-
   get filteredTransactionRecords(): InvoiceRow[] {
     const start = this.offset;
     const end = start + this.limit;
@@ -284,13 +255,13 @@ export class PaymentsComponent implements OnInit {
     this.offset = 0;
   }
 
-  onStatusFilterChange(tab: PaymentTab, value: StatusFilterOption): void {
+  onStatusFilterChange(value: StatusFilterOption): void {
     const selected = value || 'all';
     this.transactionStatusFilter = selected;
     this.offset = 0;
   }
 
-  onFilterChange(value: string, tab: PaymentTab): void {
+  onFilterChange(value: string): void {
     this.transactionsFilter = value;
     this.offset = 0;
   }
@@ -321,16 +292,11 @@ export class PaymentsComponent implements OnInit {
     this.getInvoiceList();
   }
 
-  getRowId(row: InvoiceRow): string {
-    return row.invoiceNumber || String(row.id || '--');
-  }
-
   getIssuedDate(row: InvoiceRow): string {
-    const value = row.issued_at || row.period;
-    if (!value) {
+    if (!row.period) {
       return '--';
     }
-    const date = new Date(value);
+    const date = new Date(row.period);
     if (isNaN(date.getTime())) {
       return '--';
     }
@@ -339,28 +305,6 @@ export class PaymentsComponent implements OnInit {
       month: 'short',
       day: 'numeric'
     });
-  }
-
-  getStatusLabel(row: InvoiceRow): string {
-    const value = (row.status || '').toLowerCase();
-    if (!value) {
-      return '--';
-    }
-    if (value === 'draft') {
-      return 'Unpaid';
-    }
-    return value.charAt(0).toUpperCase() + value.slice(1);
-  }
-
-  getStatusClass(row: InvoiceRow): string {
-    const value = (row.status || '').toLowerCase();
-    if (value === 'paid') {
-      return 'status-paid';
-    }
-    if (value === 'draft') {
-      return 'status-due';
-    }
-    return 'status-default';
   }
 
   canShowPayNow(row: InvoiceRow): boolean {
@@ -417,17 +361,6 @@ export class PaymentsComponent implements OnInit {
     });
   }
 
-  payOutstandingNow(): void {
-    const payableInvoice = this.duePayments.find(
-      (invoice) => this.getAmount(invoice.total || invoice.subtotal) > 0
-    );
-    if (!payableInvoice) {
-      this.toastr.info('No unpaid invoices available for payment');
-      return;
-    }
-    this.openPayNow(payableInvoice);
-  }
-
   openPayNow(data: any): void {
     this.http.paynow(data.id).subscribe({
       next: (data: any) => {
@@ -475,15 +408,14 @@ export class PaymentsComponent implements OnInit {
     this.getInvoiceList();
   }
 
-   getInvoiceList(): void {
+  getInvoiceList(): void {
     const accountId = localStorage.getItem('accountId');
     if (accountId) {
       this.http.getInvoiceList(accountId, this.limit, this.offset).subscribe({
         next: (data: any) => {
           if (data.success) {
             const payload = data.data || {};
-            this.rawInvoiceData = payload.data || [];
-            this.tableData = [...this.rawInvoiceData];
+            this.tableData = [...payload.data];
           }
         },
         error: (error) => {

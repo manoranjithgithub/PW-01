@@ -1,8 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { PaymentsComponent } from './payments/payments.component';
 import { BillsComponent } from './bills/bills.component';
+import { SharedService } from '../../shared/services/shared.service';
+import { PricingsService } from './pricing.service';
+import { InvoiceRow } from '../../core/models/company-billing-info.model';
+import { PaymentsComponent } from './payments/payments.component';
 
 type TopSection = 'bill' | 'payments';
 
@@ -11,24 +14,50 @@ type TopSection = 'bill' | 'payments';
   standalone: true,
   imports: [CommonModule, FormsModule, BillsComponent, PaymentsComponent],
   templateUrl: './billing.component.html',
-  styleUrl: './billing.component.scss'
+  styleUrl: './billing.component.scss',
+  providers: [PricingsService]
 })
 export class BillingComponent implements OnInit {
   @ViewChild(BillsComponent) billsComponent!: BillsComponent;
-  @ViewChild(PaymentsComponent) paymentsComponent!: PaymentsComponent;
 
   activeTopSection: TopSection = 'bill';
+  tableData: InvoiceRow[] = [];
+
+  constructor(private sharedService: SharedService, private http: PricingsService) {}
 
   ngOnInit(): void {
-    // Initialize if needed
+    this.getInvoiceList();
+  }
+
+  get duePayments(): InvoiceRow[] {
+    return this.tableData.filter((invoice) => this.isDuePayment(invoice));
   }
 
   get overdueDays(): number {
-    return this.paymentsComponent?.overdueDays ?? 0;
+    if (!this.duePayments.length) {
+      return 0;
+    }
+    const oldestInvoice = this.duePayments.reduce((oldest, current) => {
+      const oldestDate = this.getInvoiceDate(oldest);
+      const currentDate = this.getInvoiceDate(current);
+      if (!oldestDate) return current;
+      if (!currentDate) return oldest;
+      return currentDate < oldestDate ? current : oldest;
+    });
+
+    const invoiceDate = this.getInvoiceDate(oldestInvoice);
+    if (!invoiceDate) {
+      return 0;
+    }
+
+    const today = new Date();
+    const differenceInTime = today.getTime() - invoiceDate.getTime();
+    const differenceInDays = Math.floor(differenceInTime / (1000 * 3600 * 24));
+    return Math.max(0, differenceInDays);
   }
 
   get totalOutstandingBalance(): number {
-    return this.paymentsComponent?.totalOutstandingBalance ?? 0;
+    return this.duePayments.reduce((sum, invoice) => sum + this.getAmount(invoice.total), 0);
   }
 
   switchTopSection(section: TopSection): void {
@@ -43,7 +72,6 @@ export class BillingComponent implements OnInit {
     }, 0);
   }
 
-  // Delegate methods to BillsComponent
   get selectedMonthLabel(): string {
     return this.billsComponent?.selectedMonthLabel || '';
   }
@@ -112,7 +140,56 @@ export class BillingComponent implements OnInit {
     if (this.activeTopSection === 'bill') {
       this.billsComponent?.refreshBills();
     } else if (this.activeTopSection === 'payments') {
-      this.paymentsComponent?.getInvoiceList();
+      this.getInvoiceList();
     }
+  }
+  formatMoney(amount: number | undefined | null, currencyFrom?: string): string {
+    const target = this.sharedService.getCurrency() || 'USD';
+    const converted = this.sharedService.convertAmount(Number(amount || 0), currencyFrom || 'USD', target);
+    try {
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: target,
+        minimumFractionDigits: 2,
+      }).format(converted);
+    } catch (e) {
+      return String(converted);
+    }
+  }
+
+  private getInvoiceList(): void {
+    const accountId = localStorage.getItem('accountId');
+    if (accountId) {
+      this.http.getInvoiceList(accountId, 100, 0).subscribe({
+        next: (data: any) => {
+          if (data.success) {
+            const payload = data.data || {};
+            this.tableData = [...payload.data];
+          }
+        },
+        error: (error) => {
+          console.error('Error fetching invoice data:', error);
+        }
+      });
+    }
+  }
+
+  private isDuePayment(invoice: InvoiceRow): boolean {
+    const status = (invoice.status || '').toLowerCase();
+    return (status === 'draft' || status === 'unpaid') && this.getAmount(invoice.total || invoice.subtotal) > 0;
+  }
+
+  private getAmount(value: any): number {
+    const amount = Number(value || 0);
+    return Number.isFinite(amount) ? amount : 0;
+  }
+
+  private getInvoiceDate(row: InvoiceRow): Date | null {
+    const value = row.issued_at || row.period;
+    if (!value) {
+      return null;
+    }
+    const date = new Date(value);
+    return isNaN(date.getTime()) ? null : date;
   }
 }

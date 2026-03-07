@@ -111,8 +111,8 @@
                 <td>
                   <div class="service-cell">
                     <span>{{ row.name || row.description }}</span>
-                    <span class="service-type-badge" [class.tool]="row.source === 'tool'">
-                      {{ row.source === 'tool' ? 'Tool' : 'Application' }}
+                    <span class="service-type-badge" [class.tool]="row.source !== 'application'">
+                      {{ row.source === 'application' ? 'Application' : 'Tool' }}
                     </span>
                   </div>
                 </td>
