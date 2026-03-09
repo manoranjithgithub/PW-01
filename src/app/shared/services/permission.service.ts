@@ -107,7 +107,7 @@ export class PermissionService {
       if (!(matchesUser && projMatch && envMatch)) return false;
 
       const policyPerm = (p?.V4 || '').toString().toLowerCase();
-      if (policyPerm === PERM.ALL || policyPerm === PERM.ADMIN) return true;
+      if (policyPerm === PERM.ALL || policyPerm === PERM.ADMIN || policyPerm === PERM.DELETE) return true;
       if (policyPerm === requested) return true;
       if (policyPerm === PERM.WRITE && requested === PERM.READ) return true;
       return false;
@@ -122,7 +122,7 @@ export class PermissionService {
     return policies.some((p: any) => {
       if (String(p?.V0) !== String(uid)) return false;
       const policyPerm = (p?.V4 || '').toString().toLowerCase();
-      if (policyPerm === PERM.ALL || policyPerm === PERM.ADMIN) return true;
+      if (policyPerm === PERM.ALL || policyPerm === PERM.ADMIN || policyPerm === PERM.DELETE) return true;
       if (policyPerm === requested) return true;
       if (policyPerm === PERM.WRITE && requested === PERM.READ) return true;
       return false;
@@ -206,5 +206,16 @@ export class PermissionService {
 
   canAdminGlobal(): boolean {
     return this.hasAnyPermission(PERM.ADMIN);
+  }
+  canCreateProject(): boolean {
+    const uid = localStorage.getItem('userId') || '';
+    const policies = this.getRawPolicies();
+    if (!policies || policies.length === 0) return false;
+    return policies.some((p: any) => {
+      if (String(p?.V0) !== String(uid)) return false;
+      const policyPerm = (p?.V4 || '').toString().toLowerCase();
+      if (policyPerm === PERM.ALL || policyPerm === PERM.ADMIN) return true;
+      return false;
+    });
   }
 }
