@@ -35,8 +35,8 @@
               <div class="d-flex justify-content-center align-items-center w-100 h-100">
                 <span [routerLink]="(projectExhausted || environmentExhausted || !permissionService.canAdminGlobal()) ? null : ['/projects/create-project']"
                   class="cursor text-decoration-none"
-                  [attr.title]="(projectExhausted || environmentExhausted || !permissionService.canAdminGlobal()) ? 'You are not authorized to view that page.' : null"
-                  [class.disabled]="projectExhausted || environmentExhausted || !permissionService.canAdminGlobal()">+ Create project</span>
+                  [attr.title]="(projectExhausted || environmentExhausted || !permissionService.canCreateProject()) ? 'You are not authorized to view that page.' : null"
+                  [class.disabled]="projectExhausted || environmentExhausted || !permissionService.canCreateProject()">+ Create project</span>
               </div>
             </div>
           </div>

@@ -192,7 +192,7 @@
         <div class="d-flex justify-content-end  mt-4" *ngIf="!projectExhausted && !environmentExhausted">
             <button type="button" class="btn button-format-outline mx-2" (click)="goBack()">Cancel</button>
             <button type="submit" class="btn button-format-solid" (click)="createProject()"
-                [disabled]="!permissionService.canWriteGlobal()">Create project</button>
+                [disabled]="!permissionService.canCreateProject()">Create project</button>
         </div>
 
     </form>
