@@ -120,7 +120,7 @@ export class ReviewScreenComponent implements OnInit {
     const date = typeof uploadDate === 'string' ? new Date(uploadDate) : uploadDate;
     const now = new Date();
     const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-    
+
     if (seconds < 60) return 'just now';
     const minutes = Math.floor(seconds / 60);
     if (minutes < 60) return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
@@ -131,6 +131,10 @@ export class ReviewScreenComponent implements OnInit {
   }
 
   hasData(obj: any): boolean {
-    return !!obj && Object.keys(obj).length > 0;
+    if (!obj) return false;
+    if (Array.isArray(obj)) {
+      return obj.length > 0;
+    }
+    return Object.values(obj).some(v => v !== null && v !== '');
   }
 }
