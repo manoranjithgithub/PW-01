@@ -46,8 +46,8 @@ export class DeploymentNetworkingComponent implements OnInit {
   };
   copiedButtonId: string = '';
   ipAddresses = [
-    { ip: '101.53.135.137', id: 'ip-1-copy' },
-    { ip: '101.53.135.134', id: 'ip-2-copy' }
+    { ip: '151.185.41.131', id: 'ip-1-copy' },
+    { ip: '164.52.195.24', id: 'ip-2-copy' }
   ];
   readonly dnsSetupContent = {
     step1: {
