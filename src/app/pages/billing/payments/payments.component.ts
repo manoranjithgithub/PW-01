@@ -7,6 +7,7 @@ import { SharedService } from '../../../shared/services/shared.service';
 import { UserService } from '../../../core/services/user.service';
 import { CompanyBillingInfo, InvoiceRow } from '../../../core/models/company-billing-info.model';
 import { FormsModule } from '@angular/forms';
+import { environment } from '../../../../environments/environment';
 
 declare const Cashfree: any;
 
@@ -243,7 +244,7 @@ export class PaymentsComponent implements OnInit {
     });
     try {
       if (typeof Cashfree !== 'undefined') {
-        this.cashfree = Cashfree({ mode: 'sandbox' });
+        this.cashfree = Cashfree({ mode: environment.cashFree });
       }
     } catch (e) {
       this.cashfree = undefined;
