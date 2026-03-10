@@ -16,11 +16,14 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ConfirmationModalComponent } from '../../../shared/components/modal/confirmation-modal/confirmation-modal.component';
 import { LayoutActionService } from '../../../shared/services/layout-action.service';
 import { PermissionService } from '../../../shared/services/permission.service';
+import { ToolMonitoringComponent } from '../tool-monitoring/tool-monitoring.component';
+import { ToolMetricsComponent } from '../tool-metrics/tool-metrics.component';
 
 @Component({
   selector: 'app-view-tool',
   standalone: true,
-  imports: [ShadowOnScrollDirective, MarkdownModule, LoaderComponent, ModalComponent, ToolNetworkingViewComponent, SHARED_IMPORTS],
+  imports: [ShadowOnScrollDirective, MarkdownModule, LoaderComponent, ModalComponent, 
+    ToolNetworkingViewComponent, ToolMonitoringComponent, ToolMetricsComponent, SHARED_IMPORTS],
   templateUrl: './view-tool.component.html',
   styleUrl: './view-tool.component.scss',
   providers: [ToolsService]
@@ -42,6 +45,7 @@ export class ViewToolComponent implements OnInit, OnDestroy {
   selectedResource: { [key: string]: ResourceInfo | undefined } = { key: { cpuVcpu: '', memoryGb: '', instanceHourRate: 0 } };
   resources: any[] = [];
   selectedTabIndex: number = 0;
+  deploymentId: string = '';
 
 
   get hourlyInstanceRate(): number {
@@ -69,9 +73,10 @@ export class ViewToolComponent implements OnInit, OnDestroy {
       this.env = JSON.parse(storedValue).id;
     }
     this.ac.queryParams.subscribe(params => {
-      this.selectedView = params['selectedView'] ?? params['id'];
-      this.toolName = params['id'] ?? this.selectedView ?? this.toolName;
+      this.selectedView = params['selectedView'] ?? params['id'] ?? this.selectedView;
+      this.toolName = this.selectedView || this.toolName;
       this.toolStatus = params['status'];
+      this.deploymentId = params['id'] ?? this.deploymentId;
     })
   }
   ngOnInit(): void {
@@ -231,7 +236,7 @@ export class ViewToolComponent implements OnInit, OnDestroy {
     });
   }
   editTool() {
-    this.route.navigate(['/tools/edit-tool'], { queryParams: { selectedEdit: this.toolName } });
+    this.route.navigate(['/tools/edit-tool'], { queryParams: { selectedEdit: this.toolName, id: this.deploymentId } });
   }
   getMonthlyRate(fieldKey: string): number {
   const rate = Number(this.selectedResource[fieldKey]?.instanceHourRate ?? 0);

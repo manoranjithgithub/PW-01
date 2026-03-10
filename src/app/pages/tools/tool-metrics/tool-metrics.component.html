@@ -1,0 +1,96 @@
+<div class="tool-metrics">
+  <ng-container *ngIf="deploymentId; else metricsUnavailable">
+    <div class="metrics-shell">
+      <form [formGroup]="filterForm" (ngSubmit)="onFilter()" class="filter-bar">
+        <div class="filter-label-wrap">
+          <span class="filter-icon">Filters</span>
+        </div>
+        <div class="filter-group">
+          <label for="duration" class="filter-label">Duration</label>
+          <select id="duration" formControlName="duration" class="filter-input">
+            <option *ngFor="let duration of durations" [value]="duration.value">
+              {{ duration.label }}
+            </option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="interval" class="filter-label">Interval</label>
+          <select id="interval" formControlName="interval" class="filter-input">
+            <option *ngFor="let interval of intervals" [value]="interval.value">
+              {{ interval.label }}
+            </option>
+          </select>
+        </div>
+        <ng-container *ngIf="filterForm.get('duration')?.value === 'custom'">
+          <div class="filter-group">
+            <label class="filter-label">From</label>
+            <input type="datetime-local" formControlName="fromTimestamp" class="filter-input datetime-input" />
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">To</label>
+            <input type="datetime-local" formControlName="toTimestamp" class="filter-input datetime-input" />
+          </div>
+        </ng-container>
+        <button type="submit" class="filter-cta">Apply Filter</button>
+      </form>
+
+      <div class="metrics-grid">
+        <div class="metrics-card">
+          <div class="card-head">
+            <div class="card-title">CPU Usage</div>
+            <div class="card-stat">
+              <span class="stat-value">{{ currentCpuLabel }}</span>
+              <span class="stat-unit">mCPU</span>
+            </div>
+          </div>
+          <div class="card-sub">CPU Usage Over Time</div>
+          <div class="util-row">
+            <span class="util-dot cpu"></span>
+            <span>{{ cpuUsagePercent | number:'1.0-0' }}% utilized</span>
+          </div>
+          <div class="util-bar">
+            <div class="util-fill cpu" [style.width.%]="cpuUsagePercent"></div>
+          </div>
+          <div class="card-body">
+            <div *ngIf="showNoDataMessage" class="empty-state">{{ chartEmptyText }}</div>
+            <div *ngIf="!showNoDataMessage" class="chart-container">
+              <canvas #cpuChartCanvas></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="metrics-card">
+          <div class="card-head">
+            <div class="card-title">RAM Usage</div>
+            <div class="card-stat">
+              <span class="stat-value">{{ currentRamLabel }}</span>
+              <span class="stat-unit">MiB</span>
+            </div>
+          </div>
+          <div class="card-sub">RAM Usage Over Time</div>
+          <div class="util-row">
+            <span class="util-dot ram"></span>
+            <span>{{ ramUsagePercent | number:'1.0-0' }}% utilized</span>
+          </div>
+          <div class="util-bar">
+            <div class="util-fill ram" [style.width.%]="ramUsagePercent"></div>
+          </div>
+          <div class="card-body">
+            <div *ngIf="showNoDataMessage" class="empty-state">{{ chartEmptyText }}</div>
+            <div *ngIf="!showNoDataMessage" class="chart-container">
+              <canvas #ramChartCanvas></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <ng-template #metricsUnavailable>
+    <div class="card border-0 shadow-sm">
+      <div class="card-body">
+        <p class="text-muted mb-0">Metrics are unavailable because this tool has no deployment id.</p>
+      </div>
+    </div>
+  </ng-template>
+</div>
