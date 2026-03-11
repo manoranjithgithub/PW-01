@@ -121,7 +121,15 @@ export class ToolMetricsComponent implements OnInit, AfterViewInit, OnChanges {
   private computeMaxLimits(): void {
     this.deploymentService.getInstanceTypes().subscribe((response: any) => {
       this.instanceTypes = response.data;
-      const deploymentInstanceType = this.toolDetails.data.schema?.resources.value;
+      // const deploymentInstanceType = this.toolDetails.data.schema?.resources.value;
+      const schema = this.toolDetails.data.schema;
+      const resourceKey = Object.keys(schema || {}).find(key =>
+        key.includes('resources')
+      );
+      const deploymentInstanceType = resourceKey
+        ? schema[resourceKey]?.value
+        : null;
+
       if (!deploymentInstanceType) {
         console.warn('Instance type is null or undefined.');
         return;
