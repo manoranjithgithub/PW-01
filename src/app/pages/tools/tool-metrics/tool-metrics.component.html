@@ -34,22 +34,54 @@
         <button type="submit" class="filter-cta">Apply Filter</button>
       </form>
 
-      <div class="metrics-grid">
-        <div class="metrics-card">
+      <div class="stats-row">
+        <div class="stat-pill">
+          <div class="stat-label">CPU Usage</div>
+          <div class="stat-main">{{ currentCpuLabel }} <span>mCPU</span></div>
+          <div class="stat-meta">
+            <span class="delta up">{{ cpuUsagePercent | number:'1.0-0' }}%</span>
+            <span>utilized</span>
+          </div>
+        </div>
+        <div class="stat-pill">
+          <div class="stat-label">RAM Usage</div>
+          <div class="stat-main">{{ currentRamLabel }} <span>MiB</span></div>
+          <div class="stat-meta">
+            <span class="delta up">{{ ramUsagePercent | number:'1.0-0' }}%</span>
+            <span>utilized</span>
+          </div>
+        </div>
+        <div class="stat-pill">
+          <div class="stat-label">CPU Limit</div>
+          <div class="stat-main">{{ maxCpuLimit }} <span>mCPU</span></div>
+          <div class="stat-meta">
+            <span class="delta neutral">Max</span>
+            <span>limit</span>
+          </div>
+        </div>
+        <div class="stat-pill">
+          <div class="stat-label">RAM Limit</div>
+          <div class="stat-main">{{ maxRamLimit }} <span>MiB</span></div>
+          <div class="stat-meta">
+            <span class="delta neutral">Max</span>
+            <span>limit</span>
+          </div>
+        </div>
+        <div class="stat-pill">
+          <div class="stat-label">Instance Type</div>
+          <div class="stat-main">{{ toolDetails?.data?.schema?.resources?.value || '-' }}</div>
+          <div class="stat-meta">
+            <span class="delta neutral">Current</span>
+            <span>resource</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-grid">
+        <div class="chart-card wide">
           <div class="card-head">
             <div class="card-title">CPU Usage</div>
-            <div class="card-stat">
-              <span class="stat-value">{{ currentCpuLabel }}</span>
-              <span class="stat-unit">mCPU</span>
-            </div>
-          </div>
-          <div class="card-sub">CPU Usage Over Time</div>
-          <div class="util-row">
-            <span class="util-dot cpu"></span>
-            <span>{{ cpuUsagePercent | number:'1.0-0' }}% utilized</span>
-          </div>
-          <div class="util-bar">
-            <div class="util-fill cpu" [style.width.%]="cpuUsagePercent"></div>
+            <div class="card-sub">CPU Usage Over Time</div>
           </div>
           <div class="card-body">
             <div *ngIf="showNoDataMessage" class="empty-state">{{ chartEmptyText }}</div>
@@ -59,29 +91,39 @@
           </div>
         </div>
 
-        <div class="metrics-card">
+        <div class="chart-card stacked">
           <div class="card-head">
             <div class="card-title">RAM Usage</div>
-            <div class="card-stat">
-              <span class="stat-value">{{ currentRamLabel }}</span>
-              <span class="stat-unit">MiB</span>
-            </div>
-          </div>
-          <div class="card-sub">RAM Usage Over Time</div>
-          <div class="util-row">
-            <span class="util-dot ram"></span>
-            <span>{{ ramUsagePercent | number:'1.0-0' }}% utilized</span>
-          </div>
-          <div class="util-bar">
-            <div class="util-fill ram" [style.width.%]="ramUsagePercent"></div>
+            <div class="card-sub">RAM Usage Over Time</div>
           </div>
           <div class="card-body">
             <div *ngIf="showNoDataMessage" class="empty-state">{{ chartEmptyText }}</div>
-            <div *ngIf="!showNoDataMessage" class="chart-container">
+            <div *ngIf="!showNoDataMessage" class="chart-container compact-chart">
               <canvas #ramChartCanvas></canvas>
             </div>
           </div>
         </div>
+
+        <!-- <div class="chart-card stacked">
+          <div class="card-head">
+            <div class="card-title">Utilization</div>
+            <div class="card-sub">Current share</div>
+          </div>
+          <div class="util-grid">
+            <div class="util-item">
+              <div class="util-circle cpu">{{ cpuUsagePercent | number:'1.0-0' }}%</div>
+              <div class="util-label">CPU</div>
+            </div>
+            <div class="util-item">
+              <div class="util-circle ram">{{ ramUsagePercent | number:'1.0-0' }}%</div>
+              <div class="util-label">RAM</div>
+            </div>
+          </div>
+          <div class="util-legend">
+            <div><span class="dot cpu"></span> CPU</div>
+            <div><span class="dot ram"></span> RAM</div>
+          </div>
+        </div> -->
       </div>
     </div>
   </ng-container>

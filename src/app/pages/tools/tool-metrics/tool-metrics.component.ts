@@ -174,7 +174,7 @@ export class ToolMetricsComponent implements OnInit, AfterViewInit, OnChanges {
             pointRadius: 0,
             pointHoverRadius: 4,
             pointBackgroundColor: '#3da1ff',
-            borderWidth: 2
+            borderWidth: 3
           },
           {
             label: `Max CPU Limit (${this.maxCpuLimit} mCPU)`,
@@ -196,9 +196,8 @@ export class ToolMetricsComponent implements OnInit, AfterViewInit, OnChanges {
             position: 'bottom',
             align: 'start',
             labels: {
-              usePointStyle: true,
-              pointStyle: 'line',
-              boxWidth: 36,
+              usePointStyle: false,
+              boxWidth: 20,
               boxHeight: 4,
               padding: 18,
               color: '#6b7a90',
@@ -215,6 +214,7 @@ export class ToolMetricsComponent implements OnInit, AfterViewInit, OnChanges {
             bodyColor: '#111827',
             displayColors: false,
             padding: 10,
+            filter: (ctx) => !String(ctx.dataset?.label || '').toLowerCase().includes('max'),
             callbacks: {
               title: (items) => {
                 const x = items[0]?.parsed?.x;
@@ -312,9 +312,8 @@ export class ToolMetricsComponent implements OnInit, AfterViewInit, OnChanges {
             position: 'bottom',
             align: 'start',
             labels: {
-              usePointStyle: true,
-              pointStyle: 'line',
-              boxWidth: 36,
+              usePointStyle: false,
+              boxWidth: 20,
               boxHeight: 4,
               padding: 18,
               color: '#6b7a90',
@@ -337,6 +336,7 @@ export class ToolMetricsComponent implements OnInit, AfterViewInit, OnChanges {
             bodyColor: '#111827',
             displayColors: false,
             padding: 10,
+            filter: (ctx) => !String(ctx.dataset?.label || '').toLowerCase().includes('max'),
             callbacks: {
               title: (items) => {
                 const x = items[0]?.parsed?.x;
