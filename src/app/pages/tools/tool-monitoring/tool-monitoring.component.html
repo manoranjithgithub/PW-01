@@ -1,0 +1,13 @@
+<div class="tool-monitoring-panel">
+  <ng-container *ngIf="resolvedToolName; else monitoringUnavailable">
+    <app-deployment-observability [appName]="resolvedToolName"></app-deployment-observability>
+  </ng-container>
+
+  <ng-template #monitoringUnavailable>
+    <div class="card border-0 shadow-sm">
+      <div class="card-body">
+        <p class="text-muted mb-0">Monitoring is unavailable until tool details are loaded.</p>
+      </div>
+    </div>
+  </ng-template>
+</div>

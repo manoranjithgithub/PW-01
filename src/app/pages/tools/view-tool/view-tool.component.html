@@ -15,6 +15,16 @@
                 Networking
             </a>
         </c-nav-item>
+        <!-- <c-nav-item>
+            <a [cTabContent]="tabContent1" (click)="onTabChange(2)" [tabPaneIdx]="2" cNavLink class="px-4 py-2">
+                Monitoring
+            </a>
+        </c-nav-item> -->
+        <c-nav-item>
+            <a [cTabContent]="tabContent1" (click)="onTabChange(2)" [tabPaneIdx]="2" cNavLink class="px-4 py-2">
+                Metrics
+            </a>
+        </c-nav-item>
         <c-nav-item class="ms-auto">
             <button class="btn button-format-solid px-4 btn-align" (click)="editTool()">
                 <i class="bi bi-pencil"></i> Edit
@@ -87,6 +97,18 @@
             <ng-container *ngIf="viewdata">
                 <!-- <p class="text-center m-4">We're enhancing this page to serve you better. Stay tuned!</p> -->
                 <app-tool-networking-view [viewdata]="toolDetails"></app-tool-networking-view>
+            </ng-container>
+        </c-tab-pane>
+
+        <!-- <c-tab-pane class="p-3 preview" role="tabpanel">
+            <ng-container *ngIf="selectedTabIndex === 2">
+                <app-tool-monitoring [toolName]="toolViewName" [toolDetails]="toolDetails"></app-tool-monitoring>
+            </ng-container>
+        </c-tab-pane> -->
+        <c-tab-pane class="p-3 preview" role="tabpanel">
+            <ng-container *ngIf="selectedTabIndex === 2">
+                <app-tool-metrics [toolName]="toolViewName" [toolDetails]="toolDetails" [deploymentId]="deploymentId">
+                </app-tool-metrics>
             </ng-container>
         </c-tab-pane>
     </c-tab-content>

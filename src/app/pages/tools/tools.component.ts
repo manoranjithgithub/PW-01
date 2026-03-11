@@ -235,7 +235,7 @@ export class ToolsComponent implements OnInit, OnDestroy {
 
   gotoAction(params: any) {
     this.toolName = params.name;
-    this.router.navigate(['/tools/view-tool'], { queryParams: { selectedView: this.toolName } })
+    this.router.navigate(['/tools/view-tool'], { queryParams: { selectedView: this.toolName, id: params.id } })
   }
 
   getAvailableTools(envId: string): void {
