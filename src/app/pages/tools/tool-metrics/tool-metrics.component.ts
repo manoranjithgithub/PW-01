@@ -72,6 +72,7 @@ export class ToolMetricsComponent implements OnInit, AfterViewInit, OnChanges {
   maxCpuLimit: number = 0;
   maxRamLimit: number = 0;
   readonly chartEmptyText = 'No data to display';
+  deploymentInstanceType: string = '';
 
   constructor(
     private eRef: ElementRef,
@@ -121,7 +122,15 @@ export class ToolMetricsComponent implements OnInit, AfterViewInit, OnChanges {
   private computeMaxLimits(): void {
     this.deploymentService.getInstanceTypes().subscribe((response: any) => {
       this.instanceTypes = response.data;
-      const deploymentInstanceType = this.toolDetails.data.schema?.resources.value;
+      // const deploymentInstanceType = this.toolDetails.data.schema?.resources.value;
+      const schema = this.toolDetails.data.schema;
+      const resourceKey = Object.keys(schema || {}).find(key =>
+        key.includes('resources')
+      );
+      const deploymentInstanceType = resourceKey
+        ? schema[resourceKey]?.value
+        : null;
+
       if (!deploymentInstanceType) {
         console.warn('Instance type is null or undefined.');
         return;
@@ -129,6 +138,8 @@ export class ToolMetricsComponent implements OnInit, AfterViewInit, OnChanges {
       const instanceTypeKey = this.instanceTypes.find((x: any) =>
         x.instanceType === deploymentInstanceType
       );
+      
+      this.deploymentInstanceType = deploymentInstanceType;
 
       if (instanceTypeKey) {
         this.maxCpuLimit = parseFloat(instanceTypeKey.cpuVcpu) * 1000;

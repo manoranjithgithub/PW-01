@@ -694,15 +694,13 @@ export class BillsComponent implements OnInit, OnChanges {
   private mapCostByServiceItem(
     item: any,
   ): BillServiceRow {
-    const deploymentDisplayName = item?.deployment?.name;
-    const toolDisplayName = item?.tool?.name;
-    const defaultName = 'Unnamed service';
-    const source = item?.deploymentType === 'application' ? 'application' : 'tool';
-    const name = source === 'application'
-      ? (deploymentDisplayName || defaultName)
-      : source === 'tool'
-        ? (toolDisplayName || defaultName)
-        : defaultName;
+
+    console.log('Mapping item:', item);
+    // const deploymentDisplayName = item?.deployment?.name;
+    // const toolDisplayName = item?.tool?.name;
+    // const defaultName = 'Unnamed service';
+    const source = item?.deploymentType === 'tool' ? 'tool' : 'application';
+    const name = item.name ? String(item.name) : item?.deploymentId;
     const instanceType = item?.instanceType || item?.instance_type || item?.resource_type || '';
     const usageValue = item?.usage ?? item?.usageQuantity ?? item?.quantity;
     const uptimeHours = this.getAmount(item?.uptimeHours ?? item?.uptime_hours);
