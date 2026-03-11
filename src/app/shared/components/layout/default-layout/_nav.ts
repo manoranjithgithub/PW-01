@@ -14,7 +14,7 @@ export const navItems: INavData[] = [
     icon: 'bi bi-speedometer'
   },
   {
-    name: 'Deployments',
+    name: 'Applications',
     url: '/deployment',
     icon: 'bi bi-cloud-upload'
   },
