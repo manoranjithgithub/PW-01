@@ -101,7 +101,40 @@ export class ReviewScreenComponent implements OnInit {
     return fullPath.split('\\').pop() || '';
   }
 
+  getFileType(filePath: string | undefined): string {
+    if (!filePath) return '';
+    const extension = filePath.split('.').pop()?.toUpperCase() || '';
+    return extension;
+  }
+
+  formatFileSize(bytes: number | undefined): string {
+    if (!bytes) return '0 B';
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    if (bytes === 0) return '0 B';
+    const i = Math.floor(Math.log(bytes) / Math.log(1024));
+    return Math.round((bytes / Math.pow(1024, i)) * 10) / 10 + ' ' + sizes[i];
+  }
+
+  getFileTimeAgo(uploadDate: Date | string | undefined): string {
+    if (!uploadDate) return '';
+    const date = typeof uploadDate === 'string' ? new Date(uploadDate) : uploadDate;
+    const now = new Date();
+    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    if (seconds < 60) return 'just now';
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+    const days = Math.floor(hours / 24);
+    return `${days} day${days > 1 ? 's' : ''} ago`;
+  }
+
   hasData(obj: any): boolean {
-    return !!obj && Object.keys(obj).length > 0;
+    if (!obj) return false;
+    if (Array.isArray(obj)) {
+      return obj.length > 0;
+    }
+    return Object.values(obj).some(v => v !== null && v !== '');
   }
 }

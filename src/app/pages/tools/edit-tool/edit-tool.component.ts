@@ -15,11 +15,13 @@ import { ToolNetworkingViewComponent } from '../tools-networking/tool-networking
 import { LayoutActionService } from '../../../shared/services/layout-action.service';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ConfirmationModalComponent } from '../../../shared/components/modal/confirmation-modal/confirmation-modal.component';
+import { ToolMonitoringComponent } from '../tool-monitoring/tool-monitoring.component';
+import { ToolMetricsComponent } from '../tool-metrics/tool-metrics.component';
 
 @Component({
   selector: 'app-edit-tool',
   standalone: true,
-  imports: [ShadowOnScrollDirective, MarkdownModule, LoaderComponent, ModalComponent, SHARED_IMPORTS, ToolNetworkingViewComponent],
+  imports: [ShadowOnScrollDirective, MarkdownModule, LoaderComponent, ModalComponent, SHARED_IMPORTS, ToolNetworkingViewComponent, ToolMonitoringComponent, ToolMetricsComponent],
   templateUrl: './edit-tool.component.html',
   styleUrl: './edit-tool.component.scss',
   providers: [ToolsService]
@@ -38,6 +40,7 @@ export class EditToolComponent implements OnInit, OnDestroy {
   selectedResource: { [key: string]: ResourceInfo | undefined } = { key: { cpuVcpu: '', memoryGb: '', instanceHourRate: 0 } };
   resources: any[] = [];
   selectedTabIndex: number = 0;
+  deploymentId: string = '';
 
   get hourlyInstanceRate(): number {
     const resource = Object.values(this.selectedResource).find(res => res?.instanceHourRate);
@@ -63,6 +66,7 @@ export class EditToolComponent implements OnInit, OnDestroy {
     this.ac.queryParams.subscribe(params => {
       this.paramsEdit = params['selectedEdit'];
       const status = params['status'] || '';
+      this.deploymentId = params['id'] || '';
       // this.layoutActionService.setExtraTitle(
       //   `${this.paramsEdit} (${status})`
       // );

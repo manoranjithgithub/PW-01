@@ -1,0 +1,179 @@
+﻿// Bills Component Styles (Component-Specific Only)
+// Import shared styles and variables from parent
+@import '../billing.component';
+
+.header-actions {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  justify-content: flex-end;
+}
+
+.billing-summary-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(4, 1fr);
+  margin-bottom: 16px;
+}
+
+.bill-total-breakdown {
+  .breakdown-row {
+    align-items: center;
+    display: flex;
+    font-size: 12px;
+    justify-content: space-between;
+    margin-bottom: 6px;
+
+    span {
+      color: #6c757d;
+    }
+
+    strong {
+      color: #2f200f;
+      font-weight: 700;
+    }
+  }
+
+  .total-due-row {
+    border-top: 1px dashed #ffd8bc;
+    margin-top: 2px;
+    padding-top: 8px;
+
+    span,
+    strong {
+      color: #b54708;
+      font-weight: 700;
+    }
+  }
+}
+
+.bill-service-row {
+  align-items: flex-end;
+  display: flex;
+  gap: 12px;
+  margin: 10px 0;
+  flex-wrap: nowrap;
+
+  .search-wrap {
+    flex: 1.8;
+  }
+
+  .scope-field,
+  .time-window-field {
+    flex: 1;
+    margin: 0;
+    min-width: 140px;
+  }
+}
+
+.service-cell {
+  align-items: center;
+  display: inline-flex;
+  gap: 8px;
+
+  span {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+.service-type-badge {
+  background: #fff1e8;
+  border: 1px solid #ffd8bc;
+  border-radius: 999px;
+  color: #b54708;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  padding: 4px 8px;
+  text-transform: uppercase;
+  white-space: nowrap;
+
+  &.tool {
+    background: #eef4ff;
+    border-color: #c9dbff;
+    color: #1d4ed8;
+  }
+}
+
+.table-footer {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+
+  .footer-count {
+    color: #495057;
+    font-size: 11px;
+  }
+
+  .footer-controls {
+    align-items: center;
+    display: flex;
+    gap: 10px;
+  }
+
+  .page-size-label {
+    align-items: center;
+    color: #495057;
+    display: inline-flex;
+    font-size: 11px;
+    gap: 8px;
+
+    select {
+      border: 1px solid #ced4da;
+      border-radius: 6px;
+      font-size: 12px;
+      min-height: 30px;
+      padding: 4px 8px;
+    }
+  }
+
+  .page-range {
+    color: #495057;
+    font-size: 14px;
+  }
+
+  .page-btn {
+    align-items: center;
+    background: #fff;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    color: #232323;
+    display: inline-flex;
+    font-size: 11px;
+    justify-content: center;
+    min-height: 30px;
+    min-width: 30px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover:not(:disabled) {
+      background: #f5f5f5;
+      border-color: #ff6600;
+    }
+
+    &:disabled {
+      background: #f8f9fa;
+      color: #adb5bd;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.subtotal-row {
+  background: #f5f5f5;
+
+  td {
+    border-top: 1px solid #ddd;
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+}
+
+.bill-subtabs button {
+  font-size: 13px;
+  padding: 10px 16px;
+}

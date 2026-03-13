@@ -32,6 +32,12 @@ export class PricingsService {
         catchError(this.handleError.bind(this))
       );
   }
+  downloadPdfInvoice(invoiceId: string): Observable<any> {
+    return this.http.get(`${this.pricingManagement}/invoices/${invoiceId}/presign?download=true`)
+      .pipe(
+        catchError(this.handleError.bind(this))
+      );
+  }
 
   getDeployments(projectId: string, envId: string) {
     return this.http.get(`${this.deploymentManagement}/deployments?projectId=${projectId}`)
@@ -55,8 +61,11 @@ export class PricingsService {
       .set('accountId', accountId)
       .set('from', fromDate)
       .set('to', toDate);
-    if (projectId && projectId !== 'all' && envId) {
+    if (envId) {
       params = params.set('environmentId', envId);
+    }
+    if (projectId) {
+      params = params.set('projectId', projectId);
     }
     return this.http.get(`${this.pricingManagement}/costs/costexplorer?`, { params })
       .pipe(

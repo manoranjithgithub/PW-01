@@ -12,12 +12,12 @@ export const RESOURCES = [
 
 export const pageHeaders = [
     { title: 'Dashboard', url: '/dashboard', subText: 'Get real-time insights on cost, deployments, resource usage, and endpoint access—all in one place.' },
-    { title: 'Deployments', url: '/deployment', subText: 'Upload a ZIP or connect to VCS to automate deployment, configuration, and scaling.' },
+    { title: 'Applications', url: '/deployment', subText: 'Upload a ZIP or connect to VCS to automate deployment, configuration, and scaling.' },
     { title: 'New Deployment', url: '/deployment/create-deployment', subText: 'Deploy your app to production effortlessly' },
     { title: 'Tools', url: '/tools', subText: 'Develop tools to manage and support persistent services such as databases and build agents.' },
     { title: 'LLM', url: '/llm-models', subText: 'Manage your account-level LLM integrations and available models.' },
     { title: 'Settings', url: '/settings', subText: '' },
-    { title: 'Deployment Details', url: '/deployment/deployment-details', subText: '' },
+    { title: 'Application Details', url: '/deployment/deployment-details', subText: '' },
     { title: 'Account Settings', url: '/account-settings', subText: '' },
     { title: 'Projects', url: '/projects', subText: '' },
     { title: 'Create Project', url: '/projects/create-project', subText: 'Create and configure your project within minutes to deploy your application.' },
@@ -25,7 +25,7 @@ export const pageHeaders = [
     { title: 'Create Environment', url: '/projects/create-environment', subText: 'Create your Environment' },
     { title: 'Environment Preferences', url: '/projects/environment-preferences', subText: '' },
     { title: 'Create Tool', url: '/tools/create-tool', subText: '' },
-    { title: 'Invoice & Payment Management', url: '/billing', subText: 'View and manage invoices for each billing cycle.' },
+    { title: 'Bills & Payment Management', url: '/billing', subText: 'View and manage invoices for each billing cycle.' },
     { title: 'Create Model', url: '/llm-models/create-model', subText: '' },
     { title: 'Configure Model', url: '/llm-models/create-model/configure', subText: '' },
     { title: 'View Model', url: '/llm-models/view-model', subText: '' },
@@ -33,7 +33,7 @@ export const pageHeaders = [
     { title: 'Users', url: '/users-list', subText: '' },
     { title: 'View Tool', url: '/tools/view-tool', subText: '' },
     { title: 'Edit Tool', url: '/tools/edit-tool', subText: '' },
-    { title: 'Deployment Details', url: '/llm/deployment-details', subText: '' },
+    { title: 'Application Details', url: '/llm/deployment-details', subText: '' },
     { title: 'LLM Deployment', url: '/llm', subText: '' },
 ];
 

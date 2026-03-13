@@ -88,6 +88,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
       const srcCurrency = data?.totals && data.totals.length ? data.totals[0].currency : 'USD';
       const convertedTotal = this.sharedService.convertAmount(roundedTotalCost, srcCurrency, target);
 
+    //  const projection = data.projection_mtd_rich?.[0];
+    //   const avg6h = projection?.run_rate_per_hour?.avg_6h;
+    //   const avg72h = projection?.run_rate_per_hour?.avg_72h;
+    //   const runRateDiff = avg6h != null && avg72h != null ? ((avg6h - avg72h) / avg72h) * 100 : 0;
+      // console.log(avg6h - avg72h)
+
       this.cards[0].value = totalCostSum === 0
         ? '0'
         : convertedTotal.toLocaleString('en-US', {
@@ -97,9 +103,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
           maximumFractionDigits: 2
         });
 
-      const estimatedCostSum = data?.projection_mtd_simple?.reduce((acc: number, item: any) => acc + (Number(item.projected_total) || 0), 0) ?? 0;
+      const estimatedCostSum = data?.projection_mtd_rich?.reduce((acc: number, item: any) => acc + (Number(item.projected_total?.blended) || 0), 0) ?? 0;
       const roundedEstimatedCost = Math.round(estimatedCostSum * 100) / 100;
-      const srcEstCurrency = data?.projection_mtd_simple && data.projection_mtd_simple.length ? data.projection_mtd_simple[0].currency : srcCurrency;
+      const srcEstCurrency = data?.projection_mtd_rich && data.projection_mtd_rich.length ? data.projection_mtd_rich[0].currency : srcCurrency;
       const convertedEstimate = this.sharedService.convertAmount(roundedEstimatedCost, srcEstCurrency, target);
 
       this.cards[1].value = estimatedCostSum === 0

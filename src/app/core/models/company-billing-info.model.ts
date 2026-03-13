@@ -1,14 +1,13 @@
 export interface CompanyBillingInfo {
   companyName: string | null;
   gstNumber: string | null;
-  panNumber: string | null;
+  panNumber?: string | null;
   addressLine1: string | null;
   addressLine2: string | null;
   city: string | null;
   state: string | null;
   country: string | null;
   postalCode: string | null;
-  paymentMethod: string | null;
 }
 
 export interface InvoiceRow {
@@ -23,6 +22,7 @@ export interface InvoiceRow {
   issued_at?: string;
   payment_method?: string;
   pdf_generated_at?: string;
+  credit_applied?: number;
   [key: string]: any;
 }
 
@@ -30,7 +30,7 @@ export interface BillServiceRow {
   description: string;
   usage: string;
   amount: number;
-  source: 'deployment' | 'tool';
+  source: 'application' | 'tool';
   currency?: string;
   name?: string;
   uptimeHours?: string | number;

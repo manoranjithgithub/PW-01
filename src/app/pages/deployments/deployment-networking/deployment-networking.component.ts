@@ -46,8 +46,8 @@ export class DeploymentNetworkingComponent implements OnInit {
   };
   copiedButtonId: string = '';
   ipAddresses = [
-    { ip: '101.53.135.137', id: 'ip-1-copy' },
-    { ip: '101.53.135.134', id: 'ip-2-copy' }
+    { ip: '151.185.41.131', id: 'ip-1-copy' },
+    { ip: '164.52.195.24', id: 'ip-2-copy' }
   ];
   readonly dnsSetupContent = {
     step1: {
@@ -134,7 +134,7 @@ export class DeploymentNetworkingComponent implements OnInit {
         this.networkSettingsForm.get('customDnsHost')?.setValue(this.deploymentdetails?.network?.customDomain);
         this.dnsInfo = {
           dnsName: this.deploymentdetails?.network?.customDomain || '',
-          ipAddress: res.data?.ipAddress || '101.53.135.137'
+          ipAddress: res.data?.ipAddress || '151.185.41.131'
         };
         this.getDeploymentById();
         this.freezeAddNewData = res.data?.status.toLowerCase() === 'stopped' || this.currentStatus?.toLowerCase() === 'building' ? true : false;
@@ -343,7 +343,7 @@ export class DeploymentNetworkingComponent implements OnInit {
         const domainSuffix = `${hostname}.${this.getEnvId()}.nimbuz.tech`;
         this.dnsInfo = {
           dnsName: domainSuffix,
-          ipAddress: res.data?.ipAddress || '101.53.135.137'
+          ipAddress: res.data?.ipAddress || '151.185.41.131'
         };
         this.fetchCustomDnsHost();
         this.openDnsSetupModal();
