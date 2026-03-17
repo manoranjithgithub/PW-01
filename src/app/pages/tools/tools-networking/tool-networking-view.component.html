@@ -14,6 +14,10 @@
               (click)="data.publicHost ? copy(data.publicHost) : null" [disabled]="!data.publicHost">
               <i class="bi bi-clipboard"></i>
             </button>
+            <button class="btn btn-outline-secondary" type="button" title="Delete"
+              (click)="data.publicHost ? clearPublicHost() : null" [disabled]="!data.publicHost">
+              <i class="bi bi-trash"></i>
+            </button>
             <!-- <button class="btn" title="Open domain" (click)="data.publicHost ? open(data.publicHost) : null" [disabled]="!data.publicHost"> <i class="bi bi-box-arrow-up-right"></i></button> -->
             <button *ngIf="!data.publicHost && allowGenerate" class="btn btn-primary ms-1"
               (click)="requestGenerate()">Generate host</button>

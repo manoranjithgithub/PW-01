@@ -99,9 +99,9 @@
             <thead>
               <tr>
                 <th>Service</th>
-                <th>Instance</th>
-                <th>CPU</th>
-                <th>Memory</th>
+                <th>Instance Cost</th>
+                <!-- <th>CPU</th> -->
+                <!-- <th>Memory</th> -->
                 <th>Uptime Hours</th>
                 <th>Charge</th>
               </tr>
@@ -117,8 +117,8 @@
                   </div>
                 </td>
                 <td>{{ formatMoney(row.instanceCost || 0, row.currency) }}</td>
-                <td>{{ formatMoney(row.cpuCost || 0, row.currency) }}</td>
-                <td>{{ formatMoney(row.memoryCost || 0, row.currency) }}</td>
+                <!-- <td>{{ formatMoney(row.cpuCost || 0, row.currency) }}</td> -->
+                <!-- <td>{{ formatMoney(row.memoryCost || 0, row.currency) }}</td> -->
                 <td>{{ row.uptimeHours }}</td>
                 <td>{{ formatMoney(row.amount, row.currency) }}</td>
               </tr>
@@ -126,9 +126,9 @@
             <tfoot *ngIf="filteredBillRows.length">
               <tr class="subtotal-row">
                 <td><strong>Subtotal</strong></td>
-                <td><strong>{{ formatMoney(filteredBillInstanceSubtotal) }}</strong></td>
-                <td><strong>{{ formatMoney(filteredBillCpuSubtotal) }}</strong></td>
-                <td><strong>{{ formatMoney(filteredBillMemorySubtotal) }}</strong></td>
+                <td><strong>&nbsp;</strong></td>
+                <!-- <td><strong>{{ formatMoney(filteredBillCpuSubtotal) }}</strong></td> -->
+                <!-- <td><strong>{{ formatMoney(filteredBillMemorySubtotal) }}</strong></td> -->
                 <td>-</td>
                 <td><strong>{{ formatMoney(filteredBillChargeSubtotal) }}</strong></td>
               </tr>
