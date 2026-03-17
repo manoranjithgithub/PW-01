@@ -10,7 +10,8 @@
         <ng-container *ngIf="isStepCompleted(i)">&#10003;</ng-container>
       </span>
     </div>
-    <div class="label" [innerHTML]="step.label"></div>
+    <div class="label" [attr.data-testid]="'step-label-' + step.label.toLowerCase().replace(' ', '-')"
+      [innerHTML]="step.label"></div>
   </div>
 </div>
 <hr />
@@ -23,10 +24,12 @@
         <div class="container">
           <div class="row">
             <div class="col-md-4" style="margin-top:1px">
-              <mat-label class="form-label">Choose a deployment type <span class="required text-danger">*</span></mat-label>
-              <mat-select formControlName="type" id="deployOptions" class="form-select mt-2">
+              <mat-label class="form-label" data-testid="label-type">Choose a deployment type <span
+                  class="required text-danger">*</span></mat-label>
+              <mat-select formControlName="type" id="deployOptions" data-testid="select-type" class="form-select mt-2">
                 <mat-option value="" disabled selected hidden>Choose a type to continue</mat-option>
-                <mat-option *ngFor="let option of deployOptions" [value]="option.value" (click)="selectedType(option)">
+                <mat-option *ngFor="let option of deployOptions" [value]="option.value"
+                  [attr.data-testid]="'option-type-' + option.value" (click)="selectedType(option)">
                   <img [src]="option.logo" alt="" width="20" height="20"
                     style="margin-right: 8px; vertical-align: middle" />
                   {{ option.name }}
@@ -39,33 +42,35 @@
             <div class="col-md-8" *ngIf=" selectedVCS && (selectedVCS === 'github' || selectedVCS === 'gitlab')">
               <div class="d-flex justify-content-between gap-2">
                 <div class="w-100">
-                  <label class="form-label">Select {{selectedVCS | lowercase}} repo</label>
-                  <select formControlName="selectedRepo" id="reposList" class="form-select">
+                  <label class="form-label" data-testid="label-repo">Select {{selectedVCS | lowercase}} repo</label>
+                  <select formControlName="selectedRepo" id="reposList" data-testid="select-repo" class="form-select">
                     <option *ngIf="!reposList || reposList.length === 0" disabled selected>
                       No Repo available
                     </option>
-                    <option *ngFor="let option of reposList" [value]="option.id">
+                    <option *ngFor="let option of reposList" [value]="option.id"
+                      [attr.data-testid]="'option-repo-' + option.name">
                       {{ option.name }}
                     </option>
                   </select>
                 </div>
                 <div class="w-100">
                   <div class="d-flex justify-content-between auto-scale-toggle">
-                    <label class="form-label mx-0">Select the branch <span class="required text-danger">*</span>
+                    <label class="form-label mx-0" data-testid="label-branch">Select the branch <span
+                        class="required text-danger">*</span>
                       <span
                         [cTooltip]="'Enable Auto Deploy to automatically deploys changes when new commits are pushed to the selected branch.'"
                         cTooltipPlacement="top" class="text-warning cursor mx-1">
                         <i class="bi bi-exclamation-circle"></i> </span>
                     </label>
                     <label class="d-flex align-items-center gap-2">
-                      <span class="form-label">Auto Deploy</span>
+                      <span class="form-label" data-testid="label-auto-deploy">Auto Deploy</span>
                       <span class="toggle">
                         <input type="checkbox" formControlName="vcsAutoDeploy">
                         <span class="slider"></span>
                       </span>
                     </label>
                   </div>
-                  <select formControlName="branchName" id="branchName" class="form-select">
+                  <select formControlName="branchName" id="branchName" data-testid="select-branch" class="form-select">
                     <option *ngIf="!branches || branches.length === 0" disabled selected>
                       No branches available
                     </option>
@@ -81,8 +86,8 @@
             </div>
             <div class="col-md-8" *ngIf="selectedVCS === 'zip' && zipUploadForm.value.zipfileInput">
               <div class="col-md-4">
-                <label class="form-label">Zip Filename</label>
-                <input type="text" class="form-control" formControlName="zipFilename">
+                <label class="form-label" data-testid="label-zip-filename">Zip Filename</label>
+                <input type="text" class="form-control" formControlName="zipFilename" data-testid="input-zip-filename">
               </div>
             </div>
           </div>
@@ -97,30 +102,33 @@
             </div>
             <div class="row g-3">
               <div class="col-md-4">
-                <label class="form-label">Name <span class="required text-danger">*</span></label>
-                <input type="text" class="form-control" formControlName="name" (blur)="checkAvailablity()">
-                <div class="text-danger my-1" *ngIf="isError('name', 'required')">
+                <label class="form-label" data-testid="label-name">Name <span
+                    class="required text-danger">*</span></label>
+                <input type="text" class="form-control" formControlName="name" data-testid="input-name"
+                  (blur)="checkAvailablity()">
+                <div class="text-danger my-1" data-testid="error-name-required" *ngIf="isError('name', 'required')">
                   Deployment name is required.
                 </div>
-                <div class="text-danger my-1" *ngIf="isError('name','pattern')">
-                 Deployment name can contain only lowercase letters, numbers, and hyphens.
+                <div class="text-danger my-1" data-testid="error-name-pattern" *ngIf="isError('name','pattern')">
+                  Deployment name can contain only lowercase letters, numbers, and hyphens.
                 </div>
-                <div class="text-danger my-1" *ngIf="isError('name','nameValidation')"> Name is already taken</div>
-                <div class="text-danger my-1" *ngIf="isError('name', 'maxlength')">
+                <div class="text-danger my-1" data-testid="error-name-validation"
+                  *ngIf="isError('name','nameValidation')"> Name is already taken</div>
+                <div class="text-danger my-1" data-testid="error-name-maxlength" *ngIf="isError('name', 'maxlength')">
                   Maximum 40 characters allowed.
                 </div>
               </div>
               <div class="col-md-4 auto-scale-toggle">
                 <div class="d-flex justify-content-between">
-                  <label class="form-label mx-0" for="replicas">Replicas
+                  <label class="form-label mx-0" for="replicas" data-testid="label-replicas">Replicas
                     <span
-                        [cTooltip]="'Enable Auto scaling to automatically increase or decrease capacity based on usage'"
-                        cTooltipPlacement="top" class="text-warning cursor mx-1">
-                        <i class="bi bi-exclamation-circle"></i>
-                      </span>
+                      [cTooltip]="'Enable Auto scaling to automatically increase or decrease capacity based on usage'"
+                      cTooltipPlacement="top" class="text-warning cursor mx-1">
+                      <i class="bi bi-exclamation-circle"></i>
+                    </span>
                   </label>
                   <label class="d-flex align-items-center gap-2">
-                    <span class="form-label">Auto scaling </span>
+                    <span class="form-label" data-testid="label-auto-scaling">Auto scaling </span>
                     <span class="toggle">
                       <input type="checkbox" formControlName="hpaEnabled">
                       <span class="slider"></span>
@@ -128,12 +136,13 @@
                   </label>
                 </div>
                 <ng-container *ngIf="!isAutoScaleEnabled">
-                  <input type="text" class="form-control" formControlName="replicas" *ngIf="!isAutoScaleEnabled">
-                  <div class="text-danger my-1"
+                  <input type="text" class="form-control" formControlName="replicas" data-testid="input-replicas"
+                    *ngIf="!isAutoScaleEnabled">
+                  <div class="text-danger my-1" data-testid="error-replicas-pattern"
                     *ngIf="isError('replicas', 'pattern') && !isError('replicas', 'min') && !isAutoScaleEnabled">
                     Replicas must be a number.
                   </div>
-                  <div class="text-danger my-1"
+                  <div class="text-danger my-1" data-testid="error-replicas-min"
                     *ngIf="isError('replicas', 'min') && !isAutoScaleEnabled">
                     Replicas must be at least 1.
                   </div>
@@ -142,30 +151,34 @@
                   <div class="d-flex justify-content-between gap-2">
                     <div class="w-100">
                       <!-- <label class="form-label">Min</label> -->
-                      <input type="text" class="form-control" formControlName="hpaMinReplicas" placeholder="Min">
-                      <div class="text-danger my-1" *ngIf="isError('hpaMinReplicas', 'required')">
+                      <input type="text" class="form-control" formControlName="hpaMinReplicas"
+                        data-testid="input-hpa-min" placeholder="Min">
+                      <div class="text-danger my-1" data-testid="error-hpamin-required"
+                        *ngIf="isError('hpaMinReplicas', 'required')">
                         This field is required.
                       </div>
-                      <div class="text-danger my-1"
+                      <div class="text-danger my-1" data-testid="error-hpamin-pattern"
                         *ngIf="isError('hpaMinReplicas', 'pattern') && !isError('hpaMinReplicas', 'required')">
                         Only numbers are allowed.
                       </div>
-                      <div class="text-danger my-1"
+                      <div class="text-danger my-1" data-testid="error-hpamin-min"
                         *ngIf="isError('hpaMinReplicas', 'min') && !isError('hpaMinReplicas', 'required')">
                         Minimum value should be 1.
                       </div>
                     </div>
                     <div class="w-100">
                       <!-- <label class="form-label">Max</label> -->
-                      <input type="text" class="form-control" formControlName="hpaMaxReplicas" placeholder="Max">
-                      <div class="text-danger my-1" *ngIf="isError('hpaMaxReplicas', 'required')">
+                      <input type="text" class="form-control" formControlName="hpaMaxReplicas"
+                        data-testid="input-hpa-max" placeholder="Max">
+                      <div class="text-danger my-1" data-testid="error-hpamax-required"
+                        *ngIf="isError('hpaMaxReplicas', 'required')">
                         This field is required.
                       </div>
-                      <div class="text-danger my-1"
+                      <div class="text-danger my-1" data-testid="error-hpamax-pattern"
                         *ngIf="isError('hpaMaxReplicas', 'pattern') && !isError('hpaMaxReplicas', 'required')">
                         Only numbers are allowed.
                       </div>
-                      <div class="text-danger my-1"
+                      <div class="text-danger my-1" data-testid="error-hpamax-maxlessthanmin"
                         *ngIf="isError('hpaMaxReplicas', 'maxLessThanMin') && !isError('hpaMaxReplicas', 'required')">
                         Max value must be greater than min value.
                       </div>
@@ -175,7 +188,7 @@
 
               </div>
               <div class="col-md-4">
-                <label class="form-label w-100">
+                <label class="form-label w-100" data-testid="label-instance-type">
                   <div class="d-flex justify-content-between align-items-center text-nowrap">
                     <span>
                       Instance Type <span class="required text-danger">*</span>
@@ -187,7 +200,8 @@
                     </span>
                   </div>
                 </label>
-                <select formControlName="instanceType" id="resource" class="form-select">
+                <select formControlName="instanceType" id="resource" data-testid="select-instance-type"
+                  class="form-select">
                   <option *ngFor="let resource of resources" [ngValue]="resource">
                     {{ resource.instanceType }}
                   </option>
@@ -197,15 +211,16 @@
                 </div>
               </div>
               <div class="col-md-4">
-                <label class="form-label">Port </label>
-                <input type="text" class="form-control" formControlName="port">
-                <div class="text-danger my-1" *ngIf="isError('port', 'maxlength')">
+                <label class="form-label" data-testid="label-port">Port </label>
+                <input type="text" class="form-control" formControlName="port" data-testid="input-port">
+                <div class="text-danger my-1" data-testid="error-port-maxlength" *ngIf="isError('port', 'maxlength')">
                   Port must be between 1 and 65535.
                 </div>
-                <div class="text-danger my-1" *ngIf="isError('port', 'pattern')">
+                <div class="text-danger my-1" data-testid="error-port-pattern" *ngIf="isError('port', 'pattern')">
                   Port must be a number.
                 </div>
-                <div class="text-danger my-1" *ngIf="isError('port', 'min') || isError('port', 'max')">
+                <div class="text-danger my-1" data-testid="error-port-minmax"
+                  *ngIf="isError('port', 'min') || isError('port', 'max')">
                   Port must be between 1 and 65535.
                 </div>
               </div>
@@ -219,35 +234,40 @@
                 <input type="text" class="form-control" formControlName="dockerfilePath">
               </div> -->
               <div class="col-md-4">
-                <label class="form-label">Folder Path
-                  <span [cTooltip]="'Specify the folder path relative to the repository root where the docker files are located.'"
+                <label class="form-label" data-testid="label-folder-path">Folder Path
+                  <span
+                    [cTooltip]="'Specify the folder path relative to the repository root where the docker files are located.'"
                     cTooltipPlacement="top" class="text-warning cursor mx-1">
                     <i class="bi bi-exclamation-circle"></i>
                   </span>
                 </label>
-                <input type="text" class="form-control" formControlName="folderPath">
+                <input type="text" class="form-control" formControlName="folderPath" data-testid="input-folder-path">
               </div>
-               <div class="col-md-4">
-                <label class="form-label">Docker File Name
+              <div class="col-md-4">
+                <label class="form-label" data-testid="label-docker-file-name">Docker File Name
                   <span [cTooltip]="'Specify the name of the Dockerfile (e.g., Dockerfile, Dockerfile.prod).'"
                     cTooltipPlacement="top" class="text-warning cursor mx-1">
                     <i class="bi bi-exclamation-circle"></i>
                   </span>
                 </label>
-                <input type="text" class="form-control" formControlName="dockerFileName">
+                <input type="text" class="form-control" formControlName="dockerFileName"
+                  data-testid="input-docker-file-name">
               </div>
               <div class="col-md-4">
-                <label class="form-label">Health Endpoint</label>
-                <input type="text" class="form-control" formControlName="healthEndpoint" placeholder="/health">
-                <div *ngIf="isError('healthEndpoint','maxlength')" class="text-danger my-1">
+                <label class="form-label" data-testid="label-health-endpoint">Health Endpoint</label>
+                <input type="text" class="form-control" formControlName="healthEndpoint"
+                  data-testid="input-health-endpoint" placeholder="/health">
+                <div *ngIf="isError('healthEndpoint','maxlength')" data-testid="error-health-maxlength"
+                  class="text-danger my-1">
                   Maximun 250 characters only.
                 </div>
-                <div *ngIf="isError('healthEndpoint','pattern')" class="text-danger my-1">
+                <div *ngIf="isError('healthEndpoint','pattern')" data-testid="error-health-pattern"
+                  class="text-danger my-1">
                   Health endpoint must start with /.
                 </div>
               </div>
               <div class="col-md-4">
-                <label class="form-label w-100">
+                <label class="form-label w-100" data-testid="label-ephemeral-storage">
                   <div class="d-flex justify-content-between align-items-center text-nowrap">
                     <span>
                       Ephemeral Storage
@@ -259,13 +279,15 @@
                   </div>
                 </label>
                 <div class="input-group">
-                  <input type="text" class="form-control" formControlName="ephemeralStorage">
+                  <input type="text" class="form-control" formControlName="ephemeralStorage"
+                    data-testid="input-ephemeral-storage">
                   <span class="input-group-text">Gi</span>
                 </div>
-                <div class="text-danger my-1" *ngIf="ephemeralExhausted">
+                <div class="text-danger my-1" data-testid="error-ephemeral-exhausted" *ngIf="ephemeralExhausted">
                   Ephemeral storage usage exceeded.
                 </div>
-                <div class="text-danger my-1" *ngIf="isError('ephemeralStorage', 'pattern')">
+                <div class="text-danger my-1" data-testid="error-ephemeral-pattern"
+                  *ngIf="isError('ephemeralStorage', 'pattern')">
                   Only numbers are allowed.The value will be considered in 'Gi'.
                 </div>
               </div>
@@ -292,11 +314,12 @@
         <div class="container w-50 my-4">
           <form [formGroup]="fileUploadForm">
             <div class="form-group">
-              <label for="fileInput" class="form-label">Select a file to upload (in .yml or .json format) :</label>
+              <label for="fileInput" class="form-label" data-testid="label-file-upload">Select a file to upload (in .yml
+                or .json format) :</label>
               <div class="d-flex align-items-center gap-2">
                 <div class="w-100">
-                  <input type="file" id="fileInput" formControlName="fileInput" class="form-control"
-                    accept=".json,.yml,.yaml" (change)="onFileSelected($event)" />
+                  <input type="file" id="fileInput" formControlName="fileInput" data-testid="input-config-file"
+                    class="form-control" accept=".json,.yml,.yaml" (change)="onFileSelected($event)" />
                   <div
                     *ngIf="fileUploadForm.get('fileInput')?.hasError('invalidFileType') && fileUploadForm.get('fileInput')?.touched"
                     class="text-danger my-2">
@@ -330,9 +353,9 @@
               </div>
             </div>
             <div class="my-2">
-              <label class="form-label">File Path</label>
-              <input type="text" formControlName="filePath" name="filePath" class="form-control"
-                (blur)="checkFileAvailble()" />
+              <label class="form-label" data-testid="label-file-path">File Path</label>
+              <input type="text" formControlName="filePath" name="filePath" data-testid="input-config-file-path"
+                class="form-control" (blur)="checkFileAvailble()" />
               <div *ngIf="fileUploadForm.get('filePath')?.hasError('required')" class="text-danger my-2">
                 File path is required when a file is uploaded.
               </div>
@@ -351,13 +374,14 @@
 <div class="mb-2">
   <div class="stepper-footer d-flex gap-3 justify-content-between">
     <div class="">
-      <button class="btn button-format-outline" (click)="prev()" [disabled]="currentStep === 0"
+      <button class="btn button-format-outline" data-testid="btn-previous" (click)="prev()"
+        [disabled]="currentStep === 0"
         [attr.title]="(currentStep === 0) ? 'You are not authorized to view that page.' : null"
         *ngIf="currentStep > 0"><i class="bi bi-arrow-left"></i> Previous</button>
     </div>
     <div class="">
       <div class="">
-        <button class="btn button-format-solid"
+        <button class="btn button-format-solid" data-testid="btn-next"
           (click)="next(currentStep === 4 ? 'Submit' : (currentStep === 3 ? 'Review' : 'Save & Continue'))"
           [disabled]="submitted || !(permissionService.canWriteGlobal() || permissionService.canAdminGlobal())"
           [attr.title]="(submitted || !(permissionService.canWriteGlobal() || permissionService.canAdminGlobal())) ? 'You are not authorized to view that page.' : null">
@@ -371,27 +395,25 @@
     <div class="container">
       <form [formGroup]="zipUploadForm">
         <div class="form-group">
-          <label for="zipfileInput">Select a file to upload(in .zip, .tar format) :</label>
-          <input type="file" id="zipfileInput" formControlName="zipfileInput" class="form-control mt-2"
-            [accept]="'.zip,.tar'" (change)="onZipFileSelect($event)" />
+          <label for="zipfileInput" data-testid="label-zip-upload">Select a file to upload(in .zip, .tar format)
+            :</label>
+          <input type="file" id="zipfileInput" formControlName="zipfileInput" data-testid="input-zip-file"
+            class="form-control mt-2" [accept]="'.zip,.tar'" (change)="onZipFileSelect($event)" />
           <div
             *ngIf="zipUploadForm.get('zipfileInput')?.hasError('required') && (zipUploadForm.get('zipfileInput')?.dirty || zipUploadForm.get('zipfileInput')?.touched)"
             class="text-danger mt-2">
             Please choose a valid ZIP or TAR file.
           </div>
-          <div
-            *ngIf="zipUploadForm.get('zipfileInput')?.hasError('invalidFileType')"
-            class="text-danger mt-2">
+          <div *ngIf="zipUploadForm.get('zipfileInput')?.hasError('invalidFileType')" class="text-danger mt-2">
             Invalid file type. Only .zip and .tar files are allowed.
           </div>
-          <div
-            *ngIf="zipUploadForm.get('zipfileInput')?.hasError('fileSizeExceeded')"
-            class="text-danger mt-2">
+          <div *ngIf="zipUploadForm.get('zipfileInput')?.hasError('fileSizeExceeded')" class="text-danger mt-2">
             File size exceeds the allowed limit.
           </div>
         </div>
         <div class="d-flex justify-content-center mt-2">
-          <button class="btn btn-primary btn-visible-disabled" [disabled]="zipUploadForm.invalid"
+          <button class="btn btn-primary btn-visible-disabled" data-testid="btn-zip-submit"
+            [disabled]="zipUploadForm.invalid"
             [attr.title]="zipUploadForm.invalid ? 'You are not authorized to view that page.' : null"
             (click)="onZipUpload()">Submit</button>
         </div>
