@@ -52,8 +52,11 @@
               <ng-template #rateLimitReadonly>
                 <input class="form-control" type="text" [value]="rateLimitDisplay" readonly />
               </ng-template>
-              <small class="text-danger" *ngIf="rateLimitForm.get('rateLimitPerMinute')?.invalid && rateLimitForm.get('rateLimitPerMinute')?.touched">
+              <small class="text-danger" *ngIf="rateLimitForm.get('rateLimitPerMinute')?.hasError('min') && rateLimitForm.get('rateLimitPerMinute')?.touched">
                 Provide a valid number greater than 0.
+              </small>
+              <small class="text-danger" *ngIf="rateLimitForm.get('rateLimitPerMinute')?.hasError('max') && rateLimitForm.get('rateLimitPerMinute')?.touched">
+                Maximum allowed value is 10.
               </small>
             </form>
           </div>

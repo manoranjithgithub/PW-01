@@ -50,7 +50,7 @@ export class ViewModelComponent implements OnInit {
     private modalService: NgbModal
   ) {
     this.rateLimitForm = this.fb.group({
-      rateLimitPerMinute: [{ value: '', disabled: true }, [Validators.required, Validators.min(1)]]
+      rateLimitPerMinute: [{ value: '', disabled: true }, [Validators.required, Validators.min(1), Validators.max(10)]]
     });
     this.usageFiltersForm = this.fb.group({
       from: [this.toLocalDateTimeInput(this.getHoursAgoDate(24))],
@@ -431,9 +431,11 @@ export class ViewModelComponent implements OnInit {
           ...(this.modelData || {}),
           rateLimitPerMinute
         };
+        this.rateLimitForm.get('rateLimitPerMinute')?.setValue(rateLimitPerMinute, { emitEvent: false });
         this.isSavingRateLimit = false;
         this.sharedService.hide();
-        this.cancelRateLimitEdit();
+        // this.cancelRateLimitEdit();
+        this.rateLimitForm.get('rateLimitPerMinute')?.disable({ emitEvent: false });
       },
       error: (error: Error) => {
         this.toastr.error(error.message, 'Error');
