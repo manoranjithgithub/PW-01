@@ -37,4 +37,12 @@ export class ToolNetworkingViewComponent {
   requestGenerate() {
     this.generateHost.emit();
   }
+
+  clearPublicHost() {
+    if (this.viewdata && this.viewdata.data) {
+      this.viewdata.data.publicHost = null;
+    } else if (this.viewdata) {
+      this.viewdata.publicHost = null;
+    }
+  }
 }
