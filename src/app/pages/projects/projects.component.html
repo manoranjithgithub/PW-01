@@ -43,7 +43,7 @@
         </div>
       </div>
       <div class="my-2 project-list" *ngFor="let project of projectList">
-        <div class="card custom-card-height solid-outline"
+        <div class="card custom-card-height solid-outline" data-testid="project-card"
           [ngClass]="{'selected-card': selectedProjectId === project.id}"
           (click)="onProjectChange(project); selectedProjectId = project.id">
 
@@ -133,7 +133,7 @@
     </div>
 
     <div class="my-2 environments-list" *ngFor="let env of environmentList">
-      <div class="card custom-card-height solid-outline cursor-pointer"
+      <div class="card custom-card-height solid-outline cursor-pointer" data-testid="environment-card"
         [ngClass]="{'selected-card': selectedEnvId === env.id}"
         (click)="selectedEnvId = env.id; onEnvironmentChange(env)">
 
@@ -174,5 +174,5 @@
 </div>
 <hr>
 <div class="d-flex justify-content-end  mt-4 mb-2">
-  <button type="submit" class="btn button-format-solid" (click)="updateCookies()">Proceed</button>
+  <button type="submit" class="btn button-format-solid" data-testid="proceed-btn" (click)="updateCookies()">Proceed</button>
 </div>
