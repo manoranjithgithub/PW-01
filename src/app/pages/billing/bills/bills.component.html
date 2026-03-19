@@ -86,10 +86,10 @@
           </label>
           <label class="scope-field filter-field">
             <span>Status</span>
-            <select>
+            <select [value]="billServiceTypeFilter" (change)="onBillServiceTypeFilterChange($any($event.target).value)">
               <option>All services</option>
               <option>Application</option>
-              <option>Tools</option>
+              <option>Tool</option>
             </select>
           </label>
         </div>
@@ -99,9 +99,10 @@
             <thead>
               <tr>
                 <th>Service</th>
+                <th>Instance Type</th>
                 <th>Instance Cost</th>
-                <!-- <th>CPU</th> -->
-                <!-- <th>Memory</th> -->
+                <th>CPU (mCPU)</th>
+                <th>Memory (MiB)</th>
                 <th>Uptime Hours</th>
                 <th>Charge</th>
               </tr>
@@ -116,17 +117,17 @@
                     </span>
                   </div>
                 </td>
+                <td>{{ row.instanceType || '-' }}</td>
                 <td>{{ formatMoney(row.instanceCost || 0, row.currency) }}</td>
-                <!-- <td>{{ formatMoney(row.cpuCost || 0, row.currency) }}</td> -->
-                <!-- <td>{{ formatMoney(row.memoryCost || 0, row.currency) }}</td> -->
+                <td>{{ row.cpu }}</td>
+                <td>{{ row.memory }}</td>
                 <td>{{ row.uptimeHours }}</td>
                 <td>{{ formatMoney(row.amount, row.currency) }}</td>
               </tr>
             </tbody>
             <tfoot *ngIf="filteredBillRows.length">
               <tr class="subtotal-row">
-                <td><strong>Subtotal</strong></td>
-                <td><strong>&nbsp;</strong></td>
+                <td colspan="5"><strong>Subtotal</strong></td>
                 <!-- <td><strong>{{ formatMoney(filteredBillCpuSubtotal) }}</strong></td> -->
                 <!-- <td><strong>{{ formatMoney(filteredBillMemorySubtotal) }}</strong></td> -->
                 <td>-</td>

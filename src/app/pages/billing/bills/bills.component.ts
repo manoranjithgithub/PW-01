@@ -29,8 +29,19 @@ export class BillsComponent implements OnInit, OnChanges {
   activeBillTab: BillTab = 'service';
   billServiceFilter = '';
   billTaxFilter = '';
-  selectedMonth = '';
+  selectedMonth = this.getPreviousMonthValue();
+    private getPreviousMonthValue(): string {
+      const now = new Date();
+      let year = now.getFullYear();
+      let month = now.getMonth(); // getMonth() is 0-based, so this is previous month
+      if (month === 0) {
+        month = 12;
+        year -= 1;
+      }
+      return `${year}-${String(month).padStart(2, '0')}`;
+    }
   monthlyInvoiceData: InvoiceRow | null = null;
+  billServiceTypeFilter = 'All services';
 
   @Input() invoiceList: InvoiceRow[] = [];
 
@@ -202,14 +213,21 @@ export class BillsComponent implements OnInit, OnChanges {
 
   get filteredBillRows(): BillServiceRow[] {
     const query = (this.billServiceFilter || '').trim().toLowerCase();
-    const rowsWithUptime = this.billRows.filter((row) => this.getBillRowUptimeHours(row) > 0);
+    const typeFilter = (this.billServiceTypeFilter || 'All services').toLowerCase();
+    let rowsWithUptime = this.billRows.filter((row) => this.getBillRowUptimeHours(row) > 0);
+    if (typeFilter !== 'all services') {
+        rowsWithUptime = rowsWithUptime.filter(row =>
+            (typeFilter === 'application' && row.source === 'application') ||
+            (typeFilter === 'tool' && row.source === 'tool')
+        );
+    }
     if (!query) {
-      return rowsWithUptime;
+        return rowsWithUptime;
     }
     return rowsWithUptime.filter((row) =>
-      `${row.description} ${row.usage}`.toLowerCase().includes(query)
+        `${row.description} ${row.usage}`.toLowerCase().includes(query)
     );
-  }
+}
 
   get paginatedBillRows(): BillServiceRow[] {
     const start = this.billOffset;
@@ -263,7 +281,7 @@ export class BillsComponent implements OnInit, OnChanges {
   }
 
   ngOnInit(): void {
-    this.selectedMonth = this.getCurrentMonthValue();
+    this.selectedMonth = this.getPreviousMonthValue();
     this.syncMonthPickerFromSelected();
     this.applyMonthSelection(this.selectedMonth);
 
@@ -554,7 +572,7 @@ export class BillsComponent implements OnInit, OnChanges {
                 this.selectedEnvironmentId === 'all' ||
                 !this.environmentOptions.some((env) => env.id === this.selectedEnvironmentId)
               ) {
-                this.selectedEnvironmentId = this.getDefaultEnvironmentId(this.environmentOptions);
+                // this.selectedEnvironmentId = this.getDefaultEnvironmentId(this.environmentOptions);
               }
               this.loadBillServiceCharges();
             },
@@ -617,7 +635,7 @@ export class BillsComponent implements OnInit, OnChanges {
       accountId,
       this.startDate,
       this.endDate,
-      this.selectedEnvironmentId !== 'all' && this.selectedProjectId !== 'all' ? String(this.selectedEnvironmentId) : undefined,
+      this.selectedEnvironmentId !== 'all' ? String(this.selectedEnvironmentId) : undefined,
       this.selectedProjectId !== 'all' ? String(this.selectedProjectId) : undefined
     ).pipe(
       catchError(() => of({ data: [] }))
@@ -701,7 +719,7 @@ export class BillsComponent implements OnInit, OnChanges {
     // const defaultName = 'Unnamed service';
     const source = item?.deploymentType === 'tool' ? 'tool' : 'application';
     const name = item.name ? String(item.name) : item?.deploymentId;
-    const instanceType = item?.instanceType || item?.instance_type || item?.resource_type || '';
+    const instanceType = item?.instanceType;
     const usageValue = item?.usage ?? item?.usageQuantity ?? item?.quantity;
     const uptimeHours = this.getAmount(item?.uptimeHours ?? item?.uptime_hours);
     const usageParts = [];
@@ -723,6 +741,8 @@ export class BillsComponent implements OnInit, OnChanges {
     const cpuCost = this.getAmount(item?.costCpu);
     const memoryCost = this.getAmount(item?.costMem);
     const instanceCost = this.getAmount(item?.costInstance);
+    const cpu = item?.cpu;
+    const memory = item?.memory;
     return {
       name,
       description: `${source === 'tool' ? 'Tool' : 'Application'}: ${name}`,
@@ -737,8 +757,11 @@ export class BillsComponent implements OnInit, OnChanges {
       currency: item?.currency || 'USD',
       uptimeHours: `${uptimeHours.toFixed(2)}h`,
       instanceCost,
+      instanceType,
       cpuCost,
-      memoryCost
+      memoryCost,
+      cpu,
+      memory
     };
   }
 
@@ -782,4 +805,7 @@ export class BillsComponent implements OnInit, OnChanges {
 
     this.monthlyInvoiceData = monthInvoice || null;
   }
+  onBillServiceTypeFilterChange(value: string): void {
+    this.billServiceTypeFilter = value;
+}
 }

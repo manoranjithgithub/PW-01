@@ -37,6 +37,9 @@ export interface BillServiceRow {
   instanceCost?: number;
   cpuCost?: number;
   memoryCost?: number;
+  instanceType?: string;
+  cpu?: string | number;
+  memory?: string | number;
 }
 
 export interface ScopeOption {

@@ -2,12 +2,12 @@
   <ng-container *ngIf="deploymentId; else metricsUnavailable">
     <div class="metrics-shell">
       <form [formGroup]="filterForm" (ngSubmit)="onFilter()" class="filter-bar">
-        <div class="filter-label-wrap">
+        <!-- <div class="filter-label-wrap">
           <span class="filter-icon">Filters</span>
-        </div>
+        </div> -->
         <div class="filter-group">
           <label for="duration" class="filter-label">Duration</label>
-          <select id="duration" formControlName="duration" class="filter-input">
+          <select id="duration" formControlName="duration" class="filter-input" (change)="onFilter()">
             <option *ngFor="let duration of durations" [value]="duration.value">
               {{ duration.label }}
             </option>
@@ -15,7 +15,7 @@
         </div>
         <div class="filter-group">
           <label for="interval" class="filter-label">Interval</label>
-          <select id="interval" formControlName="interval" class="filter-input">
+          <select id="interval" formControlName="interval" class="filter-input" (change)="onFilter()">
             <option *ngFor="let interval of intervals" [value]="interval.value">
               {{ interval.label }}
             </option>
@@ -24,14 +24,14 @@
         <ng-container *ngIf="filterForm.get('duration')?.value === 'custom'">
           <div class="filter-group">
             <label class="filter-label">From</label>
-            <input type="datetime-local" formControlName="fromTimestamp" class="filter-input datetime-input" />
+            <input type="datetime-local" formControlName="fromTimestamp" class="filter-input datetime-input" (change)="onFilter()" />
           </div>
           <div class="filter-group">
             <label class="filter-label">To</label>
-            <input type="datetime-local" formControlName="toTimestamp" class="filter-input datetime-input" />
+            <input type="datetime-local" formControlName="toTimestamp" class="filter-input datetime-input" (change)="onFilter()" />
           </div>
         </ng-container>
-        <button type="submit" class="filter-cta">Apply Filter</button>
+        <!-- Apply Filter button removed. -->
       </form>
 
       <div class="stats-row">
