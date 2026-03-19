@@ -842,7 +842,7 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
         data: this.parsedConfigData || null,
       },
       secret: secretObj || null,
-      environment: this.envData?.data || null
+      environment: this.envData && this.envData.data.length >0 ? this.envData.data : {}
     };
   }
   onFileSelected(event: Event) {

@@ -1,3 +1,5 @@
+  // Holds all bill rows for the selected month (unfiltered by scope)
+  
 import { CommonModule } from '@angular/common';
 import { Component, HostListener, Input, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { PricingsService } from '../pricing.service';
@@ -182,33 +184,46 @@ export class BillsComponent implements OnInit, OnChanges {
     }
     return this.lastChargedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   }
+monthBillRows: BillServiceRow[] = [];
 
+  // Filters monthBillRows by current scope and sets billRows for the table
+  // filterBillRowsByScope(): void {
+  //   let filtered = this.monthBillRows;
+  //   if (this.selectedProjectId && this.selectedProjectId !== 'all') {
+  //     filtered = filtered.filter(row => row.projectId === this.selectedProjectId);
+  //   }
+  //   if (this.selectedEnvironmentId && this.selectedEnvironmentId !== 'all') {
+  //     filtered = filtered.filter(row => row.environmentId === this.selectedEnvironmentId);
+  //   }
+  //   this.billRows = filtered;
+  // }
   get deploymentServiceCount(): number {
-    return this.billRows.filter((row) => row.source === 'application').length;
+    return this.monthBillRows.filter((row) => row.source === 'application').length;
   }
 
   get toolServiceCount(): number {
-    return this.monthScopedBillRows.filter((row) => row.source !== 'application').length;
+    return this.monthBillRows.filter((row) => row.source !== 'application').length;
   }
 
   get toolServiceCostTotal(): number {
-    return this.monthScopedBillRows
+    return this.monthBillRows
       .filter((row) => row.source === 'tool')
       .reduce((sum, row) => sum + this.getAmount(row.amount), 0);
   }
 
   get deploymentServiceCostTotal(): number {
-    return this.monthScopedBillRows
+    return this.monthBillRows
       .filter((row) => row.source === 'application')
       .reduce((sum, row) => sum + this.getAmount(row.amount), 0);
   }
 
   get totalBillableServicesCount(): number {
-    return this.monthScopedBillRows.length;
+    return this.monthBillRows.length;
   }
 
   get monthScopedBillRows(): BillServiceRow[] {
-    return this.billRows.filter((row) => this.getBillRowUptimeHours(row) > 0);
+    // Use monthBillRows for summary, not affected by scope filters
+    return this.monthBillRows.filter((row) => this.getBillRowUptimeHours(row) > 0);
   }
 
   get filteredBillRows(): BillServiceRow[] {
@@ -310,12 +325,14 @@ export class BillsComponent implements OnInit, OnChanges {
     this.billOffset = 0;
     this.loadEnvironmentOptionsByProject(this.selectedProjectId);
     this.loadBillServiceCharges();
+    // Do NOT call loadMonthlyInvoiceData here; summary grid should not update on scope change
   }
 
   onEnvironmentScopeChange(value: string): void {
     this.selectedEnvironmentId = value || 'all';
     this.billOffset = 0;
     this.loadBillServiceCharges();
+    // Do NOT call loadMonthlyInvoiceData here; summary grid should not update on scope change
   }
 
   onBillItemsPerPageChange(value: string): void {
@@ -625,18 +642,18 @@ export class BillsComponent implements OnInit, OnChanges {
   private loadBillServiceCharges(): void {
     const accountId = localStorage.getItem('accountId') || this.sharedService.getUser()?.id || '';
     if (!accountId) {
+      this.monthBillRows = [];
       this.billRows = [];
       this.billLoading = false;
       return;
     }
     this.billLoading = true;
 
+    // Always fetch full month data (no project/environment filter)
     this.http.getCostByService(
       accountId,
       this.startDate,
-      this.endDate,
-      this.selectedEnvironmentId !== 'all' ? String(this.selectedEnvironmentId) : undefined,
-      this.selectedProjectId !== 'all' ? String(this.selectedProjectId) : undefined
+      this.endDate
     ).pipe(
       catchError(() => of({ data: [] }))
     ).subscribe({
@@ -645,10 +662,12 @@ export class BillsComponent implements OnInit, OnChanges {
         const rows: BillServiceRow[] = items.map((item: any) =>
           this.mapCostByServiceItem(item)
         );
-        this.billRows = rows;
+        this.monthBillRows = rows;
+        // this.filterBillRowsByScope();
         this.billLoading = false;
       },
       error: () => {
+        this.monthBillRows = [];
         this.billRows = [];
         this.billLoading = false;
       }
