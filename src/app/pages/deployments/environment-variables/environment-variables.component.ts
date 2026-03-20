@@ -196,6 +196,7 @@ export class EnvironmentVariablesComponent implements OnInit {
   onVariablesUpdated(updated: { EnvVariable: string; Value: string }[]) {
     this.envList = updated;
     this.addEnvVariables(this.envList);
+    this.addVariable();
   }
   addEnvVariables(data: any) {
     this.updatedReq = {
@@ -206,6 +207,7 @@ export class EnvironmentVariablesComponent implements OnInit {
     }
     if (!this.canAddVariables) {
       this.envDetails.emit(this.updatedReq);
+      this.addVariable()
       return;
     }
 
