@@ -36,9 +36,13 @@
             <span>Tools</span>
             <strong>{{ formatMoney(toolServiceCostTotal) }}</strong>
           </div>
+          <div class="breakdown-row">
+            <span>LLMs</span>
+            <strong>{{ formatMoney(llmServiceCostTotal) }}</strong>
+          </div>
           <div class="breakdown-row total-due-row">
             <span>Total Service Cost</span>
-            <strong>{{ formatMoney(deploymentServiceCostTotal + toolServiceCostTotal) }}</strong>
+            <strong>{{ formatMoney(deploymentServiceCostTotal + toolServiceCostTotal + llmServiceCostTotal) }}</strong>
           </div>
         </div>
         <div class="billing-summary-item bill-total-breakdown">
@@ -51,9 +55,13 @@
             <span>Tools</span>
             <strong>{{ toolServiceCount }}</strong>
           </div>
+          <div class="breakdown-row">
+            <span>LLMs</span>
+            <strong>{{ llmServiceCount }}</strong>
+          </div>
           <div class="breakdown-row total-due-row">
             <span>Total Services</span>
-            <strong>{{ deploymentServiceCount + toolServiceCount }}</strong>
+            <strong>{{ deploymentServiceCount + toolServiceCount + llmServiceCount }}</strong>
           </div>
         </div>
       </div>
@@ -63,6 +71,8 @@
       <nav class="tab-nav bill-subtabs" aria-label="Bill Tabs">
         <button type="button" [class.active]="activeBillTab === 'service'" (click)="switchBillTab('service')">Charges by
           service</button>
+        <button type="button" [class.active]="activeBillTab === 'llm'" (click)="switchBillTab('llm')">Charges by
+          LLM</button>
       </nav>
       <div *ngIf="activeBillTab === 'service'">
         <div class="search-status-row transaction-filter-row bill-service-row">
@@ -162,6 +172,102 @@
         <div class="table-empty" *ngIf="!billLoading && !filteredBillRows.length">
           <p class="title">No billable entries found</p>
           <p>There are no deployment or tool charges for the selected environment.</p>
+        </div>
+      </div>
+      <div *ngIf="activeBillTab === 'llm'">
+        <div class="search-status-row transaction-filter-row bill-service-row">
+          <label class="search-wrap">
+            <i class="bi bi-search"></i>
+            <input type="text" placeholder="Search service entries" [value]="billServiceFilter"
+              (input)="billServiceFilter = $any($event.target).value" />
+          </label>
+
+          <label class="scope-field filter-field">
+            <span>Project</span>
+            <select [value]="selectedProjectId" (change)="onProjectScopeChange($any($event.target).value)">
+              <option *ngFor="let project of projectOptions" [value]="project.id">{{ project.name }}</option>
+            </select>
+          </label>
+          <label class="scope-field filter-field">
+            <span>Environment</span>
+            <select [value]="selectedEnvironmentId" (change)="onEnvironmentScopeChange($any($event.target).value)">
+              <option *ngFor="let env of environmentOptions" [value]="env.id">{{ env.name }}</option>
+            </select>
+          </label>
+          <!-- <label class="scope-field filter-field">
+            <span>Status</span>
+            <select [value]="billServiceTypeFilter" (change)="onBillServiceTypeFilterChange($any($event.target).value)">
+              <option>All services</option>
+              <option>Application</option>
+              <option>Tool</option>
+            </select>
+          </label> -->
+        </div>
+
+        <div class="table-shell">
+          <table class="payments-table">
+            <thead>
+              <tr>
+                <th>Model</th>
+                <th>Uptime Hours</th>
+                <th>Charge</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of llmIntegrationRows">
+                <td>
+                  <div class="service-cell">
+                    <span>{{ row.name || row.description }}</span>
+                    <span class="service-type-badge" [class.tool]="row.source !== 'application'">
+                      {{ row.source === 'application' ? 'Application' : 'Tool' }}
+                    </span>
+                  </div>
+                </td>
+                <td>{{ row.instanceType || '-' }}</td>
+                <td>{{ formatMoney(row.instanceCost || 0, row.currency) }}</td>
+                <td>{{ row.cpu }}</td>
+                <td>{{ row.memory }}</td>
+                <td>{{ row.uptimeHours }}</td>
+                <td>{{ formatMoney(row.amount, row.currency) }}</td>
+              </tr>
+            </tbody>
+            <tfoot *ngIf="llmIntegrationRows.length">
+              <tr class="subtotal-row">
+                <td colspan="5"><strong>Subtotal</strong></td>
+                <!-- <td><strong>{{ formatMoney(filteredBillCpuSubtotal) }}</strong></td> -->
+                <!-- <td><strong>{{ formatMoney(filteredBillMemorySubtotal) }}</strong></td> -->
+                <td>-</td>
+                <td><strong>{{ formatMoney(filteredBillChargeSubtotal) }}</strong></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+        <div class="table-footer">
+          <div class="footer-count">Total records: {{ filteredBillRows.length }}</div>
+          <div class="footer-controls">
+            <label class="page-size-label">
+              Items per page
+              <select [value]="billLimit" (change)="onBillItemsPerPageChange($any($event.target).value)">
+                <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
+              </select>
+            </label>
+            <span class="page-range">{{ billPageRangeLabel }}</span>
+            <button type="button" class="page-btn" (click)="billPreviousPage()" [disabled]="billCurrentPage <= 1">
+              <i class="bi bi-chevron-left"></i>
+            </button>
+            <button type="button" class="page-btn" (click)="billNextPage()" [disabled]="billCurrentPage >= billTotalPages">
+              <i class="bi bi-chevron-right"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="table-empty" *ngIf="billLoading">
+          <p class="title">Preparing billing view</p>
+          <p>Collecting deployment and tool usage from live sources...</p>
+        </div>
+        <div class="table-empty" *ngIf="!billLoading && !llmIntegrationRows.length">
+          <p class="title">No billable entries found</p>
+          <p>There are no LLM integration charges for the selected environment.</p>
         </div>
       </div>
     </article>

@@ -212,7 +212,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.router.navigate(
         ['/tools/view-tool'],{
           queryParams: {
-            selectedView: data.name
+            selectedView: data.name,
+            id: data.id
           },
           fragment: 'network-section'
         })

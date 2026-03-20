@@ -156,7 +156,6 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
       }
       return;
     }
-    alert(action)
     switch (action) {
       case 'edit':
         this.edit(this.params.data);
