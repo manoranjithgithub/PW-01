@@ -125,15 +125,15 @@ export class EnvironmentVariablesComponent implements OnInit {
     if (!this.newVariableForm.valid) {
       // Mark all fields as dirty to show validation errors
       this.rulesFormArray.controls.forEach((group: AbstractControl) => {
-          const formGroup = group as FormGroup;
-          Object.keys(formGroup.controls).forEach((key: string) => {
-            const control = formGroup.get(key);
-            if (control) {
-              control.markAsDirty();
-              control.markAsTouched();
-            }
-          });
+        const formGroup = group as FormGroup;
+        Object.keys(formGroup.controls).forEach((key: string) => {
+          const control = formGroup.get(key);
+          if (control) {
+            control.markAsDirty();
+            control.markAsTouched();
+          }
         });
+      });
       return;
     }
 
@@ -145,7 +145,6 @@ export class EnvironmentVariablesComponent implements OnInit {
         EnvVariable: rules[0].name,
         Value: rules[0].value
       };
-
       this.envList[this.editIndex] = updatedVar;
       this.editIndex = null;
     } else {
@@ -153,7 +152,6 @@ export class EnvironmentVariablesComponent implements OnInit {
         EnvVariable: rule.name,
         Value: rule.value
       }));
-
       this.envList = [...this.envList, ...newVars];
     }
 
@@ -163,7 +161,28 @@ export class EnvironmentVariablesComponent implements OnInit {
     });
     this.envList = Array.from(uniqueMap.values());
 
-    this.addEnvVariables(this.envList);
+    // Immediately save to backend, like secrets
+    const req = {
+      environment: this.envList.reduce((acc: any, item: any) => {
+        acc[item.EnvVariable] = item.Value;
+        return acc;
+      }, {} as { [key: string]: string })
+    };
+    if (this.deploymentId) {
+      this.deploymentsService.updateDeployment(this.deploymentId, req).subscribe({
+        next: (res: any) => {
+          this.envList = this.mapEnvVariables(res.data.environment || {});
+          this.deploymentdetails.environment = res.data.environment || {};
+          this.envDetails.emit({ data: this.envList });
+          this.toaster.success('Environment variables updated successfully');
+        },
+        error: (err) => {
+          this.toaster.error(err);
+        }
+      });
+    } else {
+      this.envDetails.emit({ data: this.envList });
+    }
     this.rulesFormArray.clear();
   }
 

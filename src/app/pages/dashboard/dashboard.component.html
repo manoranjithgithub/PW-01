@@ -24,32 +24,19 @@
                             <tr class="text-muted">
                                 <th scope="col">Endpoint name</th>
                                 <th scope="col">URL</th>
-                                <th scope="col" class="text-center">Manage</th>
+                                <!-- <th scope="col" class="text-center">Manage</th> -->
                             </tr>
                         </thead>
                         <tbody>
                             <tr *ngFor="let endpoint of endpoints">
-                                <td>{{ endpoint.name }}</td>
+                                <td (click)="viewEndpoint(endpoint)">{{ endpoint.name }}</td>
                                 <td>
                                     <a href="{{ endpoint.host }}" target="_blank">
                                         {{ endpoint.host }}
                                     </a>
                                 </td>
-                                <td class="text-center text-info">
-                                    <!-- <c-dropdown class="action-dropdown">
-                                        <button class="btn btn-icon" type="button" data-bs-toggle="dropdown"
-                                            aria-expanded="false">
-                                            <i class="bi bi-three-dots-vertical"></i>
-                                        </button>
-                                        <ul class="dropdown-menu dropdown-menu-end">
-                                            <li>
-                                                <a class="dropdown-item" (click)="viewEndpoint(endpoint)">View</a>
-                                            </li>
-                                            <li>
-                                                <a class="dropdown-item" (click)="deleteEndpoint(endpoint)">Delete</a>
-                                            </li>
-                                        </ul>
-                                    </c-dropdown> -->
+                                <!-- <td class="text-center text-info">
+                                 
                                     <div class="custom-dropdown d-inline-block">
                                         <button #dropdownBtn class="btn btn-icon" type="button"
                                             (click)="toggleDropdown($event, dropdownBtn)">
@@ -62,7 +49,7 @@
                                             </li>
                                         </ul>
                                     </div>
-                                </td>
+                                </td> -->
                             </tr>
                             <tr *ngIf="!endpoints || endpoints.length === 0">
                                 <td colspan="4">
