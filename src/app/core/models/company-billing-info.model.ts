@@ -30,7 +30,7 @@ export interface BillServiceRow {
   description: string;
   usage: string;
   amount: number;
-  source: 'application' | 'tool';
+  source: 'application' | 'tool' | 'llm' | 'other';
   currency?: string;
   name?: string;
   uptimeHours?: string | number;
