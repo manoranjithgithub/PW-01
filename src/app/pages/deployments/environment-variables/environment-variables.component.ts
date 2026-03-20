@@ -181,8 +181,10 @@ export class EnvironmentVariablesComponent implements OnInit {
         }
       });
     } else {
-      this.envDetails.emit({ data: this.envList });
+      // this.envDetails.emit({ data: this.envList });
+      this.addEnvVariables(this.envList);
     }
+    
     this.rulesFormArray.clear();
   }
 
@@ -207,7 +209,8 @@ export class EnvironmentVariablesComponent implements OnInit {
     }
     if (!this.canAddVariables) {
       this.envDetails.emit(this.updatedReq);
-      this.addVariable()
+      if(this.deploymentId){      this.addVariable()
+}
       return;
     }
 
