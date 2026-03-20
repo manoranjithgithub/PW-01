@@ -108,8 +108,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
     const combined = [...(this.latestDeployments || []), ...(this.latestTools || [])];
     const statusCount = combined.reduce((acc, item) => {
       const status = (item.status || '').toLowerCase();
+      console.log('Item status:', status);
       if (status === 'running') acc.running += 1;
-      else if (status === 'pending') acc.pending += 1;
+      else if (status === 'stopped' || status === 'pending') acc.pending += 1;
       else if (status === 'failed') acc.failed += 1;
       else if (status === 'paused') acc.paused += 1;
       return acc;
