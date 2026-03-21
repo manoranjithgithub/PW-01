@@ -24,7 +24,7 @@ export const navItems: INavData[] = [
     icon: 'bi bi-tools'
   },
   {
-    name: 'AI/ML Models',
+    name: 'AI Models',
     url: '/llm-models',
     icon: 'bi bi-cpu'
   },
