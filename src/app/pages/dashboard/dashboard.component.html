@@ -1,7 +1,7 @@
 <div class="container">
-    <div class="row">
-        <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-4" *ngFor="let card of cards">
-            <app-summary-card [value]="card.value" [label]="card.label" [description]="card.description">
+    <div class="row d-flex justify-content-between align-items-stretch">
+        <div class="col-12 col-sm-6 col-md-4 col-lg-2 d-flex align-items-stretch mb-4 flex-fill" *ngFor="let card of cards">
+            <app-summary-card class="w-100" [value]="card.value" [label]="card.label" [description]="card.description">
             </app-summary-card>
         </div>
     </div>

@@ -799,7 +799,6 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
     const ephemeralStorage = this.stepOneForm.value.ephemeralStorage
       ? `${this.stepOneForm.value.ephemeralStorage}Gi`
       : null;
-   
     return {
       environmentId: JSON.parse(localStorage.getItem('environment') || '{}').id,
       name: this.stepOneForm.getRawValue().name,
@@ -842,7 +841,7 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
         data: this.parsedConfigData || null,
       },
       secret: secretObj || null,
-      environment: this.envData && this.envData.data.length >0 ? this.envData.data : {}
+      environment: this.envData && this.envData.data ? this.envData.data : {}
     };
   }
   onFileSelected(event: Event) {
