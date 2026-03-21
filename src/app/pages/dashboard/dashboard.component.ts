@@ -16,6 +16,7 @@ import { ToastrService } from 'ngx-toastr';
 import { Subscription } from 'rxjs';
 import { forkJoin } from 'rxjs';
 import { CARDS_DATA, UTILIZATION_DATA } from '../../shared/constants/nimbuz.constant';
+import { LLMService } from '../llm/llm.service';
 
 @Component({
   templateUrl: 'dashboard.component.html',
@@ -26,7 +27,7 @@ import { CARDS_DATA, UTILIZATION_DATA } from '../../shared/constants/nimbuz.cons
     UtilizationChartComponent, DropdownComponent, DropdownItemDirective, DropdownMenuDirective,
     DropdownToggleDirective
   ],
-  providers: [DashboardsService],
+  providers: [DashboardsService, LLMService],
   encapsulation: ViewEncapsulation.None
 })
 
@@ -49,6 +50,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   lastButtonRef: HTMLElement | null = null;
 
 
+
   constructor(
     private http: DashboardsService,
     private sharedService: SharedService,
@@ -57,7 +59,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private toastr: ToastrService,
     public permissionService: PermissionService,
     private deploymentsService: DeploymentsService,
-    private toolsService: ToolsService
+    private toolsService: ToolsService,
+    private llmService: LLMService
   ) { }
 
   // Real-time status using SSE streams for deployments and tools
@@ -108,7 +111,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
     const combined = [...(this.latestDeployments || []), ...(this.latestTools || [])];
     const statusCount = combined.reduce((acc, item) => {
       const status = (item.status || '').toLowerCase();
-      console.log('Item status:', status);
       if (status === 'running') acc.running += 1;
       else if (status === 'stopped' || status === 'pending') acc.pending += 1;
       else if (status === 'failed') acc.failed += 1;
@@ -127,7 +129,29 @@ export class DashboardComponent implements OnInit, OnDestroy {
       // when currency toggles, recompute displayed amounts from last response
       if (this.lastCostResponse) this.applyCostsToCards(this.lastCostResponse);
     });
-    this.initializeDashboard()
+    this.initializeDashboard();
+    this.updateLlmModelStatusCard();
+  }
+
+  updateLlmModelStatusCard() {
+    this.llmService.getAddedModels().subscribe({
+      next: (res: any) => {
+        console.log('LLM models response', res);
+        let models = [];
+        if (Array.isArray(res)) models = res;
+        else if (Array.isArray(res?.data)) models = res.data;
+        else if (Array.isArray(res?.llms)) models = res.llms;
+        else if (Array.isArray(res?.items)) models = res.items;
+        else models = [];
+        const normalized = models.map((m: any) => String(m.status || m.state || '').toLowerCase());
+        const active = normalized.filter((s:any) => s === 'active' || s === 'running').length;
+        const inactive = normalized.length - active;
+        this.cards[4].value = `${active} / ${inactive}`;
+      },
+      error: () => {
+        this.cards[4].value = '0 / 0';
+      }
+    });
   }
   initializeDashboard() {
     this.cards[1].description = this.getCurrentMonthRange();
