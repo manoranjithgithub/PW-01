@@ -35,7 +35,7 @@ export const CARDS_DATA = [
   { value: 0, label: 'Estimated cost', description: ' ' },
   { value: '0', label: 'Active/Paused deployments', description: ' ' },
   { value: 0, label: 'Failed/Pending deployments', description: ' ' },
-  { value: '0 / 0', label: 'Active/Inactive AI Models', description: '' },
+  { value: '0 / 0', label: 'Active AI Models', description: '' },
 ]
 export const DEPLOY_OPTIONS = [
   {
