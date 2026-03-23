@@ -136,14 +136,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
   updateLlmModelStatusCard() {
     this.llmService.getAddedModels().subscribe({
       next: (res: any) => {
-        console.log('LLM models response', res);
         let models = [];
         if (Array.isArray(res)) models = res;
         else if (Array.isArray(res?.data)) models = res.data;
         else if (Array.isArray(res?.llms)) models = res.llms;
         else if (Array.isArray(res?.items)) models = res.items;
         else models = [];
-        const normalized = models.map((m: any) => String(m.status || m.state || '').toLowerCase());
+        const filteredModels = models.filter((m: any) => m.envId === this.currentEnvId);
+        const normalized = filteredModels.map((m: any) => String(m.status || m.state || '').toLowerCase());
         const active = normalized.filter((s:any) => s === 'active' || s === 'running').length;
         const inactive = normalized.length - active;
         this.cards[4].value = `${active} / ${inactive}`;

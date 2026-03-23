@@ -4,7 +4,7 @@ export const ICON_MAP: Record<string, string> = {
   'building': 'bi-check-circle-fill',
   'deploying': 'bi-cloud-upload',
   'active': 'bi-check-circle-fill',
-  'paused': 'bi-pause-circle-fill',
+  'paused': 'bi-stop-circle-fill',
   'superseded': 'bi-arrow-clockwise',
   'deploy failed': 'bi-x-circle-fill',
   'failed': 'bi-x-circle-fill',
@@ -15,12 +15,13 @@ export const ICON_MAP: Record<string, string> = {
   'running': 'bi-check-circle-fill',
   'pending': 'bi-clock',
   'create job failed': 'bi-x-circle-fill',
-  'stopped': 'bi-slash-circle-fill',
+  'stopped': 'bi-stop-circle-fill',
   'success': 'bi-check-circle-fill',
   'starting': 'bi-check-circle',
   'updating': 'bi-box-arrow-in-up',
   'degraded': 'bi-arrow-90deg-down',
   'deleted': 'bi-x-circle-fill',
+  'cancelled': 'bi-ban-fill',
 };
 
 export const STATUS_CLASS_MAP: Record<string, string> = {
@@ -39,12 +40,13 @@ export const STATUS_CLASS_MAP: Record<string, string> = {
   'running': 'success',
   'pending': 'warning',
   'create job failed': 'danger',
-  'stopped': 'danger',
+  'stopped': 'warning',
   'success': 'success',
   'starting': 'warning',
   'updating': 'warning',
   'degraded': 'warning',
   'deleted': 'danger',
+  'cancelled': 'danger',
 };
 
 export function getStatusMeta(status: string): { icon: string; statusClass: string; label: string } {
