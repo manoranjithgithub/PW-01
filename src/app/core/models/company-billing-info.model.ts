@@ -40,6 +40,9 @@ export interface BillServiceRow {
   instanceType?: string;
   cpu?: string | number;
   memory?: string | number;
+  totalRequests?: number;
+  totalTokens?: number;
+  cost?: number;
 }
 
 export interface ScopeOption {
