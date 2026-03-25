@@ -146,7 +146,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         const normalized = filteredModels.map((m: any) => String(m.status || m.state || '').toLowerCase());
         const active = normalized.filter((s:any) => s === 'active' || s === 'running').length;
         const inactive = normalized.length - active;
-        this.cards[4].value = `${active} / ${inactive}`;
+        this.cards[4].value = `${active}`;
       },
       error: () => {
         this.cards[4].value = '0 / 0';
