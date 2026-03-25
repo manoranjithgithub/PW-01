@@ -29,7 +29,7 @@
                         </thead>
                         <tbody>
                             <tr *ngFor="let endpoint of endpoints">
-                                <td (click)="viewEndpoint(endpoint)">{{ endpoint.name }}</td>
+                                <td (click)="viewEndpoint(endpoint)" class="cursor h-link">{{ endpoint.name }}</td>
                                 <td>
                                     <a href="{{ endpoint.host }}" target="_blank">
                                         {{ endpoint.host }}

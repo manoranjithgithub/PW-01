@@ -98,7 +98,7 @@
           </div>
           <div class="card-body">
             <div *ngIf="showNoDataMessage" class="empty-state">{{ chartEmptyText }}</div>
-            <div *ngIf="!showNoDataMessage" class="chart-container compact-chart">
+            <div *ngIf="!showNoDataMessage" class="chart-container">
               <canvas #ramChartCanvas></canvas>
             </div>
           </div>

@@ -11,7 +11,8 @@
           <label>Bill Summary</label>
           <div class="breakdown-row">
             <span>Total Charges</span>
-            <strong>{{ formatMoney(billChargesTotal) }}</strong>
+            <strong>{{  formatMoney(deploymentServiceCostTotal + toolServiceCostTotal + llmServiceCostTotal) }}</strong>
+            <!-- <strong>{{ formatMoney(billChargesTotal) }}</strong> -->
           </div>
           <div class="breakdown-row">
             <span>Taxes</span>
@@ -23,7 +24,7 @@
           </div>
           <div class="breakdown-row total-due-row" *ngIf="!isCurrentMonthSelected && billOutstandingAmount > 0">
             <span>Outstanding Amount</span>
-            <strong>{{ formatMoney(billOutstandingAmount) }}</strong>
+            <strong>{{ formatMoney(deploymentServiceCostTotal + toolServiceCostTotal + llmServiceCostTotal + billTaxesTotal - billCreditsApplied) }}</strong>
           </div>
         </div>
         <div class="billing-summary-item bill-total-breakdown">
