@@ -79,6 +79,49 @@ export class BillsComponent implements OnInit, OnChanges {
   readonly pageSizeOptions = [10, 20, 50, 100];
   llmIntegrationRows: BillServiceRow[] = [];
 
+  // Get all LLM-related billing rows
+  get llmCostRows(): BillServiceRow[] {
+    return this.billRows.filter(row => row.source === 'llm');
+  }
+
+  // Get filtered LLM billing rows by search query
+  get filteredLlmCostRows(): BillServiceRow[] {
+    const query = (this.billServiceFilter || '').trim().toLowerCase();
+    return this.llmCostRows.filter(row =>
+      `${row.description} ${row.usage}`.toLowerCase().includes(query)
+    );
+  }
+
+  // Paginate filtered LLM cost rows
+  get paginatedLlmCostRows(): BillServiceRow[] {
+    const start = this.billOffset;
+    const end = start + this.billLimit;
+    return this.filteredLlmCostRows.slice(start, end);
+  }
+
+  // LLM tab: page range label
+  get llmPageRangeLabel(): string {
+    if (!this.filteredLlmCostRows.length) {
+      return '0-0 of 0';
+    }
+    const start = this.billOffset + 1;
+    const end = Math.min(this.billOffset + this.billLimit, this.filteredLlmCostRows.length);
+    return `${start}-${end} of ${this.filteredLlmCostRows.length}`;
+  }
+
+  // LLM tab: total pages
+  get llmTotalPages(): number {
+    if (!this.filteredLlmCostRows.length) {
+      return 1;
+    }
+    return Math.max(1, Math.ceil(this.filteredLlmCostRows.length / this.billLimit));
+  }
+
+  // LLM tab: current page
+  get llmCurrentPage(): number {
+    return Math.floor(this.billOffset / this.billLimit) + 1;
+  }
+
   constructor(
     private http: PricingsService,
     private sharedService: SharedService,

@@ -123,6 +123,7 @@ describe('DeploymentSecretsComponent', () => {
     expect(component.secretList.length).toBe(1);
     expect(component.secretDetails.emit).toHaveBeenCalled();
     expect(component.secretList[0]).toEqual({ EnvVariable: 'TEST_KEY', Value: '123' });
+    expect(mockDeploymentsService.updateDeployment).not.toHaveBeenCalled();
   });
 
   it('editSecret should populate form', () => {
@@ -140,17 +141,17 @@ describe('DeploymentSecretsComponent', () => {
     expect(component.nameValueDependencyValidator(group2)).toBeNull();
   });
 
-  it('deleteSecret calls updateDeployment when confirmed', fakeAsync(() => {
+  it('deleteSecret updates local state when confirmed', fakeAsync(() => {
     component.deploymentId = 'dep-1';
     component.secretList = [{ EnvVariable: 'A', Value: 'B' }];
     const modalRef: any = { result: Promise.resolve(true), componentInstance: {} };
     mockModalService.open.and.returnValue(modalRef);
-    mockDeploymentsService.updateDeployment.and.returnValue(of({}));
 
     component.deleteSecret(0);
     flushMicrotasks();
 
-    expect(mockDeploymentsService.updateDeployment).toHaveBeenCalled();
+    expect(component.secretList.length).toBe(0);
+    expect(mockDeploymentsService.updateDeployment).not.toHaveBeenCalled();
   }));
 
   it('deleteSecret shows toaster on update error', fakeAsync(() => {
@@ -166,21 +167,20 @@ describe('DeploymentSecretsComponent', () => {
     expect(mockToastr.error).toHaveBeenCalled();
   }));
 
-  it('addSecret updates existing secret when editing and calls updateDeployment', fakeAsync(() => {
+  it('addSecret updates existing secret locally when editing', fakeAsync(() => {
     component.deploymentId = 'dep-update-1';
     component.secretList = [{ EnvVariable: 'KEEP', Value: '0' }, { EnvVariable: 'OLD', Value: '1' }];
     component.editIndex = 1 as any;
     component.showSecretForm = true;
     component.addRule();
     component.rulesFormArray.at(0).patchValue({ name: 'NEW', value: '2' });
-    mockDeploymentsService.updateDeployment.and.returnValue(of({}));
 
     component.addSecret();
     flushMicrotasks();
 
     expect(component.secretList.length).toBe(2);
     expect(component.secretList[1]).toEqual({ EnvVariable: 'NEW', Value: '2' });
-    expect(mockDeploymentsService.updateDeployment).toHaveBeenCalledWith('dep-update-1', jasmine.any(Object));
+    expect(mockDeploymentsService.updateDeployment).not.toHaveBeenCalled();
   }));
 
   it('addSecret does not change secrets when form invalid', () => {
@@ -192,7 +192,7 @@ describe('DeploymentSecretsComponent', () => {
     expect(component.secretList.length).toBe(0);
   });
 
-  it('addEnvVariables shows toaster on update error when deploymentId present', fakeAsync(() => {
+  it('addEnvVariables stores draft data without calling updateDeployment', fakeAsync(() => {
     component.deploymentId = 'dep-error-1';
     mockDeploymentsService.updateDeployment.and.returnValue(throwError(() => new Error('update-fail')));
 
@@ -200,21 +200,37 @@ describe('DeploymentSecretsComponent', () => {
     component.addEnvVariables(data);
     flushMicrotasks();
 
-    expect(mockDeploymentsService.updateDeployment).toHaveBeenCalled();
-    expect(mockToastr.error).toHaveBeenCalled();
+    expect(mockDeploymentsService.updateDeployment).not.toHaveBeenCalled();
+    expect(mockToastr.error).not.toHaveBeenCalled();
   }));
 
-  it('onVariablesUpdated replaces secretList and triggers addSecret flow', fakeAsync(() => {
-    component.deploymentId = 'dep-onvars-1';
-    mockDeploymentsService.updateDeployment.and.returnValue(of({}));
+  it('onVariablesUpdated replaces secretList without saving immediately', () => {
     const spyEmit = spyOn(component.secretDetails, 'emit');
 
     const updated = [{ EnvVariable: 'K', Value: 'V' }];
     component.onVariablesUpdated(updated);
-    flushMicrotasks();
 
     expect(component.secretList.some((s: any) => s.EnvVariable === 'K')).toBeTrue();
     expect(spyEmit).toHaveBeenCalled();
-    expect(mockDeploymentsService.updateDeployment).toHaveBeenCalledWith('dep-onvars-1', jasmine.any(Object));
+    expect(mockDeploymentsService.updateDeployment).not.toHaveBeenCalled();
+  });
+
+  it('createSecretVariable should call updateDeployment when updatedReq has data', fakeAsync(() => {
+    component.deploymentId = 'dep-save-1';
+    component.updatedReq = { data: { A: '1' } };
+    mockDeploymentsService.updateDeployment.and.returnValue(of({ data: { secret: { A: '1' } } }));
+
+    component.createSecretVariable();
+    flushMicrotasks();
+
+    expect(mockDeploymentsService.updateDeployment).toHaveBeenCalledWith('dep-save-1', { secret: { A: '1' } });
+    expect(mockToastr.success).toHaveBeenCalledWith('Secrets updated successfully');
+  }));
+
+  it('createSecretVariable should not call updateDeployment when updatedReq is missing', () => {
+    component.deploymentId = 'dep-save-2';
+    component.createSecretVariable();
+
+    expect(mockDeploymentsService.updateDeployment).not.toHaveBeenCalled();
   }));
 });

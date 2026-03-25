@@ -11,7 +11,8 @@
           <label>Bill Summary</label>
           <div class="breakdown-row">
             <span>Total Charges</span>
-            <strong>{{ formatMoney(billChargesTotal) }}</strong>
+            <strong>{{  formatMoney(deploymentServiceCostTotal + toolServiceCostTotal + llmServiceCostTotal) }}</strong>
+            <!-- <strong>{{ formatMoney(billChargesTotal) }}</strong> -->
           </div>
           <div class="breakdown-row">
             <span>Taxes</span>
@@ -23,7 +24,7 @@
           </div>
           <div class="breakdown-row total-due-row" *ngIf="!isCurrentMonthSelected && billOutstandingAmount > 0">
             <span>Outstanding Amount</span>
-            <strong>{{ formatMoney(billOutstandingAmount) }}</strong>
+            <strong>{{ formatMoney(deploymentServiceCostTotal + toolServiceCostTotal + llmServiceCostTotal + billTaxesTotal - billCreditsApplied) }}</strong>
           </div>
         </div>
         <div class="billing-summary-item bill-total-breakdown">
@@ -209,26 +210,23 @@
             <thead>
               <tr>
                 <th>Model</th>
-                <th>Uptime Hours</th>
-                <th>Charge</th>
+                <th>Total Requests</th>
+                <th>Total Tokens</th>
+                <th>Cost</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let row of llmIntegrationRows">
+              <tr *ngFor="let row of paginatedLlmCostRows">
                 <td>
                   <div class="service-cell">
-                    <span>{{ row.name || row.description }}</span>
-                    <span class="service-type-badge" [class.tool]="row.source !== 'application'">
-                      {{ row.source === 'application' ? 'Application' : 'Tool' }}
-                    </span>
+                    <span>{{ row.name}}</span>
+                    
                   </div>
                 </td>
                 <td>{{ row.instanceType || '-' }}</td>
-                <td>{{ formatMoney(row.instanceCost || 0, row.currency) }}</td>
-                <td>{{ row.cpu }}</td>
-                <td>{{ row.memory }}</td>
-                <td>{{ row.uptimeHours }}</td>
-                <td>{{ formatMoney(row.amount, row.currency) }}</td>
+                <td>{{ row.totalRequests}}</td>
+                <td>{{ row.totalTokens }}</td>
+                <td>{{ row.cost }}</td>
               </tr>
             </tbody>
             <tfoot *ngIf="llmIntegrationRows.length">
@@ -243,7 +241,7 @@
           </table>
         </div>
         <div class="table-footer">
-          <div class="footer-count">Total records: {{ filteredBillRows.length }}</div>
+          <div class="footer-count">Total records: {{ filteredLlmCostRows.length }}</div>
           <div class="footer-controls">
             <label class="page-size-label">
               Items per page
@@ -251,11 +249,11 @@
                 <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
               </select>
             </label>
-            <span class="page-range">{{ billPageRangeLabel }}</span>
-            <button type="button" class="page-btn" (click)="billPreviousPage()" [disabled]="billCurrentPage <= 1">
+            <span class="page-range">{{ llmPageRangeLabel }}</span>
+            <button type="button" class="page-btn" (click)="billPreviousPage()" [disabled]="llmCurrentPage <= 1">
               <i class="bi bi-chevron-left"></i>
             </button>
-            <button type="button" class="page-btn" (click)="billNextPage()" [disabled]="billCurrentPage >= billTotalPages">
+            <button type="button" class="page-btn" (click)="billNextPage()" [disabled]="llmCurrentPage >= llmTotalPages">
               <i class="bi bi-chevron-right"></i>
             </button>
           </div>
