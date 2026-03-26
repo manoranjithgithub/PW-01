@@ -235,7 +235,7 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
             this.isPauseResumeDisabled = true;
             this.http.updateDeployment(data?.id, req).subscribe((res: any) => {
               if (res.status.toLowerCase() === "success") {
-                this.toaster.success(`Application ${type} successfully`);
+                this.toaster.success(`Application ${type === 'Pause' ? 'paused' : 'resumed'} successfully`);
               }
               setTimeout(() => {
                 this.isPauseResumeDisabled = false;

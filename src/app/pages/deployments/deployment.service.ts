@@ -35,7 +35,7 @@ export class DeploymentsService {
   getDeploymentById(deploymentId: string) {
     const envId = JSON.parse(localStorage.getItem('environment') || '{}').id;
     const projectId = JSON.parse(localStorage.getItem('project') || '{}').id;
-    
+
     return this.http.get(`${this.deploymentManagement}/deployments?deploymentId=${deploymentId}&environmentId=${envId}&projectId=${projectId}`)
       .pipe(
         catchError(this.handleError.bind(this))
@@ -203,6 +203,13 @@ export class DeploymentsService {
     const projectId = JSON.parse(localStorage.getItem('project') || '{}').id;
     const url = `${this.deploymentManagement}/live/deployment/stream?environmentId=${envId}&projectId=${projectId}&interval=5`;
     return createSSEObservable(url, token, this.zone);
+  }
+
+  cancelRelease(deploymentId: string, releaseId: string) {
+    return this.http.put(`${this.deploymentManagement}/deployments/cancelBuildJob/${deploymentId}`, { releaseId })
+      .pipe(
+        catchError(this.handleError.bind(this))
+      );
   }
 
   private handleError(error: HttpErrorResponse) {

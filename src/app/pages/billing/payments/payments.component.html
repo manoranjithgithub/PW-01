@@ -102,6 +102,7 @@
       <table class="payments-table">
         <thead>
           <tr>
+            <th>S.no</th>
             <th>Issued date</th>
             <th>Type</th>
             <th>ID</th>
@@ -114,7 +115,8 @@
           </tr>
         </thead>
         <tbody *ngIf="filteredTransactionRecords.length">
-          <tr *ngFor="let row of filteredTransactionRecords">
+          <tr *ngFor="let row of filteredTransactionRecords; let i = index">
+            <td>{{ offset + i + 1 }}</td>
             <td>{{ getIssuedDate(row) }}</td>
             <td>Billing</td>
             <td>{{ row.id }}</td>
