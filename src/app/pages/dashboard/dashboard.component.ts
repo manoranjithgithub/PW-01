@@ -1,5 +1,4 @@
 import { Component, HostListener, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
-
 import { DashboardsService } from './dashboard.service';
 import { DeploymentsService } from '../../pages/deployments/deployment.service';
 import { ToolsService } from '../../pages/tools/tools.service';
@@ -14,7 +13,6 @@ import { ConfirmationModalComponent } from '../../shared/components/modal/confir
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
 import { Subscription } from 'rxjs';
-import { forkJoin } from 'rxjs';
 import { CARDS_DATA, UTILIZATION_DATA } from '../../shared/constants/nimbuz.constant';
 import { LLMService } from '../llm/llm.service';
 
@@ -233,11 +231,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
         }
       );
     } else {
+      const selectedTool = this.latestTools.find(x => x.name === data.name)
       this.router.navigate(
         ['/tools/view-tool'],{
           queryParams: {
-            selectedView: data.name,
-            id: data.id
+            selectedView: selectedTool.name,
+            id: selectedTool.id
           },
           fragment: 'network-section'
         })

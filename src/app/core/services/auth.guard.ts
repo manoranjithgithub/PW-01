@@ -108,7 +108,7 @@ export class AuthGuard implements CanActivate {
         return false;
       }
     }
-    if (url.includes('/create-deployment')) {
+    if (url.includes('/create-application')) {
       const projectStr = localStorage.getItem('project');
       let projectId: string | null = null;
       try {
