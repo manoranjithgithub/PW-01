@@ -190,7 +190,7 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
       this.route.navigate(['/llm/deployment-details'], { queryParams: { id: data.id, tabIndex: 1 } });
 
     } else if (this.additionalParam === 'deployment') {
-      this.route.navigate(['/deployment/deployment-details'], { queryParams: { id: data.id, tabIndex: 5 } });
+      this.route.navigate(['/applications/application-details'], { queryParams: { id: data.id, tabIndex: 5 } });
     }
   }
 

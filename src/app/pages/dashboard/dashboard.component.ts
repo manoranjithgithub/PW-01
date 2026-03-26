@@ -222,10 +222,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
     })
   }
   viewEndpoint(data: any) {
-    console.log('Viewing endpoint', data);
     if (data.deploymentId) {
       this.router.navigate(
-        ['/deployment/deployment-details'],
+        ['/applications/application-details'],
         {
           queryParams: {
             id: data.deploymentId

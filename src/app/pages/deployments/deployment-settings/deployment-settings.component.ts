@@ -657,7 +657,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
             if (res.status.toLowerCase() === "success") {
               this.toaster.success(res.message);
               // this.route.navigate(['/deployment']);
-              window.location.href = '/deployment'
+              window.location.href = '/applications'
               this.onCloseClicked();
             }
           });

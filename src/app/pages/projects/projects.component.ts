@@ -216,7 +216,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     return this.environmentList;
   }
   updateCookies() {
-    this.router.navigate(['/deployment'])
+    this.router.navigate(['/applications'])
   }
 
   navigateToProjectPreference(project: any) {
