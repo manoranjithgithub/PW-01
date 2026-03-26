@@ -102,7 +102,7 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
 
   get canCancelDeployment(): boolean {
     const status = (this.currentStatus || '').toLowerCase();
-    return status === 'building' || status === 'deploying';
+    return status === 'building';
   }
 
   getReleasesByDeploymentId(res: any): void {
@@ -225,11 +225,11 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
           if (res?.status?.toLowerCase() === 'success') {
             this.toaster.success('Deployment cancel requested successfully');
           } else {
-            this.toaster.error(res?.message || 'Failed to cancel deployment');
+            // this.toaster.error(res?.message || 'Failed to cancel deployment');
           }
         },
         error: (err) => {
-          this.toaster.error(err?.message || 'Failed to cancel deployment');
+          // this.toaster.error(err?.message || 'Failed to cancel deployment');
         }
       });
     });
@@ -242,7 +242,7 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
 
     const isBuilding = status === "initiated" || status === "building";
     const isPending = status === "pending";
-    const isBuildFailed = ["build failed", "build timeout", "failed"].includes(status);
+    const isBuildFailed = ["build failed", "build timeout", "failed","cancelled"].includes(status);
     const isDeploying = status === "deploying";
     const isDeployFailed = ["deploy failed", "deploy timeout", "create job failed"].includes(status);
     const isPaused = status === "paused";
