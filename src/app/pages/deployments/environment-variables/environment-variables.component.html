@@ -79,8 +79,7 @@
         </div>
 
           <div class="d-flex justify-content-end gap-3 add-variables mt-3">
-          <button type="button" class="btn button-format-solid custom-label" (click)="(permissionService.canWriteGlobal() || permissionService.canAdminGlobal()) && addVariable()" [disabled]=" !(permissionService.canWriteGlobal() || permissionService.canAdminGlobal())">Add Env to
-            List</button>
+          <button type="button" class="btn button-format-solid custom-label" (click)="(permissionService.canWriteGlobal() || permissionService.canAdminGlobal()) && addVariable()" [disabled]=" !(permissionService.canWriteGlobal() || permissionService.canAdminGlobal())">{{ submitVariableButtonLabel }}</button>
           <button type="button" class="btn btn-light btn-sm" (click)="cancelVariableForm()">Cancel</button>
         </div>
       </c-callout>

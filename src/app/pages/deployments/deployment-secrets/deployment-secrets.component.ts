@@ -119,6 +119,7 @@ export class DeploymentSecretsComponent implements OnInit {
 
   addNewSecretForm(): void {
     this.showSecretForm = !this.showSecretForm;
+    this.editIndex = null;
     if (this.showSecretForm) {
       this.rulesFormArray.clear();
       this.addRule();
@@ -167,6 +168,10 @@ export class DeploymentSecretsComponent implements OnInit {
     this.secretList = Array.from(uniqueMap.values());
     this.addEnvVariables(this.secretList);
     this.rulesFormArray.clear();
+  }
+
+  get submitSecretButtonLabel(): string {
+    return this.editIndex !== null && this.editIndex >= 0 ? 'Update' : 'Add Secret to List';
   }
   
   openRawEditor() {

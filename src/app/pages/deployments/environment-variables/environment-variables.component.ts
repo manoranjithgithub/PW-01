@@ -115,6 +115,7 @@ export class EnvironmentVariablesComponent implements OnInit {
 
   cancelVariableForm(): void {
     this.showNewVariableForm = !this.showNewVariableForm;
+    this.editIndex = null;
     if (this.showNewVariableForm) {
       this.rulesFormArray.clear();
       this.addRule();
@@ -164,6 +165,10 @@ export class EnvironmentVariablesComponent implements OnInit {
     this.rulesFormArray.clear();
   }
 
+  get submitVariableButtonLabel(): string {
+    return this.editIndex !== null && this.editIndex >= 0 ? 'Update' : 'Add Env to List';
+  }
+  
   openRawEditor() {
     this.rawEditorModel.open();
   }

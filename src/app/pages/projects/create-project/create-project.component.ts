@@ -66,7 +66,7 @@ export class CreateProjectComponent implements OnInit {
     // }
     this.projectForm = this.fb.group({
       projectName: ['', [this.shared.isValidName(), Validators.maxLength(50), Validators.required, Validators.minLength(3)]],
-      projectDesc: ['', [Validators.maxLength(250)]],
+      projectDesc: ['', [Validators.maxLength(200)]],
       environmentName: ['', [this.shared.isValidName(), Validators.required, Validators.minLength(3), Validators.maxLength(50)]],
       region: [this.regionOptions[0].name],
     })
