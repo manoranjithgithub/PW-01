@@ -151,7 +151,7 @@ export class ProjectPreferenceComponent implements OnInit, OnDestroy {
       this.generalSettingForm = this.fb.group({
         projectName: [this.projectDetails.name, Validators.maxLength(40)],
         projectId: [this.projectDetails.id],
-        description: [this.projectDetails.description, Validators.maxLength(250)],
+        description: [this.projectDetails.description, Validators.maxLength(200)],
       });
     });
     this.projectService.getAllProjects().subscribe({

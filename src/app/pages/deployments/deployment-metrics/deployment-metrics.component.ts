@@ -505,9 +505,9 @@ export class DeploymentMetricsComponent implements OnInit, AfterViewInit {
 
       // Calculate CPU usage percent
       if (this.cpuUsageData.length > 0 && this.maxCpuLimit > 0) {
-        const latestCpu = this.cpuUsageData[this.cpuUsageData.length - 1].cpuAverage;
-        this.cpuUsagePercent = Math.min(100, (latestCpu / this.maxCpuLimit) * 100);
-        this.currentCpuLabel = latestCpu.toString();
+        const averageCpu = this.average(this.cpuUsageData.map(item => item.cpuAverage));
+        this.cpuUsagePercent = this.getUsagePercent(averageCpu, this.maxCpuLimit);
+        this.currentCpuLabel = averageCpu.toFixed(2);
       } else {
         this.cpuUsagePercent = 0;
         this.currentCpuLabel = '0';
@@ -535,9 +535,10 @@ export class DeploymentMetricsComponent implements OnInit, AfterViewInit {
       }
       // Calculate RAM usage percent
       if (this.ramUsageData.length > 0 && this.maxRamLimit > 0) {
-        const latestRam = this.ramUsageData[this.ramUsageData.length - 1].ramAverage;
-        this.ramUsagePercent = Math.min(100, (latestRam / this.maxRamLimit) * 100);
-        this.currentRamLabel = (latestRam / (1024 * 1024)).toFixed(2);
+        const averageRamBytes = this.average(this.ramUsageData.map(item => item.ramAverage));
+        const averageRamMiB = averageRamBytes / (1024 * 1024);
+        this.ramUsagePercent = this.getUsagePercent(averageRamMiB, this.maxRamLimit);
+        this.currentRamLabel = averageRamMiB.toFixed(2);
       } else {
         this.ramUsagePercent = 0;
         this.currentRamLabel = '0';
@@ -613,5 +614,10 @@ export class DeploymentMetricsComponent implements OnInit, AfterViewInit {
   private average(arr: number[]): number {
     if (!arr || arr.length === 0) return 0;
     return arr.reduce((s, v) => s + (Number(v) || 0), 0) / arr.length;
+  }
+
+  private getUsagePercent(currentValue: number, maxLimit: number): number {
+    if (!maxLimit || maxLimit <= 0) return 0;
+    return Math.min(100, (currentValue / maxLimit) * 100);
   }
 }

@@ -638,27 +638,32 @@ export class ToolMetricsComponent implements OnInit, AfterViewInit, OnChanges {
 
   get currentCpuLabel(): string {
     if (!this.cpuUsageData.length) return '0.00';
-    const val = Number(this.cpuUsageData[this.cpuUsageData.length - 1]?.cpuAverage) || 0;
+    const val = this.average(this.cpuUsageData.map(item => Number(item.cpuAverage) || 0));
     return val.toFixed(2);
   }
 
   get currentRamLabel(): string {
     if (!this.ramUsageData.length) return '0.00';
-    const val = Number(this.ramUsageData[this.ramUsageData.length - 1]?.ramAverage) || 0;
+    const val = this.average(this.ramUsageData.map(item => Number(item.ramAverage) || 0));
     const valMiB = val / (1024 * 1024);
     return valMiB.toFixed(2);
   }
 
   get cpuUsagePercent(): number {
     if (!this.maxCpuLimit) return 0;
-    const val = Number(this.cpuUsageData[this.cpuUsageData.length - 1]?.cpuAverage) || 0;
-    return Math.max(0, Math.min(100, (val / this.maxCpuLimit) * 100));
+    const val = this.average(this.cpuUsageData.map(item => Number(item.cpuAverage) || 0));
+    return this.getUsagePercent(val, this.maxCpuLimit);
   }
 
   get ramUsagePercent(): number {
     if (!this.maxRamLimit) return 0;
-    const val = Number(this.ramUsageData[this.ramUsageData.length - 1]?.ramAverage) || 0;
+    const val = this.average(this.ramUsageData.map(item => Number(item.ramAverage) || 0));
     const valMiB = val / (1024 * 1024);
-    return Math.max(0, Math.min(100, (valMiB / this.maxRamLimit) * 100));
+    return this.getUsagePercent(valMiB, this.maxRamLimit);
+  }
+
+  private getUsagePercent(currentValue: number, maxLimit: number): number {
+    if (!maxLimit || maxLimit <= 0) return 0;
+    return Math.max(0, Math.min(100, (currentValue / maxLimit) * 100));
   }
 }

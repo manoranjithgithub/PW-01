@@ -37,10 +37,16 @@
                 </div>
               </div>
             </div>
-            <button (click)="onOptionSelected(active, 'active')" class="btn button-format-solid m-4"
-            [disabled]="(active && active.length === 0) || active?.status === 'Pending'">
-              View logs
-            </button>
+            <div class="d-flex align-items-center gap-2 m-4">
+              <button type="button" *ngIf="canCancelDeployment" (click)="cancelDeployment()"
+                class="btn button-format-outline">
+                Cancel Build
+              </button>
+              <button type="button" (click)="onOptionSelected(active, 'active')" class="btn button-format-solid"
+                [disabled]="(active && active.length === 0) || active?.status === 'Pending'">
+                View logs
+              </button>
+            </div>
           </div>
         </div>
       </ng-template>

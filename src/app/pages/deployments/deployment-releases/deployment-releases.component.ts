@@ -13,6 +13,7 @@ import { SharedService } from '../../../shared/services/shared.service';
 import { ActivatedRoute } from '@angular/router';
 import { ModalComponent } from '../../../shared/components/model/model.component';
 import { DeployConfirmationComponent } from '../../../shared/components/deploy-confirmation/deploy-confirmation.component';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { RelativeTimePipe } from '../../../shared/pipes/relative-time.pipe';
 import { LogViewerComponent } from '../../../shared/components/log-viewer/log-viewer.component';
 import { interval, skip, Subject, switchMap, take, takeUntil, takeWhile, tap } from 'rxjs';
@@ -73,7 +74,8 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
   releaseData: any;
 
   constructor(private deploymentService: DeploymentsService, private sharedService: SharedService,
-    private toaster: ToastrService, private ac: ActivatedRoute, private cdr: ChangeDetectorRef) { }
+    private toaster: ToastrService, private ac: ActivatedRoute, private cdr: ChangeDetectorRef,
+    private modalService: NgbModal) { }
 
   ngOnInit(): void {
     this.ac.queryParams.pipe(
@@ -96,6 +98,11 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
     this.currentPage = 1;
     this.getLogData('build');
     this.logsModal.open('right');
+  }
+
+  get canCancelDeployment(): boolean {
+    const status = (this.currentStatus || '').toLowerCase();
+    return status === 'building' || status === 'deploying';
   }
 
   getReleasesByDeploymentId(res: any): void {
@@ -199,6 +206,35 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
     this.pageSize = event.itemsPerPage;
     this.getLogData(type);
   }
+
+  cancelDeployment(): void {
+    if (!this.canCancelDeployment || !this.deploymentId || !this.active?.id) {
+      return;
+    }
+
+    const modalRef = this.modalService.open(DeployConfirmationComponent);
+    modalRef.componentInstance.message = 'Are you sure you want to cancel this deployment?';
+
+    modalRef.result.then((result) => {
+      if (!result) {
+        return;
+      }
+
+      this.deploymentService.cancelRelease(this.deploymentId, this.active.id).subscribe({
+        next: (res: any) => {
+          if (res?.status?.toLowerCase() === 'success') {
+            this.toaster.success('Deployment cancel requested successfully');
+          } else {
+            this.toaster.error(res?.message || 'Failed to cancel deployment');
+          }
+        },
+        error: (err) => {
+          this.toaster.error(err?.message || 'Failed to cancel deployment');
+        }
+      });
+    });
+  }
+
   updateSteps(responseData: any) {
     const status = responseData?.status?.toLowerCase();
     this.releaseData = responseData;
