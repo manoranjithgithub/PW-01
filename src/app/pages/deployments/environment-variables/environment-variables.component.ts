@@ -125,27 +125,26 @@ export class EnvironmentVariablesComponent implements OnInit {
     if (!this.newVariableForm.valid) {
       // Mark all fields as dirty to show validation errors
       this.rulesFormArray.controls.forEach((group: AbstractControl) => {
-          const formGroup = group as FormGroup;
-          Object.keys(formGroup.controls).forEach((key: string) => {
-            const control = formGroup.get(key);
-            if (control) {
-              control.markAsDirty();
-              control.markAsTouched();
-            }
-          });
+        const formGroup = group as FormGroup;
+        Object.keys(formGroup.controls).forEach((key: string) => {
+          const control = formGroup.get(key);
+          if (control) {
+            control.markAsDirty();
+            control.markAsTouched();
+          }
         });
+      });
       return;
     }
 
     this.showNewVariableForm = false;
     const rules = this.newVariableForm.value.rules;
 
-    if (this.editIndex && this.editIndex >= 0) {
+    if (this.editIndex !== null && this.editIndex >= 0) {
       const updatedVar = {
         EnvVariable: rules[0].name,
         Value: rules[0].value
       };
-
       this.envList[this.editIndex] = updatedVar;
       this.editIndex = null;
     } else {
@@ -153,7 +152,6 @@ export class EnvironmentVariablesComponent implements OnInit {
         EnvVariable: rule.name,
         Value: rule.value
       }));
-
       this.envList = [...this.envList, ...newVars];
     }
 
@@ -162,7 +160,6 @@ export class EnvironmentVariablesComponent implements OnInit {
       uniqueMap.set(item.EnvVariable, item);
     });
     this.envList = Array.from(uniqueMap.values());
-
     this.addEnvVariables(this.envList);
     this.rulesFormArray.clear();
   }
@@ -244,29 +241,7 @@ export class EnvironmentVariablesComponent implements OnInit {
         if (result) {
           this.envList.splice(index, 1);
           this.editIndex = -1;
-          const req = {
-            environment: this.envList.reduce((acc: any, item: any) => {
-              acc[item.EnvVariable] = item.Value;
-              return acc;
-            }, {} as { [key: string]: string }),
-
-          }
-          if (this.deploymentId) {
-            this.deploymentsService.updateDeployment(this.deploymentId, req).subscribe({
-              next: (res: any) => {
-                this.envList = this.mapEnvVariables(res.data.environment || {});
-                this.deploymentdetails.environment = res.data.environment || {};
-                this.envDetails.emit({ data: this.envList });
-                this.toaster.success('Environment variable deleted successfully');
-              },
-              error: (err) => {
-                this.toaster.error(err);
-              }
-            });
-          }else{
-            this.envDetails.emit({ data: this.envList });
-          }
-
+          this.addEnvVariables(this.envList);
         }
       });
   }
@@ -295,11 +270,11 @@ export class EnvironmentVariablesComponent implements OnInit {
   }
 
   createEnvironmentVariable() {
-    if (!this.updatedReq || (this.updatedReq.data && Object.keys(this.updatedReq.data).length === 0)) {
+    if (!this.updatedReq) {
       return
     }
     const req = {
-      environment: this.updatedReq?.data || null,
+      environment: this.updatedReq?.data || {},
     }
     this.deploymentsService.updateDeployment(this.deploymentId, req).subscribe({
       next: (res: any) => {

@@ -1,81 +1,118 @@
-<div class="container">
 
-  <form [formGroup]="filterForm" (ngSubmit)="onFilter()"
-    class="filter-bar d-flex align-items-end gap-3 p-3 border rounded flex-wrap-md-nowrap w-100">
-    <div class="form-group mb-0" style="min-width: 100px;">
-      <label for="duration" class="custom-label">Time Duration:</label>
-      <select id="duration" formControlName="duration" class="form-control custom-values">
-        <option *ngFor="let duration of durations" [value]="duration.value">
-          {{ duration.label }}
-        </option>
-      </select>
-    </div>
+<div class="deployment-metrics">
+  <ng-container *ngIf="deploymentId; else metricsUnavailable">
+    <div class="metrics-shell">
+      <form [formGroup]="filterForm" (ngSubmit)="onFilter()" class="filter-bar">
+        <!-- <div class="filter-label-wrap">
+          <span class="filter-icon">Filters</span>
+        </div> -->
+        <div class="filter-group">
+          <label for="duration" class="filter-label">Duration</label>
+           <select id="duration" formControlName="duration" class="filter-input" (change)="onFilter()">
+             <option *ngFor="let duration of durations" [value]="duration.value">
+               {{ duration.label }}
+             </option>
+           </select>
+        </div>
+        <div class="filter-group">
+          <label for="interval" class="filter-label">Interval</label>
+           <select id="interval" formControlName="interval" class="filter-input" (change)="onFilter()">
+             <option *ngFor="let interval of intervals" [value]="interval.value">
+               {{ interval.label }}
+             </option>
+           </select>
+        </div>
+        <ng-container *ngIf="filterForm.get('duration')?.value === 'custom'">
+          <div class="filter-group">
+            <label class="filter-label">From</label>
+             <input type="datetime-local" formControlName="fromTimestamp" class="filter-input datetime-input" (change)="onFilter()" />
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">To</label>
+             <input type="datetime-local" formControlName="toTimestamp" class="filter-input datetime-input" (change)="onFilter()" />
+          </div>
+        </ng-container>
+          <!-- Apply Filter button removed. -->
+      </form>
 
-    <div class="form-group mb-0" style="min-width: 70px;">
-      <label for="interval" class="custom-label">Interval:</label>
-      <select id="interval" formControlName="interval" class="form-control custom-values">
-        <option *ngFor="let interval of intervals" [value]="interval.value">
-          {{ interval.label }}
-        </option>
-      </select>
-    </div>
+      <div class="stats-row">
+        <div class="stat-pill">
+          <div class="stat-label">CPU Usage</div>
+          <div class="stat-main">{{ currentCpuLabel }} <span>mCPU</span></div>
+          <div class="stat-meta">
+            <span class="delta up">{{ cpuUsagePercent | number:'1.0-0' }}%</span>
+            <span>utilized</span>
+          </div>
+        </div>
+        <div class="stat-pill">
+          <div class="stat-label">RAM Usage</div>
+          <div class="stat-main">{{ currentRamLabel }} <span>MiB</span></div>
+          <div class="stat-meta">
+            <span class="delta up">{{ ramUsagePercent | number:'1.0-0' }}%</span>
+            <span>utilized</span>
+          </div>
+        </div>
+        <div class="stat-pill">
+          <div class="stat-label">CPU Limit</div>
+          <div class="stat-main">{{ maxCpuLimit }} <span>mCPU</span></div>
+          <div class="stat-meta">
+            <span class="delta neutral">Max</span>
+            <span>limit</span>
+          </div>
+        </div>
+        <div class="stat-pill">
+          <div class="stat-label">RAM Limit</div>
+          <div class="stat-main">{{ maxRamLimit }} <span>MiB</span></div>
+          <div class="stat-meta">
+            <span class="delta neutral">Max</span>
+            <span>limit</span>
+          </div>
+        </div>
+        <div class="stat-pill">
+          <div class="stat-label">Instance Type</div>
+          <div class="stat-main">{{ deploymentInstanceType || '-' }}</div>
+          <div class="stat-meta">
+            <span class="delta neutral">Current</span>
+            <span>resource</span>
+          </div>
+        </div>
+      </div>
 
-    <ng-container *ngIf="filterForm.get('duration')?.value === 'custom'">
-      <div class="d-flex gap-3 align-items-end">
-        <div class="form-group mb-0">
-          <label class="custom-label">From:</label>
-          <input type="datetime-local" formControlName="fromTimestamp"
-            class="form-control custom-values datetime-input" />
+      <div class="chart-grid">
+        <div class="chart-card wide">
+          <div class="card-head">
+            <div class="card-title">CPU Usage</div>
+            <div class="card-sub">CPU Usage Over Time</div>
+          </div>
+          <div class="card-body">
+            <div *ngIf="showNoDataMessage" class="empty-state">{{ chartEmptyText }}</div>
+            <div *ngIf="!showNoDataMessage" class="chart-container">
+              <canvas #cpuChartCanvas></canvas>
+            </div>
+          </div>
         </div>
 
-        <div class="form-group mb-0">
-          <label class="custom-label">To:</label>
-          <input type="datetime-local" formControlName="toTimestamp"
-            class="form-control custom-values datetime-input" />
+        <div class="chart-card stacked">
+          <div class="card-head">
+            <div class="card-title">RAM Usage</div>
+            <div class="card-sub">RAM Usage Over Time</div>
+          </div>
+          <div class="card-body">
+            <div *ngIf="showNoDataMessage" class="empty-state">{{ chartEmptyText }}</div>
+            <div *ngIf="!showNoDataMessage" class="chart-container">
+              <canvas #ramChartCanvas></canvas>
+            </div>
+          </div>
         </div>
       </div>
-    </ng-container>
+    </div>
+  </ng-container>
 
-    <div class="form-group mb-0">
-      <button type="submit" class="btn btn-primary p-2 custom-label">Apply Filter</button>
-    </div>
-  </form>
-  <hr>
-
-  <div class="usage-container">
-    <div class="usage-box">
-      <h4><b>CPU Usage</b></h4>
-      
-      <div *ngIf="showNoDataMessage">
-        <p>No data to display</p>
-      </div>
-      <!-- <div *ngIf="loading" class="inner-spinner"></div> -->
-      <div *ngIf="!showNoDataMessage" class="chart-container">
-        <canvas #cpuChartCanvas></canvas>
+  <ng-template #metricsUnavailable>
+    <div class="card border-0 shadow-sm">
+      <div class="card-body">
+        <p class="text-muted mb-0">Metrics are unavailable because this deployment has no deployment id.</p>
       </div>
     </div>
-    <div class="usage-box">
-      <h4><b>RAM Usage</b></h4>
-      <div *ngIf="showNoDataMessage">
-        <p>No data to display</p>
-      </div>
-      <!-- <div *ngIf="loading" class="inner-spinner"></div> -->
-      <div *ngIf="!showNoDataMessage" class="chart-container">
-        <canvas #ramChartCanvas></canvas>
-      </div>
-    </div>
-    <div class="usage-box" style="position: relative;">
-      <div class="chart-overlay">
-        Coming soon...
-      </div>
-      <h4><b>Storage Usage</b></h4>
-      <div *ngIf="showNoDataMessage">
-        <p>No data to display</p>
-      </div>
-      <div *ngIf="!showNoDataMessage" class="chart-container">
-        <canvas #storageChartCanvas></canvas>
-      </div>
-    </div>
-  </div>
-
+  </ng-template>
 </div>

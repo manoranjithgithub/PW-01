@@ -59,15 +59,18 @@ export class ViewToolComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   toolStatus: string = '';
 
-  constructor(private http: ToolsService, private ac: ActivatedRoute,
-    private route: Router, private fb: FormBuilder,
+  constructor(
+    private http: ToolsService,
+    private ac: ActivatedRoute,
+    private route: Router,
+    private fb: FormBuilder,
     private sharedService: SharedService,
     private modalService: NgbModal,
     private toastr: ToastrService,
     private layoutActionService: LayoutActionService,
     public permissionService: PermissionService
   ) {
-    this.form = this.fb.group({})
+    this.form = this.fb.group({});
     const storedValue = localStorage.getItem('environment');
     if (storedValue) {
       this.env = JSON.parse(storedValue).id;
@@ -77,7 +80,13 @@ export class ViewToolComponent implements OnInit, OnDestroy {
       this.toolName = this.selectedView || this.toolName;
       this.toolStatus = params['status'];
       this.deploymentId = params['id'] ?? this.deploymentId;
-    })
+    });
+    // Listen for fragment and auto-select Networking tab if needed
+    this.ac.fragment.subscribe(fragment => {
+      if (fragment === 'network-section') {
+        this.selectedTabIndex = 1;
+      }
+    });
   }
   ngOnInit(): void {
     this.subscription = this.sharedService.envValueChange$.subscribe(value => {

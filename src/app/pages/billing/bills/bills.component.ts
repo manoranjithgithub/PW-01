@@ -8,7 +8,7 @@ import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { FormsModule } from '@angular/forms';
 
-type BillTab = 'service' | 'taxes';
+type BillTab = 'service' | 'llm';
 
 interface MonthOption {
   value: number;
@@ -29,8 +29,19 @@ export class BillsComponent implements OnInit, OnChanges {
   activeBillTab: BillTab = 'service';
   billServiceFilter = '';
   billTaxFilter = '';
-  selectedMonth = '';
+  selectedMonth = this.getPreviousMonthValue();
+  private getPreviousMonthValue(): string {
+    const now = new Date();
+    let year = now.getFullYear();
+    let month = now.getMonth(); // getMonth() is 0-based, so this is previous month
+    if (month === 0) {
+      month = 12;
+      year -= 1;
+    }
+    return `${year}-${String(month).padStart(2, '0')}`;
+  }
   monthlyInvoiceData: InvoiceRow | null = null;
+  billServiceTypeFilter = 'All services';
 
   @Input() invoiceList: InvoiceRow[] = [];
 
@@ -42,7 +53,7 @@ export class BillsComponent implements OnInit, OnChanges {
   monthPickerOpen = false;
   monthPickerMonth = new Date().getMonth() + 1;
   monthPickerYear = new Date().getFullYear();
-  
+
   readonly monthOptions: Array<MonthOption> = [
     { value: 1, label: 'Jan' },
     { value: 2, label: 'Feb' },
@@ -66,13 +77,67 @@ export class BillsComponent implements OnInit, OnChanges {
   billOffset = 0;
   billTotalRecords = 0;
   readonly pageSizeOptions = [10, 20, 50, 100];
+  llmIntegrationRows: BillServiceRow[] = [];
+
+  // Get all LLM-related billing rows
+  get llmCostRows(): BillServiceRow[] {
+    return this.billRows.filter(row => row.source === 'llm');
+  }
+
+  // Get filtered LLM billing rows by search query
+  get filteredLlmCostRows(): BillServiceRow[] {
+    const query = (this.billServiceFilter || '').trim().toLowerCase();
+    return this.llmCostRows.filter(row =>
+      `${row.description} ${row.usage}`.toLowerCase().includes(query)
+    );
+  }
+
+  // Paginate filtered LLM cost rows
+  get paginatedLlmCostRows(): BillServiceRow[] {
+    const start = this.billOffset;
+    const end = start + this.billLimit;
+    return this.filteredLlmCostRows.slice(start, end);
+  }
+
+  // LLM tab: page range label
+  get llmPageRangeLabel(): string {
+    if (!this.filteredLlmCostRows.length) {
+      return '0-0 of 0';
+    }
+    const start = this.billOffset + 1;
+    const end = Math.min(this.billOffset + this.billLimit, this.filteredLlmCostRows.length);
+    return `${start}-${end} of ${this.filteredLlmCostRows.length}`;
+  }
+
+  // LLM tab: total pages
+  get llmTotalPages(): number {
+    if (!this.filteredLlmCostRows.length) {
+      return 1;
+    }
+    return Math.max(1, Math.ceil(this.filteredLlmCostRows.length / this.billLimit));
+  }
+
+  // LLM tab: current page
+  get llmCurrentPage(): number {
+    return Math.floor(this.billOffset / this.billLimit) + 1;
+  }
 
   constructor(
     private http: PricingsService,
     private sharedService: SharedService,
     private projectsService: ProjectsService
   ) { }
+  // LLM cost and count helpers
+  get llmServiceCount(): number {
+    return this.monthBillRows.filter((row) => row.source === 'llm').length;
+  }
 
+  get llmServiceCostTotal(): number {
+    return this.monthBillRows
+      .filter((row) => row.source === 'llm')
+      .reduce((sum, row) => sum + this.getAmount(row.amount), 0);
+  }
+  // Holds all bill rows for the selected month (unfiltered by scope)
   get selectedMonthLabel(): string {
     const [yearText, monthText] = (this.selectedMonth || '').split('-');
     const year = Number(yearText);
@@ -120,7 +185,8 @@ export class BillsComponent implements OnInit, OnChanges {
     if (status === 'paid') {
       return 0;
     }
-    return this.getAmount(this.monthlyInvoiceData?.total || 0);
+    // Add LLM cost to outstanding
+    return this.getAmount(this.monthlyInvoiceData?.total || 0) + this.llmServiceCostTotal;
   }
 
   get billTotalDue(): number {
@@ -171,38 +237,58 @@ export class BillsComponent implements OnInit, OnChanges {
     }
     return this.lastChargedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   }
+  monthBillRows: BillServiceRow[] = [];
 
+  // Filters monthBillRows by current scope and sets billRows for the table
+  // filterBillRowsByScope(): void {
+  //   let filtered = this.monthBillRows;
+  //   if (this.selectedProjectId && this.selectedProjectId !== 'all') {
+  //     filtered = filtered.filter(row => row.projectId === this.selectedProjectId);
+  //   }
+  //   if (this.selectedEnvironmentId && this.selectedEnvironmentId !== 'all') {
+  //     filtered = filtered.filter(row => row.environmentId === this.selectedEnvironmentId);
+  //   }
+  //   this.billRows = filtered;
+  // }
   get deploymentServiceCount(): number {
-    return this.billRows.filter((row) => row.source === 'application').length;
+    return this.monthBillRows.filter((row) => row.source === 'application').length;
   }
 
   get toolServiceCount(): number {
-    return this.monthScopedBillRows.filter((row) => row.source !== 'application').length;
+    return this.monthBillRows.filter((row) => row.source !== 'application').length;
   }
 
   get toolServiceCostTotal(): number {
-    return this.monthScopedBillRows
+    return this.monthBillRows
       .filter((row) => row.source === 'tool')
       .reduce((sum, row) => sum + this.getAmount(row.amount), 0);
   }
 
   get deploymentServiceCostTotal(): number {
-    return this.monthScopedBillRows
+    return this.monthBillRows
       .filter((row) => row.source === 'application')
       .reduce((sum, row) => sum + this.getAmount(row.amount), 0);
   }
 
   get totalBillableServicesCount(): number {
-    return this.monthScopedBillRows.length;
+    return this.deploymentServiceCount + this.toolServiceCount + this.llmServiceCount;
   }
 
   get monthScopedBillRows(): BillServiceRow[] {
-    return this.billRows.filter((row) => this.getBillRowUptimeHours(row) > 0);
+    // Use monthBillRows for summary, not affected by scope filters
+    return this.monthBillRows.filter((row) => this.getBillRowUptimeHours(row) > 0);
   }
 
   get filteredBillRows(): BillServiceRow[] {
     const query = (this.billServiceFilter || '').trim().toLowerCase();
-    const rowsWithUptime = this.billRows.filter((row) => this.getBillRowUptimeHours(row) > 0);
+    const typeFilter = (this.billServiceTypeFilter || 'All services').toLowerCase();
+    let rowsWithUptime = this.billRows.filter((row) => this.getBillRowUptimeHours(row) > 0);
+    if (typeFilter !== 'all services') {
+      rowsWithUptime = rowsWithUptime.filter(row =>
+        (typeFilter === 'application' && row.source === 'application') ||
+        (typeFilter === 'tool' && row.source === 'tool')
+      );
+    }
     if (!query) {
       return rowsWithUptime;
     }
@@ -263,7 +349,7 @@ export class BillsComponent implements OnInit, OnChanges {
   }
 
   ngOnInit(): void {
-    this.selectedMonth = this.getCurrentMonthValue();
+    this.selectedMonth = this.getPreviousMonthValue();
     this.syncMonthPickerFromSelected();
     this.applyMonthSelection(this.selectedMonth);
 
@@ -292,12 +378,14 @@ export class BillsComponent implements OnInit, OnChanges {
     this.billOffset = 0;
     this.loadEnvironmentOptionsByProject(this.selectedProjectId);
     this.loadBillServiceCharges();
+    // Do NOT call loadMonthlyInvoiceData here; summary grid should not update on scope change
   }
 
   onEnvironmentScopeChange(value: string): void {
     this.selectedEnvironmentId = value || 'all';
     this.billOffset = 0;
     this.loadBillServiceCharges();
+    // Do NOT call loadMonthlyInvoiceData here; summary grid should not update on scope change
   }
 
   onBillItemsPerPageChange(value: string): void {
@@ -554,7 +642,7 @@ export class BillsComponent implements OnInit, OnChanges {
                 this.selectedEnvironmentId === 'all' ||
                 !this.environmentOptions.some((env) => env.id === this.selectedEnvironmentId)
               ) {
-                this.selectedEnvironmentId = this.getDefaultEnvironmentId(this.environmentOptions);
+                // this.selectedEnvironmentId = this.getDefaultEnvironmentId(this.environmentOptions);
               }
               this.loadBillServiceCharges();
             },
@@ -607,18 +695,18 @@ export class BillsComponent implements OnInit, OnChanges {
   private loadBillServiceCharges(): void {
     const accountId = localStorage.getItem('accountId') || this.sharedService.getUser()?.id || '';
     if (!accountId) {
+      this.monthBillRows = [];
       this.billRows = [];
       this.billLoading = false;
       return;
     }
     this.billLoading = true;
 
+    // Always fetch full month data (no project/environment filter)
     this.http.getCostByService(
       accountId,
       this.startDate,
-      this.endDate,
-      this.selectedEnvironmentId !== 'all' && this.selectedProjectId !== 'all' ? String(this.selectedEnvironmentId) : undefined,
-      this.selectedProjectId !== 'all' ? String(this.selectedProjectId) : undefined
+      this.endDate
     ).pipe(
       catchError(() => of({ data: [] }))
     ).subscribe({
@@ -627,10 +715,12 @@ export class BillsComponent implements OnInit, OnChanges {
         const rows: BillServiceRow[] = items.map((item: any) =>
           this.mapCostByServiceItem(item)
         );
+        this.monthBillRows = rows;
         this.billRows = rows;
         this.billLoading = false;
       },
       error: () => {
+        this.monthBillRows = [];
         this.billRows = [];
         this.billLoading = false;
       }
@@ -701,7 +791,7 @@ export class BillsComponent implements OnInit, OnChanges {
     // const defaultName = 'Unnamed service';
     const source = item?.deploymentType === 'tool' ? 'tool' : 'application';
     const name = item.name ? String(item.name) : item?.deploymentId;
-    const instanceType = item?.instanceType || item?.instance_type || item?.resource_type || '';
+    const instanceType = item?.instanceType;
     const usageValue = item?.usage ?? item?.usageQuantity ?? item?.quantity;
     const uptimeHours = this.getAmount(item?.uptimeHours ?? item?.uptime_hours);
     const usageParts = [];
@@ -723,6 +813,8 @@ export class BillsComponent implements OnInit, OnChanges {
     const cpuCost = this.getAmount(item?.costCpu);
     const memoryCost = this.getAmount(item?.costMem);
     const instanceCost = this.getAmount(item?.costInstance);
+    const cpu = item?.cpu;
+    const memory = item?.memory;
     return {
       name,
       description: `${source === 'tool' ? 'Tool' : 'Application'}: ${name}`,
@@ -737,8 +829,11 @@ export class BillsComponent implements OnInit, OnChanges {
       currency: item?.currency || 'USD',
       uptimeHours: `${uptimeHours.toFixed(2)}h`,
       instanceCost,
+      instanceType,
       cpuCost,
-      memoryCost
+      memoryCost,
+      cpu,
+      memory
     };
   }
 
@@ -749,7 +844,7 @@ export class BillsComponent implements OnInit, OnChanges {
     }
 
     const invoices = Array.isArray(this.invoiceList) ? this.invoiceList : [];
-    
+
     if (!invoices.length) {
       this.monthlyInvoiceData = null;
       return;
@@ -769,17 +864,20 @@ export class BillsComponent implements OnInit, OnChanges {
       if (!dateStr) {
         return false;
       }
-      
+
       const invoiceDate = new Date(dateStr as string);
-      
+
       if (isNaN(invoiceDate.getTime())) {
         return false;
       }
 
       return invoiceDate.getFullYear() === selectedYearNum &&
-             invoiceDate.getMonth() + 1 === selectedMonthNum;
+        invoiceDate.getMonth() + 1 === selectedMonthNum;
     });
 
     this.monthlyInvoiceData = monthInvoice || null;
+  }
+  onBillServiceTypeFilterChange(value: string): void {
+    this.billServiceTypeFilter = value;
   }
 }

@@ -89,12 +89,13 @@
       </ng-container>
     </c-tab-pane>
   </c-tab-content>
-  <div class="d-flex justify-content-between " *ngIf="selectedTabIndex > 0">
-    <button class="btn button-format-outline  mt-3" (click)="goBack()"> <i class="bi bi-arrow-left"></i>
-      Deployments</button>
-    <button class="btn button-format-solid mt-3" (click)="goToNextTab()" *ngIf="selectedTabIndex < 4"
-      [disabled]="lastReleaseData[0]?.status === 'Building' "
-      [attr.title]="(lastReleaseData[0]?.status === 'Building') ? 'You are not authorized to view that page.' : null">Save
-      & Continue</button>
-  </div>
+
+</div>
+<div class="d-flex justify-content-between " *ngIf="selectedTabIndex > 0">
+  <button class="btn button-format-outline  mt-3" (click)="goBack()"> <i class="bi bi-arrow-left"></i>
+    Deployments</button>
+  <button class="btn button-format-solid mt-3" (click)="goToNextTab()" *ngIf="selectedTabIndex < 3"
+    [disabled]="lastReleaseData[0]?.status === 'Building' "
+    [attr.title]="(lastReleaseData[0]?.status === 'Building') ? 'You are not authorized to view that page.' : null">Save
+    Changes</button>
 </div>

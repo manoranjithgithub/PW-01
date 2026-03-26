@@ -206,13 +206,14 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
     }
     if (this.selectedTabIndex === 2) {
       this.secretsChild.savePendingFormData();
+      this.secretsChild.createSecretVariable();
     }
     if (this.selectedTabIndex === 3) {
       this.configMapChild.updateConfigFile();
     }
-    if (this.selectedTabIndex < 4) {
-      this.selectedTabIndex++;
-    }
+    // if (this.selectedTabIndex < 4) {
+    //   this.selectedTabIndex++;
+    // }
   }
 
   goBack() {

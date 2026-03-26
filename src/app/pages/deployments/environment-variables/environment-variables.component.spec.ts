@@ -76,6 +76,7 @@ describe('EnvironmentVariablesComponent', () => {
     expect(component.envList.length).toBe(1);
     expect(component.envList[0].EnvVariable).toBe('TEST_VAR');
     expect(component.envList[0].Value).toBe('123');
+    expect(mockDeploymentsService.updateDeployment).not.toHaveBeenCalled();
   });
 
   it('should edit an existing environment variable', () => {
@@ -98,6 +99,7 @@ describe('EnvironmentVariablesComponent', () => {
 
     await component.deleteDetails(0);
     expect(component.envList.length).toBe(0);
+    expect(mockDeploymentsService.updateDeployment).not.toHaveBeenCalled();
   });
 
   it('should toggle raw editor modal', () => {
@@ -116,6 +118,15 @@ describe('EnvironmentVariablesComponent', () => {
     expect(emitSpy).toHaveBeenCalledWith({ data: { X: '1' } });
   });
 
+  it('onVariablesUpdated should refresh the local list without saving immediately', () => {
+    const emitSpy = spyOn(component.envDetails, 'emit');
+    component.onVariablesUpdated([{ EnvVariable: 'X', Value: '1' }]);
+
+    expect(component.envList).toEqual([{ EnvVariable: 'X', Value: '1' }]);
+    expect(emitSpy).toHaveBeenCalledWith({ data: { X: '1' } });
+    expect(mockDeploymentsService.updateDeployment).not.toHaveBeenCalled();
+  });
+
   it('nameValueDependencyValidator should return null when both empty and error when name present and value empty', () => {
     const fb = new FormBuilder();
     const bothEmpty = fb.group({ name: [''], value: [''] });
@@ -125,12 +136,12 @@ describe('EnvironmentVariablesComponent', () => {
     expect(component.nameValueDependencyValidator(onlyName)).toEqual({ valueRequired: true });
   });
 
-  it('createEnvironmentVariable should not call updateDeployment when updatedReq.data is empty', () => {
+  it('createEnvironmentVariable should call updateDeployment when updatedReq.data is empty', () => {
     component.updatedReq = { data: {} };
     const updateSpy = mockDeploymentsService.updateDeployment;
     component.deploymentId = '123';
     component.createEnvironmentVariable();
-    expect(updateSpy).not.toHaveBeenCalled();
+    expect(updateSpy).toHaveBeenCalledWith('123', { environment: {} });
   });
 
   it('createEnvironmentVariable should call updateDeployment when updatedReq has data and deploymentId is set', () => {

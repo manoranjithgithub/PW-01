@@ -1,6 +1,8 @@
 import { Component, HostListener, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
 
 import { DashboardsService } from './dashboard.service';
+import { DeploymentsService } from '../../pages/deployments/deployment.service';
+import { ToolsService } from '../../pages/tools/tools.service';
 import { SummaryCardComponent } from './summary-card/summary-card.component';
 import { UtilizationChartComponent } from './utilization-chart/utilization-chart.component';
 import { CommonModule } from '@angular/common';
@@ -14,6 +16,7 @@ import { ToastrService } from 'ngx-toastr';
 import { Subscription } from 'rxjs';
 import { forkJoin } from 'rxjs';
 import { CARDS_DATA, UTILIZATION_DATA } from '../../shared/constants/nimbuz.constant';
+import { LLMService } from '../llm/llm.service';
 
 @Component({
   templateUrl: 'dashboard.component.html',
@@ -24,7 +27,7 @@ import { CARDS_DATA, UTILIZATION_DATA } from '../../shared/constants/nimbuz.cons
     UtilizationChartComponent, DropdownComponent, DropdownItemDirective, DropdownMenuDirective,
     DropdownToggleDirective
   ],
-  providers: [DashboardsService],
+  providers: [DashboardsService, LLMService],
   encapsulation: ViewEncapsulation.None
 })
 
@@ -34,6 +37,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
   endpoints: any = [];
   currentEnvId: string = '';
   private subscriptions: Subscription[] = [];
+  statusDeploymentsSub?: Subscription;
+  statusToolsSub?: Subscription;
+  latestDeployments: any[] = [];
+  latestTools: any[] = [];
 
   private envValueSubscription: Subscription | undefined;
   private currencySubscription: Subscription | undefined;
@@ -42,10 +49,77 @@ export class DashboardComponent implements OnInit, OnDestroy {
   isDropdownOpen: boolean = false;
   lastButtonRef: HTMLElement | null = null;
 
-  constructor(private http: DashboardsService, private sharedService: SharedService,
-    private router: Router, private modalService: NgbModal, private toastr: ToastrService,
-    public permissionService: PermissionService
+
+
+  constructor(
+    private http: DashboardsService,
+    private sharedService: SharedService,
+    private router: Router,
+    private modalService: NgbModal,
+    private toastr: ToastrService,
+    public permissionService: PermissionService,
+    private deploymentsService: DeploymentsService,
+    private toolsService: ToolsService,
+    private llmService: LLMService
   ) { }
+
+  // Real-time status using SSE streams for deployments and tools
+  startStatusStreams() {
+    if (this.statusDeploymentsSub) this.statusDeploymentsSub.unsubscribe();
+    if (this.statusToolsSub) this.statusToolsSub.unsubscribe();
+
+    this.statusDeploymentsSub = this.deploymentsService.liveDeploymentData(this.currentEnvId).subscribe({
+      next: (deployData: any) => {
+        // --- Robust extraction for deployments ---
+        if (deployData && Array.isArray(deployData.deployment)) {
+          this.latestDeployments = deployData.deployment;
+        } else if (Array.isArray(deployData.data)) {
+          this.latestDeployments = deployData.data;
+        } else if (Array.isArray(deployData.items)) {
+          this.latestDeployments = deployData.items;
+        } else if (deployData && typeof deployData === 'object') {
+          this.latestDeployments = [deployData];
+        } else {
+          this.latestDeployments = [];
+        }
+        // console.log('SSE deployData', deployData);
+        this.updateCumulativeStatus();
+      },
+      error: (err: any) => console.error('Deployment status SSE error', err),
+    });
+    this.statusToolsSub = this.toolsService.liveToolsData(this.currentEnvId).subscribe({
+      next: (toolsData: any) => {
+        // --- Robust extraction for tools ---
+        if (toolsData && toolsData.tools && typeof toolsData.tools === 'object') {
+          this.latestTools = Object.values(toolsData.tools);
+        } else if (Array.isArray(toolsData.data)) {
+          this.latestTools = toolsData.data;
+        } else if (Array.isArray(toolsData.items)) {
+          this.latestTools = toolsData.items;
+        } else if (toolsData && typeof toolsData === 'object') {
+          this.latestTools = [toolsData];
+        } else {
+          this.latestTools = [];
+        }
+        this.updateCumulativeStatus();
+      },
+      error: (err: any) => console.error('Tools status SSE error', err),
+    });
+  }
+
+  updateCumulativeStatus() {
+    const combined = [...(this.latestDeployments || []), ...(this.latestTools || [])];
+    const statusCount = combined.reduce((acc, item) => {
+      const status = (item.status || '').toLowerCase();
+      if (status === 'running') acc.running += 1;
+      else if (status === 'stopped' || status === 'pending') acc.pending += 1;
+      else if (status === 'failed') acc.failed += 1;
+      else if (status === 'paused') acc.paused += 1;
+      return acc;
+    }, { running: 0, pending: 0, failed: 0, paused: 0 });
+    this.cards[2].value = `${statusCount.running} / ${statusCount.paused}`;
+    this.cards[3].value = `${statusCount.failed} / ${statusCount.pending}`;
+  }
 
   ngOnInit(): void {
     this.envValueSubscription = this.sharedService.envValueChange$.subscribe(value => {
@@ -55,7 +129,29 @@ export class DashboardComponent implements OnInit, OnDestroy {
       // when currency toggles, recompute displayed amounts from last response
       if (this.lastCostResponse) this.applyCostsToCards(this.lastCostResponse);
     });
-    this.initializeDashboard()
+    this.initializeDashboard();
+    this.updateLlmModelStatusCard();
+  }
+
+  updateLlmModelStatusCard() {
+    this.llmService.getAddedModels().subscribe({
+      next: (res: any) => {
+        let models = [];
+        if (Array.isArray(res)) models = res;
+        else if (Array.isArray(res?.data)) models = res.data;
+        else if (Array.isArray(res?.llms)) models = res.llms;
+        else if (Array.isArray(res?.items)) models = res.items;
+        else models = [];
+        const filteredModels = models.filter((m: any) => m.envId === this.currentEnvId);
+        const normalized = filteredModels.map((m: any) => String(m.status || m.state || '').toLowerCase());
+        const active = normalized.filter((s:any) => s === 'active' || s === 'running').length;
+        const inactive = normalized.length - active;
+        this.cards[4].value = `${active}`;
+      },
+      error: () => {
+        this.cards[4].value = '0 / 0';
+      }
+    });
   }
   initializeDashboard() {
     this.cards[1].description = this.getCurrentMonthRange();
@@ -75,7 +171,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     });
     this.currentEnvId = env?.id;
     this.getEndpointsList(env?.id);
-    this.getStatusCount();
+    this.startStatusStreams();
     this.startCpuStream();
     this.startMemoryStream();
   }
@@ -126,6 +222,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     })
   }
   viewEndpoint(data: any) {
+    console.log('Viewing endpoint', data);
     if (data.deploymentId) {
       this.router.navigate(
         ['/deployment/deployment-details'],
@@ -138,7 +235,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
       );
     } else {
       this.router.navigate(
-        ['/tools'])
+        ['/tools/view-tool'],{
+          queryParams: {
+            selectedView: data.name,
+            id: data.id
+          },
+          fragment: 'network-section'
+        })
     }
   }
   deleteEndpoint(data: any) {
@@ -213,29 +316,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.subscriptions.forEach(sub => sub.unsubscribe());
     this.envValueSubscription?.unsubscribe();
+    if (this.statusDeploymentsSub) this.statusDeploymentsSub.unsubscribe();
+    if (this.statusToolsSub) this.statusToolsSub.unsubscribe();
     //  document.removeEventListener('click', this.handleDocClick);
   }
 
-  getStatusCount() {
-    forkJoin([
-      this.http.getDeployments(this.currentEnvId),
-      this.http.getToolsList(this.currentEnvId)
-    ]).subscribe(([res1, res2]) => {
-      const data = res1 as any
-      const data2 = res2 as any
-
-      const combined = [...data.data, ...data2.data];
-      const statusCount = combined.reduce((acc, item) => {
-        if (item.status.toLowerCase() === 'running') acc.running += 1;
-        else if (item.status.toLowerCase() === 'pending') acc.pending += 1;
-        else if (item.status.toLowerCase() === 'failed') acc.failed += 1;
-        else if (item.status.toLowerCase() === 'paused') acc.paused += 1;
-        return acc;
-      }, { running: 0, pending: 0, failed: 0, paused: 0 });
-      this.cards[2].value = `${statusCount.running} / ${statusCount.paused}`;
-      this.cards[3].value = `${statusCount.failed} / ${statusCount.pending}`;
-    });
-  }
   toggleDropdown(event: MouseEvent, btnRef?: HTMLElement): void {
     event.stopPropagation();
     const btn = (btnRef as HTMLElement) || (event.target as HTMLElement);

@@ -29,6 +29,7 @@ export class DeploymentSecretsComponent implements OnInit {
   deploymentId: string = '';
 
   secretList: any = [];
+  updatedReq: any;
   @Input() deploymentData: any;
   @Input() canAddVariables: boolean = false;
   @Input({ required: false }) secretDataFromParent: any;
@@ -142,7 +143,7 @@ export class DeploymentSecretsComponent implements OnInit {
 
     this.showSecretForm = false;
     const rules = this.secretForm.value.rules;
-    if (this.editIndex && this.editIndex >= 0) {
+    if (this.editIndex !== null && this.editIndex >= 0) {
       const updatedSecret = {
         EnvVariable: rules[0].name,
         Value: rules[0].value
@@ -164,12 +165,9 @@ export class DeploymentSecretsComponent implements OnInit {
       uniqueMap.set(item.EnvVariable, item);
     });
     this.secretList = Array.from(uniqueMap.values());
-    this.secretDetails.emit({ data: this.secretList });
-
-
-      this.addEnvVariables(this.secretList);
-      this.rulesFormArray.clear();
-    }
+    this.addEnvVariables(this.secretList);
+    this.rulesFormArray.clear();
+  }
   
   openRawEditor() {
     this.rawEditorModel.open();
@@ -180,7 +178,7 @@ export class DeploymentSecretsComponent implements OnInit {
 
   onVariablesUpdated(updated: { EnvVariable: string; Value: string }[]) {
     this.secretList = updated;
-    this.addSecret();
+    this.addEnvVariables(this.secretList);
   }
 
   savePendingFormData(): void {
@@ -190,29 +188,15 @@ export class DeploymentSecretsComponent implements OnInit {
   }
 
   addEnvVariables(data: any) {
-    const req = {
-      secret: data.reduce((acc: any, item: any) => {
+    this.updatedReq = {
+      data: data.reduce((acc: any, item: any) => {
         acc[item.EnvVariable] = item.Value;
         return acc;
-      }, {} as { [key: string]: string }),
-
+      }, {} as { [key: string]: string })
     }
 
-    if (this.deploymentId) {
-      this.deploymentsService.updateDeployment(this.deploymentId, req).subscribe({
-        next: (res: any) => {
-          this.secretList = this.mapEnvVariables(res.data.secret || {});
-          this.deploymentdetails.secret = res.data.secret || {};
-          // Emit updated data in review flow (canAddVariables=false)
-          if (!this.canAddVariables) {
-            this.secretDetails.emit({ data: this.secretList });
-          }
-          this.toaster.success('Secrets updated successfully');
-        },
-        error: (err) => {
-          // this.toaster.error(err);
-        }
-      });
+    if (!this.canAddVariables) {
+      this.secretDetails.emit({ data: this.secretList });
     }
   }
   togglePassword(index: number): void {
@@ -272,28 +256,7 @@ export class DeploymentSecretsComponent implements OnInit {
         if (result) {
           this.secretList.splice(index, 1);
           this.editIndex = -1;
-
-          const req = {
-            secret: this.secretList.reduce((acc: any, item: any) => {
-              acc[item.EnvVariable] = item.Value;
-              return acc;
-            }, {} as { [key: string]: string }),
-          }
-          if (this.deploymentId) {
-            this.deploymentsService.updateDeployment(this.deploymentId, req).subscribe({
-              next: (res: any) => {
-                this.secretList = this.mapEnvVariables(res.data.secret || {});
-                this.deploymentdetails.secret = res.data.secret || {};
-                if (!this.canAddVariables) {
-                  this.secretDetails.emit({ data: this.secretList });
-                }
-                this.toaster.success('Secret deleted successfully');
-              },
-              error: (err) => {
-                this.toaster.error(err);
-              }
-            });
-          }
+          this.addEnvVariables(this.secretList);
         }
       });
   }
@@ -302,10 +265,34 @@ export class DeploymentSecretsComponent implements OnInit {
     this.secretList = [];
     if (!this.deploymentdetails?.name) return;
     if (!this.canAddVariables && this.secretDataFromParent?.data) {
-      // const newVariables = this.mapEnvVariables(this.secretDataFromParent.data);
       this.secretList = this.secretDataFromParent.data;
     } else {
       this.secretList = this.mapEnvVariables(this.deploymentdetails?.secret || {});
     }
+  }
+
+  createSecretVariable(): void {
+    if (!this.updatedReq) {
+      return;
+    }
+
+    const req = {
+      secret: this.updatedReq?.data || {},
+    };
+
+    if (!this.deploymentId) {
+      return;
+    }
+
+    this.deploymentsService.updateDeployment(this.deploymentId, req).subscribe({
+      next: (res: any) => {
+        this.secretList = this.mapEnvVariables(res.data.secret || {});
+        this.deploymentdetails.secret = res.data.secret || {};
+        this.toaster.success('Secrets updated successfully');
+      },
+      error: (err) => {
+        this.toaster.error(err);
+      }
+    });
   }
 }
