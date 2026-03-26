@@ -109,6 +109,7 @@
           <table class="payments-table">
             <thead>
               <tr>
+                <th>S.no</th>
                 <th>Service</th>
                 <th>Instance Type</th>
                 <th>Instance Cost</th>
@@ -119,7 +120,8 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let row of paginatedBillRows">
+              <tr *ngFor="let row of paginatedBillRows; let i = index">
+                <td>{{ billOffset + i + 1 }}</td>
                 <td>
                   <div class="service-cell">
                     <span>{{ row.name || row.description }}</span>
@@ -138,7 +140,7 @@
             </tbody>
             <tfoot *ngIf="filteredBillRows.length">
               <tr class="subtotal-row">
-                <td colspan="5"><strong>Subtotal</strong></td>
+                <td colspan="6"><strong>Subtotal</strong></td>
                 <!-- <td><strong>{{ formatMoney(filteredBillCpuSubtotal) }}</strong></td> -->
                 <!-- <td><strong>{{ formatMoney(filteredBillMemorySubtotal) }}</strong></td> -->
                 <td>-</td>
@@ -209,14 +211,17 @@
           <table class="payments-table">
             <thead>
               <tr>
+                <th>S.no</th>
                 <th>Model</th>
+                <th>Instance Type</th>
                 <th>Total Requests</th>
                 <th>Total Tokens</th>
                 <th>Cost</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let row of paginatedLlmCostRows">
+              <tr *ngFor="let row of paginatedLlmCostRows; let i = index">
+                <td>{{ billOffset + i + 1 }}</td>
                 <td>
                   <div class="service-cell">
                     <span>{{ row.name}}</span>
@@ -231,9 +236,7 @@
             </tbody>
             <tfoot *ngIf="llmIntegrationRows.length">
               <tr class="subtotal-row">
-                <td colspan="5"><strong>Subtotal</strong></td>
-                <!-- <td><strong>{{ formatMoney(filteredBillCpuSubtotal) }}</strong></td> -->
-                <!-- <td><strong>{{ formatMoney(filteredBillMemorySubtotal) }}</strong></td> -->
+                <td colspan="4"><strong>Subtotal</strong></td>
                 <td>-</td>
                 <td><strong>{{ formatMoney(filteredBillChargeSubtotal) }}</strong></td>
               </tr>
