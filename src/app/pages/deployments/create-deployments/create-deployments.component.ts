@@ -359,7 +359,7 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
         this.submitted = false;
         if (!results) return;
         this.toaster.success('Deployment created successfully');
-        this.router.navigate(['/deployment']);
+        this.router.navigate(['/applications']);
       });
   }
   isError(controlName: string, errorType: string): boolean {

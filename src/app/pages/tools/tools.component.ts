@@ -22,6 +22,9 @@ import { PermissionService } from '../../shared/services/permission.service';
 export class ToolsComponent implements OnInit, OnDestroy {
   envId: string = '';
   rowData: any = [];
+  rowClassRules = {
+    'tool-row-disabled': (params: any) => String(params?.data?.status || '').toLowerCase() === 'deploying'
+  };
 
   private subscription: Subscription | undefined;
   toolName: string = '';
@@ -103,6 +106,7 @@ export class ToolsComponent implements OnInit, OnDestroy {
     {
       headerName: ' ', field: 'icon', sortable: false, filter: false, width: 80,
       cellStyle: { cursor: 'pointer', color: '#181d1f', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+      tooltipValueGetter: (params: any) => this.getToolHoverMessage(params.data),
       cellRenderer: (params: any) => {
         return `<img src="${params.value}" alt="${params.data.name}" width="24" height="24" />`;
       },
@@ -112,6 +116,7 @@ export class ToolsComponent implements OnInit, OnDestroy {
     {
       headerName: 'Name', field: 'name', sortable: true, filter: true, maxWidth: 250,
       cellStyle: { cursor: 'pointer', color: '#181d1f' },
+      tooltipValueGetter: (params: any) => this.getToolHoverMessage(params.data),
       onCellClicked: (event: CellClickedEvent) =>
         this.gotoAction(event.data)
     },
@@ -184,39 +189,23 @@ export class ToolsComponent implements OnInit, OnDestroy {
       },
       // sortable: true,
       // filter: true,
-      flex: 1
+      flex: 1,
+      tooltipValueGetter: (params: any) => this.getToolHoverMessage(params.data),
     },
     {
       headerName: 'Public Port',
       field: 'publicPort',
       width: 120,
-      cellStyle: { textAlign: 'center' }
+      cellStyle: { textAlign: 'center' },
+      tooltipValueGetter: (params: any) => this.getToolHoverMessage(params.data),
     },
     {
       headerName: 'Private Port',
       field: 'privatePort',
       width: 120,
-      cellStyle: { textAlign: 'center' }
+      cellStyle: { textAlign: 'center' },
+      tooltipValueGetter: (params: any) => this.getToolHoverMessage(params.data),
     },
-    // {
-    //   headerName: 'Port',
-    //   marryChildren: true,
-    //   headerClass: 'center-header',
-    //   children: [
-    //     {
-    //       headerName: 'Public',
-    //       field: 'publicPort',
-    //       width: 100,
-    //       cellStyle: { textAlign: 'center' }
-    //     },
-    //     {
-    //       headerName: 'Private',
-    //       field: 'privatePort',
-    //       width: 100,
-    //       cellStyle: { textAlign: 'center' }
-    //     }
-    //   ]
-    // },
     {
       headerName: "Actions",
       field: "actions",
@@ -234,8 +223,20 @@ export class ToolsComponent implements OnInit, OnDestroy {
   }
 
   gotoAction(params: any) {
+    const status = String(params?.status || '').toLowerCase();
+    if (status === 'deploying') {
+      return;
+    }
     this.toolName = params.name;
     this.router.navigate(['/tools/view-tool'], { queryParams: { selectedView: this.toolName, id: params.id } })
+  }
+
+  getToolHoverMessage(params: any): string | null {
+    const status = String(params?.status || '').toLowerCase();
+    if (status === 'deploying') {
+      return 'Tool is deploying. Please wait until it is up.';
+    }
+    return null;
   }
 
   getAvailableTools(envId: string): void {

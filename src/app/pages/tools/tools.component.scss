@@ -5,3 +5,13 @@
     position: relative;
     top: 50px;
 }
+
+:host ::ng-deep .ag-row.tool-row-disabled {
+    cursor: not-allowed;
+    opacity: 0.62;
+}
+
+:host ::ng-deep .ag-row.tool-row-disabled .ag-cell {
+    cursor: not-allowed !important;
+    pointer-events: auto;
+}
