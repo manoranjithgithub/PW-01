@@ -19,6 +19,7 @@ export class AgGridTableComponent implements OnInit {
   @Input() columnDefs: ColDef[] = [];
   @Input() rowData: any[] = [];
   @Input() getRowId?: (params: any) => any;
+  @Input() rowClassRules?: GridOptions['rowClassRules'];
   tableTheme = 'ag-theme-alpine';
   tableData = [];
   paginationPageSize = 20;
@@ -59,6 +60,7 @@ export class AgGridTableComponent implements OnInit {
       enableBrowserTooltips: true,
       suppressLoadingOverlay: true,
       onGridReady: (params) => this.onGridReady(params),
+      rowClassRules: this.rowClassRules,
     };
     
     if (this.getRowId) {

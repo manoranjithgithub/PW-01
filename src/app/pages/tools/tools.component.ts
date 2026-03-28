@@ -139,9 +139,8 @@ export class ToolsComponent implements OnInit, OnDestroy {
       }
     },
     {
-      headerName: 'Host',
+      headerName: 'HOST',
       field: 'privateHost',
-      // minWidth:300,
       cellRenderer: (params: any) => {
         const privateUrl = params.data?.privateHost || '';
         const publicUrl = params.data?.publicHost || '';
@@ -149,37 +148,51 @@ export class ToolsComponent implements OnInit, OnDestroy {
 
         const makePart = (url: string, label: string) => {
           if (!url) return '';
-          const escapedUrl = String(url).replace(/"/g, '&quot;').replace(/'/g, "\\'");
+          const rawUrl = String(url);
+          const escapedUrl = rawUrl
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+          const copyUrl = rawUrl.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
           const id = `copy-${label}-${params.rowIndex}-${Math.random().toString(36).substring(2, 5)}`;
           const isSecureLink = escapedUrl.startsWith('https');
           const isAccessible = params.data?.endpointStatus === 'accessible';
-          let linkPart = '';
+          const displayLabel = label === 'private' ? 'Private' : 'Public';
+          const copyTitle = isSecureLink ? 'Copy URL' : 'Copy Host Name';
+          const iconId = `${id}-icon`;
+          const copyButton = (isAccessible || !isSecureLink)
+            ? `<button type="button" class="copy-host-btn" title="${copyTitle}"
+                onclick="(function(event){ event.preventDefault(); event.stopPropagation(); navigator.clipboard.writeText('${copyUrl}'); const icon = document.getElementById('${iconId}'); if (!icon) return; icon.className = 'bi bi-check2 copy-host-icon copy-host-icon-success'; setTimeout(function(){ icon.className = 'bi bi-clipboard copy-host-icon'; }, 2000); })(event)">
+                <i id="${iconId}" class="bi bi-clipboard copy-host-icon"></i>
+              </button>`
+            : `<button type="button" class="copy-host-btn disabled" title="Copy disabled" disabled onclick="event.preventDefault(); event.stopPropagation(); return false;">
+                <i class="bi bi-clipboard copy-host-icon"></i>
+              </button>`;
+
+          const hostTitle = isSecureLink
+            ? (isAccessible ? 'Click to copy URL' : 'Endpoint not ready yet')
+            : 'Click to copy host name';
+          const hostPart = (isAccessible || !isSecureLink)
+            ? `<button type="button" class="host-link host-link-button" title="${hostTitle}"
+                onclick="(function(event){ event.preventDefault(); event.stopPropagation(); navigator.clipboard.writeText('${copyUrl}'); const icon = document.getElementById('${iconId}'); if (!icon) return; icon.className = 'bi bi-check2 copy-host-icon copy-host-icon-success'; setTimeout(function(){ icon.className = 'bi bi-clipboard copy-host-icon'; }, 2000); })(event)">
+                ${escapedUrl}
+              </button>`
+            : `<span title="${hostTitle}" class="host-link host-link-disabled">${escapedUrl}</span>`;
+
           if (isSecureLink) {
             if (isAccessible) {
-              linkPart = `<a href="${escapedUrl}" target="_blank" title="${escapedUrl}" style="text-decoration: underline; color: blue;">${escapedUrl}</a>`;
-            } else {
-              linkPart = `<span title="Endpoint not ready yet" style="color: gray; cursor: not-allowed;">${escapedUrl}</span>`;
+              // handled in hostPart
             }
-          } else {
-            linkPart = `<span class="link-text">${escapedUrl}</span>`;
           }
 
-          const copyTooltip = isSecureLink ? 'Copy URL' : 'Copy Host Name';
-          const clipboardIcon = (isAccessible || !isSecureLink)
-            ? `<i class="bi bi-clipboard-check" style="cursor: pointer; position: relative;font-size: 18px; color: #F60;" 
-                onmouseenter="document.getElementById('${id}').innerText = 'Copy'" 
-                onclick="(function(){ navigator.clipboard.writeText('${escapedUrl}'); const tooltip = document.getElementById('${id}'); tooltip.innerText = 'Copied!'; tooltip.style.opacity = '1'; setTimeout(() => { tooltip.innerText = 'Copy'; tooltip.style.opacity = '0'; }, 1000); })()" 
-                title="${copyTooltip}"></i>`
-            : `<i class="bi bi-clipboard" style="cursor: not-allowed; opacity: 0.5;" title="Copy disabled"></i>`;
-
-          const displayLabel = label === 'private' ? 'Private' : 'Public';
           return `
-            <span style="margin-bottom:4px;">
-              ${clipboardIcon}
-              <span id="${id}" style="position: absolute; background: black; color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px; opacity: 0; transition: opacity 0.2s; pointer-events: none; z-index: 1000;">Copy</span>
-              <span style="font-weight:600; font-size:12px; color:#333; margin-right:4px;">${displayLabel}:</span>
-              ${linkPart}
-            </span><br/>`;
+            <div class="host-row-entry">
+              <span class="host-pill ${label}">${displayLabel}</span>
+              ${hostPart}
+              ${copyButton}
+            </div>`;
         };
 
         if (privateUrl) parts.push(makePart(privateUrl, 'private'));
@@ -190,21 +203,18 @@ export class ToolsComponent implements OnInit, OnDestroy {
       // sortable: true,
       // filter: true,
       flex: 1,
-      tooltipValueGetter: (params: any) => this.getToolHoverMessage(params.data),
     },
     {
       headerName: 'Public Port',
       field: 'publicPort',
       width: 120,
       cellStyle: { textAlign: 'center' },
-      tooltipValueGetter: (params: any) => this.getToolHoverMessage(params.data),
     },
     {
       headerName: 'Private Port',
       field: 'privatePort',
       width: 120,
       cellStyle: { textAlign: 'center' },
-      tooltipValueGetter: (params: any) => this.getToolHoverMessage(params.data),
     },
     {
       headerName: "Actions",
