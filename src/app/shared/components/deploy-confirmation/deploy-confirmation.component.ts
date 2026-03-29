@@ -1,10 +1,11 @@
+import { NgIf } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-deploy-confirmation',
   standalone: true,
-  imports: [],
+  imports: [NgIf],
   templateUrl: './deploy-confirmation.component.html',
   styleUrl: './deploy-confirmation.component.scss'
 })

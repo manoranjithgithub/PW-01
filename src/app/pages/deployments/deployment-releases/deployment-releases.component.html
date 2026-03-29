@@ -38,7 +38,7 @@
               </div>
             </div>
             <div class="d-flex align-items-center gap-2 m-4">
-              <button type="button" *ngIf="canCancelDeployment" (click)="cancelDeployment()"
+              <button type="button" [disabled]="!canCancelDeployment" (click)="cancelDeployment()"
                 class="btn button-format-outline">
                 Cancel Build
               </button>

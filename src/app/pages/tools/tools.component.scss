@@ -8,10 +8,115 @@
 
 :host ::ng-deep .ag-row.tool-row-disabled {
     cursor: not-allowed;
-    opacity: 0.62;
+    background-color: #f8fafc;
+    color: #94a3b8;
+    opacity: 0.72;
 }
 
 :host ::ng-deep .ag-row.tool-row-disabled .ag-cell {
     cursor: not-allowed !important;
+    color: #94a3b8;
     pointer-events: auto;
+}
+
+:host ::ng-deep .ag-row.tool-row-disabled .host-link,
+:host ::ng-deep .ag-row.tool-row-disabled .host-pill,
+:host ::ng-deep .ag-row.tool-row-disabled .copy-host-btn,
+:host ::ng-deep .ag-row.tool-row-disabled .copy-host-icon {
+    color: #94a3b8;
+}
+
+:host ::ng-deep .host-row-entry {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    margin-bottom: 4px;
+    white-space: nowrap;
+}
+
+:host ::ng-deep .host-link {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #0f172a;
+    text-decoration: none;
+    font-size: 12px;
+    line-height: 1.3;
+}
+
+:host ::ng-deep .host-link-button {
+    border: 0;
+    background: transparent;
+    padding: 0;
+    text-align: left;
+    cursor: copy;
+}
+
+:host ::ng-deep .host-link-button:hover {
+    color: #1d4ed8;
+}
+
+:host ::ng-deep .host-link:hover {
+    text-decoration: underline;
+}
+
+:host ::ng-deep .host-link-disabled {
+    color: #94a3b8;
+    cursor: not-allowed;
+    text-decoration: none;
+}
+
+:host ::ng-deep .copy-host-btn {
+    border: 0;
+    background: transparent;
+    padding: 0;
+    line-height: 1;
+    color: #334155;
+    opacity: 0;
+    transition: opacity 0.15s ease-in-out;
+}
+
+:host ::ng-deep .host-row-entry:hover .copy-host-btn {
+    opacity: 1;
+}
+
+:host ::ng-deep .copy-host-btn.disabled {
+    opacity: 0;
+    cursor: not-allowed;
+}
+
+:host ::ng-deep .copy-host-icon {
+    font-size: 15px;
+    color: #475569;
+}
+
+:host ::ng-deep .copy-host-icon-success {
+    color: #16a34a;
+}
+
+:host ::ng-deep .host-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 42px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1;
+    background: #f1f5f9;
+    color: #64748b;
+    flex-shrink: 0;
+}
+
+:host ::ng-deep .host-pill.public {
+    background: #eff6ff;
+    color: #4f46e5;
+}
+
+:host ::ng-deep .host-pill.private {
+    background: #f8fafc;
+    color: #64748b;
 }
