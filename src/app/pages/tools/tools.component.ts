@@ -330,7 +330,7 @@ export class ToolsComponent implements OnInit, OnDestroy {
   }
   getToolIcon(toolName: string): string {
     const name = toolName.toLowerCase();
-    console.log('Determining icon for tool:', toolName);
+    // console.log('Determining icon for tool:', toolName);
     if (name.includes('cloudbeaver')) {
       return 'assets/images/icons/cloudbeaver.png';
     }
