@@ -76,7 +76,9 @@ export class AgGridTableComponent implements OnInit {
     const urlSegments = this.router.url.split('/').filter(Boolean);
     this.tableName = urlSegments[urlSegments.length - 1] == 'tools' ? 'tool' : urlSegments[urlSegments.length - 1];
     const lastSegment = urlSegments[urlSegments.length - 1];
-    this.tablebtn = this.capitalizeFirstLetter(lastSegment);
+    this.tablebtn = lastSegment === 'applications'
+      ? 'Application'
+      : this.capitalizeFirstLetter(lastSegment);
 
   }
 

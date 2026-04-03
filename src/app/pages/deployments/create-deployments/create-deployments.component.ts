@@ -358,7 +358,7 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
       .subscribe((results: any) => {
         this.submitted = false;
         if (!results) return;
-        this.toaster.success('Deployment created successfully');
+        this.toaster.success('Application created successfully');
         this.router.navigate(['/applications']);
       });
   }

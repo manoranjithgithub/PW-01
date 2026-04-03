@@ -14,6 +14,24 @@ export class DeployConfirmationComponent {
 
   constructor(public activeModal: NgbActiveModal) { }
 
+  get helperText(): string {
+    const normalizedMessage = this.message.toLowerCase();
+
+    if (normalizedMessage.includes('redeploy')) {
+      return 'Redeploying will start a new deployment using your current source configuration.';
+    }
+
+    if (normalizedMessage.includes('resume')) {
+      return 'Resuming the application will allow it to continue running normally.';
+    }
+
+    if (normalizedMessage.includes('cancel')) {
+      return 'This will stop the process immediately and your latest changes will not be applied.';
+    }
+
+    return 'Pausing the deployment may cause temporary downtime or affect ongoing processes.';
+  }
+
   confirm() {
     this.activeModal.close(true);
   }
