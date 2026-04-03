@@ -83,7 +83,7 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
   private lastButtonRef?: HTMLElement | null = null;
 
   public scaleDeploymentsModelConfig: any = {
-    modalTitle: 'Scale Deployment',
+    modalTitle: 'Scale Application',
     width: '500px',
     height: '1500px',
     hideDismissButton: () => true,
@@ -227,7 +227,7 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
         action: type === 'Pause' ? 'pause' : 'resume',
       };
       const modalRef = this.modalService.open(DeployConfirmationComponent);
-      modalRef.componentInstance.message = `Are you sure you want to ${type} this deployment?`;
+      modalRef.componentInstance.message = `Are you sure you want to ${type} this Application?`;
 
       modalRef.result.then(
         (result) => {
@@ -242,7 +242,7 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
               }, 10000);
             },
               err => {
-                this.toaster.error(`Error in ${type} deployment`);
+                this.toaster.error(`Error in ${type} application`);
                 this.isPauseResumeDisabled = false;
               });
           }
@@ -269,7 +269,7 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
     if (this.additionalParam === "deployment" || this.additionalParam === "llm") {
       const req = this.params.data;
       const modalRef = this.modalService.open(DeployConfirmationComponent);
-      modalRef.componentInstance.message = 'Are you sure you want to redeploy this deployment?';
+      modalRef.componentInstance.message = 'Are you sure you want to redeploy this application?';
 
       modalRef.result.then(
         (result) => {
@@ -281,7 +281,7 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
               }
             },
               err => {
-                this.toaster.error('Error redeploying deployment');
+                this.toaster.error('Error redeploying application');
               });
           }
         });
