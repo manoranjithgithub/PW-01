@@ -128,7 +128,7 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
       });
 
     this.subscription = this.sharedService.envValueChange$.subscribe(() => {
-      this.router.navigate(['/deployment']);
+      this.router.navigate(['/applications']);
     });
   }
 
@@ -217,7 +217,7 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
   }
 
   goBack() {
-    this.router.navigate(['/deployment']);
+    this.router.navigate(['/applications']);
   }
 
   onLayoutButtonClick() {
@@ -233,8 +233,8 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
           .deleteDeployment(this.deploymentId)
           .subscribe((res: any) => {
             if (res.status.toLowerCase() === 'success') {
-              this.toastr.success('Deployment deleted successfully');
-              this.router.navigate(['/deployment']);
+              this.toastr.success('Application deleted successfully');
+              this.router.navigate(['/applications']);
             }
           });
       }

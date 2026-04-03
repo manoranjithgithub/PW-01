@@ -4,5 +4,5 @@
     </button>
   </div>
   <app-ag-grid-table [columnDefs]="columnDefs" [rowData]="rowData" 
-    [getRowId]="getRowId" (gridReady)="onGridReady($event)"></app-ag-grid-table>
+    [getRowId]="getRowId" [rowClassRules]="rowClassRules" (gridReady)="onGridReady($event)"></app-ag-grid-table>
 </div>

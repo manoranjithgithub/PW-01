@@ -19,6 +19,7 @@ export class AgGridTableComponent implements OnInit {
   @Input() columnDefs: ColDef[] = [];
   @Input() rowData: any[] = [];
   @Input() getRowId?: (params: any) => any;
+  @Input() rowClassRules?: GridOptions['rowClassRules'];
   tableTheme = 'ag-theme-alpine';
   tableData = [];
   paginationPageSize = 20;
@@ -59,6 +60,7 @@ export class AgGridTableComponent implements OnInit {
       enableBrowserTooltips: true,
       suppressLoadingOverlay: true,
       onGridReady: (params) => this.onGridReady(params),
+      rowClassRules: this.rowClassRules,
     };
     
     if (this.getRowId) {
@@ -74,7 +76,9 @@ export class AgGridTableComponent implements OnInit {
     const urlSegments = this.router.url.split('/').filter(Boolean);
     this.tableName = urlSegments[urlSegments.length - 1] == 'tools' ? 'tool' : urlSegments[urlSegments.length - 1];
     const lastSegment = urlSegments[urlSegments.length - 1];
-    this.tablebtn = this.capitalizeFirstLetter(lastSegment);
+    this.tablebtn = lastSegment === 'applications'
+      ? 'Application'
+      : this.capitalizeFirstLetter(lastSegment);
 
   }
 

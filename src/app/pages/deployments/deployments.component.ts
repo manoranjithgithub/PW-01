@@ -231,13 +231,13 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
   }
 
   gotoAction(data: any) {
-    this.router.navigate(['/deployment/deployment-details'], {
+    this.router.navigate(['/applications/application-details'], {
       queryParams: { id: data.id }
     });
   }
 
   goToNewDeployment() {
-    this.router.navigate(['/deployment/create-deployment']);
+    this.router.navigate(['/applications/create-application']);
   }
 
   ngOnDestroy(): void {

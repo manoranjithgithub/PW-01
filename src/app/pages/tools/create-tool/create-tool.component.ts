@@ -283,7 +283,7 @@ export class CreateToolComponent implements OnInit, OnDestroy {
     const value = (event.target as HTMLSelectElement).value;
     if (field === 'resource') {
       this.selectedResource[key] = this.resources.find(resource => resource.instanceType === value);
-      console.log('Selected resource for key', key, ':', this.selectedResource);
+      // console.log('Selected resource for key', key, ':', this.selectedResource);
     }
   }
   uniqueNameValidator(existingNames: string[]): ValidatorFn {
