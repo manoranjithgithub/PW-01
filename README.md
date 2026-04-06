@@ -1,5 +1,18 @@
 # nimbuz-portal-fe
 
+## latest version
+1.0.0
+
+## change log
+### 1.0.0
+Bug Fix:
+INC-3000  : blocking the action with a message 'Tool is deploying, please wait' similar to the deployments
+Issue -2978 : Enable authentication not retaining its state
+Issue - 3010 : Incorrect message for redepoly
+Issue - 2999 : Project- description field validation
+Issue -3009 : Incorrect message on resume after cancel pop-up
+Issue- 3007 : Port field validation
+
 
 
 ## Getting started

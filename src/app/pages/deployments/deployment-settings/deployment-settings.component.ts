@@ -501,7 +501,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
     }, originalApp);
     const network = this.getChangedFields({
       healthEndpoint: formValue.healthEndpoint,
-      port: formValue.port,
+      port: formValue.port ? Number(formValue.port) : 80,
     }, originalNetwork);
     const baseData = {
       type: sourceFormValue.type,
@@ -763,7 +763,13 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
     Object.keys(current).forEach(key => {
       const currVal = current[key];
       const origVal = original ? original[key] : undefined;
-      if (currVal === null || currVal === undefined) return;
+      if (currVal === undefined) return;
+      if (currVal === null) {
+        if (origVal !== null && origVal !== undefined) {
+          changed[key] = null;
+        }
+        return;
+      }
 
       if (typeof currVal === 'string' && typeof origVal === 'string') {
         if (currVal.trim() !== origVal.trim()) {
