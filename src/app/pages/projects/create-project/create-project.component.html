@@ -57,7 +57,7 @@
                         formControlName="projectDesc" class="form-control text-format" maxlength="250">
                     <div *ngIf="projectForm.get('projectDesc')?.hasError('maxlength') && projectForm.get('projectDesc')?.touched"
                         class="text-danger my-1">
-                        Maximum 250 characters only.
+                        Maximum 200 characters only.
                     </div>
                     <!-- <div *ngIf="projectForm.get('projectDesc')?.hasError('required') && projectForm.get('projectDesc')?.touched" class="text-danger my-1">
                         Description is required.
