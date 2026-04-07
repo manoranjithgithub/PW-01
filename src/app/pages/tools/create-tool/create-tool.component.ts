@@ -129,12 +129,7 @@ export class CreateToolComponent implements OnInit, OnDestroy {
             validators.push(this.regexValidator(new RegExp(field.validation.regex), field.validation.error_message));
           }
 
-          if (field.key === 'mysql.primary.persistance.size' ||
-            field.key === 'postgresql.primary.persistence.size' ||
-            field.key === 'mongodb.persistence.size' ||
-            field.key === 'postgresql.readReplicas.persistence.size' ||
-            field.key === 'n8n.postgresql.primary.persistence.size'
-          ) {
+          if (field.append === 'Gi') {
             validators.push(this.gigabyteValidator);
           }
 
@@ -187,17 +182,9 @@ export class CreateToolComponent implements OnInit, OnDestroy {
     const { name, ...formValues } = this.form.getRawValue();
 
     if (this.form.valid) {
-      const sizeFields = [
-        'mysql.primary.persistence.size',
-        'postgresql.primary.persistence.size',
-        'mongodb.persistence.size',
-        'postgresql.readReplicas.persistence.size',
-        'n8n.postgresql.primary.persistence.size'
-      ];
-
-      sizeFields.forEach(key => {
-        if (formValues.hasOwnProperty(key)) {
-          formValues[key] = formValues[key] + 'Gi';
+      this.formStructure.forEach(field => {
+        if (field.append && formValues.hasOwnProperty(field.key)) {
+          formValues[field.key] = formValues[field.key] + field.append;
         }
       });
 

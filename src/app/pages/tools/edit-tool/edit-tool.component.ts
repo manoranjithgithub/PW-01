@@ -103,6 +103,15 @@ export class EditToolComponent implements OnInit, OnDestroy {
     return /^(?!\\d)(?!.*[-]{2})(?!.*[A-Z])[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value) ? null : { lowercase: true };
   }
 
+  private gigabyteValidator(control: FormControl) {
+    const value = control.value;
+    const regex = /^\d+(\.\d+)?$/;
+    if (value && !regex.test(value)) {
+      return { gigabyteValidator: true };
+    }
+    return null;
+  }
+
   createForm(fields: { [key: string]: FormField }): void {
     const group: { [key: string]: FormControl } = {};
     this.formStructure = [];
@@ -123,6 +132,10 @@ export class EditToolComponent implements OnInit, OnDestroy {
 
           if (field.validation?.regex) {
             validators.push(this.regexValidator(new RegExp(field.validation.regex), field.validation.error_message));
+          }
+
+          if (field.append === 'Gi') {
+            validators.push(this.gigabyteValidator);
           }
 
           const initialValue = field.value || field.default_value || '';
@@ -169,19 +182,12 @@ export class EditToolComponent implements OnInit, OnDestroy {
       const modifiedSchema = this.addNameViewField(schema);
       this.createForm(modifiedSchema);
 
-      const keysToClean = [
-        'mysql.primary.persistence.size',
-        'postgresql.primary.persistence.size',
-        'mongodb.persistence.size',
-        'postgresql.readReplicas.persistence.size',
-        'n8n.postgresql.primary.persistence.size'
-      ];
-
       const finalSchema = JSON.parse(JSON.stringify(schema));
 
-      keysToClean.forEach(key => {
-        if (finalSchema[key]) {
-          finalSchema[key].value = finalSchema[key].value.replace(/Gi$/, '');
+      Object.keys(finalSchema).forEach(key => {
+        const field = finalSchema[key];
+        if (field.append && field.value) {
+          field.value = field.value.replace(new RegExp(field.append + '$'), '');
         }
       });
 
@@ -194,16 +200,9 @@ export class EditToolComponent implements OnInit, OnDestroy {
   onSubmit(): void {
     const { name, ...formValues } = this.form.getRawValue();
     if (this.form.valid) {
-      const sizeFields = [
-        'mysql.primary.persistence.size',
-        'postgresql.primary.persistence.size',
-        'mongodb.persistence.size',
-        'postgresql.readReplicas.persistence.size',
-        'n8n.postgresql.primary.persistence.size'
-      ];
-      sizeFields.forEach(key => {
-        if (formValues.hasOwnProperty(key)) {
-          formValues[key] = formValues[key] + 'Gi';
+      this.formStructure.forEach(field => {
+        if (field.append && formValues.hasOwnProperty(field.key)) {
+          formValues[field.key] = formValues[field.key] + field.append;
         }
       });
       const req: any = {

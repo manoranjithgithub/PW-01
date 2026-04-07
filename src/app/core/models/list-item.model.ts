@@ -42,6 +42,7 @@ export interface FormField {
   update?: boolean;
   ui:boolean,
   function?: string;
+  append?: string;
 }
 
 export interface DeploymentOptions {
