@@ -7,7 +7,7 @@
   <ng-container>
       <div class="d-flex justify-content-end align-items-center mb-2 btn-section gap-2">
       <button class="btn button-format-solid" (click)="newDeploy()"  *ngIf="showDeployButton" [disabled]="!(permissionService.canAdminGlobal() || permissionService.canWriteForCurrentUser(getCurrentProjectId(), getCurrentEnvId()))" [attr.title]="!(permissionService.canAdminGlobal() || permissionService.canWriteForCurrentUser(getCurrentProjectId(), getCurrentEnvId())) ? 'You are not authorized to view that page.' : null"><i class="bi bi-plus"></i>
-        New  Deploy</button>
+        New  Application</button>
       <button class="btn button-format-solid" (click)="addNewUser()" *ngIf="showAddUser" [disabled]="!permissionService.canAdminGlobal()" [attr.title]="!permissionService.canAdminGlobal() ? 'You are not authorized to view that page.' : null"><i class="bi bi-plus"></i> New 
         User</button>
       <ng-content></ng-content>

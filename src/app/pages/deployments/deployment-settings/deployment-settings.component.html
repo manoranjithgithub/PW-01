@@ -1,18 +1,18 @@
 <c-alert color="warning" *ngIf="overprovisioned">
   <div class="warn-text">
-    <i class="bi bi-exclamation-circle-fill"></i> Deployment is overprovisioned. Please consider scaling down the
+    <i class="bi bi-exclamation-circle-fill"></i> Application is overprovisioned. Please consider scaling down the
     Instance Type.
   </div>
 </c-alert>
 <c-alert color="warning" *ngIf="underprovisioned">
   <div class="warn-text">
-    <i class="bi bi-exclamation-circle-fill"></i> Deployment is underprovisioned. Please consider scaling up the
+    <i class="bi bi-exclamation-circle-fill"></i> Application is underprovisioned. Please consider scaling up the
     Instance Type.
   </div>
 </c-alert>
 <c-alert color="warning" *ngIf="isBuilding">
   <div class="warn-text">
-    <i class="bi bi-exclamation-triangle-fill"></i> Deployment settings cannot be edited while the application is building
+    <i class="bi bi-exclamation-triangle-fill"></i> Application settings cannot be edited while the application is building
   </div>
 </c-alert>
 <fieldset [disabled]="formDisabled" class="card-child">

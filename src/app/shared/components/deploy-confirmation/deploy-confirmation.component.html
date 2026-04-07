@@ -8,7 +8,7 @@
     </div>
     <h4 class="text-red-600 font-semibold text-lg"> {{message}}
     </h4>
-    <p class="mt-2 modal-text">Pausing the deployment may cause temporary downtime or affect ongoing processes.</p>
+    <p class="mt-2 modal-text">{{ helperText }}</p>
     <hr />
     <div class="my-4 d-flex justify-content-center align-items-center gap-4">
         <button type="button" class="px-5 py-2 btn-outline" (click)="cancel()">Cancel</button>
