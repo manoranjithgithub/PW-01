@@ -1,6 +1,7 @@
-import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, TemplateRef, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { timer, Subscription, fromEvent } from 'rxjs';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
 import { SHARED_IMPORTS } from '../../../shared/shared-imports';
@@ -16,8 +17,10 @@ import { LLMService } from '../llm.service';
   styleUrl: './view-model.component.scss',
   providers: [LLMService]
 })
-export class ViewModelComponent implements OnInit {
+export class ViewModelComponent implements OnInit, OnDestroy {
   @ViewChild('rotatedKeyModal') rotatedKeyModal!: TemplateRef<any>;
+  private pollSubscription?: Subscription;
+  private focusSubscription?: Subscription;
   modelData: any = null;
   loading = false;
   selectedTabIndex = 0;
@@ -79,6 +82,12 @@ export class ViewModelComponent implements OnInit {
       // (e.g. rate-limit metadata) are available in View.
       this.loadModelById(id);
     });
+
+    this.focusSubscription = fromEvent(document, 'visibilitychange').subscribe(() => {
+      if (document.visibilityState === 'visible' && this.selectedTabIndex === 2) {
+        this.refreshUsageAnalytics(true);
+      }
+    });
   }
 
   backToList(): void {
@@ -87,8 +96,14 @@ export class ViewModelComponent implements OnInit {
 
   onTabChange(index: number): void {
     this.selectedTabIndex = index;
+    this.pollSubscription?.unsubscribe();
+
     if (index === 2) {
       this.loadUsageAnalytics();
+
+      this.pollSubscription = timer(30000, 30000).subscribe(() => {
+        this.refreshUsageAnalytics(true);
+      });
     }
   }
 
@@ -708,7 +723,10 @@ public class Example {
     });
   }
 
-  refreshUsageAnalytics(): void {
+  refreshUsageAnalytics(updateToNow: boolean = true): void {
+    if (updateToNow) {
+      this.usageFiltersForm.patchValue({ to: this.toLocalDateTimeInput(new Date()) });
+    }
     this.usageLoaded = false;
     this.loadUsageAnalytics(true);
   }
@@ -851,5 +869,10 @@ public class Example {
     const date = new Date(value);
     if (isNaN(date.getTime())) return undefined;
     return date.toISOString();
+  }
+
+  ngOnDestroy(): void {
+    this.pollSubscription?.unsubscribe();
+    this.focusSubscription?.unsubscribe();
   }
 }

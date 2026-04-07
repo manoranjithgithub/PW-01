@@ -102,7 +102,7 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
 
   get canCancelDeployment(): boolean {
     const status = (this.currentStatus || '').toLowerCase();
-    return status === 'building' || status === 'deploying';
+    return status === 'building';
   }
 
   getReleasesByDeploymentId(res: any): void {
@@ -225,11 +225,11 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
           if (res?.status?.toLowerCase() === 'success') {
             this.toaster.success('Deployment cancel requested successfully');
           } else {
-            this.toaster.error(res?.message || 'Failed to cancel deployment');
+            // this.toaster.error(res?.message || 'Failed to cancel deployment');
           }
         },
         error: (err) => {
-          this.toaster.error(err?.message || 'Failed to cancel deployment');
+          // this.toaster.error(err?.message || 'Failed to cancel deployment');
         }
       });
     });
@@ -242,21 +242,22 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
 
     const isBuilding = status === "initiated" || status === "building";
     const isPending = status === "pending";
+    const isBuildCancelled = status === "cancelled";
     const isBuildFailed = ["build failed", "build timeout", "failed"].includes(status);
     const isDeploying = status === "deploying";
     const isDeployFailed = ["deploy failed", "deploy timeout", "create job failed"].includes(status);
     const isPaused = status === "paused";
 
-    const buildStatus = isPending ? "pending" : (isBuildFailed ? "failed" : "success");
+    const buildStatus = isPending ? "pending" : (isBuildFailed || isBuildCancelled ? "failed" : "success");
     const deployStatus = isPaused
       ? "paused"
       : isPending
         ? "pending"
         : isDeployFailed
           ? "failed"
-          : isBuildFailed || isBuilding
-            ? "pending"
-            : "success";
+            : isBuildFailed || isBuildCancelled || isBuilding
+              ? "pending"
+              : "success";
 
     this.steps = [
       {
@@ -276,6 +277,7 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
           ? "Build : Pending"
           : isBuilding
             ? "Building..."
+            : isBuildCancelled ? "cancelled"
             : buildStatus === "success"
               ? "Build : Passed"
               : "Build › Build image",
@@ -285,7 +287,9 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
 
         message: isPending
           ? "Build is waiting to be scheduled."
-          : isBuildFailed
+          : isBuildCancelled
+            ? "Build was cancelled. Please check the build logs for more details."
+            : isBuildFailed
             ? "Failed to build an image. Please check the build logs for more details."
             : ""
       });
@@ -312,11 +316,11 @@ export class DeploymentReleasesComponent implements OnInit, OnDestroy {
           ? "in-process"
           : isPaused
             ? "paused"
-            : isBuilding || isBuildFailed
+            : isBuilding || isBuildFailed || isBuildCancelled
               ? "pending"
               : deployStatus,
 
-      time: (isBuilding || isBuildFailed || isPaused || isPending) ? "" : deployTime,
+      time: (isBuilding || isBuildFailed || isBuildCancelled || isPaused || isPending) ? "" : deployTime,
 
       message: isPending
         ? "Deployment is waiting to be scheduled."

@@ -107,10 +107,10 @@
                 <input type="text" class="form-control" formControlName="name" data-testid="input-name"
                   (blur)="checkAvailablity()">
                 <div class="text-danger my-1" data-testid="error-name-required" *ngIf="isError('name', 'required')">
-                  Deployment name is required.
+                  Application name is required.
                 </div>
                 <div class="text-danger my-1" data-testid="error-name-pattern" *ngIf="isError('name','pattern')">
-                  Deployment name can contain only lowercase letters, numbers, and hyphens.
+                  Application name can contain only lowercase letters, numbers, and hyphens.
                 </div>
                 <div class="text-danger my-1" data-testid="error-name-validation"
                   *ngIf="isError('name','nameValidation')"> Name is already taken</div>

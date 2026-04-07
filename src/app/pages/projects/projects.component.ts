@@ -117,7 +117,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
       return;
     }
     const resourceUsage = JSON.parse(usageStr);
-    console.log('Resource usage from cookie:', resourceUsage);
+    // console.log('Resource usage from cookie:', resourceUsage);
 
     // Example: extract projects and environments usage
     const projectQuota = resourceUsage.find((res: any) => res.resource_type === 'projects');
@@ -216,7 +216,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     return this.environmentList;
   }
   updateCookies() {
-    this.router.navigate(['/deployment'])
+    this.router.navigate(['/applications'])
   }
 
   navigateToProjectPreference(project: any) {

@@ -149,7 +149,7 @@ export class ProjectPreferenceComponent implements OnInit, OnDestroy {
       }
 
       this.generalSettingForm = this.fb.group({
-        projectName: [this.projectDetails.name, Validators.maxLength(40)],
+        projectName: [this.projectDetails.name, [Validators.required, Validators.maxLength(40)]],
         projectId: [this.projectDetails.id],
         description: [this.projectDetails.description, Validators.maxLength(200)],
       });
@@ -363,6 +363,7 @@ export class ProjectPreferenceComponent implements OnInit, OnDestroy {
 
   saveGeneralChanges() {
     if (this.generalSettingForm.invalid) {
+      this.generalSettingForm.markAllAsTouched();
       return;
     }
     const { projectName, description } = this.generalSettingForm.value;
@@ -610,6 +611,7 @@ export class ProjectPreferenceComponent implements OnInit, OnDestroy {
       projectName: this.projectDetails.name,
       description: this.projectDetails.description,
     });
-    
+    this.generalSettingForm.markAsPristine();
+    this.generalSettingForm.markAsUntouched();
   }
 }

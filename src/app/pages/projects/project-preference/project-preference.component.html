@@ -19,9 +19,13 @@
                   </ng-container>
                   <ng-template #editName>
                     <input formControlName="projectName" class="form-control" placeholder="Enter project name"
-                      (input)="checkProjectNameUnique()" />
+                      (input)="checkProjectNameUnique()" (blur)="checkProjectNameUnique()" />
                     <small class="text-danger mt-1"
-                      *ngIf="generalSettingForm.get('projectName')?.hasError('maxlength')">
+                      *ngIf="generalSettingForm.get('projectName')?.hasError('required') && generalSettingForm.get('projectName')?.touched">
+                      Project name is required.
+                    </small>
+                    <small class="text-danger mt-1"
+                      *ngIf="generalSettingForm.get('projectName')?.hasError('maxlength') && generalSettingForm.get('projectName')?.touched">
                       Maximum 40 characters allowed.
                     </small>
                     <small
@@ -39,12 +43,16 @@
                   <ng-template #editDesc>
                     <textarea formControlName="description" class="form-control" rows="3"
                       placeholder="Enter description"></textarea>
+                    <small class="text-danger mt-1"
+                      *ngIf="generalSettingForm.get('description')?.hasError('maxlength') && generalSettingForm.get('description')?.touched">
+                      Maximum 200 characters allowed.
+                    </small>
                   </ng-template>
                 </div>
 
               </div>
               <div class="col-md-2 text-end">
-                <button *ngIf="!isGeneralEditMode" class="btn btn-edit p-0"
+                <button *ngIf="!isGeneralEditMode" type="button" class="btn btn-edit p-0"
                   [class.disabled]="!permissionService.canAdminGlobal()"
                   [disabled]="!permissionService.canAdminGlobal()"
                   [attr.aria-disabled]="!permissionService.canAdminGlobal()"
@@ -52,17 +60,15 @@
                   (click)="isGeneralEditMode = true">
                   <i class="bi bi-pencil-square edit-icon"></i> edit
                 </button>
-                <button *ngIf="isGeneralEditMode" class="btn btn-edit p-0" (click)="saveGeneralChanges()"
-                  [disabled]="generalSettingForm.invalid || !permissionService.canAdminGlobal()">
+                <button *ngIf="isGeneralEditMode" type="button" class="btn btn-edit p-0" (click)="saveGeneralChanges()"
+                  [disabled]="!permissionService.canAdminGlobal()">
                   Save
                 </button>
-                <button *ngIf="isGeneralEditMode" class="btn btn-edit p-0 mx-2" (click)="cancelGeneralEdit()">
+                <button *ngIf="isGeneralEditMode" type="button" class="btn btn-edit p-0 mx-2" (click)="cancelGeneralEdit()">
                   Cancel
                 </button>
               </div>
             </div>
-
-
           </form>
         </div>
       </ng-template>

@@ -251,11 +251,15 @@ export class BillsComponent implements OnInit, OnChanges {
   //   this.billRows = filtered;
   // }
   get deploymentServiceCount(): number {
-    return this.monthBillRows.filter((row) => row.source === 'application').length;
+    return this.monthBillRows.filter(
+      (row) => row.source === 'application' && this.getBillRowUptimeHours(row) > 0
+    ).length;
   }
 
   get toolServiceCount(): number {
-    return this.monthBillRows.filter((row) => row.source !== 'application').length;
+    return this.monthBillRows.filter(
+      (row) => row.source !== 'application' && this.getBillRowUptimeHours(row) > 0
+    ).length;
   }
 
   get toolServiceCostTotal(): number {
@@ -502,7 +506,7 @@ export class BillsComponent implements OnInit, OnChanges {
   }
 
   refreshBills(): void {
-    this.selectedMonth = this.getCurrentMonthValue();
+    this.selectedMonth = this.getPreviousMonthValue();
     this.syncMonthPickerFromSelected();
     this.applyMonthSelection(this.selectedMonth);
     this.billOffset = 0;
@@ -785,7 +789,6 @@ export class BillsComponent implements OnInit, OnChanges {
     item: any,
   ): BillServiceRow {
 
-    console.log('Mapping item:', item);
     // const deploymentDisplayName = item?.deployment?.name;
     // const toolDisplayName = item?.tool?.name;
     // const defaultName = 'Unnamed service';

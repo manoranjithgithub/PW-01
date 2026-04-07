@@ -81,7 +81,7 @@ export class ReviewScreenComponent implements OnInit {
         if (res.status?.toLowerCase() === 'success') {
           this.toaster.success(res?.message);
           // this.websocketService.sendMessage({ messages: 'new message' });
-          this.router.navigate(['/deployment']);
+          this.router.navigate(['/applications']);
         }
       },
       error: (err) => {

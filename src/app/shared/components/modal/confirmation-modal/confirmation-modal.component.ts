@@ -25,6 +25,10 @@ export class ConfirmationModalComponent {
     return typed.length > 0 && typed === expected;
   }
 
+  get displaySelectedItem(): string {
+    return this.selectedItem.toLowerCase() === 'deployment' ? 'Application' : this.selectedItem;
+  }
+
   get confirmationPlaceholder(): string {
     if (this.selectedItem.toLowerCase() === 'project') {
       return 'Confirm project name here';

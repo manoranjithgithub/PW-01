@@ -6,11 +6,11 @@ export const routes: Routes = [
     loadComponent: () => import('./deployments.component').then(m => m.DeploymentsComponent),
   },
   {
-    path: 'deployment-details',
+    path: 'application-details',
     loadComponent: () => import('./deployment-details/deployment-details.component').then(m => m.DeploymentDetailsComponent)
   },
   {
-    path: 'create-deployment',
+    path: 'create-application',
     loadComponent: () => import('./create-deployments/create-deployments.component').then(m => m.CreateDeploymentsComponent)
   },
   {

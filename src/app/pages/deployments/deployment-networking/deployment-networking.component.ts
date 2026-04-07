@@ -130,8 +130,8 @@ export class DeploymentNetworkingComponent implements OnInit {
       this.deploymentId = depolyementId;
       this.deploymentService.getDeploymentById(depolyementId).subscribe((res: any) => {
         this.deploymentdetails = res.data;
-        this.networkSettingsForm.get('service')?.setValue(this.deploymentdetails?.name);
-        this.networkSettingsForm.get('customDnsHost')?.setValue(this.deploymentdetails?.network?.customDomain);
+        this.networkSettingsForm.get('service')?.setValue(this.deploymentdetails?.name, { emitEvent: false });
+        this.networkSettingsForm.get('customDnsHost')?.setValue(this.deploymentdetails?.network?.customDomain, { emitEvent: false });
         this.dnsInfo = {
           dnsName: this.deploymentdetails?.network?.customDomain || '',
           ipAddress: res.data?.ipAddress || '151.185.41.131'
@@ -177,10 +177,8 @@ export class DeploymentNetworkingComponent implements OnInit {
       // this.enableAuth = !!authentication;
 
       if (customDomain) { this.isHostDisabled = true; }
-      this.networkSettingsForm.get('customDnsHost')?.setValue(customDomain);
-
+      this.networkSettingsForm.get('customDnsHost')?.setValue(customDomain, { emitEvent: false });
       this.networkSettingsForm.get('showAuthentication')?.setValue(!!authentication, { emitEvent: false });
-
       const authGroup = this.networkSettingsForm.get('authentication') as FormGroup;
       if (authGroup && authentication?.username && authentication.password) {
         authGroup.patchValue({
@@ -193,7 +191,6 @@ export class DeploymentNetworkingComponent implements OnInit {
       this.isPatchedValue = false;
       this.networkSettingsForm.markAsPristine();
     });
-   
     const authGroup = this.networkSettingsForm.get('authentication') as FormGroup;
     const usernameControl = authGroup.get('username');
     const passwordControl = authGroup.get('password');
@@ -206,7 +203,6 @@ export class DeploymentNetworkingComponent implements OnInit {
         if (field === 'customDns') {
           // this.enableCustomDns = !!control.value;
         }
-        
         if (usernameControl && passwordControl) {
           usernameControl?.reset('', { emitEvent: false });
           passwordControl?.reset('', { emitEvent: false });
@@ -223,7 +219,6 @@ export class DeploymentNetworkingComponent implements OnInit {
     // this.networkSettingsForm.get('showAuthentication')?.valueChanges.subscribe(value => {
     //   this.enableAuth = !!value;
     // })
-
   }
 
   getDeploymentById(): void {
@@ -457,13 +452,6 @@ export class DeploymentNetworkingComponent implements OnInit {
       }
       this.showPasswordIcon = false;
     });
-  }
-
-
-  shouldEnableButtons(): boolean {
-    const auth = this.networkSettingsForm.get('showAuthentication')?.value;
-    const dns = this.networkSettingsForm.get('customDns')?.value;
-    return !!auth || !!dns;
   }
 
   closeModal() {
