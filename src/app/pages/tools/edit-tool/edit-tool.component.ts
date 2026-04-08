@@ -1,4 +1,4 @@
-import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormField, ResourceInfo } from '../../../core/models/list-item.model';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AbstractControl, FormBuilder, FormControl, FormGroup, Validators, ValidatorFn } from '@angular/forms';
@@ -17,7 +17,6 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ConfirmationModalComponent } from '../../../shared/components/modal/confirmation-modal/confirmation-modal.component';
 import { ToolMonitoringComponent } from '../tool-monitoring/tool-monitoring.component';
 import { ToolMetricsComponent } from '../tool-metrics/tool-metrics.component';
-import { UserService } from '../../../core/services/user.service';
 
 @Component({
   selector: 'app-edit-tool',
@@ -52,14 +51,12 @@ export class EditToolComponent implements OnInit, OnDestroy {
     return this.hourlyInstanceRate * 730;
   }
   private destroy$ = new Subject<void>();
-  private statusPollInterval?: any;
 
   constructor(private http: ToolsService, private ac: ActivatedRoute,
     private route: Router, private fb: FormBuilder, private toastr: ToastrService,
     private sharedService: SharedService,
     private modalService: NgbModal,
     private layoutActionService: LayoutActionService,
-    private userService: UserService
   ) {
     this.form = this.fb.group({})
     const storedValue = localStorage.getItem('environment');
@@ -196,7 +193,7 @@ export class EditToolComponent implements OnInit, OnDestroy {
 
       const modifiedSchemaValue = this.addNameViewField(finalSchema);
       this.createForm(modifiedSchemaValue);
-      this.startStatusPolling();
+
     });
   }
 
@@ -258,74 +255,15 @@ export class EditToolComponent implements OnInit, OnDestroy {
     }
   }
 
+  showToolsTable() {
+    this.route.navigate(['/tools'])
+  }
+
   ngOnDestroy() {
     this.subscription?.unsubscribe();
     this.destroy$.next();
     this.destroy$.complete();
     this.layoutActionService.clearExtraTitle();
-    this.stopStatusPolling();
-  }
-
-  private getToolStatus() {
-    if (!this.deploymentId) return;
-
-    const envId = localStorage.getItem('environment');
-    if (!envId) return;
-
-    const envObj = JSON.parse(envId);
-    const req = {
-      "environmentId": envObj.id,
-      "workloadIds": [this.deploymentId],
-      "type": "tool"
-    };
-
-    this.userService.getDeploymentStatus(req).subscribe({
-      next: (res: any) => {
-        if (res && Array.isArray(res.data) && res.data.length > 0) {
-          const statusItem = res.data.find((item: any) => item.deploymentId === this.deploymentId || item.id === this.deploymentId);
-          if (statusItem && this.toolDetails) {
-            const newStatus = statusItem.status || 'not available';
-            if (this.toolDetails.data.status !== newStatus) {
-              this.toolDetails.data.status = newStatus;
-              this.layoutActionService.setExtraTitle(
-                `${this.toolViewName} (${newStatus})`
-              );
-            }
-          }
-        }
-      },
-      error: (err: any) => {
-        console.error('Error fetching tool status', err);
-      }
-    });
-  }
-
-  private startStatusPolling() {
-    if (this.statusPollInterval) return;
-    this.getToolStatus();
-    this.statusPollInterval = setInterval(() => {
-      this.getToolStatus();
-    }, 12000);
-  }
-
-  private stopStatusPolling() {
-    if (this.statusPollInterval) {
-      clearInterval(this.statusPollInterval);
-      this.statusPollInterval = undefined;
-    }
-  }
-
-  @HostListener('document:visibilitychange')
-  onVisibilityChange() {
-    if (document.hidden) {
-      this.stopStatusPolling();
-    } else {
-      this.startStatusPolling();
-    }
-  }
-
-  showToolsTable() {
-    this.route.navigate(['/tools'])
   }
 
   addNameViewField(schema: FormField): any {
