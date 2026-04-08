@@ -209,16 +209,65 @@ export class ToolsComponent implements OnInit, OnDestroy {
       flex: 1,
     },
     {
-      headerName: 'Public Port',
-      field: 'publicPort',
-      width: 120,
-      cellStyle: { textAlign: 'center' },
-    },
-    {
-      headerName: 'Private Port',
-      field: 'privatePort',
-      width: 120,
-      cellStyle: { textAlign: 'center' },
+      headerName: 'Port',
+      cellRenderer: (params: any) => {
+        const rawPorts = params.data?.ports;
+        const portItems = Array.isArray(rawPorts) ? rawPorts : (rawPorts ? [rawPorts] : []);
+
+        const escapeJsString = (value: string) => value.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        const MAX_VISIBLE_CHIPS = 2;
+
+        const makePart = (values: Array<string | number>, label: string) => {
+          const normalized = values
+            .filter((value) => value !== null && value !== undefined && value !== '')
+            .map((value) => String(value));
+          if (!normalized.length) return '';
+
+          const displayLabel = label === 'private' ? 'Private' : 'Public';
+          const visibleValues = normalized.slice(0, MAX_VISIBLE_CHIPS);
+          const remainingValues = normalized.slice(MAX_VISIBLE_CHIPS);
+          const selectedView = encodeURIComponent(String(params.data?.name || ''));
+          const toolId = encodeURIComponent(String(params.data?.id || ''));
+
+          const chips = visibleValues.map((value) => {
+            const escaped = escapeJsString(value);
+            return `<button type="button" class="port-chip-copy" title="Copy"
+                onclick="(function(event){ event.preventDefault(); event.stopPropagation(); navigator.clipboard.writeText('${escaped}'); const btn = event.currentTarget; if (!btn) return; btn.setAttribute('title', 'Copied'); btn.classList.remove('show-copied-tip'); void btn.offsetWidth; btn.classList.add('show-copied-tip'); setTimeout(function(){ btn.setAttribute('title', 'Copy'); btn.classList.remove('show-copied-tip'); }, 1200); })(event)">
+                ${value}
+              </button>`;
+          });
+
+          if (remainingValues.length) {
+            chips.push(`<button type="button" class="port-more-btn" title="show more"
+                onclick="(function(event){ event.preventDefault(); event.stopPropagation(); window.location.href='/tools/view-tool?selectedView=${selectedView}&id=${toolId}#network-section'; })(event)">
+                +${remainingValues.length}
+              </button>`);
+          }
+
+          return `
+            <div class="port-row-entry">
+              <span class="host-pill ${label}">${displayLabel}</span>
+              <div class="port-chip-list">
+                ${chips.join('')}
+              </div>
+            </div>`;
+        };
+
+        const privatePorts = portItems
+          .map((port: any) => port?.privatePort)
+          .filter((value: any) => value !== undefined && value !== null && value !== '');
+        const publicPorts = portItems
+          .map((port: any) => port?.publicPort)
+          .filter((value: any) => value !== undefined && value !== null && value !== '');
+
+        const parts = [
+          makePart(privatePorts, 'private'),
+          makePart(publicPorts, 'public')
+        ].filter(Boolean);
+
+        return parts.length ? parts.join('') : '-';
+      },
+      width: 220,
     },
     {
       headerName: "Actions",
