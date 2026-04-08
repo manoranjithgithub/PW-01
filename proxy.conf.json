@@ -1,0 +1,8 @@
+{
+  "/status": {
+    "target": "https://nimbuz-status-be-env-qeodie36wd.dev.lb.nimbuz.tech",
+    "secure": true,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  }
+}

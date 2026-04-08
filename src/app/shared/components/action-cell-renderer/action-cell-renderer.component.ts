@@ -236,6 +236,7 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
             this.http.updateDeployment(data?.id, req).subscribe((res: any) => {
               if (res.status.toLowerCase() === "success") {
                 this.toaster.success(`Application ${type === 'Pause' ? 'paused' : 'resumed'} successfully`);
+                this.route.navigate(['/applications/application-details'], { queryParams: { id: data.id} });
               }
               setTimeout(() => {
                 this.isPauseResumeDisabled = false;
@@ -277,6 +278,7 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
             this.http.updateDeployment(req.id, { sourceCode: req?.sourceCode }).subscribe((res: any) => {
               if (res.status.toLowerCase() === "success") {
                 this.toaster.success('Redeploy initiated');
+                this.route.navigate(['/applications/application-details'], { queryParams: { id: req.id} });
 
               }
             },

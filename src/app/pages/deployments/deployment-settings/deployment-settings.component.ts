@@ -506,10 +506,11 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
     const baseData = {
       type: sourceFormValue.type,
       gitUrl: this.buildGitUrl(),
-      s3FileKey: fileName ? this.s3FileKey : null,
+      s3FileKey: fileName ? this.s3FileKey : '',
       // dockerfilePath: sourceFormValue.dockerfilePath
       folderPath: sourceFormValue.folderPath,
       dockerFileName: sourceFormValue.dockerFileName,
+      vcsAutoDeploy: sourceFormValue.vcsAutoDeploy
     };
     const hpa = {
       hpaEnabled: formValue.hpaEnabled,
@@ -527,7 +528,6 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
       baseData.folderPath = formValue.folderPath;
       baseData.dockerFileName = formValue.dockerFileName;
     }
-
     const sourceCode = isDockerfilePathChanged
       ? baseData
       : this.getChangedFields(baseData, originalSource);
@@ -737,8 +737,8 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
       // this.generalSettingsForm.get('replicas')?.setValue(value ? value : '1');
       this.generalSettingsForm.get('replicas')?.setValidators([Validators.required, Validators.min(1)]);
       this.generalSettingsForm.get('replicas')?.updateValueAndValidity();
-      // this.generalSettingsForm.get('hpaMinReplicas')?.setValue('');
-      // this.generalSettingsForm.get('hpaMaxReplicas')?.setValue('');
+      this.generalSettingsForm.get('hpaMinReplicas')?.setValue('');
+      this.generalSettingsForm.get('hpaMaxReplicas')?.setValue('');
       this.generalSettingsForm.get('hpaMinReplicas')?.clearValidators();
       this.generalSettingsForm.get('hpaMaxReplicas')?.clearValidators();
       this.generalSettingsForm.get('hpaMinReplicas')?.updateValueAndValidity();
