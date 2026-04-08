@@ -23,10 +23,10 @@
               (click)="requestGenerate()">Generate host</button>
           </div>
         </div>
-        <div class="ports-section">
-          <div class="port-box" *ngIf="data.publicPort">
-            <div class="port-label">Public Port</div>
-            <div class="port-value"> {{ data.publicPort }}</div>
+        <div class="ports-section" *ngIf="publicPortValues.length">
+          <div class="port-heading">Port</div>
+          <div class="port-chips">
+            <span class="port-chip" *ngFor="let value of publicPortValues">{{ value }}</span>
           </div>
         </div>
       </fieldset>
@@ -50,10 +50,10 @@
                   class="bi bi-box-arrow-up-right"></i></button> -->
           </div>
         </div>
-        <div class="ports-section">
-          <div class="port-box" *ngIf="data.privatePort">
-            <div class="port-label">Private Port</div>
-            <div class="port-value"> {{ data.privatePort }}</div>
+        <div class="ports-section" *ngIf="privatePortValues.length">
+          <div class="port-heading">Port</div>
+          <div class="port-chips">
+            <span class="port-chip" *ngFor="let value of privatePortValues">{{ value }}</span>
           </div>
         </div>
       </fieldset>

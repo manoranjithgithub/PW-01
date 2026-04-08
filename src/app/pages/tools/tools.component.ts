@@ -205,16 +205,53 @@ export class ToolsComponent implements OnInit, OnDestroy {
       flex: 1,
     },
     {
-      headerName: 'Public Port',
-      field: 'publicPort',
-      width: 120,
-      cellStyle: { textAlign: 'center' },
-    },
-    {
-      headerName: 'Private Port',
-      field: 'privatePort',
-      width: 120,
-      cellStyle: { textAlign: 'center' },
+      headerName: 'Port',
+      cellRenderer: (params: any) => {
+        const rawPorts = params.data?.ports;
+        const portItems = Array.isArray(rawPorts) ? rawPorts : (rawPorts ? [rawPorts] : []);
+
+        const formatPortValues = (values: Array<string | number>) => {
+          const normalized = values
+            .filter((value) => value !== null && value !== undefined && value !== '')
+            .map((value) => String(value));
+
+          if (!normalized.length) return null;
+
+          const fullText = normalized.join(', ');
+          const visibleText = normalized.length > 4
+            ? `${normalized.slice(0, 4).join(', ')}...`
+            : fullText;
+
+          return { fullText, visibleText };
+        };
+
+        const makePart = (values: Array<string | number>, label: string) => {
+          const formatted = formatPortValues(values);
+          if (!formatted) return '';
+          const displayLabel = label === 'private' ? 'Private' : 'Public';
+
+          return `
+            <div class="port-row-entry">
+              <span class="host-pill ${label}">${displayLabel}</span>
+              <span class="host-link" title="${formatted.fullText}">${formatted.visibleText}</span>
+            </div>`;
+        };
+
+        const privatePorts = portItems
+          .map((port: any) => port?.privatePort)
+          .filter((value: any) => value !== undefined && value !== null && value !== '');
+        const publicPorts = portItems
+          .map((port: any) => port?.publicPort)
+          .filter((value: any) => value !== undefined && value !== null && value !== '');
+
+        const parts = [
+          makePart(privatePorts, 'private'),
+          makePart(publicPorts, 'public')
+        ].filter(Boolean);
+
+        return parts.length ? parts.join('') : '-';
+      },
+      width: 220,
     },
     {
       headerName: "Actions",
