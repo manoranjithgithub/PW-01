@@ -31,6 +31,8 @@ export class ToolsComponent implements OnInit, OnDestroy {
   getToolsIntervel: any
   isShowToolDetails: boolean = false;
   sseSub: Subscription | null = null;
+  statusPollInterval?: any;
+  initialStatusUpdated = false;
 
   private tabHiddenAt: number | null = null;
   private isTabHidden = false;
@@ -41,7 +43,7 @@ export class ToolsComponent implements OnInit, OnDestroy {
 
   constructor(private http: ToolsService,
     private router: Router, private sharedService: SharedService, private modalService: NgbModal,
-    private toaster: ToastrService, public permissionService: PermissionService
+    private toaster: ToastrService, public permissionService: PermissionService,
   ) {
     const storedValue = localStorage.getItem('environment');
     if (storedValue && storedValue !== "undefined") {
@@ -302,7 +304,10 @@ export class ToolsComponent implements OnInit, OnDestroy {
     if (!envId || this.sseSub) return;
 
     this.lastEnvId = envId;
+    this.initialStatusUpdated = false;
     this.sharedService.show();
+
+    let firstEmit = true;
 
     this.sseSub = this.http.liveToolsData(envId).subscribe(
       (res: any) => {
@@ -318,10 +323,17 @@ export class ToolsComponent implements OnInit, OnDestroy {
             JSON.stringify(newTools.map((tool: any) => tool.name))
           );
         }
-        this.sharedService.hide();
+
+        if (firstEmit) {
+          firstEmit = false;
+          // Fetch statuses immediately on load and render only after status refresh completes
+          this.getToolsStatus(true);
+          this.startStatusPolling();
+        }
       },
       () => {
         this.rowData = [];
+        this.initialStatusUpdated = true;
         this.sharedService.hide();
       }
     );
@@ -336,6 +348,7 @@ export class ToolsComponent implements OnInit, OnDestroy {
 
       this.sseSub?.unsubscribe();
       this.sseSub = null;
+      this.stopStatusPolling();
 
     } else {
       if (!this.isTabHidden) return;
@@ -401,21 +414,22 @@ export class ToolsComponent implements OnInit, OnDestroy {
     let changed = false;
     newTools.forEach(newTool => {
       const index = this.rowData.findIndex((t: any) => t._id === newTool._id);
+      const { status, ...updateFields } = newTool;
 
       if (index > -1) {
         const existing = this.rowData[index];
 
-        const hasChanges = Object.keys(newTool).some(
-          key => existing[key] !== newTool[key]
+        const hasChanges = Object.keys(updateFields).some(
+          key => existing[key] !== updateFields[key]
         );
 
         if (hasChanges) {
-          this.rowData[index] = { ...existing, ...newTool };
+          this.rowData[index] = { ...existing, ...updateFields };
           changed = true;
         }
 
       } else {
-        this.rowData.push(newTool);
+        this.rowData.push(updateFields);
         changed = true;
       }
     });
@@ -424,12 +438,64 @@ export class ToolsComponent implements OnInit, OnDestroy {
     }
   }
 
+  getToolsStatus(initial = false) {
+  const finalizeInitial = () => {
+    if (initial) {
+      this.initialStatusUpdated = true;
+      this.sharedService.hide();
+    }
+  };
+  if (!this.rowData?.length) {
+    finalizeInitial();
+    return;
+  }
+  const req = {
+    environmentId: this.lastEnvId || "",
+    workloadIds: [],
+    type: "tool"
+  };
+  this.http.getDeploymentStatus(req).subscribe({
+    next: (res: any) => {
+      const statusMap = new Map<string, string>(
+        (res?.data || [])
+          .filter((item: any) => item?.deploymentId)
+          .map((item: any) => [
+            item.deploymentId,
+            item.status || 'not available'
+          ])
+      );
+      this.rowData = this.rowData.map((tool: any) => ({
+        ...tool,
+        status: statusMap.get(tool.id) ?? 'not available'
+      }));
+      this.gridApi?.refreshCells({ force: true });
+      finalizeInitial();
+    },
+    error: (err: any) => {
+      console.error('Error fetching tools status', err);
+      finalizeInitial();
+    }
+  });
+}
 
+  startStatusPolling() {
+    this.statusPollInterval = setInterval(() => {
+      this.getToolsStatus();
+    }, 10000);
+  }
+
+  stopStatusPolling() {
+    if (this.statusPollInterval) {
+      clearInterval(this.statusPollInterval);
+      this.statusPollInterval = undefined;
+    }
+  }
 
   ngOnDestroy(): void {
     clearInterval(this.getToolsIntervel)
     this.subscription?.unsubscribe();
     this.sseSub?.unsubscribe();
+    this.stopStatusPolling();
     document.removeEventListener('visibilitychange', this.handleVisibilityChange);
   }
 }
