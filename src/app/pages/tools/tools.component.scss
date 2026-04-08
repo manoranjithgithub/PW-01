@@ -120,3 +120,12 @@
     background: #f8fafc;
     color: #64748b;
 }
+
+:host ::ng-deep .port-row-entry {
+    display: grid;
+    grid-template-columns: 54px 1fr;
+    align-items: center;
+    column-gap: 10px;
+    margin-bottom: 4px;
+    white-space: nowrap;
+}
