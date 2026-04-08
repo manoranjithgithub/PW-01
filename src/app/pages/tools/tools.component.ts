@@ -210,30 +210,42 @@ export class ToolsComponent implements OnInit, OnDestroy {
         const rawPorts = params.data?.ports;
         const portItems = Array.isArray(rawPorts) ? rawPorts : (rawPorts ? [rawPorts] : []);
 
-        const formatPortValues = (values: Array<string | number>) => {
+        const escapeJsString = (value: string) => value.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        const MAX_VISIBLE_CHIPS = 2;
+
+        const makePart = (values: Array<string | number>, label: string) => {
           const normalized = values
             .filter((value) => value !== null && value !== undefined && value !== '')
             .map((value) => String(value));
+          if (!normalized.length) return '';
 
-          if (!normalized.length) return null;
-
-          const fullText = normalized.join(', ');
-          const visibleText = normalized.length > 4
-            ? `${normalized.slice(0, 4).join(', ')}...`
-            : fullText;
-
-          return { fullText, visibleText };
-        };
-
-        const makePart = (values: Array<string | number>, label: string) => {
-          const formatted = formatPortValues(values);
-          if (!formatted) return '';
           const displayLabel = label === 'private' ? 'Private' : 'Public';
+          const visibleValues = normalized.slice(0, MAX_VISIBLE_CHIPS);
+          const remainingValues = normalized.slice(MAX_VISIBLE_CHIPS);
+          const selectedView = encodeURIComponent(String(params.data?.name || ''));
+          const toolId = encodeURIComponent(String(params.data?.id || ''));
+
+          const chips = visibleValues.map((value) => {
+            const escaped = escapeJsString(value);
+            return `<button type="button" class="port-chip-copy" title="Copy"
+                onclick="(function(event){ event.preventDefault(); event.stopPropagation(); navigator.clipboard.writeText('${escaped}'); const btn = event.currentTarget; if (!btn) return; btn.setAttribute('title', 'Copied'); btn.classList.remove('show-copied-tip'); void btn.offsetWidth; btn.classList.add('show-copied-tip'); setTimeout(function(){ btn.setAttribute('title', 'Copy'); btn.classList.remove('show-copied-tip'); }, 1200); })(event)">
+                ${value}
+              </button>`;
+          });
+
+          if (remainingValues.length) {
+            chips.push(`<button type="button" class="port-more-btn" title="show more"
+                onclick="(function(event){ event.preventDefault(); event.stopPropagation(); window.location.href='/tools/view-tool?selectedView=${selectedView}&id=${toolId}#network-section'; })(event)">
+                +${remainingValues.length}
+              </button>`);
+          }
 
           return `
             <div class="port-row-entry">
               <span class="host-pill ${label}">${displayLabel}</span>
-              <span class="host-link" title="${formatted.fullText}">${formatted.visibleText}</span>
+              <div class="port-chip-list">
+                ${chips.join('')}
+              </div>
             </div>`;
         };
 

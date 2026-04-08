@@ -84,4 +84,49 @@
 	font-size: 12px;
 	font-weight: 600;
 	line-height: 1;
+	cursor: copy;
+	transition: background-color 0.15s ease-in-out;
+	position: relative;
+}
+
+.port-chip:hover {
+	background: #dbeafe;
+}
+
+.port-chip:focus {
+	outline: none;
+	box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.port-chip:active {
+	background: #bfdbfe;
+}
+
+.port-chip.show-copied-tip::after {
+	content: 'Copied';
+	position: absolute;
+	left: 50%;
+	bottom: calc(100% + 6px);
+	transform: translateX(-50%);
+	background: #0f172a;
+	color: #ffffff;
+	font-size: 10px;
+	line-height: 1;
+	padding: 4px 6px;
+	border-radius: 4px;
+	white-space: nowrap;
+	pointer-events: none;
+	z-index: 5;
+}
+
+.port-chip.show-copied-tip::before {
+	content: '';
+	position: absolute;
+	left: 50%;
+	bottom: calc(100% + 2px);
+	transform: translateX(-50%);
+	border: 4px solid transparent;
+	border-top-color: #0f172a;
+	pointer-events: none;
+	z-index: 5;
 }
