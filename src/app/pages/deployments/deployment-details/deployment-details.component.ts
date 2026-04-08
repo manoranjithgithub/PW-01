@@ -211,9 +211,6 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
     if (this.selectedTabIndex === 3) {
       this.configMapChild.updateConfigFile();
     }
-    // if (this.selectedTabIndex < 4) {
-    //   this.selectedTabIndex++;
-    // }
   }
 
   goBack() {
