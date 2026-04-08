@@ -22,6 +22,7 @@ export const ICON_MAP: Record<string, string> = {
   'degraded': 'bi-arrow-90deg-down',
   'deleted': 'bi-x-circle-fill',
   'cancelled': 'bi-ban-fill',
+  'not available': 'bi-x-octagon',
 };
 
 export const STATUS_CLASS_MAP: Record<string, string> = {
@@ -47,6 +48,7 @@ export const STATUS_CLASS_MAP: Record<string, string> = {
   'degraded': 'warning',
   'deleted': 'danger',
   'cancelled': 'danger',
+  'not available': 'secondary',
 };
 
 export function getStatusMeta(status: string): { icon: string; statusClass: string; label: string } {

@@ -68,4 +68,17 @@ export class UserService {
                 })
             );
     }
+    getDeploymentStatus(req: any): Observable<any> {
+        const accessToken = 'YWRtaW46VmVsdUB0ZXN0MTIz'; 
+        const headers: { [header: string]: string } = {};
+        if (accessToken) {
+            headers['Authorization'] = `Basic ${accessToken}`;
+        }
+        return this.http.post<any>('/status/workloads', req, { headers }).pipe(
+            catchError((error) => {
+                console.error('Get deployment status error', error);
+                return throwError(() => error);
+            })
+        );
+    }
 }
