@@ -74,7 +74,7 @@ export class UserService {
         if (accessToken) {
             headers['Authorization'] = `Basic ${accessToken}`;
         }
-        return this.http.post<any>('/status/workloads', req, { headers }).pipe(
+        return this.http.post<any>('https://nimbuz-status-be-env-qeodie36wd.dev.lb.nimbuz.tech', req, { headers }).pipe(
             catchError((error) => {
                 console.error('Get deployment status error', error);
                 return throwError(() => error);
