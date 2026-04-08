@@ -52,6 +52,21 @@ export class ToolNetworkingViewComponent {
     }
   }
 
+  copyPortWithFeedback(event: MouseEvent, text?: string) {
+    if (!text) return;
+    this.copy(text);
+    const btn = event.currentTarget as HTMLElement | null;
+    if (!btn) return;
+    btn.setAttribute('title', 'Copied');
+    btn.classList.remove('show-copied-tip');
+    void btn.offsetWidth;
+    btn.classList.add('show-copied-tip');
+    setTimeout(() => {
+      btn.setAttribute('title', 'Copy');
+      btn.classList.remove('show-copied-tip');
+    }, 1200);
+  }
+
   open(url?: string) {
     if (!url) return;
     const href = url.startsWith('http') ? url : `https://${url}`;
