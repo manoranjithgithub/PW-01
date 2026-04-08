@@ -29,7 +29,9 @@ export class AuthInterceptor implements HttpInterceptor {
   // private readonly skipLoaderUrls = [
   //   '/artificat?fileExtension',
   // ];
-  // private readonly skipLoaderUrls = [];
+  private readonly skipLoaderUrls = [
+    '/statusengine/workloads/',
+  ];
 
   constructor(
     private loader: SharedService,
@@ -39,11 +41,13 @@ export class AuthInterceptor implements HttpInterceptor {
   ) { }
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    activeRequests++;
-
-    // const skipLoader = this.shouldSkipLoader(req.url);
-    if (activeRequests === 1) {
-      this.loader.show();
+    const skipLoader = this.shouldSkipLoader(req.url);
+    
+    if (!skipLoader) {
+      activeRequests++;
+      if (activeRequests === 1) {
+        this.loader.show();
+      }
     }
     if (req.url.includes('/user-uploads')) {
       return next.handle(req).pipe(finalize(() => this.loader.hide()));
@@ -53,24 +57,26 @@ export class AuthInterceptor implements HttpInterceptor {
     return next.handle(request).pipe(
       catchError(error => this.handleError(error, request, next)),
       finalize(() => {
-        activeRequests--;
+        if (!skipLoader) {
+          activeRequests--;
 
-        if (activeRequests === 0) {
-          setTimeout(() => this.loader.hide(), 150);
-          window.scrollTo({
-            top: 0,
-            left: 0,
-            behavior: 'smooth'
-          });
-          // window.scrollTo({ top: 0, behavior: 'smooth' });
+          if (activeRequests === 0) {
+            setTimeout(() => this.loader.hide(), 150);
+            window.scrollTo({
+              top: 0,
+              left: 0,
+              behavior: 'smooth'
+            });
+            // window.scrollTo({ top: 0, behavior: 'smooth' });
+          }
         }
       })
     );
   }
 
-  // private shouldSkipLoader(url: string): boolean {
-  //   return this.skipLoaderUrls.some(pattern => url.includes(pattern));
-  // }
+  private shouldSkipLoader(url: string): boolean {
+    return this.skipLoaderUrls.some(pattern => url.includes(pattern));
+  }
 
   private addToken(req: HttpRequest<any>, token: string): HttpRequest<any> {
     return req.clone({
