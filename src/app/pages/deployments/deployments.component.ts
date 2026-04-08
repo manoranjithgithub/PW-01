@@ -14,13 +14,15 @@ import { SHARED_IMPORTS } from '../../shared/shared-imports';
   imports: [SHARED_IMPORTS],
   templateUrl: './deployments.component.html',
   styleUrls: ['./deployments.component.scss'],
-  // providers: [DeploymentsService]
+  providers: [DeploymentsService]
 })
 export class DeploymentsComponent implements OnInit, OnDestroy {
 
   tableData: any[] = [];
   subscription?: Subscription;
   sseSub: Subscription | null = null;
+  statusPollInterval?: any;
+  initialStatusUpdated = false;
 
   private tabHiddenAt: number | null = null;
   private isTabHidden = false;
@@ -106,7 +108,7 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
   constructor(
     private deploymentsService: DeploymentsService,
     private sharedService: SharedService,
-    private router: Router
+    private router: Router,
   ) { }
 
   onGridReady(params: any): void {
@@ -133,6 +135,7 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
     if (!env || this.sseSub) return;
 
     this.lastEnv = env;
+    this.initialStatusUpdated = false;
     this.sharedService.show();
 
     let firstEmit = true;
@@ -152,11 +155,14 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
 
           if (firstEmit) {
             firstEmit = false;
-            this.sharedService.hide();
+            // Fetch status immediately on load and render table only after the first status refresh
+            this.getdeploymentsStatus(true);
+            this.startStatusPolling();
           }
         },
         () => {
           this.tableData = [];
+          this.initialStatusUpdated = true;
           this.sharedService.hide();
         }
       );
@@ -170,6 +176,7 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
 
       this.sseSub?.unsubscribe();
       this.sseSub = null;
+      this.stopStatusPolling();
 
     } else {
       if (!this.isTabHidden) return;
@@ -187,7 +194,10 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
 
   updateTableData(newData: any[]) {
     if (!this.gridApi) {
-      this.tableData = newData;
+      this.tableData = newData.map((item: any) => {
+        const { status, ...cleanItem } = item;
+        return cleanItem;
+      });
       return;
     }
 
@@ -196,20 +206,21 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
 
     newData.forEach(newItem => {
       const index = this.tableData.findIndex(item => item.id === newItem.id);
+      const { status, ...cleanItem } = newItem;
 
       if (index > -1) {
         const existing = this.tableData[index];
-        const hasChanges = Object.keys(newItem).some(
-          key => existing[key] !== newItem[key]
+        const hasChanges = Object.keys(cleanItem).some(
+          key => existing[key] !== cleanItem[key]
         );
 
         if (hasChanges) {
-          itemsToUpdate.push(newItem);
-          this.tableData[index] = newItem;
+          itemsToUpdate.push({ ...existing, ...cleanItem });
+          this.tableData[index] = { ...existing, ...cleanItem };
         }
       } else {
-        itemsToAdd.push(newItem);
-        this.tableData.push(newItem);
+        itemsToAdd.push(cleanItem);
+        this.tableData.push(cleanItem);
       }
     });
 
@@ -243,6 +254,7 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.subscription?.unsubscribe();
     this.sseSub?.unsubscribe();
+    this.stopStatusPolling();
     if (this.gridApi) {
       this.gridApi.destroy();
       this.gridApi = null;
@@ -251,5 +263,57 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
     this.tableData = [];
     this.lastEnv = null;
     document.removeEventListener('visibilitychange', this.handleVisibilityChange);
+  }
+  getdeploymentsStatus(initial = false) {
+  const finalizeInitial = () => {
+    if (initial) {
+      this.initialStatusUpdated = true;
+      this.sharedService.hide();
+    }
+  };
+  if (!this.tableData?.length) {
+    finalizeInitial();
+    return;
+  }
+  const req = {
+    environmentId: this.lastEnv?.id,
+    workloadIds: [],
+    type: "application"
+  };
+  this.deploymentsService.getDeploymentStatus(req).subscribe({
+    next: (res: any) => {
+      const statusMap = new Map<string, string>(
+        (res?.data || [])
+          .filter((item: any) => item?.deploymentId)
+          .map((item: any) => [
+            item.deploymentId,
+            item.status || 'not available'
+          ])
+      );
+      this.tableData = this.tableData.map((deployment: any) => ({
+        ...deployment,
+        status: statusMap.get(deployment.id) ?? 'not available'
+      }));
+      this.gridApi?.refreshCells({ force: true });
+      finalizeInitial();
+    },
+    error: (err: any) => {
+      console.error('Error fetching deployment status', err);
+      finalizeInitial();
+    }
+  });
+}
+
+  startStatusPolling() {
+    this.statusPollInterval = setInterval(() => {
+      this.getdeploymentsStatus();
+    }, 10000);
+  }
+
+  stopStatusPolling() {
+    if (this.statusPollInterval) {
+      clearInterval(this.statusPollInterval);
+      this.statusPollInterval = undefined;
+    }
   }
 }

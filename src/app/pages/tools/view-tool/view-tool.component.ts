@@ -58,6 +58,7 @@ export class ViewToolComponent implements OnInit, OnDestroy {
   }
   private destroy$ = new Subject<void>();
   toolStatus: string = '';
+  private statusPollInterval?: any;
 
   constructor(
     private http: ToolsService,
@@ -68,7 +69,7 @@ export class ViewToolComponent implements OnInit, OnDestroy {
     private modalService: NgbModal,
     private toastr: ToastrService,
     private layoutActionService: LayoutActionService,
-    public permissionService: PermissionService
+    public permissionService: PermissionService,
   ) {
     this.form = this.fb.group({});
     const storedValue = localStorage.getItem('environment');
@@ -173,6 +174,54 @@ export class ViewToolComponent implements OnInit, OnDestroy {
     this.destroy$.next();
     this.destroy$.complete();
     this.layoutActionService.clearExtraTitle();
+    this.stopStatusPolling();
+  }
+
+  private getToolStatus() {
+    if (!this.deploymentId) return;
+
+    const envId = localStorage.getItem('environment');
+    if (!envId) return;
+
+    const envObj = JSON.parse(envId);
+    const req = {
+      "environmentId": envObj.id,
+      "workloadIds": [this.deploymentId],
+      "type": "tool"
+    };
+
+    this.http.getDeploymentStatus(req).subscribe({
+      next: (res: any) => {
+        if (res && Array.isArray(res.data) && res.data.length > 0) {
+          const statusItem = res.data.find((item: any) => item.deploymentId === this.deploymentId || item.id === this.deploymentId);
+          if (statusItem && this.toolDetails) {
+            const newStatus = statusItem.status || 'not available';
+             this.toolDetails.data.status = newStatus;
+              this.layoutActionService.setExtraTitle(
+                `${this.toolViewName} (${newStatus})`
+              );
+          }
+        }
+      },
+      error: (err: any) => {
+        console.error('Error fetching tool status', err);
+      }
+    });
+  }
+
+  private startStatusPolling() {
+    if (this.statusPollInterval) return;
+    // Poll every 12 seconds
+    this.statusPollInterval = setInterval(() => {
+      this.getToolStatus();
+    }, 12000);
+  }
+
+  private stopStatusPolling() {
+    if (this.statusPollInterval) {
+      clearInterval(this.statusPollInterval);
+      this.statusPollInterval = undefined;
+    }
   }
 
   showTools(): void {
@@ -185,11 +234,10 @@ export class ViewToolComponent implements OnInit, OnDestroy {
       this.toolViewName = this.toolDetails.data.name;
       this.viewdata = this.toolDetails.data.schema;
       this.submitted = false;
-      this.layoutActionService.setExtraTitle(
-        `${this.toolViewName} (${this.toolDetails.data.status})`
-      );
+      this.getToolStatus();
       const modifiedSchema = this.addNameViewField(this.viewdata);
       this.createForm(modifiedSchema);
+      this.startStatusPolling();
     });
   }
 

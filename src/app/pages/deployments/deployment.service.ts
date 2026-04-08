@@ -212,6 +212,13 @@ export class DeploymentsService {
       );
   }
 
+  getDeploymentStatus(req: any) {
+    const url = `${environment.baseUrl}/statusengine/workloads/`;
+    return this.http.post(url, req).pipe(
+      catchError(this.handleError.bind(this))
+    );
+  }
+
   private handleError(error: HttpErrorResponse) {
     let errorMessage = 'Something went wrong. Please try again later.';
 

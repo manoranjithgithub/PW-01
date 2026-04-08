@@ -3,6 +3,6 @@
     <button class="btn button-format-solid px-4 btn-align" (click)="addTools()" [disabled]="!(permissionService.canAdminGlobal() || permissionService.canWriteForCurrentUser(getCurrentProjectId(), envId))" [attr.title]="!(permissionService.canAdminGlobal() || permissionService.canWriteForCurrentUser(getCurrentProjectId(), envId)) ? 'You are not authorized to view that page.' : null"><i class="bi bi-plus"></i> New Tool
     </button>
   </div>
-  <app-ag-grid-table [columnDefs]="columnDefs" [rowData]="rowData" 
+  <app-ag-grid-table *ngIf="initialStatusUpdated" [columnDefs]="columnDefs" [rowData]="rowData" 
     [getRowId]="getRowId" [rowClassRules]="rowClassRules" (gridReady)="onGridReady($event)"></app-ag-grid-table>
 </div>
