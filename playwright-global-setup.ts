@@ -1,7 +1,7 @@
 import { chromium, FullConfig } from '@playwright/test';
 
 async function globalSetup(config: FullConfig) {
-    const baseURL = config.projects[0].use.baseURL || 'http://localhost:4200';
+    const baseURL = 'https://app.dev.nimbuz.tech';
     const browser = await chromium.launch();
     const page = await browser.newPage({ baseURL });
 
