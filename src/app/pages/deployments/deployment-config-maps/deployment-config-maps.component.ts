@@ -16,7 +16,7 @@ import { PermissionService } from '../../../shared/services/permission.service';
 })
 export class DeploymentConfigMapsComponent implements OnInit {
   fileUploadForm!: FormGroup;
-  deploymentdetails: any;
+  @Input() deploymentdetails: any;
   @Input() currentStatus: string = '';
 
   fileName: string | null = null;
@@ -53,21 +53,20 @@ export class DeploymentConfigMapsComponent implements OnInit {
     this.ac.queryParams.subscribe(params => {
       const depolyementId = params['id'];
       if (depolyementId) {
-        this.deploymentsService.getDeploymentById(depolyementId).subscribe((res: any) => {
-          this.deploymentdetails = res.data;
-          this.isBuilding = this.currentStatus?.toLowerCase() === 'building' ? true : false;
-          const freezeAddNewData = res.data?.status.toLowerCase() === 'stopped' || this.currentStatus?.toLowerCase() === 'building' ? true : false;
-          const shouldDisable = freezeAddNewData || !(this.permissionService.canWriteGlobal() || this.permissionService.canAdminGlobal() || this.permissionService.canDeleteForCurrentUser(null, null));
-          if (shouldDisable) {
-            this.fileUploadForm.disable();
-          } else {
-            this.fileUploadForm.enable();
-          }
-          this.fileUploadForm.get('filePath')?.setValue(this.deploymentdetails?.config?.path)
-          this.fileUploadForm.get('fileName')?.setValue(this.deploymentdetails?.config?.name)
-          this.selectedFileName = this.deploymentdetails?.config?.name;
-          this.base64Snippet = this.deploymentdetails?.config?.data ? this.deploymentdetails?.config?.data.substring(0, 60) + '...' : '';
-        })
+        // Use deploymentdetails passed from parent
+        this.isBuilding = this.currentStatus?.toLowerCase() === 'building' ? true : false;
+        const isStopped = this.deploymentdetails?.status?.toLowerCase() === 'stopped';
+        const freezeAddNewData = isStopped || this.currentStatus?.toLowerCase() === 'building' ? true : false;
+        const shouldDisable = freezeAddNewData || !(this.permissionService.canWriteGlobal() || this.permissionService.canAdminGlobal() || this.permissionService.canDeleteForCurrentUser(null, null));
+        if (shouldDisable) {
+          this.fileUploadForm.disable();
+        } else {
+          this.fileUploadForm.enable();
+        }
+        this.fileUploadForm.get('filePath')?.setValue(this.deploymentdetails?.config?.path)
+        this.fileUploadForm.get('fileName')?.setValue(this.deploymentdetails?.config?.name)
+        this.selectedFileName = this.deploymentdetails?.config?.name;
+        this.base64Snippet = this.deploymentdetails?.config?.data ? this.deploymentdetails?.config?.data.substring(0, 60) + '...' : '';
       }
     });
   }

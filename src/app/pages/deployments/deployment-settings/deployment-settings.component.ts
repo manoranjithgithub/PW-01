@@ -46,7 +46,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
   networkSettingsForm !: FormGroup;
   buildSettingsForm !: FormGroup;
   deploySettingsForm !: FormGroup;
-  deploymentdetails: any;
+  @Input() deploymentdetails: any;
   isGenerateDomain: boolean = false;
   isCustomDomain: boolean = false;
   deploymentId: string = '';
@@ -208,14 +208,15 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
     }
     this.ac.queryParams.subscribe(params => {
       const depolyementId = params['id'];
-      this.deploymentService.getDeploymentById(depolyementId).subscribe((res: any) => {
-        this.deploymentdetails = res.data;
-        this.freezeAddNewData = res.data?.status.toLowerCase() === 'stopped' || this.currentStatus?.toLowerCase() === 'building' ? true : false;
-        const shouldDisable = this.freezeAddNewData || !(this.permissionService.canWriteGlobal() || this.permissionService.canAdminGlobal() || this.permissionService.canDeleteForCurrentUser(null, null));
+      // Use deploymentdetails passed from parent
+      if (this.deploymentdetails) {
+        const isStopped = this.deploymentdetails?.status?.toLowerCase() === 'stopped';
+        const freezeAddNewData = isStopped || this.currentStatus?.toLowerCase() === 'building' ? true : false;
+        const shouldDisable = freezeAddNewData || !(this.permissionService.canWriteGlobal() || this.permissionService.canAdminGlobal() || this.permissionService.canDeleteForCurrentUser(null, null));
+        this.freezeAddNewData = freezeAddNewData;
         this.formDisabled = shouldDisable;
-        //this.networkSettingsForm.get('service')?.setValue(this.deploymentdetails?.name)
         this.getDeploymentById();
-      })
+      }
     });
 
     // this.getDeployments();
@@ -506,7 +507,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
     const baseData = {
       type: sourceFormValue.type,
       gitUrl: this.buildGitUrl(),
-      s3FileKey: fileName ? this.s3FileKey : '',
+      s3FileKey: fileName ? this.s3FileKey : null,
       // dockerfilePath: sourceFormValue.dockerfilePath
       folderPath: sourceFormValue.folderPath,
       dockerFileName: sourceFormValue.dockerFileName,
