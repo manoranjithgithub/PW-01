@@ -103,6 +103,7 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
         if (data?.status?.toLowerCase() === 'success') {
           this.deploymentdetails = data.data;
           this.startSSE();
+          this.getDeploymentStatus();
           this.startStatusPolling();
         }
 
@@ -202,7 +203,7 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
         if (res && Array.isArray(res.data) && res.data.length > 0) {
           const statusItem = res.data.find((item: any) => item.deploymentId === this.deploymentId || item.id === this.deploymentId);
           if (statusItem && this.deploymentdetails) {
-            const newStatus = statusItem.status || 'not available';
+            const newStatus = statusItem.status === 'UNKNOWN' ? 'Not Available' : (statusItem.status || 'not available');
             this.deploymentdetails.status = newStatus;
               this.layoutActionService.setExtraTitle(
                 `${this.deploymentdetails.name} (${newStatus})`
