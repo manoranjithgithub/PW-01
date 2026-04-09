@@ -277,7 +277,7 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
   }
   const req = {
     environmentId: this.lastEnv?.id,
-    workloadIds: [],
+    workloadIds: this.tableData.map((deployment: any) => deployment.id) || [],
     type: "application"
   };
   this.deploymentsService.getDeploymentStatus(req).subscribe({
@@ -287,7 +287,7 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
           .filter((item: any) => item?.deploymentId)
           .map((item: any) => [
             item.deploymentId,
-            item.status || 'not available'
+            item.status === 'UNKNOWN' ? 'not available' : (item.status || 'not available')
           ])
       );
       this.tableData = this.tableData.map((deployment: any) => ({

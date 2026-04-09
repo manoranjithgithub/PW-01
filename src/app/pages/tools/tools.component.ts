@@ -461,7 +461,7 @@ export class ToolsComponent implements OnInit, OnDestroy {
           .filter((item: any) => item?.deploymentId)
           .map((item: any) => [
             item.deploymentId,
-            item.status || 'not available'
+            item.status === 'UNKNOWN' ? 'not available' : (item.status || 'not available')
           ])
       );
       this.rowData = this.rowData.map((tool: any) => ({
