@@ -37,7 +37,14 @@
             <div class="row mt-4">
                 <div *ngFor="let field of formStructure" class="col-md-6 mt-2">
                     <label class="form-label text-capitalize d-flex justify-content-between" [for]="field.key">
-                        <span>{{ field.label }} <span class="text-danger">*</span></span>
+                        <span class="field-label-wrap">
+                            <span>{{ field.label }}</span><span class="text-danger">*</span>
+                            <span *ngIf="field.key === 'rabbitmq.auth.erlangCookie' && field.help"
+                                class="text-warning  cursor" [cTooltip]="field.help" cTooltipPlacement="top"
+                                aria-label="Field help">
+                                <i class="bi bi-exclamation-circle"></i>
+                            </span>
+                        </span>
                         <span class="text-gray ml-auto text-nowrap"
                             *ngIf="field.function  === 'resource' && selectedResource">
                             ( <span class="mx-1"><b>CPU:</b> {{selectedResource[field.label]?.cpuVcpu}}</span>
