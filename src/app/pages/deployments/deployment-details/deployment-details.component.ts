@@ -201,7 +201,7 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
     this.deploymentService.getDeploymentStatus(req).subscribe({
       next: (res: any) => {
         if (res && Array.isArray(res.data) && res.data.length > 0) {
-          const statusItem = res.data.find((item: any) => item.deploymentId === this.deploymentId || item.id === this.deploymentId);
+          const statusItem = res.data.find((item: any) => item.deploymentId === this.deploymentId);
           if (statusItem && this.deploymentdetails) {
             const newStatus = statusItem.status === 'UNKNOWN' ? 'Not Available' : (statusItem.status || 'not available');
             this.deploymentdetails.status = newStatus;
