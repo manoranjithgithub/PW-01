@@ -13,6 +13,13 @@ Issue - 2999 : Project- description field validation
 Issue -3009 : Incorrect message on resume after cancel pop-up
 Issue- 3007 : Port field validation
 
+### 1.0.1
+- RabbitMQ Integration
+- Tool Field Validation
+- Applied UI feedback changes for tools
+- Status Handling Enhancements
+- Bug Fixes & Refactoring
+
 
 
 ## Getting started
