@@ -527,10 +527,10 @@ export class BillsComponent implements OnInit, OnChanges {
     if (!year || !month) {
       return;
     }
-    const start = new Date(year, month - 1, 1);
-    const end = new Date(year, month, 0);
-    this.startDate = this.formatDateAsYMD(start);
-    this.endDate = this.formatDateAsYMD(end);
+    const start = new Date(Date.UTC(year, month - 1, 1, 0, 0, 0, 0));
+    const end = new Date(Date.UTC(year, month, 0, 23, 59, 59, 999));
+    this.startDate = this.formatDateAsUtcTimestamp(start);
+    this.endDate = this.formatDateAsUtcTimestamp(end);
   }
 
   private syncMonthPickerFromSelected(): void {
@@ -558,11 +558,15 @@ export class BillsComponent implements OnInit, OnChanges {
     return { year: normalizedYear, month: normalizedMonth };
   }
 
-  private formatDateAsYMD(date: Date): string {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+  private formatDateAsUtcTimestamp(date: Date): string {
+    const year = date.getUTCFullYear();
+    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(date.getUTCDate()).padStart(2, '0');
+    const hours = String(date.getUTCHours()).padStart(2, '0');
+    const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+    const seconds = String(date.getUTCSeconds()).padStart(2, '0');
+    const milliseconds = String(date.getUTCMilliseconds()).padStart(3, '0');
+    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}Z`;
   }
 
   private getAmount(value: any): number {
