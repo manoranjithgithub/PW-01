@@ -32,9 +32,9 @@ test.describe('12.1   Positive Pause/Resume Application', () => {
         await expect(proceedBtn).toBeEnabled();
         await proceedBtn.click();
 
-        await page.goto('/deployment');
+        await page.goto('/applications');
 
-        await page.waitForURL('**/deployment*', { timeout: 15000 });
+        await page.waitForURL('**/applications*', { timeout: 15000 });
 
         const table = page.getByTestId('ag-grid-table');
         await expect(table).toBeVisible({ timeout: 15000 });
