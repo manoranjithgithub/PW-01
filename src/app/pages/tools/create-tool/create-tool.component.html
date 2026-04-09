@@ -39,7 +39,7 @@
                     <label class="form-label text-capitalize d-flex justify-content-between" [for]="field.key">
                         <span class="field-label-wrap">
                             <span>{{ field.label }}</span><span class="text-danger">*</span>
-                            <span *ngIf="field.key === 'rabbitmq.auth.erlangCookie' && field.help"
+                            <span *ngIf="field.help"
                                 class="text-warning  cursor" [cTooltip]="field.help" cTooltipPlacement="top"
                                 aria-label="Field help">
                                 <i class="bi bi-exclamation-circle"></i>
