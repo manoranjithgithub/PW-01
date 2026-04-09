@@ -109,6 +109,12 @@ export class ToolsService {
         const url = `${this.deploymentUrl}/live/tools/stream?environmentId=${envId}&interval=5&projectId=${projectId}`;
         return this.createSSE(url, token, this.zone);
     }
+    getDeploymentStatus(req:any) {
+        const url = `${environment.baseUrl}/statusengine/workloads/`;
+        return this.http.post(url, req).pipe(
+            catchError(this.handleError.bind(this))
+        );
+    }
 
     private handleError(error: HttpErrorResponse) {
         let errorMessage = 'Something went wrong. Please try again later.';

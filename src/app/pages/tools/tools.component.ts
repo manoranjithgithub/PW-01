@@ -31,6 +31,8 @@ export class ToolsComponent implements OnInit, OnDestroy {
   getToolsIntervel: any
   isShowToolDetails: boolean = false;
   sseSub: Subscription | null = null;
+  statusPollInterval?: any;
+  initialStatusUpdated = false;
 
   private tabHiddenAt: number | null = null;
   private isTabHidden = false;
@@ -41,7 +43,7 @@ export class ToolsComponent implements OnInit, OnDestroy {
 
   constructor(private http: ToolsService,
     private router: Router, private sharedService: SharedService, private modalService: NgbModal,
-    private toaster: ToastrService, public permissionService: PermissionService
+    private toaster: ToastrService, public permissionService: PermissionService,
   ) {
     const storedValue = localStorage.getItem('environment');
     if (storedValue && storedValue !== "undefined") {
@@ -205,16 +207,65 @@ export class ToolsComponent implements OnInit, OnDestroy {
       flex: 1,
     },
     {
-      headerName: 'Public Port',
-      field: 'publicPort',
-      width: 120,
-      cellStyle: { textAlign: 'center' },
-    },
-    {
-      headerName: 'Private Port',
-      field: 'privatePort',
-      width: 120,
-      cellStyle: { textAlign: 'center' },
+      headerName: 'Port',
+      cellRenderer: (params: any) => {
+        const rawPorts = params.data?.ports;
+        const portItems = Array.isArray(rawPorts) ? rawPorts : (rawPorts ? [rawPorts] : []);
+
+        const escapeJsString = (value: string) => value.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        const MAX_VISIBLE_CHIPS = 2;
+
+        const makePart = (values: Array<string | number>, label: string) => {
+          const normalized = values
+            .filter((value) => value !== null && value !== undefined && value !== '')
+            .map((value) => String(value));
+          if (!normalized.length) return '';
+
+          const displayLabel = label === 'private' ? 'Private' : 'Public';
+          const visibleValues = normalized.slice(0, MAX_VISIBLE_CHIPS);
+          const remainingValues = normalized.slice(MAX_VISIBLE_CHIPS);
+          const selectedView = encodeURIComponent(String(params.data?.name || ''));
+          const toolId = encodeURIComponent(String(params.data?.id || ''));
+
+          const chips = visibleValues.map((value) => {
+            const escaped = escapeJsString(value);
+            return `<button type="button" class="port-chip-copy" title="Copy"
+                onclick="(function(event){ event.preventDefault(); event.stopPropagation(); navigator.clipboard.writeText('${escaped}'); const btn = event.currentTarget; if (!btn) return; btn.setAttribute('title', 'Copied'); btn.classList.remove('show-copied-tip'); void btn.offsetWidth; btn.classList.add('show-copied-tip'); setTimeout(function(){ btn.setAttribute('title', 'Copy'); btn.classList.remove('show-copied-tip'); }, 1200); })(event)">
+                ${value}
+              </button>`;
+          });
+
+          if (remainingValues.length) {
+            chips.push(`<button type="button" class="port-more-btn" title="show more"
+                onclick="(function(event){ event.preventDefault(); event.stopPropagation(); window.location.href='/tools/view-tool?selectedView=${selectedView}&id=${toolId}#network-section'; })(event)">
+                +${remainingValues.length}
+              </button>`);
+          }
+
+          return `
+            <div class="port-row-entry">
+              <span class="host-pill ${label}">${displayLabel}</span>
+              <div class="port-chip-list">
+                ${chips.join('')}
+              </div>
+            </div>`;
+        };
+
+        const privatePorts = portItems
+          .map((port: any) => port?.privatePort)
+          .filter((value: any) => value !== undefined && value !== null && value !== '');
+        const publicPorts = portItems
+          .map((port: any) => port?.publicPort)
+          .filter((value: any) => value !== undefined && value !== null && value !== '');
+
+        const parts = [
+          makePart(privatePorts, 'private'),
+          makePart(publicPorts, 'public')
+        ].filter(Boolean);
+
+        return parts.length ? parts.join('') : '-';
+      },
+      width: 220,
     },
     {
       headerName: "Actions",
@@ -253,7 +304,10 @@ export class ToolsComponent implements OnInit, OnDestroy {
     if (!envId || this.sseSub) return;
 
     this.lastEnvId = envId;
+    this.initialStatusUpdated = false;
     this.sharedService.show();
+
+    let firstEmit = true;
 
     this.sseSub = this.http.liveToolsData(envId).subscribe(
       (res: any) => {
@@ -269,10 +323,17 @@ export class ToolsComponent implements OnInit, OnDestroy {
             JSON.stringify(newTools.map((tool: any) => tool.name))
           );
         }
-        this.sharedService.hide();
+
+        if (firstEmit) {
+          firstEmit = false;
+          // Fetch statuses immediately on load and render only after status refresh completes
+          this.getToolsStatus(true);
+          this.startStatusPolling();
+        }
       },
       () => {
         this.rowData = [];
+        this.initialStatusUpdated = true;
         this.sharedService.hide();
       }
     );
@@ -287,6 +348,7 @@ export class ToolsComponent implements OnInit, OnDestroy {
 
       this.sseSub?.unsubscribe();
       this.sseSub = null;
+      this.stopStatusPolling();
 
     } else {
       if (!this.isTabHidden) return;
@@ -352,21 +414,22 @@ export class ToolsComponent implements OnInit, OnDestroy {
     let changed = false;
     newTools.forEach(newTool => {
       const index = this.rowData.findIndex((t: any) => t._id === newTool._id);
+      const { status, ...updateFields } = newTool;
 
       if (index > -1) {
         const existing = this.rowData[index];
 
-        const hasChanges = Object.keys(newTool).some(
-          key => existing[key] !== newTool[key]
+        const hasChanges = Object.keys(updateFields).some(
+          key => existing[key] !== updateFields[key]
         );
 
         if (hasChanges) {
-          this.rowData[index] = { ...existing, ...newTool };
+          this.rowData[index] = { ...existing, ...updateFields };
           changed = true;
         }
 
       } else {
-        this.rowData.push(newTool);
+        this.rowData.push(updateFields);
         changed = true;
       }
     });
@@ -375,12 +438,64 @@ export class ToolsComponent implements OnInit, OnDestroy {
     }
   }
 
+  getToolsStatus(initial = false) {
+  const finalizeInitial = () => {
+    if (initial) {
+      this.initialStatusUpdated = true;
+      this.sharedService.hide();
+    }
+  };
+  if (!this.rowData?.length) {
+    finalizeInitial();
+    return;
+  }
+  const req = {
+    environmentId: this.lastEnvId || "",
+    workloadIds: [],
+    type: "tool"
+  };
+  this.http.getDeploymentStatus(req).subscribe({
+    next: (res: any) => {
+      const statusMap = new Map<string, string>(
+        (res?.data || [])
+          .filter((item: any) => item?.deploymentId)
+          .map((item: any) => [
+            item.deploymentId,
+            item.status || 'not available'
+          ])
+      );
+      this.rowData = this.rowData.map((tool: any) => ({
+        ...tool,
+        status: statusMap.get(tool.id) ?? 'not available'
+      }));
+      this.gridApi?.refreshCells({ force: true });
+      finalizeInitial();
+    },
+    error: (err: any) => {
+      console.error('Error fetching tools status', err);
+      finalizeInitial();
+    }
+  });
+}
 
+  startStatusPolling() {
+    this.statusPollInterval = setInterval(() => {
+      this.getToolsStatus();
+    }, 10000);
+  }
+
+  stopStatusPolling() {
+    if (this.statusPollInterval) {
+      clearInterval(this.statusPollInterval);
+      this.statusPollInterval = undefined;
+    }
+  }
 
   ngOnDestroy(): void {
     clearInterval(this.getToolsIntervel)
     this.subscription?.unsubscribe();
     this.sseSub?.unsubscribe();
+    this.stopStatusPolling();
     document.removeEventListener('visibilitychange', this.handleVisibilityChange);
   }
 }

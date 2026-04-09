@@ -1,4 +1,4 @@
-<app-ag-grid-table [rowData]="tableData" [columnDefs]="columnDefs"
+<app-ag-grid-table *ngIf="initialStatusUpdated" [rowData]="tableData" [columnDefs]="columnDefs"
   [showDeployButton]="true" [getRowId]="getRowId"
   (goToNewDeployModel)="goToNewDeployment()"
   (gridReady)="onGridReady($event)">
