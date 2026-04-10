@@ -14,6 +14,30 @@ export class ToolNetworkingViewComponent {
   @Input() allowGenerate: boolean = false;
   @Output() generateHost = new EventEmitter<void>();
 
+  private get data(): any {
+    return this.viewdata?.data || this.viewdata || {};
+  }
+
+  private get portsList(): any[] {
+    const rawPorts = this.data?.ports;
+    if (Array.isArray(rawPorts)) return rawPorts;
+    return rawPorts ? [rawPorts] : [];
+  }
+
+  private getPortValues(kind: 'publicPort' | 'privatePort'): Array<string | number> {
+    return this.portsList
+      .map((port: any) => port?.[kind])
+      .filter((value: any) => value !== undefined && value !== null);
+  }
+
+  get publicPortValues(): Array<string | number> {
+    return this.getPortValues('publicPort');
+  }
+
+  get privatePortValues(): Array<string | number> {
+    return this.getPortValues('privatePort');
+  }
+
   copy(text?: string) {
     if (!text) return;
     if (navigator.clipboard) {
@@ -26,6 +50,21 @@ export class ToolNetworkingViewComponent {
       document.execCommand('copy');
       document.body.removeChild(x);
     }
+  }
+
+  copyPortWithFeedback(event: MouseEvent, text?: string) {
+    if (!text) return;
+    this.copy(text);
+    const btn = event.currentTarget as HTMLElement | null;
+    if (!btn) return;
+    btn.setAttribute('title', 'Copied');
+    btn.classList.remove('show-copied-tip');
+    void btn.offsetWidth;
+    btn.classList.add('show-copied-tip');
+    setTimeout(() => {
+      btn.setAttribute('title', 'Copy');
+      btn.classList.remove('show-copied-tip');
+    }, 1200);
   }
 
   open(url?: string) {
