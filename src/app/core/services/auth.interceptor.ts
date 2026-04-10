@@ -50,14 +50,7 @@ export class AuthInterceptor implements HttpInterceptor {
       }
     }
     if (req.url.includes('/user-uploads')) {
-      return next.handle(req).pipe(
-        finalize(() => {
-          if (!skipLoader) {
-            activeRequests--;
-            this.hideLoaderWhenIdle();
-          }
-        })
-      );
+      return next.handle(req).pipe(finalize(() => this.loader.hide()));
     }
     const token = this.authService.getAccessToken();
     const request = token ? this.addToken(req, token) : req;
@@ -66,20 +59,20 @@ export class AuthInterceptor implements HttpInterceptor {
       finalize(() => {
         if (!skipLoader) {
           activeRequests--;
-          this.hideLoaderWhenIdle();
+
+
+          if (activeRequests === 0) {
+            setTimeout(() => this.loader.hide(), 150);
+            window.scrollTo({
+              top: 0,
+              left: 0,
+              behavior: 'smooth'
+            });
+            // window.scrollTo({ top: 0, behavior: 'smooth' });
+          }
         }
       })
     );
-  }
-
-  private hideLoaderWhenIdle() {
-    if (activeRequests !== 0) return;
-    setTimeout(() => this.loader.hide(), 150);
-    window.scrollTo({
-      top: 0,
-      left: 0,
-      behavior: 'smooth'
-    });
   }
 
   private shouldSkipLoader(url: string): boolean {
