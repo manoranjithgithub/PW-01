@@ -60,6 +60,7 @@ export class SharedService {
 
   private isLoading = new BehaviorSubject<boolean>(false);
   public isLoading$ = this.isLoading.asObservable();
+  private loadingCounter = 0;
 
   constructor(private cookieService: CookieService, private http: HttpClient) {
     // this.ensureRatesFor(['INR']).catch(() => { /* ignore */ });
@@ -155,11 +156,17 @@ export class SharedService {
   }
 
   show() {
-    this.isLoading.next(true);
+    this.loadingCounter++;
+    if (!this.isLoading.getValue()) {
+      this.isLoading.next(true);
+    }
   }
 
   hide() {
-    this.isLoading.next(false);
+    this.loadingCounter = Math.max(0, this.loadingCounter - 1);
+    if (this.loadingCounter === 0 && this.isLoading.getValue()) {
+      this.isLoading.next(false);
+    }
   }
 
   formatDate(dateString: string): string {

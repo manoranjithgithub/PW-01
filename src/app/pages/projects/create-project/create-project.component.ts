@@ -136,22 +136,22 @@ export class CreateProjectComponent implements OnInit {
     }
     this.project.createProject(req).subscribe((res: any) => {
       if (res.status?.toLowerCase() == 'success') {
-        this.toastr.success(res.message);
-        this.project.getAllProjects().subscribe((projectRes: any) => {
-          this.shared.emitProjectDDChange(projectRes.data);
-          localStorage.setItem('project', JSON.stringify(projectRes.data[0]));
-          this.shared.emitProjectValueChange(res.data?.environment);
-          localStorage.setItem('environment', JSON.stringify(res.data?.environment));
-          this.shared.emitProjectValueChange(res.data?.environment);
-          this.route.navigate(['/projects']);
-        });
+          this.toastr.success(res.message);
+          this.project.getAllProjects().subscribe((projectRes: any) => {
+            this.shared.emitProjectDDChange(projectRes.data);
+            localStorage.setItem('project', JSON.stringify(projectRes.data[0]));
+            this.shared.emitProjectValueChange(res.data?.environment);
+            localStorage.setItem('environment', JSON.stringify(res.data?.environment));
+            this.shared.emitProjectValueChange(res.data?.environment);
+            this.route.navigate(['/projects']);
+          });
+      } else {
+        this.toastr.error(res?.error?.message || 'Unable to create project please try again');
       }
-
     },
       error => {
-        // this.toastr.error(error);
-
-      });
+        this.toastr.error('Unable to create project please try again');
+    });
 
   }
 
