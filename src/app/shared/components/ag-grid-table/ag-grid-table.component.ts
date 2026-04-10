@@ -112,9 +112,8 @@ export class AgGridTableComponent implements OnInit {
     });
     this.sharedService.isLoading$.subscribe((isLoading: boolean) => {
       if (isLoading) {
-        this.overlayMessage = '';
         if (this.gridApi && !this.gridApi.isDestroyed()) {
-          this.gridApi.showNoRowsOverlay();
+          this.gridApi.hideOverlay();
         }
       } else {
         if (this.rowData && this.rowData.length > 0) {
