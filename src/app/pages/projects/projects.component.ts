@@ -82,27 +82,32 @@ export class ProjectsComponent implements OnInit, OnDestroy {
 
   getAllProjects(): void {
     this.sharedService.show();
-    this.projectService.getAllProjects().subscribe((res: any) => {
-      this.projectList = res?.data || [];
-      this.sideNavService.setProject(this.projectList);
-      if (!this.projectList.length) {
-        this.environmentList = [];
-        localStorage.removeItem('environment');
-        localStorage.removeItem('project');
-        localStorage.removeItem('resourceUsage');
-        return;
+    this.projectService.getAllProjects().subscribe({
+      next: (res: any) => {
+        this.projectList = res?.data || [];
+        this.sideNavService.setProject(this.projectList);
+        if (!this.projectList.length) {
+          this.environmentList = [];
+          localStorage.removeItem('environment');
+          localStorage.removeItem('project');
+          localStorage.removeItem('resourceUsage');
+          this.sharedService.hide();
+          return;
+        }
+        //const projectCookie = this.safeParseJSON(this.sharedService.getCookie('project'));
+        const projectCookie = this.safeParseJSON(localStorage.getItem('project'));
+        const matchedProject = this.projectList.find((p: any) => p.id === projectCookie?.id);
+        this.selectedProjectId = matchedProject?.id || this.projectList[0].id;
+        if (!projectCookie && this.selectedProjectId) {
+          this.onProjectChange(this.projectList[0])
+        }
+        this.environmentList = this.getEnvironmentsByProjectId(this.selectedProjectId)
+        this.extractRegions(this.projectList);
+        this.sharedService.hide();
+      },
+      error: () => {
+        this.sharedService.hide();
       }
-      //const projectCookie = this.safeParseJSON(this.sharedService.getCookie('project'));
-      const projectCookie = this.safeParseJSON(localStorage.getItem('project'));
-      const matchedProject = this.projectList.find((p: any) => p.id === projectCookie?.id);
-      this.selectedProjectId = matchedProject?.id || this.projectList[0].id;
-      if (!projectCookie && this.selectedProjectId) {
-        this.onProjectChange(this.projectList[0])
-      }
-      this.environmentList = this.getEnvironmentsByProjectId(this.selectedProjectId)
-      this.extractRegions(this.projectList);
-
-
     });
     // this.environmentList = this.getEnvironmentsByProjectId(this.selectedProjectId);
     const url = window.location.pathname;
