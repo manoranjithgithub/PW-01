@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { FormField, ResourceInfo } from '../../../core/models/list-item.model';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AbstractControl, FormBuilder, FormControl, FormGroup, Validators, ValidatorFn } from '@angular/forms';
@@ -51,6 +51,7 @@ export class EditToolComponent implements OnInit, OnDestroy {
     return this.hourlyInstanceRate * 730;
   }
   private destroy$ = new Subject<void>();
+  private statusPollInterval?: any;
 
   constructor(private http: ToolsService, private ac: ActivatedRoute,
     private route: Router, private fb: FormBuilder, private toastr: ToastrService,
@@ -103,6 +104,15 @@ export class EditToolComponent implements OnInit, OnDestroy {
     return /^(?!\\d)(?!.*[-]{2})(?!.*[A-Z])[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value) ? null : { lowercase: true };
   }
 
+  private gigabyteValidator(control: FormControl) {
+    const value = control.value;
+    const regex = /^\d+(\.\d+)?$/;
+    if (value && !regex.test(value)) {
+      return { gigabyteValidator: true };
+    }
+    return null;
+  }
+
   createForm(fields: { [key: string]: FormField }): void {
     const group: { [key: string]: FormControl } = {};
     this.formStructure = [];
@@ -123,6 +133,10 @@ export class EditToolComponent implements OnInit, OnDestroy {
 
           if (field.validation?.regex) {
             validators.push(this.regexValidator(new RegExp(field.validation.regex), field.validation.error_message));
+          }
+
+          if (field.append === 'Gi') {
+            validators.push(this.gigabyteValidator);
           }
 
           const initialValue = field.value || field.default_value || '';
@@ -169,41 +183,27 @@ export class EditToolComponent implements OnInit, OnDestroy {
       const modifiedSchema = this.addNameViewField(schema);
       this.createForm(modifiedSchema);
 
-      const keysToClean = [
-        'mysql.primary.persistence.size',
-        'postgresql.primary.persistence.size',
-        'mongodb.persistence.size',
-        'postgresql.readReplicas.persistence.size',
-        'n8n.postgresql.primary.persistence.size'
-      ];
-
       const finalSchema = JSON.parse(JSON.stringify(schema));
 
-      keysToClean.forEach(key => {
-        if (finalSchema[key]) {
-          finalSchema[key].value = finalSchema[key].value.replace(/Gi$/, '');
+      Object.keys(finalSchema).forEach(key => {
+        const field = finalSchema[key];
+        if (field.append && field.value) {
+          field.value = field.value.replace(new RegExp(field.append + '$'), '');
         }
       });
 
       const modifiedSchemaValue = this.addNameViewField(finalSchema);
       this.createForm(modifiedSchemaValue);
-
+      this.startStatusPolling();
     });
   }
 
   onSubmit(): void {
     const { name, ...formValues } = this.form.getRawValue();
     if (this.form.valid) {
-      const sizeFields = [
-        'mysql.primary.persistence.size',
-        'postgresql.primary.persistence.size',
-        'mongodb.persistence.size',
-        'postgresql.readReplicas.persistence.size',
-        'n8n.postgresql.primary.persistence.size'
-      ];
-      sizeFields.forEach(key => {
-        if (formValues.hasOwnProperty(key)) {
-          formValues[key] = formValues[key] + 'Gi';
+      this.formStructure.forEach(field => {
+        if (field.append && formValues.hasOwnProperty(field.key)) {
+          formValues[field.key] = formValues[field.key] + field.append;
         }
       });
       const req: any = {
@@ -256,15 +256,74 @@ export class EditToolComponent implements OnInit, OnDestroy {
     }
   }
 
-  showToolsTable() {
-    this.route.navigate(['/tools'])
-  }
-
   ngOnDestroy() {
     this.subscription?.unsubscribe();
     this.destroy$.next();
     this.destroy$.complete();
     this.layoutActionService.clearExtraTitle();
+    this.stopStatusPolling();
+  }
+
+  private getToolStatus() {
+    if (!this.deploymentId) return;
+
+    const envId = localStorage.getItem('environment');
+    if (!envId) return;
+
+    const envObj = JSON.parse(envId);
+    const req = {
+      "environmentId": envObj.id,
+      "workloadIds": [this.deploymentId],
+      "type": "tool"
+    };
+
+    this.http.getDeploymentStatus(req).subscribe({
+      next: (res: any) => {
+        if (res && Array.isArray(res.data) && res.data.length > 0) {
+          const statusItem = res.data.find((item: any) => item.deploymentId === this.deploymentId || item.id === this.deploymentId);
+          if (statusItem && this.toolDetails) {
+            const newStatus = statusItem.status || 'not available';
+            if (this.toolDetails.data.status !== newStatus) {
+              this.toolDetails.data.status = newStatus;
+              this.layoutActionService.setExtraTitle(
+                `${this.toolViewName} (${newStatus})`
+              );
+            }
+          }
+        }
+      },
+      error: (err: any) => {
+        console.error('Error fetching tool status', err);
+      }
+    });
+  }
+
+  private startStatusPolling() {
+    if (this.statusPollInterval) return;
+    this.getToolStatus();
+    this.statusPollInterval = setInterval(() => {
+      this.getToolStatus();
+    }, 12000);
+  }
+
+  private stopStatusPolling() {
+    if (this.statusPollInterval) {
+      clearInterval(this.statusPollInterval);
+      this.statusPollInterval = undefined;
+    }
+  }
+
+  @HostListener('document:visibilitychange')
+  onVisibilityChange() {
+    if (document.hidden) {
+      this.stopStatusPolling();
+    } else {
+      this.startStatusPolling();
+    }
+  }
+
+  showToolsTable() {
+    this.route.navigate(['/tools'])
   }
 
   addNameViewField(schema: FormField): any {

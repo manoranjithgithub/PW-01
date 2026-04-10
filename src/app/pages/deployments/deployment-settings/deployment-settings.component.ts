@@ -46,7 +46,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
   networkSettingsForm !: FormGroup;
   buildSettingsForm !: FormGroup;
   deploySettingsForm !: FormGroup;
-  deploymentdetails: any;
+  @Input() deploymentdetails: any;
   isGenerateDomain: boolean = false;
   isCustomDomain: boolean = false;
   deploymentId: string = '';
@@ -208,14 +208,15 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
     }
     this.ac.queryParams.subscribe(params => {
       const depolyementId = params['id'];
-      this.deploymentService.getDeploymentById(depolyementId).subscribe((res: any) => {
-        this.deploymentdetails = res.data;
-        this.freezeAddNewData = res.data?.status.toLowerCase() === 'stopped' || this.currentStatus?.toLowerCase() === 'building' ? true : false;
-        const shouldDisable = this.freezeAddNewData || !(this.permissionService.canWriteGlobal() || this.permissionService.canAdminGlobal() || this.permissionService.canDeleteForCurrentUser(null, null));
+      // Use deploymentdetails passed from parent
+      if (this.deploymentdetails) {
+        const isStopped = this.deploymentdetails?.status?.toLowerCase() === 'stopped';
+        const freezeAddNewData = isStopped || this.currentStatus?.toLowerCase() === 'building' ? true : false;
+        const shouldDisable = freezeAddNewData || !(this.permissionService.canWriteGlobal() || this.permissionService.canAdminGlobal() || this.permissionService.canDeleteForCurrentUser(null, null));
+        this.freezeAddNewData = freezeAddNewData;
         this.formDisabled = shouldDisable;
-        //this.networkSettingsForm.get('service')?.setValue(this.deploymentdetails?.name)
         this.getDeploymentById();
-      })
+      }
     });
 
     // this.getDeployments();
@@ -510,6 +511,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
       // dockerfilePath: sourceFormValue.dockerfilePath
       folderPath: sourceFormValue.folderPath,
       dockerFileName: sourceFormValue.dockerFileName,
+      vcsAutoDeploy: sourceFormValue.vcsAutoDeploy
     };
     const hpa = {
       hpaEnabled: formValue.hpaEnabled,
@@ -527,7 +529,6 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
       baseData.folderPath = formValue.folderPath;
       baseData.dockerFileName = formValue.dockerFileName;
     }
-
     const sourceCode = isDockerfilePathChanged
       ? baseData
       : this.getChangedFields(baseData, originalSource);
@@ -737,8 +738,8 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
       // this.generalSettingsForm.get('replicas')?.setValue(value ? value : '1');
       this.generalSettingsForm.get('replicas')?.setValidators([Validators.required, Validators.min(1)]);
       this.generalSettingsForm.get('replicas')?.updateValueAndValidity();
-      // this.generalSettingsForm.get('hpaMinReplicas')?.setValue('');
-      // this.generalSettingsForm.get('hpaMaxReplicas')?.setValue('');
+      this.generalSettingsForm.get('hpaMinReplicas')?.setValue('');
+      this.generalSettingsForm.get('hpaMaxReplicas')?.setValue('');
       this.generalSettingsForm.get('hpaMinReplicas')?.clearValidators();
       this.generalSettingsForm.get('hpaMaxReplicas')?.clearValidators();
       this.generalSettingsForm.get('hpaMinReplicas')?.updateValueAndValidity();

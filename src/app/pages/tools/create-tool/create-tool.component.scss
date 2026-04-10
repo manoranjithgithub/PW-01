@@ -171,6 +171,17 @@ hr {
 .form-label {
  font-size: 13px !important;
 }
+
+.field-label-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cursor {
+  cursor: pointer;
+}
+
 .text-orange{
   color: #ff6600;
   font-size: 13px;

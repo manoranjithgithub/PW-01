@@ -70,6 +70,7 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
   private sseSub?: Subscription;
   private tabHiddenAt: number | null = null;
   private readonly IDLE_THRESHOLD = 60 * 1000;
+  private statusPollInterval?: any;
 
   constructor(
     private router: Router,
@@ -79,7 +80,7 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
     private deploymentService: DeploymentsService,
     private location: Location,
     private activateRoute: ActivatedRoute,
-    private toastr: ToastrService
+    private toastr: ToastrService,
   ) {}
 
   ngOnInit(): void {
@@ -102,6 +103,8 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
         if (data?.status?.toLowerCase() === 'success') {
           this.deploymentdetails = data.data;
           this.startSSE();
+          this.getDeploymentStatus();
+          this.startStatusPolling();
         }
 
         this.layoutActionService.setExtraTitle(
@@ -138,12 +141,14 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
     if (document.hidden) {
       this.tabHiddenAt = Date.now();
       this.stopSSE();
+      this.stopStatusPolling();
     } else {
       if (
         this.tabHiddenAt &&
         Date.now() - this.tabHiddenAt >= this.IDLE_THRESHOLD
       ) {
         this.restartSSE();
+        this.startStatusPolling();
       }
       this.tabHiddenAt = null;
     }
@@ -180,6 +185,51 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
     this.startSSE();
   }
 
+  private getDeploymentStatus() {
+    if (!this.deploymentId) return;
+
+    const envId = localStorage.getItem('environment');
+    if (!envId) return;
+
+    const envObj = JSON.parse(envId);
+    const req = {
+      "environmentId": envObj.id,
+      "workloadIds": [this.deploymentId],
+      "type": "application"
+    };
+
+    this.deploymentService.getDeploymentStatus(req).subscribe({
+      next: (res: any) => {
+        if (res && Array.isArray(res.data) && res.data.length > 0) {
+          const statusItem = res.data.find((item: any) => item.deploymentId === this.deploymentId);
+          if (statusItem && this.deploymentdetails) {
+            const newStatus = statusItem.status === 'UNKNOWN' ? 'Not Available' : (statusItem.status || 'not available');
+            this.deploymentdetails.status = newStatus;
+              this.layoutActionService.setExtraTitle(
+                `${this.deploymentdetails.name} (${newStatus})`
+              );
+          }
+        }
+      },
+      error: (err: any) => {
+        console.error('Error fetching deployment status', err);
+      }
+    });
+  }
+
+  private startStatusPolling() {
+    if (this.statusPollInterval) return;
+    this.statusPollInterval = setInterval(() => {
+      this.getDeploymentStatus();
+    }, 10000);
+  }
+
+  private stopStatusPolling() {
+    if (this.statusPollInterval) {
+      clearInterval(this.statusPollInterval);
+      this.statusPollInterval = undefined;
+    }
+  }
 
   onTabChange(event: number) {
     this.selectedTabIndex = event;
@@ -243,6 +293,7 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.stopSSE();
+    this.stopStatusPolling();
     this.destroy$.next();
     this.destroy$.complete();
     this.layoutActionService.clearExtraTitle();

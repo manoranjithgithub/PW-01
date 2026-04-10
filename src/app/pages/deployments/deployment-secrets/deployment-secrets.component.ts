@@ -25,7 +25,7 @@ export class DeploymentSecretsComponent implements OnInit {
   secretForm!: FormGroup;
   showSecretForm: boolean = false;
   storedEnvironment: any;
-  deploymentdetails: any;
+  @Input() deploymentdetails: any;
   deploymentId: string = '';
 
   secretList: any = [];
@@ -79,14 +79,13 @@ export class DeploymentSecretsComponent implements OnInit {
 
       if (deploymentId) {
         this.isEditSecret = true;
-        this.deploymentsService.getDeploymentById(deploymentId).subscribe((res: any) => {
-          this.deploymentdetails = this.deploymentData || res.data;
-          const freezeAddNewData = res.data?.status.toLowerCase() === 'stopped' || this.currentStatus?.toLowerCase() === 'building' ? true : false;
-          const shouldDisable = freezeAddNewData || !(this.permissionService.canWriteGlobal() || this.permissionService.canAdminGlobal() || this.permissionService.canDeleteForCurrentUser(null, null));
-          this.freezeAddNewData = shouldDisable;
-          this.isBuilding = this.currentStatus?.toLowerCase() === 'building' ? true : false;
-          this.handleSecretListLoading();
-        });
+        // Use deploymentdetails passed from parent
+        const isStopped = this.deploymentdetails?.status?.toLowerCase() === 'stopped';
+        const freezeAddNewData = isStopped || this.currentStatus?.toLowerCase() === 'building' ? true : false;
+        const shouldDisable = freezeAddNewData || !(this.permissionService.canWriteGlobal() || this.permissionService.canAdminGlobal() || this.permissionService.canDeleteForCurrentUser(null, null));
+        this.freezeAddNewData = shouldDisable;
+        this.isBuilding = this.currentStatus?.toLowerCase() === 'building' ? true : false;
+        this.handleSecretListLoading();
       } else {
         if (this.deploymentData) {
           this.isEditSecret = false;
