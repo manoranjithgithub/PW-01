@@ -16,7 +16,7 @@ import {
 } from 'rxjs/operators';
 import { AuthService } from './auth.service';
 import { ToastrService } from 'ngx-toastr';
-import { Router } from '@angular/router';
+import { NavigationEnd, NavigationError, NavigationCancel, NavigationStart, Router } from '@angular/router';
 import { SharedService } from '../../shared/services/shared.service';
 let activeRequests = 0;
 
@@ -25,6 +25,7 @@ export class AuthInterceptor implements HttpInterceptor {
 
   private isRefreshing = false;
   private refreshTokenSubject = new BehaviorSubject<string | null>(null);
+  private navigationInProgress = false;
 
   // private readonly skipLoaderUrls = [
   //   '/artificat?fileExtension',
@@ -38,30 +39,45 @@ export class AuthInterceptor implements HttpInterceptor {
     private authService: AuthService,
     private toastr: ToastrService,
     private router: Router
-  ) { }
+  ) {
+    this.router.events.subscribe(event => {
+      if (event instanceof NavigationStart) {
+        this.navigationInProgress = true;
+      }
+      if (
+        event instanceof NavigationEnd ||
+        event instanceof NavigationCancel ||
+        event instanceof NavigationError
+      ) {
+        this.navigationInProgress = false;
+      }
+  
+    });
+  }
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     const skipLoader = this.shouldSkipLoader(req.url);
-    
+  
     if (!skipLoader) {
       activeRequests++;
-      if (activeRequests === 1) {
-        this.loader.show();
-      }
-    }
-    if (req.url.includes('/user-uploads')) {
-      return next.handle(req).pipe(finalize(() => this.loader.hide()));
+      this.loader.show();
     }
     const token = this.authService.getAccessToken();
-    const request = token ? this.addToken(req, token) : req;
+    const isS3Request = req.url.includes('/user-uploads');
+    const request = (token && !isS3Request)
+      ? this.addToken(req, token)
+      : req;
+
     return next.handle(request).pipe(
       catchError(error => this.handleError(error, request, next)),
       finalize(() => {
         if (!skipLoader) {
-          activeRequests--;
-
-
+          activeRequests = Math.max(0, activeRequests - 1);
+  
           if (activeRequests === 0) {
+            if (this.navigationInProgress) {
+              return;
+            }
             setTimeout(() => this.loader.hide(), 150);
             window.scrollTo({
               top: 0,
