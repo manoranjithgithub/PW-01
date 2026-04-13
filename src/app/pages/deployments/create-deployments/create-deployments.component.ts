@@ -400,6 +400,8 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
       this.fileError = 'Please select a valid file to upload.';
     }
     else {
+      const fileNameWithoutExtension = this.removeFileExtension(this.selectedFile?.name || '');
+      this.stepOneForm.get('name')?.setValue(fileNameWithoutExtension);
       const environment = localStorage.getItem('environment');
       const envId = environment ? JSON.parse(environment).id : null;
       if (this.selectedFile && this.fileExtension && envId) {
@@ -418,8 +420,7 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
         this.zipDeploymentModel.dismiss();
       }
       this.zipUploadForm.get('zipfileInput')?.patchValue(this.selectedFile?.name);
-      const fileNameWithoutExtension = this.removeFileExtension(this.selectedFile?.name || '');
-      this.stepOneForm.get('name')?.setValue(fileNameWithoutExtension);
+
     }
   }
 
@@ -848,7 +849,7 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
       secret: secretObj || null,
       environment: this.envData && this.envData.data ? this.envData.data : {}
     };
-  
+
   }
   onFileSelected(event: Event) {
     const filePath = this.fileUploadForm.get('filePath');

@@ -68,6 +68,7 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
 
 
   private sseSub?: Subscription;
+  private statusSseSub?: Subscription;
   private tabHiddenAt: number | null = null;
   private readonly IDLE_THRESHOLD = 60 * 1000;
   private statusPollInterval?: any;
@@ -141,7 +142,7 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
     if (document.hidden) {
       this.tabHiddenAt = Date.now();
       this.stopSSE();
-      this.stopStatusPolling();
+      // this.stopStatusPolling();
     } else {
       if (
         this.tabHiddenAt &&
@@ -186,7 +187,7 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
   }
 
   private getDeploymentStatus() {
-    if (!this.deploymentId) return;
+    if (!this.deploymentId || this.statusSseSub) return;
 
     const envId = localStorage.getItem('environment');
     if (!envId) return;
@@ -198,16 +199,18 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
       "type": "application"
     };
 
-    this.deploymentService.getDeploymentStatus(req).subscribe({
+    this.statusSseSub = this.deploymentService.getDeploymentStatus(req).subscribe({
       next: (res: any) => {
         if (res && Array.isArray(res.data) && res.data.length > 0) {
-          const statusItem = res.data.find((item: any) => item.deploymentId === this.deploymentId);
+          const statusItem = res.data.find((item: any) => item.deploymentId === this.deploymentId || item.id === this.deploymentId);
           if (statusItem && this.deploymentdetails) {
             const newStatus = statusItem.status === 'UNKNOWN' ? 'Not Available' : (statusItem.status || 'not available');
-            this.deploymentdetails.status = newStatus;
+            if (this.deploymentdetails.status !== newStatus) {
+              this.deploymentdetails.status = newStatus;
               this.layoutActionService.setExtraTitle(
                 `${this.deploymentdetails.name} (${newStatus})`
               );
+            }
           }
         }
       },
@@ -218,16 +221,18 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
   }
 
   private startStatusPolling() {
-    if (this.statusPollInterval) return;
-    this.statusPollInterval = setInterval(() => {
-      this.getDeploymentStatus();
-    }, 10000);
+    // SSE now handles continuous status updates
+    this.getDeploymentStatus();
   }
 
   private stopStatusPolling() {
     if (this.statusPollInterval) {
       clearInterval(this.statusPollInterval);
       this.statusPollInterval = undefined;
+    }
+    if (this.statusSseSub) {
+      this.statusSseSub.unsubscribe();
+      this.statusSseSub = undefined;
     }
   }
 

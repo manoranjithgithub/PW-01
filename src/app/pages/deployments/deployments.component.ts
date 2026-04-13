@@ -21,6 +21,7 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
   tableData: any[] = [];
   subscription?: Subscription;
   sseSub: Subscription | null = null;
+  statusSseSub: Subscription | null = null;
   statusPollInterval?: any;
   initialStatusUpdated = false;
 
@@ -124,6 +125,8 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
     this.subscription = this.sharedService.envValueChange$.subscribe(env => {
       this.sseSub?.unsubscribe();
       this.sseSub = null;
+      this.statusSseSub?.unsubscribe();
+      this.statusSseSub = null;
       this.tableData = [];
       this.getDeployment(env);
     });
@@ -157,7 +160,7 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
             firstEmit = false;
             // Fetch status immediately on load and render table only after the first status refresh
             this.getdeploymentsStatus(true);
-            this.startStatusPolling();
+            // this.startStatusPolling();
           }
         },
         () => {
@@ -176,7 +179,8 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
 
       this.sseSub?.unsubscribe();
       this.sseSub = null;
-      this.stopStatusPolling();
+      this.statusSseSub?.unsubscribe();
+      this.statusSseSub = null;
 
     } else {
       if (!this.isTabHidden) return;
@@ -254,7 +258,8 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.subscription?.unsubscribe();
     this.sseSub?.unsubscribe();
-    this.stopStatusPolling();
+    this.statusSseSub?.unsubscribe();
+    this.statusSseSub = null;
     if (this.gridApi) {
       this.gridApi.destroy();
       this.gridApi = null;
@@ -275,12 +280,13 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
     finalizeInitial();
     return;
   }
+  if (this.statusSseSub) return;
   const req = {
     environmentId: this.lastEnv?.id,
     workloadIds: this.tableData.map((deployment: any) => deployment.id) || [],
     type: "application"
   };
-  this.deploymentsService.getDeploymentStatus(req).subscribe({
+  this.statusSseSub = this.deploymentsService.getDeploymentStatus(req).subscribe({
     next: (res: any) => {
       const statusMap = new Map<string, string>(
         (res?.data || [])
@@ -303,17 +309,4 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
     }
   });
 }
-
-  startStatusPolling() {
-    this.statusPollInterval = setInterval(() => {
-      this.getdeploymentsStatus();
-    }, 10000);
-  }
-
-  stopStatusPolling() {
-    if (this.statusPollInterval) {
-      clearInterval(this.statusPollInterval);
-      this.statusPollInterval = undefined;
-    }
-  }
 }
