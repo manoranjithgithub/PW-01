@@ -4,7 +4,7 @@ import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { ToastrService } from 'ngx-toastr';
 import { environment } from '../../../environments/environment';
-import {createSSEObservable} from '../../shared/utils/sse.utils'; 
+import { createSSEObservable } from '../../shared/utils/sse.utils';
 @Injectable({
     providedIn: 'root'
 })
@@ -109,11 +109,18 @@ export class ToolsService {
         const url = `${this.deploymentUrl}/live/tools/stream?environmentId=${envId}&interval=5&projectId=${projectId}`;
         return this.createSSE(url, token, this.zone);
     }
-    getDeploymentStatus(req:any) {
-        const url = `${environment.baseUrl}/statusengine/workloads/`;
-        return this.http.post(url, req).pipe(
-            catchError(this.handleError.bind(this))
-        );
+    getDeploymentStatus(req: any) {
+        const token = localStorage.getItem("accessToken")!;
+        const queryParams = new URLSearchParams();
+        Object.keys(req).forEach(key => {
+            if (Array.isArray(req[key])) {
+                queryParams.append(key, req[key].join(','));
+            } else {
+                queryParams.append(key, req[key]);
+            }
+        });
+        const url = `${environment.baseUrl}/statusengine/workloads?${queryParams.toString()}&interval=5`;
+        return createSSEObservable(url, token, this.zone);
     }
 
     private handleError(error: HttpErrorResponse) {
