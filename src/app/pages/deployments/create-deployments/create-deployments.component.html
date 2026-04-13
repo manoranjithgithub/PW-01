@@ -376,8 +376,8 @@
     <div class="">
       <button class="btn button-format-outline" data-testid="btn-previous" (click)="prev()"
         [disabled]="currentStep === 0"
-        [attr.title]="(currentStep === 0) ? 'You are not authorized to view that page.' : null"
-        *ngIf="currentStep > 0"><i class="bi bi-arrow-left"></i> Previous</button>
+        [attr.title]="currentStep === 0 ? 'You are not authorized to view that page.' : null"
+        *ngIf="currentStep > 0 && currentStep !== 4"><i class="bi bi-arrow-left"></i> Previous</button>
     </div>
     <div class="">
       <div class="">
