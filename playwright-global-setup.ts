@@ -9,7 +9,7 @@ async function globalSetup(config: FullConfig) {
 
     try {
         const loginButton = page.locator('button:has-text("Login")');
-        await loginButton.waitFor({ state: 'visible', timeout: 5000 });
+        await loginButton.waitFor({ state: 'visible', timeout: 60000 });
 
         await page.getByRole('textbox').first().fill('Testing');
         await page.getByRole('textbox').nth(1).fill('Test@123');

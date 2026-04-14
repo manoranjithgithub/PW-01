@@ -4,7 +4,7 @@
         'incomplete': i < currentStep && !isStepCompleted(i),
         'active': i === currentStep,
         'disabled': !canNavigateToStep(i)
-      }" (click)="canNavigateToStep(i) && goToStep(i)">
+      }" [attr.data-testid]="'step-' + step.label.toLowerCase().replace(' ', '-')" (click)="canNavigateToStep(i) && goToStep(i)">
     <div class="circle">
       <span *ngIf="i < currentStep">
         <ng-container *ngIf="isStepCompleted(i)">&#10003;</ng-container>
