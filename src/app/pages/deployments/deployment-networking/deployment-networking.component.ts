@@ -25,6 +25,7 @@ export class DeploymentNetworkingComponent implements OnInit {
   @ViewChild('dnsSetupModal') dnsSetupModal!: TemplateRef<any>;
   networkSettingsForm !: FormGroup;
   public formDisabled: boolean = false;
+  @Input() deploymentdetails: any;
   freezeAddNewData: boolean = false;
   isGenerateDomain: boolean = false;
   showAuthenticationData: any;
@@ -35,7 +36,7 @@ export class DeploymentNetworkingComponent implements OnInit {
   showAuthentication = false;
   deploymentId: string = '';
   showCustomDnsHost: boolean = false;
-  deploymentdetails: any;
+  // deploymentdetails: any;
   isPatchedValue: boolean = true;
   submitted: boolean = false;
   showPasswordIcon = false;
@@ -129,17 +130,20 @@ export class DeploymentNetworkingComponent implements OnInit {
       const depolyementId = params['id'];
       this.deploymentId = depolyementId;
       this.deploymentService.getDeploymentById(depolyementId).subscribe((res: any) => {
-        this.deploymentdetails = res.data;
+        // Use deploymentdetails passed from parent
         this.networkSettingsForm.get('service')?.setValue(this.deploymentdetails?.name, { emitEvent: false });
         this.networkSettingsForm.get('customDnsHost')?.setValue(this.deploymentdetails?.network?.customDomain, { emitEvent: false });
         this.dnsInfo = {
           dnsName: this.deploymentdetails?.network?.customDomain || '',
-          ipAddress: res.data?.ipAddress || '151.185.41.131'
+          ipAddress: this.deploymentdetails?.ipAddress || '151.185.41.131'
         };
         this.getDeploymentById();
-        this.freezeAddNewData = res.data?.status.toLowerCase() === 'stopped' || this.currentStatus?.toLowerCase() === 'building' ? true : false;
+        
+        const isStopped = this.deploymentdetails?.status?.toLowerCase() === 'stopped';
+        const freezeAddNewData = isStopped || this.currentStatus?.toLowerCase() === 'building' ? true : false;
+        this.freezeAddNewData = freezeAddNewData;
         this.isBuilding = this.currentStatus?.toLowerCase() === 'building' ? true : false;        
-        const shouldDisable = this.freezeAddNewData || !(this.permissionService.canWriteGlobal() || this.permissionService.canAdminGlobal() || this.permissionService.canDeleteForCurrentUser(null, null));
+        const shouldDisable = freezeAddNewData || !(this.permissionService.canWriteGlobal() || this.permissionService.canAdminGlobal() || this.permissionService.canDeleteForCurrentUser(null, null));
         this.formDisabled = shouldDisable;
       })
     });

@@ -1,9 +1,8 @@
 import { Injectable, NgZone } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { catchError, finalize, map } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
-import { SharedService } from '../../shared/services/shared.service';
 import { createSSEObservable } from '../../shared/utils/sse.utils';
 
 @Injectable({
@@ -16,7 +15,7 @@ export class DeploymentsService {
   private projectsBaseUrl = environment.projectsBaseUrl;
   private metricsApiUrl = environment.metricsUrl;
 
-  constructor(public http: HttpClient, private loaderService: SharedService, private zone: NgZone) { }
+  constructor(public http: HttpClient, private zone: NgZone) { }
 
   getInstanceTypes() {
     return this.http.get(`${this.pricingManagement}/public/pricing-catalog`)
@@ -178,10 +177,7 @@ export class DeploymentsService {
       observe: 'response'
     }).pipe(
       map(response => response.status === 200 || response.status === 204),
-      catchError(this.handleError.bind(this)),
-      finalize(() => {
-        this.loaderService.hide();
-      })
+      catchError(this.handleError.bind(this))
     );
   }
   getDeploymentMetricsByTime(envId: string, from: string, to: string, timeInterval: number, resourceType: 'cpu' | 'memory', deploymentId: string) {

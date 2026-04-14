@@ -407,6 +407,9 @@ export class ToolsComponent implements OnInit, OnDestroy {
     } if (name.includes('n8n')) {
       return 'assets/images/icons/n8n.png';
     }
+    if (name.includes('rabbitmq')) {
+      return 'assets/images/icons/rabbitmq.png';
+    }
     return 'assets/images/icons/default-tool.png';
   }
 

@@ -435,17 +435,7 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
   toggleDropdown(event: MouseEvent, btnRef?: HTMLElement): void {
     event.stopPropagation();
     const btn = (btnRef as HTMLElement) || (event.target as HTMLElement);
-    const rect = btn.getBoundingClientRect();
-    const top = rect.bottom + 8;
-    const left = rect.right - 160;
-
-    this.dropdownStyle = {
-      position: 'fixed',
-      top: `${top}px`,
-      left: `${left}px`,
-      'z-index': 9999,
-      'pointer-events': 'auto'
-    };
+    this.updateDropdownPosition(btn);
 
     const willOpen = !this.isDropdownOpen;
     if (willOpen) {
@@ -458,8 +448,21 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
   updateDropdownPosition(btn: HTMLElement | undefined | null) {
     if (!btn) return;
     const rect = btn.getBoundingClientRect();
-    const top = rect.bottom + 8;
-    const left = rect.right - 160;
+    const menuWidth = 160;
+    let top = rect.bottom + 8;
+    let left = rect.right - menuWidth;
+
+    if (this.additionalParam === 'deployment') {
+      const menuHeight = 150;
+      const margin = 8;
+      top = rect.bottom + margin;
+      if (window.innerHeight - rect.bottom < menuHeight + margin) {
+        top = rect.top - menuHeight - margin;
+      }
+      top = Math.max(margin, Math.min(top, window.innerHeight - menuHeight - margin));
+      left = Math.max(margin, Math.min(left, window.innerWidth - menuWidth - margin));
+    }
+
     this.dropdownStyle = {
       position: 'fixed',
       top: `${top}px`,

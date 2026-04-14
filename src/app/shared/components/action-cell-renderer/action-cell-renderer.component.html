@@ -65,7 +65,8 @@
     </li>
     <li>
       <a class="custom-dropdown-item" (click)="onOptionSelected('redeploy')"
-        [class.disabled]="typeofDeployment === 'file'" [attr.aria-disabled]="typeofDeployment === 'file'">Redeploy</a>
+        [class.disabled]="typeofDeployment === 'file'" [attr.aria-disabled]="typeofDeployment === 'file'"
+        data-testid="deployment-action-redeploy">Redeploy</a>
     </li>
     <li>
       <a class="custom-dropdown-item" [class.disabled]="isPauseResumeDisabled"
