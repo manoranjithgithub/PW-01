@@ -209,11 +209,19 @@ export class DeploymentsService {
   }
 
   getDeploymentStatus(req: any) {
-    const url = `${environment.baseUrl}/statusengine/workloads/`;
-    return this.http.post(url, req).pipe(
-      catchError(this.handleError.bind(this))
-    );
+    const token = localStorage.getItem("accessToken")!;
+    const queryParams = new URLSearchParams();
+    Object.keys(req).forEach(key => {
+      if (Array.isArray(req[key])) {
+        queryParams.append(key, req[key].join(','));
+      } else {
+        queryParams.append(key, req[key]);
+      }
+    });
+    const url = `${environment.baseUrl}/statusengine/workloads?${queryParams.toString()}&interval=5`;
+    return createSSEObservable(url, token, this.zone);
   }
+
 
   private handleError(error: HttpErrorResponse) {
     let errorMessage = 'Something went wrong. Please try again later.';

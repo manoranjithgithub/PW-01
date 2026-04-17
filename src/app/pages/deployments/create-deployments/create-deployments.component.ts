@@ -323,7 +323,7 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
 
     const req = this.buildRequest(fileName, filePath);
     const payload = this.cleanPayload(req);
-     if (this.isAutoScaleEnabled) {
+    if (this.isAutoScaleEnabled) {
       delete payload.application.replicas;
     } else {
       delete payload.hpa.hpaMinReplicas;
@@ -393,13 +393,15 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
       return null;
     };
   }
-  
+
 
   onZipUpload(): void {
-    if (this.zipUploadForm.invalid) {
+    if (this.selectedFile === null) {
       this.fileError = 'Please select a valid file to upload.';
     }
     else {
+      const fileNameWithoutExtension = this.removeFileExtension(this.selectedFile?.name || '');
+      this.stepOneForm.get('name')?.setValue(fileNameWithoutExtension);
       const environment = localStorage.getItem('environment');
       const envId = environment ? JSON.parse(environment).id : null;
       if (this.selectedFile && this.fileExtension && envId) {
@@ -414,8 +416,11 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
           .get('zipFilename')
           ?.patchValue(this.selectedFile?.name);
         this.checkAvailablity();
+
         this.zipDeploymentModel.dismiss();
       }
+      this.zipUploadForm.get('zipfileInput')?.patchValue(this.selectedFile?.name);
+
     }
   }
 
@@ -429,20 +434,21 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
       this.fileSizeValidator(500_000_000),
     ]);
     zipfileinput?.updateValueAndValidity();
-    const zipfileInputControl = this.zipUploadForm.get('zipfileinput');
+    const zipfileInputControl = this.zipUploadForm.get('zipfileInput');
     if (file) {
       this.selectedFile = file;
       if (file.size > 500_000_000) {
-        // this.toaster.error('File size exceeds the allowed limit.');
         this.fileError = 'File size exceeds the allowed limit.';
-        // Re-validate to trigger fileSizeExceeded error
         zipfileinput?.updateValueAndValidity();
       } else {
         if (!zipfileInputControl?.errors?.['invalidFileType']) {
-          this.stepOneForm.get('zipFilename')?.patchValue(file.name);
-          const fileNameWithoutExtension = this.removeFileExtension(file.name);
-          this.stepOneForm.get('name')?.setValue(fileNameWithoutExtension);
           this.fileError = '';
+          this.zipUploadForm.get('zipfileInput')?.setValidators([
+            Validators.required,
+            this.fileValidator(allowedExtensions),
+            this.fileSizeValidator(500_000_000),
+          ]);
+          this.zipUploadForm.get('zipfileInput')?.updateValueAndValidity();
         } else {
           this.fileError = 'Please upload valid file type';
         }
@@ -733,7 +739,7 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
     if (!uploadDate) return '';
     const now = new Date();
     const seconds = Math.floor((now.getTime() - uploadDate.getTime()) / 1000);
-    
+
     if (seconds < 60) return 'just now';
     const minutes = Math.floor(seconds / 60);
     if (minutes < 60) return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
@@ -810,7 +816,7 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
         folderPath: this.stepOneForm.value.folderPath || null,
         dockerFileName: this.stepOneForm.value.dockerFileName || null,
         vcsAutoDeploy: this.stepOneForm.value.vcsAutoDeploy || false,
-        
+
       },
       application: {
         replicas: this.stepOneForm.value.replicas || 0,
@@ -830,7 +836,7 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
         appIngressDomain: null,
         customDomain: null,
       },
-      hpa:{
+      hpa: {
         hpaEnabled: this.stepOneForm.value.hpaEnabled || false,
         hpaMinReplicas: this.stepOneForm.value.hpaMinReplicas || null,
         hpaMaxReplicas: this.stepOneForm.value.hpaMaxReplicas || null,
@@ -843,6 +849,7 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
       secret: secretObj || null,
       environment: this.envData && this.envData.data ? this.envData.data : {}
     };
+
   }
   onFileSelected(event: Event) {
     const filePath = this.fileUploadForm.get('filePath');

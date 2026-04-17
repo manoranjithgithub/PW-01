@@ -59,6 +59,7 @@ export class ViewToolComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   toolStatus: string = '';
   private statusPollInterval?: any;
+  private statusSseSub: Subscription | null = null;
 
   constructor(
     private http: ToolsService,
@@ -175,10 +176,12 @@ export class ViewToolComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
     this.layoutActionService.clearExtraTitle();
     this.stopStatusPolling();
+    this.statusSseSub?.unsubscribe();
+    this.statusSseSub = null;
   }
 
   private getToolStatus() {
-    if (!this.deploymentId) return;
+    if (!this.deploymentId || this.statusSseSub) return;
 
     const envId = localStorage.getItem('environment');
     if (!envId) return;
@@ -190,16 +193,18 @@ export class ViewToolComponent implements OnInit, OnDestroy {
       "type": "tool"
     };
 
-    this.http.getDeploymentStatus(req).subscribe({
+    this.statusSseSub = this.http.getDeploymentStatus(req).subscribe({
       next: (res: any) => {
         if (res && Array.isArray(res.data) && res.data.length > 0) {
           const statusItem = res.data.find((item: any) => item.deploymentId === this.deploymentId || item.id === this.deploymentId);
           if (statusItem && this.toolDetails) {
             const newStatus = statusItem.status || 'not available';
-             this.toolDetails.data.status = newStatus;
+            if (this.toolDetails.data.status !== newStatus) {
+              this.toolDetails.data.status = newStatus;
               this.layoutActionService.setExtraTitle(
                 `${this.toolViewName} (${newStatus})`
               );
+            }
           }
         }
       },
@@ -210,17 +215,18 @@ export class ViewToolComponent implements OnInit, OnDestroy {
   }
 
   private startStatusPolling() {
-    if (this.statusPollInterval) return;
-    // Poll every 12 seconds
-    this.statusPollInterval = setInterval(() => {
-      this.getToolStatus();
-    }, 12000);
+    // SSE now handles continuous status updates
+    this.getToolStatus();
   }
 
   private stopStatusPolling() {
     if (this.statusPollInterval) {
       clearInterval(this.statusPollInterval);
       this.statusPollInterval = undefined;
+    }
+    if (this.statusSseSub) {
+      this.statusSseSub.unsubscribe();
+      this.statusSseSub = null;
     }
   }
 
