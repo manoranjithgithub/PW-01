@@ -1,10 +1,14 @@
 # nimbuz-portal-fe
 
 ## latest version
-1.0.0
+1.0.2
 
 ## change log
-### 1.0.0
+### 1.0.2
+- loader fix for review page 
+Bug Fix: redeploy after cancel setting page should be editable
+
+### 1.0.1
 Bug Fix:
 INC-3000  : blocking the action with a message 'Tool is deploying, please wait' similar to the deployments
 Issue -2978 : Enable authentication not retaining its state
