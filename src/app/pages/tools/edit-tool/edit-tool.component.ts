@@ -51,7 +51,7 @@ export class EditToolComponent implements OnInit, OnDestroy {
     return this.hourlyInstanceRate * 730;
   }
   private destroy$ = new Subject<void>();
-  private statusPollInterval?: any;
+  private statusSseSub: Subscription | null = null;
 
   constructor(private http: ToolsService, private ac: ActivatedRoute,
     private route: Router, private fb: FormBuilder, private toastr: ToastrService,
@@ -194,7 +194,7 @@ export class EditToolComponent implements OnInit, OnDestroy {
 
       const modifiedSchemaValue = this.addNameViewField(finalSchema);
       this.createForm(modifiedSchemaValue);
-      this.startStatusPolling();
+      this.getToolStatus();
     });
   }
 
@@ -265,7 +265,7 @@ export class EditToolComponent implements OnInit, OnDestroy {
   }
 
   private getToolStatus() {
-    if (!this.deploymentId) return;
+    if (!this.deploymentId || this.statusSseSub) return;
 
     const envId = localStorage.getItem('environment');
     if (!envId) return;
@@ -277,7 +277,7 @@ export class EditToolComponent implements OnInit, OnDestroy {
       "type": "tool"
     };
 
-    this.http.getDeploymentStatus(req).subscribe({
+    this.statusSseSub = this.http.getDeploymentStatus(req).subscribe({
       next: (res: any) => {
         if (res && Array.isArray(res.data) && res.data.length > 0) {
           const statusItem = res.data.find((item: any) => item.deploymentId === this.deploymentId || item.id === this.deploymentId);
@@ -298,27 +298,10 @@ export class EditToolComponent implements OnInit, OnDestroy {
     });
   }
 
-  private startStatusPolling() {
-    if (this.statusPollInterval) return;
-    this.getToolStatus();
-    this.statusPollInterval = setInterval(() => {
-      this.getToolStatus();
-    }, 12000);
-  }
-
   private stopStatusPolling() {
-    if (this.statusPollInterval) {
-      clearInterval(this.statusPollInterval);
-      this.statusPollInterval = undefined;
-    }
-  }
-
-  @HostListener('document:visibilitychange')
-  onVisibilityChange() {
-    if (document.hidden) {
-      this.stopStatusPolling();
-    } else {
-      this.startStatusPolling();
+    if (this.statusSseSub) {
+      this.statusSseSub.unsubscribe();
+      this.statusSseSub = null;
     }
   }
 

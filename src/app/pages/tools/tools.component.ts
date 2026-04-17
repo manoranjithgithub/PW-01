@@ -31,7 +31,7 @@ export class ToolsComponent implements OnInit, OnDestroy {
   getToolsIntervel: any
   isShowToolDetails: boolean = false;
   sseSub: Subscription | null = null;
-  statusPollInterval?: any;
+  statusSseSub: Subscription | null = null;
   initialStatusUpdated = false;
 
   private tabHiddenAt: number | null = null;
@@ -82,6 +82,10 @@ export class ToolsComponent implements OnInit, OnDestroy {
       if (this.sseSub) {
         this.sseSub.unsubscribe();
         this.sseSub = null;
+      }
+      if (this.statusSseSub) {
+        this.statusSseSub.unsubscribe();
+        this.statusSseSub = null;
       }
       this.rowData = [];
       this.getAvailableTools(envId);
@@ -302,6 +306,10 @@ export class ToolsComponent implements OnInit, OnDestroy {
 
   getAvailableTools(envId: string): void {
     if (!envId || this.sseSub) return;
+    if (this.statusSseSub) {
+      this.statusSseSub.unsubscribe();
+      this.statusSseSub = null;
+    }
 
     this.lastEnvId = envId;
     this.initialStatusUpdated = false;
@@ -328,7 +336,6 @@ export class ToolsComponent implements OnInit, OnDestroy {
           firstEmit = false;
           // Fetch statuses immediately on load and render only after status refresh completes
           this.getToolsStatus(true);
-          this.startStatusPolling();
         }
       },
       () => {
@@ -348,7 +355,8 @@ export class ToolsComponent implements OnInit, OnDestroy {
 
       this.sseSub?.unsubscribe();
       this.sseSub = null;
-      this.stopStatusPolling();
+      this.statusSseSub?.unsubscribe();
+      this.statusSseSub = null;
 
     } else {
       if (!this.isTabHidden) return;
@@ -452,12 +460,13 @@ export class ToolsComponent implements OnInit, OnDestroy {
     finalizeInitial();
     return;
   }
+  if (this.statusSseSub) return;
   const req = {
     environmentId: this.lastEnvId || "",
-    workloadIds: [],
+    workloadIds: this.rowData.map((tool: any) => tool.id) || [],
     type: "tool"
   };
-  this.http.getDeploymentStatus(req).subscribe({
+  this.statusSseSub = this.http.getDeploymentStatus(req).subscribe({
     next: (res: any) => {
       const statusMap = new Map<string, string>(
         (res?.data || [])
@@ -481,24 +490,13 @@ export class ToolsComponent implements OnInit, OnDestroy {
   });
 }
 
-  startStatusPolling() {
-    this.statusPollInterval = setInterval(() => {
-      this.getToolsStatus();
-    }, 10000);
-  }
-
-  stopStatusPolling() {
-    if (this.statusPollInterval) {
-      clearInterval(this.statusPollInterval);
-      this.statusPollInterval = undefined;
-    }
-  }
-
   ngOnDestroy(): void {
-    clearInterval(this.getToolsIntervel)
+    clearInterval(this.getToolsIntervel);
     this.subscription?.unsubscribe();
     this.sseSub?.unsubscribe();
-    this.stopStatusPolling();
+    this.sseSub = null;
+    this.statusSseSub?.unsubscribe();
+    this.statusSseSub = null;
     document.removeEventListener('visibilitychange', this.handleVisibilityChange);
   }
 }

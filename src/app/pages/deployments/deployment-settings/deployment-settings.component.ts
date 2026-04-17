@@ -507,7 +507,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
     const baseData = {
       type: sourceFormValue.type,
       gitUrl: this.buildGitUrl(),
-      s3FileKey: fileName ? this.s3FileKey : null,
+      s3FileKey: fileName ? this.s3FileKey : '',
       // dockerfilePath: sourceFormValue.dockerfilePath
       folderPath: sourceFormValue.folderPath,
       dockerFileName: sourceFormValue.dockerFileName,
@@ -761,19 +761,32 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
 
   private getChangedFields(current: any, original: any): any {
     const changed: any = {};
+    const isEmptyValue = (value: any) =>
+      value === null ||
+      value === undefined ||
+      (typeof value === 'string' && value.trim() === '');
+
     Object.keys(current).forEach(key => {
       const currVal = current[key];
       const origVal = original ? original[key] : undefined;
+
       if (currVal === undefined) return;
+      if (isEmptyValue(currVal) && isEmptyValue(origVal)) return;
+
       if (currVal === null) {
-        if (origVal !== null && origVal !== undefined) {
+        if (!isEmptyValue(origVal)) {
           changed[key] = null;
         }
         return;
       }
 
-      if (typeof currVal === 'string' && typeof origVal === 'string') {
-        if (currVal.trim() !== origVal.trim()) {
+      if (typeof currVal === 'string') {
+        const trimmedCurr = currVal.trim();
+        if (typeof origVal === 'string') {
+          if (trimmedCurr !== origVal.trim()) {
+            changed[key] = currVal;
+          }
+        } else if (!isEmptyValue(origVal)) {
           changed[key] = currVal;
         }
       } else if (currVal !== origVal) {
