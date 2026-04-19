@@ -5,13 +5,39 @@ import * as fs from 'fs';
 test.describe('Compressed File (ZIP/TAR) Deployment Flow', () => {
 
     test.beforeEach(async ({ page }) => {
-        await page.goto('/projects');
-        await page.getByTestId('project-card').first().click();
-        await page.getByTestId('environment-card').first().click();
-        await page.getByTestId('proceed-btn').click();
-        await page.waitForURL('**/applications');
-        await page.getByRole('button', { name: /create.*deployment/i }).click();
-        await page.waitForURL('**/create-deployments');
+        test.setTimeout(120000);
+        await page.goto('/projects', { waitUntil: 'domcontentloaded', timeout: 60000 });
+
+        await page.waitForLoadState('networkidle');
+        if (page.url().includes('login')) {
+            await page.locator('input[formcontrolname="username"]').fill('Testing');
+            await page.locator('input[formcontrolname="password"]').fill('Test@123');
+            await page.getByTestId('btn-login').click();
+            await page.waitForURL(/.*\/projects.*/, { timeout: 60000 });
+            await page.waitForLoadState('networkidle');
+        }
+
+        const projectCard = page.getByTestId('project-card').first();
+        await expect(projectCard).toBeVisible({ timeout: 60000 });
+        await projectCard.click();
+
+        const envCard = page.getByTestId('environment-card').first();
+        await expect(envCard).toBeVisible({ timeout: 60000 });
+        await envCard.click();
+
+        const proceedBtn = page.getByTestId('proceed-btn');
+        await expect(proceedBtn).toBeEnabled({ timeout: 60000 });
+        await proceedBtn.click();
+
+        await page.waitForURL(/.*\/applications$/, { timeout: 60000 });
+        await page.waitForLoadState('networkidle');
+
+        const newAppBtn = page.getByTestId('btn-new-application');
+        await expect(newAppBtn).toBeVisible({ timeout: 60000 });
+        await newAppBtn.click();
+
+        await page.waitForURL(/.*\/create-application$/, { timeout: 60000 });
+        await page.waitForLoadState('networkidle');
     });
 
     test.describe('Positive Scenarios', () => {
@@ -21,7 +47,7 @@ test.describe('Compressed File (ZIP/TAR) Deployment Flow', () => {
             await page.getByTestId('option-type-zip').click();
 
             const fileInput = page.locator('input[data-testid="input-zip-file"]');
-            
+
             const dummyPath = path.resolve('dummy-app.zip');
             fs.writeFileSync(dummyPath, 'content');
 
@@ -33,7 +59,7 @@ test.describe('Compressed File (ZIP/TAR) Deployment Flow', () => {
 
             const nameInput = page.locator('input[formcontrolname="name"]');
             await expect(nameInput).toHaveValue('dummy-app');
-            
+
             if (fs.existsSync(dummyPath)) fs.unlinkSync(dummyPath);
         });
     });
@@ -78,7 +104,7 @@ test.describe('Compressed File (ZIP/TAR) Deployment Flow', () => {
             await nameInput.blur();
 
             await expect(page.locator('.text-danger').filter({ hasText: 'Name is already taken' })).toBeVisible();
-            
+
             if (fs.existsSync(existingPath)) fs.unlinkSync(existingPath);
         });
 
