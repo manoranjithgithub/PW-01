@@ -4,6 +4,19 @@
 1.0.2
 
 ## change log
+### 1.0.3
+incident:
+https://gitlab.dilligentech.com/dt/paas/nimbuz-ops-hub/-/issues/3062
+
+implementation:
+ delete functionality in user module and validations
+
+bug fixes:
+https://gitlab.dilligentech.com/dt/paas/nimbuz-ops-hub/-/issues/3055 -- port issue 
+https://gitlab.dilligentech.com/dt/paas/nimbuz-ops-hub/-/issues/3054 -- replica error message
+https://gitlab.dilligentech.com/dt/paas/nimbuz-ops-hub/-/issues/3058 -- code as config validation
+https://gitlab.dilligentech.com/dt/paas/nimbuz-ops-hub/-/issues/3056 -- application name validation 
+
 ### 1.0.2
 - loader fix for review page 
 Bug Fix: redeploy after cancel setting page should be editable
