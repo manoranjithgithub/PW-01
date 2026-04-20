@@ -1,7 +1,7 @@
 # nimbuz-portal-fe
 
 ## latest version
-1.0.2
+1.0.3
 
 ## change log
 ### 1.0.3
