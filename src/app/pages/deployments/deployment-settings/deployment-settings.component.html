@@ -204,10 +204,10 @@
                           *ngIf="isError('hpaMinReplicas', 'pattern') && !isError('hpaMinReplicas', 'required')">
                           <small>Replicas must be a number</small>
                         </div>
-                        <!-- <div class="text-danger text-format mt-1"
-                          *ngIf="isError('hpaMinReplicas', 'min') && !isError('hpaMinReplicas', 'required')">
+                        <div class="text-danger text-format mt-1"
+                          *ngIf="!isError('hpaMinReplicas', 'pattern') && isError('hpaMinReplicas', 'min') && !isError('hpaMinReplicas', 'required')">
                           <small>Minimum value should be 1.</small>
-                        </div> -->
+                        </div>
                       </div>
                       <div class="w-100">
                         <div class="input-group">
@@ -223,7 +223,7 @@
                           <small>Only numbers are allowed.</small>
                         </div>
                         <div class="text-danger text-format"
-                          *ngIf="isError('hpaMaxReplicas', 'maxLessThanMin') && !isError('hpaMaxReplicas', 'required')">
+                          *ngIf="generalSettingsForm.get('hpaMaxReplicas')?.hasError('maxLessThanMin') && !generalSettingsForm.get('hpaMaxReplicas')?.hasError('required') && ((generalSettingsForm.get('hpaMaxReplicas')?.touched || generalSettingsForm.get('hpaMaxReplicas')?.dirty) || (generalSettingsForm.get('hpaMinReplicas')?.touched || generalSettingsForm.get('hpaMinReplicas')?.dirty))">
                           <small>Max value must be greater than min value.</small>
                         </div>
                       </div>
@@ -238,8 +238,11 @@
                   <label for="port" class="custom-label">Port</label>
                   <input id="port" type="text" formControlName="port" class="form-control custom-values"
                     (blur)="Port()">
-                  <div class="text-danger my-1" *ngIf="isError('port', 'min') || isError('port', 'max')">
-                    Invalid Port Number Entered: must be between 1 and 65535.
+                  <div class="text-danger my-1" *ngIf="isError('port', 'pattern')">
+                    Port must be a number.
+                  </div>
+                  <div class="text-danger my-1" *ngIf="!isError('port', 'pattern') && (isError('port', 'min') || isError('port', 'max'))">
+                    Port Number must be between 1 and 65535.
                   </div>
                 </div>
 
