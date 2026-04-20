@@ -10,17 +10,9 @@
                             placeholder="Username *" required />
                         <div *ngIf="addUserForm.get('username')?.touched && addUserForm.get('username')?.invalid"
                             class="text-danger">
-                            <small *ngIf="addUserForm.get('username')?.errors?.['required']">Username is
-                                required.</small>
-                        </div>
-                        <div *ngIf="
-                    addUserForm.get('username')?.hasError('pattern') &&
-                    (addUserForm.get('username')?.touched ||
-                      addUserForm.get('username')?.dirty)
-                  " class="text-danger mt-1">
-                            Username may only contain alphanumeric characters, underlines or hyphens, cannot have
-                            consecutive
-                            hyphens or underlines, and cannot begin or end with a hyphen or underline.
+                            <small *ngIf="addUserForm.get('username')?.errors?.['required']">Username is required.</small>
+                            <small *ngIf="!addUserForm.get('username')?.errors?.['required'] && addUserForm.get('username')?.errors?.['maxlength']">Username cannot exceed 30 characters.</small>
+                            <small *ngIf="!addUserForm.get('username')?.errors?.['required'] && !addUserForm.get('username')?.errors?.['maxlength'] && addUserForm.get('username')?.errors?.['pattern']">Username must contain only letters, numbers, hyphens, or underscores (no consecutive or leading/trailing hyphens/underscores).</small>
                         </div>
                     </div>
                     <div class="form-group w-100">

@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, TemplateRef, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { timer, Subscription, fromEvent } from 'rxjs';
+import { Subject, timer, Subscription, fromEvent, takeUntil } from 'rxjs';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
 import { SHARED_IMPORTS } from '../../../shared/shared-imports';
@@ -42,6 +42,7 @@ export class ViewModelComponent implements OnInit, OnDestroy {
   usageEvents: any[] = [];
   usageFrom = '';
   usageTo = '';
+  private destroy$ = new Subject<void>();
 
   constructor(
     private route: ActivatedRoute,
@@ -69,7 +70,7 @@ export class ViewModelComponent implements OnInit, OnDestroy {
       this.patchRateLimitForm(this.modelData);
     }
 
-    this.route.queryParams.subscribe((params) => {
+    this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe((params) => {
       const id = params['id'];
       if (!id) {
         if (!this.modelData) {
@@ -83,11 +84,13 @@ export class ViewModelComponent implements OnInit, OnDestroy {
       this.loadModelById(id);
     });
 
-    this.focusSubscription = fromEvent(document, 'visibilitychange').subscribe(() => {
-      if (document.visibilityState === 'visible' && this.selectedTabIndex === 2) {
-        this.refreshUsageAnalytics(true);
-      }
-    });
+    this.focusSubscription = fromEvent(document, 'visibilitychange')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        if (document.visibilityState === 'visible' && this.selectedTabIndex === 2) {
+          this.refreshUsageAnalytics(true);
+        }
+      });
   }
 
   backToList(): void {
@@ -874,5 +877,7 @@ public class Example {
   ngOnDestroy(): void {
     this.pollSubscription?.unsubscribe();
     this.focusSubscription?.unsubscribe();
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }
