@@ -749,7 +749,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
 
   isError(controlName: string, errorType: string): boolean {
     const control = this.generalSettingsForm.controls[controlName];
-    return control.hasError(errorType) && control.touched;
+    return control.hasError(errorType) && (control.touched || control.dirty);
   }
 
   Port() {

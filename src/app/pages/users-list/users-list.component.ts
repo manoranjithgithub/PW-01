@@ -2,8 +2,8 @@ import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, ViewChild } from
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
-import { BehaviorSubject, forkJoin, Observable, Subject } from 'rxjs';
-import { map, switchMap, shareReplay, takeUntil, startWith, filter } from 'rxjs/operators';
+import { BehaviorSubject, forkJoin, Observable, of, Subject } from 'rxjs';
+import { map, switchMap, shareReplay, takeUntil, startWith, filter, finalize } from 'rxjs/operators';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ConfirmationModalComponent } from '../../shared/components/modal/confirmation-modal/confirmation-modal.component';
@@ -13,6 +13,7 @@ import { UsersListService } from './users-list.service';
 import { AgGridTableComponent } from '../../shared/components/ag-grid-table/ag-grid-table.component';
 import { ActionCellRendererComponent } from '../../shared/components/action-cell-renderer/action-cell-renderer.component';
 import { ModalComponent } from '../../shared/components/model/model.component';
+import { SharedService } from '../../shared/services/shared.service';
 import { User, Environment, PolicyMapped, PolicyRaw, Project } from '../../core/models/user-data.model';
 import { PermissionService } from '../../shared/services/permission.service';
 
@@ -141,10 +142,11 @@ export class UsersListComponent implements OnInit, OnDestroy {
     private fb: FormBuilder,
     private toastr: ToastrService,
     private modalService: NgbModal,
+    private sharedService: SharedService,
     public permissionService: PermissionService
   ) {
     this.addUserForm = this.fb.group({
-      username: ['', [Validators.required, Validators.pattern(VALIDATION_REGEX.USERNAME)]],
+      username: ['', [Validators.required, Validators.maxLength(30), Validators.pattern(VALIDATION_REGEX.USERNAME)]],
       email: ['', [Validators.required, Validators.email]],
       project: [''],
       env: [''],
@@ -159,39 +161,8 @@ export class UsersListComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    forkJoin({
-      usersRes: this.http.getAllUSers(),
-      projectsRes: this.http.getAllProjects(),
-      policiesRes: this.http.getPolicies()
-    }).pipe(
-      switchMap(({ usersRes, projectsRes, policiesRes }: any) => {
-        const users: User[] = usersRes.status.toLowerCase() === 'success' ? usersRes.data : [];
-        const rawProjects: Project[] = projectsRes.status.toLowerCase() === 'success'
-          ? projectsRes.data.map((p: any) => ({ ...p, environments: [] }))
-          : [];
-        this.availableProjectList = [
-          { name: 'all', id: '*', description: "" },
-          ...projectsRes.data
-        ];
-        const envCalls = rawProjects.map(project => this.http.getEnvironmentsByProject(project.id));
-        return forkJoin(envCalls).pipe(
-          map((envResponses: any[]) => {
-            const projectsWithEnv = rawProjects.map((project, index) => ({
-              ...project,
-              environments: envResponses[index].status.toLowerCase() === 'success'
-                ? envResponses[index].data
-                : []
-            }));
-            const policies: PolicyMapped[] = this.mapPolicies(policiesRes.data, projectsWithEnv);
-            return { users, projectsWithEnv, policies };
-          })
-        );
-      })
-    ).subscribe(({ users, projectsWithEnv, policies }) => {
-      this.tableData = users;
-      this.projectList = projectsWithEnv;
-      this.policyList = policies;
-    });
+    this.loadUsersProjectsPolicies();
+
     this.envList$ = this.addUserForm.get('project')!.valueChanges.pipe(
       startWith(this.addUserForm.get('project')!.value),
       switchMap((value: string) => {
@@ -235,6 +206,59 @@ export class UsersListComponent implements OnInit, OnDestroy {
       );
     });
   }
+  private loadUsersProjectsPolicies(): void {
+    this.sharedService.show();
+
+    forkJoin({
+      usersRes: this.http.getAllUSers(),
+      projectsRes: this.http.getAllProjects(),
+      policiesRes: this.http.getPolicies()
+    }).pipe(
+      switchMap(({ usersRes, projectsRes, policiesRes }: any) => {
+        this.tableData = usersRes?.status?.toLowerCase() === 'success' ? usersRes.data : [];
+
+        const rawProjects: Project[] = projectsRes.status.toLowerCase() === 'success'
+          ? projectsRes.data.map((p: any) => ({ ...p, environments: [] }))
+          : [];
+        this.projectList = rawProjects;
+        this.availableProjectList = [
+          { name: 'all', id: '*', description: "" },
+          ...projectsRes.data
+        ];
+
+        const envCalls = rawProjects.map(project => this.http.getEnvironmentsByProject(project.id));
+        if (envCalls.length === 0) {
+          const policies: PolicyMapped[] = this.mapPolicies(policiesRes.data, rawProjects);
+          return of({ projectsWithEnv: rawProjects, policies });
+        }
+
+        return forkJoin(envCalls).pipe(
+          map((envResponses: any[]) => {
+            const projectsWithEnv = rawProjects.map((project, index) => ({
+              ...project,
+              environments: envResponses[index]?.status?.toLowerCase() === 'success'
+                ? envResponses[index].data
+                : []
+            }));
+            const policies: PolicyMapped[] = this.mapPolicies(policiesRes.data, projectsWithEnv);
+            return { projectsWithEnv, policies };
+          })
+        );
+      }),
+      takeUntil(this.destroy$),
+      finalize(() => this.sharedService.hide())
+    ).subscribe(
+      ({ projectsWithEnv, policies }) => {
+        this.projectList = projectsWithEnv;
+        this.policyList = policies;
+      },
+      (err) => {
+        console.error('Failed to load users and policies', err);
+        this.sharedService.hide();
+      }
+    );
+  }
+
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
@@ -248,11 +272,7 @@ export class UsersListComponent implements OnInit, OnDestroy {
       const formValue = this.addUserForm.getRawValue();
       this.http.inviteNewUser(formValue).pipe(takeUntil(this.destroy$)).subscribe((res: any) => {
         if (res.status.toLowerCase() === 'success') {
-          this.http.getAllUSers().subscribe((usersRes: any) => {
-            if (usersRes.status.toLowerCase() === 'success') {
-              this.tableData = usersRes.data;
-            }
-          });
+          this.loadUsersProjectsPolicies();
           this.showAddUserSection = false;
           this.toastr.success(res.message);
           this.addUserForm.reset();
@@ -266,11 +286,10 @@ export class UsersListComponent implements OnInit, OnDestroy {
     this.showAddUserSection = false;
   }
 
-  onActionClick(action: 'view' | 'edit', params: User) {
+  onActionClick(action: 'view' | 'edit' | 'delete', params: User) {
     this.resetEditForm()
     this.selectedUserDetails = params;
     this.selectedUserPolicyInfo = this.policyList.filter((x: PolicyMapped) => x.userid === params?.id);
-    this.selectedUserPolicyDisplay = this.computeMergedPolicies(this.selectedUserPolicyInfo);
     if (this.selectedUserPolicyInfo.length === 0) {
       this.selectedUserPolicyInfo.push({
         userid: params?.id,
@@ -280,8 +299,9 @@ export class UsersListComponent implements OnInit, OnDestroy {
         projectname: '',
         envname: '',
         permissions: []
-      })
+      });
     }
+    this.selectedUserPolicyDisplay = this.computeMergedPolicies(this.selectedUserPolicyInfo);
 
     const isVerified = params?.isVerfied === 'true' || params?.isVerfied === true;
     const iconClass = isVerified ? 'bi-patch-check-fill' : '';
@@ -290,6 +310,33 @@ export class UsersListComponent implements OnInit, OnDestroy {
       <p class="mb-0 text-capitalize"> <span class="mx-2">-</span> 
         ${params?.name} <i class="bi ${iconClass} text-success"></i>
       </p>`;
+
+    if (action === 'delete') {
+      const modalRef = this.modalService.open(ConfirmationModalComponent);
+      modalRef.componentInstance.selectedItem = 'User';
+      modalRef.componentInstance.message = 'Are you sure you want to delete this user?';
+
+      modalRef.result.then((result) => {
+        if (!result) return;
+        this.http.deleteUser({ username: params?.name }).pipe(takeUntil(this.destroy$)).subscribe((res: any) => {
+          if (res?.status?.toLowerCase() === 'success') {
+            this.toastr.success(res?.message || 'User deleted');
+            this.http.getAllUSers().pipe(takeUntil(this.destroy$)).subscribe((usersRes: any) => {
+              if (usersRes?.status?.toLowerCase() === 'success') {
+                this.tableData = usersRes.data;
+              }
+            });
+          } else {
+            this.toastr.error(res?.message || 'Failed to delete user');
+          }
+        }, (err) => {
+          console.error('deleteUser error', err);
+        });
+      }).catch(() => {
+        // modal dismissed or cancelled - no action needed
+      });
+      return;
+    }
 
     if (action === 'view') {
       this.policyModalConfig.modalSubtitle = subtitle;

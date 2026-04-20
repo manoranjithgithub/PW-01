@@ -26,6 +26,13 @@ export class UsersListService {
         catchError(this.handleError.bind(this))
       );
   }
+
+  deleteUser(req: any) {
+    return this.http.delete(`${this.userApiUrl}/user/delete-user`, { body: req })
+      .pipe(
+        catchError(this.handleError.bind(this))
+      );
+  }
   getPolicies() {
     return this.http.get(`${this.userApiUrl}/policies/org`)
       .pipe(
