@@ -10,7 +10,7 @@ export default defineConfig({
   retries: 1,
 
   use: {
-    baseURL: 'http://localhost:4200',
+    baseURL: 'https://app.dev.nimbuz.tech',
     headless: true,
     viewport: { width: 1280, height: 800 },
     ignoreHTTPSErrors: true,
