@@ -162,13 +162,17 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
     this.repoListForm = this._fb.group({
       selectedRepo: ['', Validators.required],
     });
-    this.fileUploadForm = this._fb.group({
-      fileInput: [''],
-      filePath: [''],
-    });
+    this.fileUploadForm = this._fb.group(
+      {
+        fileInput: [''],
+        filePath: [''],
+      },
+      { validators: this.configAsFilePairValidator() }
+    );
     this.zipUploadForm = this._fb.group({
       zipfileInput: ['', Validators.required],
     });
+
   }
 
   ngOnInit(): void {
@@ -636,6 +640,29 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
     return true;
   }
 
+  isNextDisabled(): boolean {
+    if (this.submitted) return true;
+    if (!(this.permissionService.canWriteGlobal() || this.permissionService.canAdminGlobal())) return true;
+
+    if (this.currentStep === 0) {
+      if (this.stepOneForm.invalid) return true;
+      if (this.selectedVCS === 'zip' && this.zipUploadForm.invalid) return true;
+    }
+    if (this.currentStep === 3 && this.fileUploadForm.invalid) return true;
+    return false;
+  }
+
+  getNextDisabledTitle(): string | null {
+    if (this.submitted) return 'Please wait...';
+    if (!(this.permissionService.canWriteGlobal() || this.permissionService.canAdminGlobal())) {
+      return 'You are not authorized to view that page.';
+    }
+    if (this.currentStep === 0 && this.stepOneForm.invalid) return 'Please fix validation errors to continue.';
+    if (this.currentStep === 0 && this.selectedVCS === 'zip' && this.zipUploadForm.invalid) return 'Please choose a valid ZIP or TAR file.';
+    if (this.currentStep === 3 && this.fileUploadForm.invalid) return 'Please fix validation errors to continue.';
+    return null;
+  }
+
   getenvironmentList(event: any) {
     this.envData = event;
   }
@@ -756,6 +783,7 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
       if (control) {
         control.reset();
         control.clearValidators();
+        control.setErrors(null);
         control.updateValueAndValidity();
       }
     });
@@ -770,18 +798,46 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
     if (fileInputElement) {
       fileInputElement.value = '';
     }
+    this.fileUploadForm.updateValueAndValidity({ emitEvent: false });
   }
   checkFileAvailble() {
-    const fileInput = this.fileUploadForm.get('fileInput');
-    const filePath = this.fileUploadForm.get('filePath');
-    if (filePath?.value && !fileInput?.value) {
-      fileInput?.setValidators([Validators.required]);
-      fileInput?.updateValueAndValidity();
-      this.fileUploadForm.markAllAsTouched();
-      return;
-    }
-    // fileInput?.clearValidators();
-    // fileInput?.updateValueAndValidity();
+    this.fileUploadForm.updateValueAndValidity();
+    this.fileUploadForm.markAllAsTouched();
+  }
+
+  private configAsFilePairValidator(): ValidatorFn {
+    return (): ValidationErrors | null => {
+      const filePathControl = this.fileUploadForm?.get('filePath');
+      const fileInputControl = this.fileUploadForm?.get('fileInput');
+      if (!filePathControl || !fileInputControl) return null;
+
+      const hasFile = !!this.selectedConfigFile;
+      const hasPath = !!String(filePathControl.value || '').trim();
+
+      const setPairError = (control: AbstractControl, shouldHaveError: boolean) => {
+        const existingErrors = control.errors || {};
+        if (shouldHaveError) {
+          if (existingErrors['pairRequired']) return;
+          control.setErrors({ ...existingErrors, pairRequired: true });
+          return;
+        }
+        if (!existingErrors['pairRequired']) return;
+        const { pairRequired, ...rest } = existingErrors;
+        control.setErrors(Object.keys(rest).length ? rest : null);
+      };
+
+      // Neither provided => no pair validation errors.
+      if (!hasFile && !hasPath) {
+        setPairError(fileInputControl, false);
+        setPairError(filePathControl, false);
+        return null;
+      }
+
+      // If either is provided, require both.
+      setPairError(fileInputControl, !hasFile);
+      setPairError(filePathControl, !hasPath);
+      return null;
+    };
   }
   private buildGitUrl(): string {
     const repo = this.selectedRepoDetails?.repoUrl;
@@ -852,11 +908,12 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
 
   }
   onFileSelected(event: Event) {
-    const filePath = this.fileUploadForm.get('filePath');
     const input = event.target as HTMLInputElement;
     if (!input.files?.length) return;
 
+    this.fileUploadForm.get('fileInput')?.markAsTouched();
     const file = input.files[0];
+    this.selectedConfigFile = file;
     this.selectedFileName = file.name;
     this.selectedFileSize = file.size;
     this.selectedFileTime = new Date();
@@ -881,10 +938,17 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
       this.parsedConfigData = pureBase64;
 
     };
-    filePath?.setValidators([Validators.required]);
-    filePath?.updateValueAndValidity();
+    this.fileUploadForm.updateValueAndValidity({ emitEvent: false });
 
     fileReader.readAsDataURL(file);
+  }
+
+  onConfigFilePickerBlur(event: FocusEvent) {
+    if (this.selectedConfigFile) {
+      this.selectedFileName = this.selectedConfigFile.name;
+      this.selectedFileSize = this.selectedConfigFile.size;
+    }
+    this.fileUploadForm.updateValueAndValidity({ emitEvent: false });
   }
   formatCurrency(value: number | undefined, fromCurrency?: string): string {
     if (value == null || isNaN(Number(value))) return '';

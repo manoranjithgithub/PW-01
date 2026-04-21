@@ -506,4 +506,15 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
   editPolicies() {
     this.params.onActionClick('edit', this.params?.data);
   }
+  deleteUser() {
+    this.params.onActionClick('delete', this.params?.data);
+  }
+
+  isLoggedInUser(): boolean {
+    const userData = this.params?.data;
+    if (!userData) return false;
+
+    const currentUserId = localStorage.getItem('userId');
+    return !!currentUserId && String(userData.id) === currentUserId;
+  }
 }

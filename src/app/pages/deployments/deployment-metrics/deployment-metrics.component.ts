@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild, HostListener, OnInit, AfterViewInit } from '@angular/core';
+import { Component, ElementRef, ViewChild, HostListener, OnInit, AfterViewInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatSelectModule } from '@angular/material/select';
@@ -23,6 +23,7 @@ import { LoaderComponent } from '../../../shared/components/loader/loader.compon
 import 'chartjs-adapter-date-fns';
 import { SharedService } from '../../../shared/services/shared.service';
 import { DURATIONS, INTERVALS, METRICS_REFRESH_INTERVALS } from '../../../shared/constants/nimbuz.constant';
+import { Subject, takeUntil } from 'rxjs';
 
 Chart.register(LineElement, LineController, CategoryScale, LinearScale, PointElement, Tooltip, Legend, Title, TimeScale, Filler);
 
@@ -37,7 +38,7 @@ Chart.register(LineElement, LineController, CategoryScale, LinearScale, PointEle
   templateUrl: './deployment-metrics.component.html',
   styleUrl: './deployment-metrics.component.scss'
 })
-export class DeploymentMetricsComponent implements OnInit, AfterViewInit {
+export class DeploymentMetricsComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('cpuChartCanvas', { static: false }) chartRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('ramChartCanvas', { static: false }) ramChartRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('storageChartCanvas', { static: false }) storageChartRef!: ElementRef<HTMLCanvasElement>;
@@ -73,11 +74,13 @@ export class DeploymentMetricsComponent implements OnInit, AfterViewInit {
   currentRamLabel: string = '0';
   deploymentInstanceType: string = '';
 
+  private destroy$ = new Subject<void>();
+
   constructor(private eRef: ElementRef, private fb: FormBuilder, private deploymentService: DeploymentsService,
     private activatedRoute: ActivatedRoute, private sharedService: SharedService) { }
 
   ngOnInit() {
-    this.activatedRoute.queryParams.subscribe(params => {
+    this.activatedRoute.queryParams.pipe(takeUntil(this.destroy$)).subscribe(params => {
       if (params['id'] != undefined) {
         this.deploymentId = params['id'];
       }
@@ -101,7 +104,7 @@ export class DeploymentMetricsComponent implements OnInit, AfterViewInit {
       interval: ['5'],
     });
 
-    this.filterForm.get('duration')?.valueChanges.subscribe(value => {
+    this.filterForm.get('duration')?.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(value => {
       const now = new Date();
       const fifteenMinutesAgo = new Date(now.getTime() - 15 * 60000);
       const fromTimestamp = this.formatDateForDatetimeLocal(fifteenMinutesAgo);
@@ -619,5 +622,19 @@ export class DeploymentMetricsComponent implements OnInit, AfterViewInit {
   private getUsagePercent(currentValue: number, maxLimit: number): number {
     if (!maxLimit || maxLimit <= 0) return 0;
     return Math.min(100, (currentValue / maxLimit) * 100);
+  }
+
+  ngOnDestroy(): void {
+    if (this.cpuChart) {
+      this.cpuChart.destroy();
+    }
+    if (this.ramChart) {
+      this.ramChart.destroy();
+    }
+    if (this.storageChart) {
+      this.storageChart.destroy();
+    }
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }
