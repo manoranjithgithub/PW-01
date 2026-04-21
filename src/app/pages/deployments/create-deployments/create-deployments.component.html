@@ -109,13 +109,15 @@
                 <div class="text-danger my-1" data-testid="error-name-required" *ngIf="isError('name', 'required')">
                   Application name is required.
                 </div>
-                <div class="text-danger my-1" data-testid="error-name-pattern" *ngIf="isError('name','pattern')">
-                  Application name can contain only lowercase letters, numbers, and hyphens.
+                <div class="text-danger my-1" data-testid="error-name-maxlength" *ngIf="!isError('name', 'required') && isError('name', 'maxlength')">
+                  Maximum 40 characters allowed.
+                </div>
+                <div class="text-danger my-1" data-testid="error-name-pattern" *ngIf="!isError('name', 'required') && !isError('name', 'maxlength') && isError('name','pattern')">
+                  <small>Application must contain only letters, numbers, hyphens, or underscores (no consecutive or leading/trailing hyphens/underscores).</small>
                 </div>
                 <div class="text-danger my-1" data-testid="error-name-validation"
-                  *ngIf="isError('name','nameValidation')"> Name is already taken</div>
-                <div class="text-danger my-1" data-testid="error-name-maxlength" *ngIf="isError('name', 'maxlength')">
-                  Maximum 40 characters allowed.
+                  *ngIf="!isError('name', 'required') && !isError('name', 'maxlength') && !isError('name', 'pattern') && isError('name','nameValidation')">
+                  Name is already taken
                 </div>
               </div>
               <div class="col-md-4 auto-scale-toggle">
@@ -213,14 +215,11 @@
               <div class="col-md-4">
                 <label class="form-label" data-testid="label-port">Port </label>
                 <input type="text" class="form-control" formControlName="port" data-testid="input-port">
-                <div class="text-danger my-1" data-testid="error-port-maxlength" *ngIf="isError('port', 'maxlength')">
-                  Port must be between 1 and 65535.
-                </div>
                 <div class="text-danger my-1" data-testid="error-port-pattern" *ngIf="isError('port', 'pattern')">
                   Port must be a number.
                 </div>
-                <div class="text-danger my-1" data-testid="error-port-minmax"
-                  *ngIf="isError('port', 'min') || isError('port', 'max')">
+                <div class="text-danger my-1" data-testid="error-port-range"
+                  *ngIf="!isError('port', 'pattern') && (isError('port', 'maxlength') || isError('port', 'min') || isError('port', 'max'))">
                   Port must be between 1 and 65535.
                 </div>
               </div>
@@ -319,7 +318,8 @@
               <div class="d-flex align-items-center gap-2">
                 <div class="w-100">
                   <input type="file" id="fileInput" formControlName="fileInput" data-testid="input-config-file"
-                    class="form-control" accept=".json,.yml,.yaml" (change)="onFileSelected($event)" />
+                    class="form-control" accept=".json,.yml,.yaml" (change)="onFileSelected($event)"
+                    (blur)="onConfigFilePickerBlur($event)" />
                   <div
                     *ngIf="fileUploadForm.get('fileInput')?.hasError('invalidFileType') && fileUploadForm.get('fileInput')?.touched"
                     class="text-danger my-2">
@@ -330,22 +330,22 @@
                     class="text-danger my-2">
                     File size exceeds the limit of 100MB.
                   </div>
-                  <div *ngIf="fileUploadForm.get('fileInput')?.hasError('required')" class="text-danger my-2">
+                  <div *ngIf="fileUploadForm.get('fileInput')?.hasError('pairRequired') && (fileUploadForm.get('fileInput')?.touched || fileUploadForm.get('fileInput')?.dirty)" class="text-danger my-2">
                     File is required.
                   </div>
                 </div>
-                <div *ngIf="selectedFileName" class="file-preview-card">
+                <div *ngIf="selectedConfigFile" class="file-preview-card">
                   <div class="file-icon">
                     <i class="bi bi-file-earmark"></i>
                   </div>
                   <div class="file-info">
-                    <div class="file-name">{{ selectedFileName }}</div>
+                    <div class="file-name">{{ selectedConfigFile.name }}</div>
                     <div class="file-meta">
-                      <span class="file-size">{{ formatFileSize(selectedFileSize) }}</span>
+                      <span class="file-size">{{ formatFileSize(selectedConfigFile.size) }}</span>
                       <span class="file-date">{{ getFileTimeAgo(selectedFileTime) }}</span>
                     </div>
                   </div>
-                  <div class="file-badge">{{ getFileType(selectedFileName) }}</div>
+                  <div class="file-badge">{{ getFileType(selectedConfigFile.name) }}</div>
                   <span class="delete-btn" (click)="clearFile()" title="Remove">
                     <i class="bi bi-x-lg"></i>
                   </span>
@@ -356,7 +356,7 @@
               <label class="form-label" data-testid="label-file-path">File Path</label>
               <input type="text" formControlName="filePath" name="filePath" data-testid="input-config-file-path"
                 class="form-control" (blur)="checkFileAvailble()" />
-              <div *ngIf="fileUploadForm.get('filePath')?.hasError('required')" class="text-danger my-2">
+              <div *ngIf="fileUploadForm.get('filePath')?.hasError('pairRequired') && (fileUploadForm.get('filePath')?.touched || fileUploadForm.get('filePath')?.dirty)" class="text-danger my-2">
                 File path is required when a file is uploaded.
               </div>
             </div>
@@ -383,8 +383,8 @@
       <div class="">
         <button class="btn button-format-solid" data-testid="btn-next"
           (click)="next(currentStep === 4 ? 'Submit' : (currentStep === 3 ? 'Review' : 'Save & Continue'))"
-          [disabled]="submitted || !(permissionService.canWriteGlobal() || permissionService.canAdminGlobal())"
-          [attr.title]="(submitted || !(permissionService.canWriteGlobal() || permissionService.canAdminGlobal())) ? 'You are not authorized to view that page.' : null">
+          [disabled]="isNextDisabled()"
+          [attr.title]="getNextDisabledTitle()">
           {{ currentStep === 4 ? 'Submit' : (currentStep === 3 ? 'Review' : 'Save & Continue') }}
         </button>
       </div>

@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, HostListener, Input, OnChanges, OnInit, SimpleChanges, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, HostListener, Input, OnChanges, OnDestroy, OnInit, SimpleChanges, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -39,7 +39,7 @@ Chart.register(LineElement, LineController, CategoryScale, LinearScale, PointEle
   templateUrl: './tool-metrics.component.html',
   styleUrl: './tool-metrics.component.scss'
 })
-export class ToolMetricsComponent implements OnInit, AfterViewInit, OnChanges {
+export class ToolMetricsComponent implements OnInit, AfterViewInit, OnChanges, OnDestroy {
   @ViewChild('cpuChartCanvas', { static: false }) chartRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('ramChartCanvas', { static: false }) ramChartRef!: ElementRef<HTMLCanvasElement>;
   // @ViewChild('storageChartCanvas', { static: false }) storageChartRef!: ElementRef<HTMLCanvasElement>;
@@ -665,5 +665,14 @@ export class ToolMetricsComponent implements OnInit, AfterViewInit, OnChanges {
   private getUsagePercent(currentValue: number, maxLimit: number): number {
     if (!maxLimit || maxLimit <= 0) return 0;
     return Math.max(0, Math.min(100, (currentValue / maxLimit) * 100));
+  }
+
+  ngOnDestroy(): void {
+    if (this.cpuChart) {
+      this.cpuChart.destroy();
+    }
+    if (this.ramChart) {
+      this.ramChart.destroy();
+    }
   }
 }
