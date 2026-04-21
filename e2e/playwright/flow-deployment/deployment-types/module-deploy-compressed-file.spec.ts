@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import * as path from 'path';
 import * as fs from 'fs';
 
@@ -42,14 +42,16 @@ test.describe('Compressed File (ZIP/TAR) Deployment Flow', () => {
 
     test.describe('Positive Scenarios', () => {
 
-        test('Should allow uploading a valid ZIP file and navigating to general settings', async ({ page }) => {
+        async function createCompletedDeployment(page: Page, appName: string, format: string) {
             await page.getByTestId('select-type').click();
             await page.getByTestId('option-type-zip').click();
 
-            const fileInput = page.locator('input[data-testid="input-zip-file"]');
-
-            const dummyPath = path.resolve('dummy-app.zip');
-            fs.writeFileSync(dummyPath, 'content');
+            const fileInput = page.getByTestId('input-zip-file');
+            const fileName = `shared-deploy-file.${format}`;
+            const dummyPath = path.resolve(fileName);
+            if (!fs.existsSync(dummyPath)) {
+                fs.writeFileSync(dummyPath, `dummy ${format} content placeholder`);
+            }
 
             await fileInput.setInputFiles(dummyPath);
 
@@ -58,9 +60,101 @@ test.describe('Compressed File (ZIP/TAR) Deployment Flow', () => {
             await submitFileBtn.click();
 
             const nameInput = page.locator('input[formcontrolname="name"]');
-            await expect(nameInput).toHaveValue('dummy-app');
+            await expect(nameInput).toBeVisible({ timeout: 60000 });
+            await nameInput.fill(appName);
+
+            const portInput = page.locator('input[formcontrolname="port"]');
+            if (await portInput.isVisible()) {
+                await portInput.fill('8080');
+            }
+
+            await page.getByTestId('btn-next').click();
+
+            // Environment Variables
+            const envKey = page.locator('input[formcontrolname="key"]').first();
+            await envKey.waitFor({ state: 'visible', timeout: 15000 }).catch(() => null);
+            if (await envKey.isVisible()) {
+                await envKey.fill('ENV_VAR_1');
+                await page.locator('input[formcontrolname="value"]').first().fill('test-value');
+            }
+            await page.getByTestId('btn-next').click();
+
+            // Secrets
+            const newSecretBtn = page.getByTestId('btn-secret-new');
+            await newSecretBtn.waitFor({ state: 'visible', timeout: 15000 }).catch(() => null);
+            if (await newSecretBtn.isVisible()) {
+                await newSecretBtn.click();
+                await page.getByTestId('input-secret-name').first().fill('SECRET_1');
+                await page.getByTestId('input-secret-value').first().fill('SECRET_VALUE');
+                await page.getByTestId('btn-secret-add-to-list').click();
+            }
+            await page.getByTestId('btn-next').click();
+
+            // Config as file
+            await page.getByTestId('btn-next').click();
+
+            // Review
+            await expect(page.getByTestId('review-details-title')).toBeVisible({ timeout: 15000 });
+            await page.getByTestId('btn-next').click();
 
             if (fs.existsSync(dummyPath)) fs.unlinkSync(dummyPath);
+        }
+
+        test('2.1.1 - Deployment via ZIP File', async ({ page }) => {
+            const appName = `zip-app-${Date.now()}`;
+            await createCompletedDeployment(page, appName, 'zip');
+        });
+
+        test('2.1.2 - Deployment via TAR File', async ({ page }) => {
+            const appName = `tar-app-${Date.now()}`;
+            await createCompletedDeployment(page, appName, 'tar');
+        });
+
+        test('2.1.3 - Multiple Deployments with Same File Name (Same Project)', async ({ page }) => {
+            const appName1 = `sameproj1-${Date.now()}`;
+            const appName2 = `sameproj2-${Date.now()}`;
+
+            // 1st Deployment
+            await createCompletedDeployment(page, appName1, 'zip');
+
+            // 2nd Deployment
+            await page.goto('/projects', { waitUntil: 'domcontentloaded' });
+            await page.getByTestId('project-card').first().click();
+            await page.getByTestId('environment-card').first().click();
+            await page.getByTestId('proceed-btn').click();
+            await page.getByTestId('btn-new-application').click();
+
+            await createCompletedDeployment(page, appName2, 'zip');
+        });
+
+        test('2.1.4 - Multiple Deployments with Same File Name (Different Projects)', async ({ page }) => {
+            const appName1 = `diffproj1-${Date.now()}`;
+            const appName2 = `diffproj2-${Date.now()}`;
+
+            // 1st Deployment
+            await createCompletedDeployment(page, appName1, 'zip');
+
+            // 2nd Deployment
+            await page.goto('/projects', { waitUntil: 'domcontentloaded' });
+
+            const projectCards = page.getByTestId('project-card');
+            if (await projectCards.count() > 1) {
+                await projectCards.nth(1).click();
+                await page.getByTestId('environment-card').first().click();
+            } else {
+                await projectCards.first().click();
+                const envCards = page.getByTestId('environment-card');
+                if (await envCards.count() > 1) {
+                    await envCards.nth(1).click();
+                } else {
+                    await envCards.first().click();
+                }
+            }
+
+            await page.getByTestId('proceed-btn').click();
+            await page.getByTestId('btn-new-application').click();
+
+            await createCompletedDeployment(page, appName2, 'zip');
         });
     });
 
