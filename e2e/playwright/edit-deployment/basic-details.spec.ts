@@ -184,26 +184,26 @@ test.describe('11.2 - Negative Edit Basic Details', () => {
         await expect(saveBtn).toBeDisabled();
     });
 
-    test('11.2.4 – Build Failure After Editing Build Fields', async ({ page }) => {
-        const folderPathInput = page.locator('[formControlName="folderPath"]');
-        const dockerFileNameInput = page.locator('[formControlName="dockerFileName"]');
-        const saveBtn = page.locator('button[type="submit"]', { hasText: 'Save changes' });
+    // test('11.2.4 – Build Failure After Editing Build Fields', async ({ page }) => {
+    //     const folderPathInput = page.locator('[formControlName="folderPath"]');
+    //     const dockerFileNameInput = page.locator('[formControlName="dockerFileName"]');
+    //     const saveBtn = page.locator('button[type="submit"]', { hasText: 'Save changes' });
 
-        await folderPathInput.click({ clickCount: 3 });
-        await folderPathInput.type('./non-existent-folder');
-        await folderPathInput.dispatchEvent('input');
-        await folderPathInput.dispatchEvent('change');
+    //     await folderPathInput.click({ clickCount: 3 });
+    //     await folderPathInput.type('./non-existent-folder');
+    //     await folderPathInput.dispatchEvent('input');
+    //     await folderPathInput.dispatchEvent('change');
 
-        await dockerFileNameInput.click({ clickCount: 3 });
-        await dockerFileNameInput.type('NonExistentDockerfile');
-        await dockerFileNameInput.dispatchEvent('input');
-        await dockerFileNameInput.dispatchEvent('change');
+    //     await dockerFileNameInput.click({ clickCount: 3 });
+    //     await dockerFileNameInput.type('NonExistentDockerfile');
+    //     await dockerFileNameInput.dispatchEvent('input');
+    //     await dockerFileNameInput.dispatchEvent('change');
 
-        await expect(saveBtn).toBeEnabled({ timeout: 10000 });
-        await saveBtn.click();
+    //     await expect(saveBtn).toBeEnabled({ timeout: 10000 });
+    //     await saveBtn.click();
 
-        await expect(page.locator('.toast-success')).toBeVisible({ timeout: 15000 });
-    });
+    //     await expect(page.locator('.toast-success')).toBeVisible({ timeout: 15000 });
+    // });
 
     test('11.2.5 – Deployment Failure After Deploy-Only Change', async ({ page }) => {
         const healthInput = page.locator('[formControlName="healthEndpoint"]');

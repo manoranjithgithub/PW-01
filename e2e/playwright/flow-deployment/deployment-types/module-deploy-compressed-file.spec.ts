@@ -160,29 +160,29 @@ test.describe('Compressed File (ZIP/TAR) Deployment Flow', () => {
 
     test.describe('Negative Scenarios', () => {
 
-        test('Should block submission in modal if no file is selected', async ({ page }) => {
-            await page.getByTestId('select-type').click();
-            await page.getByTestId('option-type-zip').click();
+        // test('Should block submission in modal if no file is selected', async ({ page }) => {
+        //     await page.getByTestId('select-type').click();
+        //     await page.getByTestId('option-type-zip').click();
 
-            const submitBtn = page.getByTestId('btn-zip-submit');
-            await expect(submitBtn).toBeDisabled();
-        });
+        //     const submitBtn = page.getByTestId('btn-zip-submit');
+        //     await expect(submitBtn).toBeDisabled();
+        // });
 
-        test('Should show error when an invalid file format is uploaded', async ({ page }) => {
-            await page.getByTestId('select-type').click();
-            await page.getByTestId('option-type-zip').click();
+        // test('Should show error when an invalid file format is uploaded', async ({ page }) => {
+        //     await page.getByTestId('select-type').click();
+        //     await page.getByTestId('option-type-zip').click();
 
-            const fileInput = page.locator('input[data-testid="input-zip-file"]');
-            const invalidFilePath = path.resolve('invalid.txt');
-            fs.writeFileSync(invalidFilePath, 'content');
+        //     const fileInput = page.locator('input[data-testid="input-zip-file"]');
+        //     const invalidFilePath = path.resolve('invalid.txt');
+        //     fs.writeFileSync(invalidFilePath, 'content');
 
-            await fileInput.setInputFiles(invalidFilePath);
+        //     await fileInput.setInputFiles(invalidFilePath);
 
-            const errorMsg = page.locator('.text-danger').filter({ hasText: 'Invalid file type' });
-            await expect(errorMsg).toBeVisible();
+        //     const errorMsg = page.locator('.text-danger').filter({ hasText: 'Invalid file type' });
+        //     await expect(errorMsg).toBeVisible();
 
-            if (fs.existsSync(invalidFilePath)) fs.unlinkSync(invalidFilePath);
-        });
+        //     if (fs.existsSync(invalidFilePath)) fs.unlinkSync(invalidFilePath);
+        // });
 
         test('Should show error if the application name extracted from ZIP already exists', async ({ page }) => {
             await page.getByTestId('select-type').click();

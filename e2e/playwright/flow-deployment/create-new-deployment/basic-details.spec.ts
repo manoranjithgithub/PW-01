@@ -1,9 +1,10 @@
 import { test, expect, Page } from '@playwright/test';
-import * as path from 'path';
 
 test.describe('Create New Deployment - ZIP Upload (Vue.js App)', () => {
 
     test.slow();
+
+    const ZIP_FILE_URL = 'https://nimbuz-users-artifacts.s3.ap-southeast-1.amazonaws.com/UI-Automation/vuejs-app-final.zip';
 
     async function loginIfRequired(page: Page) {
         if (page.url().includes('login')) {
@@ -18,7 +19,6 @@ test.describe('Create New Deployment - ZIP Upload (Vue.js App)', () => {
 
     test.beforeEach(async ({ page }) => {
         await page.goto('/projects');
-
 
         await page.waitForLoadState('domcontentloaded');
         await loginIfRequired(page);
@@ -38,7 +38,6 @@ test.describe('Create New Deployment - ZIP Upload (Vue.js App)', () => {
         await expect(proceedBtn).toBeEnabled({ timeout: 60000 });
         await proceedBtn.click();
 
-
         console.log('Navigating to applications page...');
         await page.waitForURL(/.*\/applications$/, { timeout: 60000 });
         await page.waitForLoadState('networkidle');
@@ -47,23 +46,25 @@ test.describe('Create New Deployment - ZIP Upload (Vue.js App)', () => {
         await expect(newAppBtn).toBeVisible({ timeout: 60000 });
         await newAppBtn.click();
 
-
         await page.waitForURL(/.*\/create-application$/, { timeout: 60000 });
         await page.waitForLoadState('networkidle');
     });
 
     test('Create Deployment with Default Prefilled Values', async ({ page }) => {
-        const zipFilePath = path.resolve('e2e/playwright/flow-deployment/deploy-folder/vuejs-app-final.zip');
-        console.log('Starting ZIP upload flow for:', zipFilePath);
-
+        console.log('Starting ZIP upload flow from URL:', ZIP_FILE_URL);
 
         await page.getByTestId('select-type').click();
         await page.getByTestId('option-type-zip').click();
 
+        const response = await page.request.get(ZIP_FILE_URL);
+        const buffer = await response.body();
 
         const fileInput = page.locator('input[formcontrolname="zipfileInput"]');
-        await fileInput.setInputFiles(zipFilePath);
-
+        await fileInput.setInputFiles({
+            name: 'vuejs-app-final.zip',
+            mimeType: 'application/zip',
+            buffer: buffer
+        });
 
         const submitFileBtn = page.getByTestId('btn-zip-submit');
         await expect(submitFileBtn).toBeEnabled({ timeout: 60000 });
@@ -78,40 +79,27 @@ test.describe('Create New Deployment - ZIP Upload (Vue.js App)', () => {
         const portInput = page.locator('input[formcontrolname="port"]');
         await portInput.fill('8080');
 
-
         const instanceSelect = page.locator('select[formcontrolname="instanceType"]');
         await expect(instanceSelect).toBeVisible();
         await instanceSelect.selectOption({ label: 'micro.m' });
 
         console.log('Navigating through checkout steps...');
-        // General to Environment variable
+        await page.getByTestId('btn-next').click();
+        await page.getByTestId('btn-next').click();
+        await page.getByTestId('btn-next').click();
         await page.getByTestId('btn-next').click();
 
-        // Environment variable into Secrets
-        await page.getByTestId('btn-next').click();
-
-        // Secrets to Config as file
-        await page.getByTestId('btn-next').click();
-
-
-        // Config as file to Review
-        await page.getByTestId('btn-next').click();
-
-
-
-        // Final Submission
         console.log('Submitting deployment...');
         const submitBtn = page.getByTestId('btn-next');
         await expect(submitBtn).toHaveText(/Submit/i, { timeout: 60000 });
         await submitBtn.click();
 
         console.log('Verifying successful creation...');
-
         await page.waitForURL(/.*\/applications$/, { timeout: 60000 });
         await page.waitForLoadState('networkidle');
 
         const table = page.getByTestId('ag-grid-table');
         await expect(table).toBeVisible({ timeout: 60000 });
-
     });
 });
+

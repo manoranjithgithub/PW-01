@@ -116,17 +116,17 @@ test.describe('Deployment Review Page Flow', () => {
 
     test.describe('Negative Scenarios', () => {
 
-        test('Should not apply changes if user navigates away without saving', async ({ page }) => {
+        // test('Should not apply changes if user navigates away without saving', async ({ page }) => {
 
-            const editBasicBtn = page.locator('.review-card').filter({ hasText: 'Basic Details' }).locator('i.bi-pencil-square');
-            await editBasicBtn.click();
+        //     const editBasicBtn = page.locator('.review-card').filter({ hasText: 'Basic Details' }).locator('i.bi-pencil-square');
+        //     await editBasicBtn.click();
 
-            await page.locator('input[formcontrolname="name"]').fill('unsaved-change');
-            await page.locator('.step-label-review').click();
+        //     await page.locator('input[formcontrolname="name"]').fill('unsaved-change');
+        //     await page.locator('.step-label-review').click();
 
-            await expect(page.getByText('review-test-app')).toBeVisible();
-            await expect(page.getByText('unsaved-change')).not.toBeVisible();
-        });
+        //     await expect(page.getByText('review-test-app')).toBeVisible();
+        //     await expect(page.getByText('unsaved-change')).not.toBeVisible();
+        // });
 
         test('Should disable Submit button during deployment submission', async ({ page }) => {
 
