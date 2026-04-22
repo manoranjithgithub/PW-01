@@ -182,12 +182,14 @@
                     <input id="replicas" type="text" for="replicas" formControlName="replicas"
                       class="form-control custom-values">
                     <div
-                      *ngIf="generalSettingsForm.get('replicas')?.invalid && generalSettingsForm.get('replicas')?.touched"
+                      *ngIf="generalSettingsForm.get('replicas')?.invalid && (generalSettingsForm.get('replicas')?.touched || generalSettingsForm.get('replicas')?.dirty)"
                       class="text-danger text-format">
                       <small *ngIf="generalSettingsForm.get('replicas')?.hasError('required')">Replicas is
                         required</small>
                       <small *ngIf="generalSettingsForm.get('replicas')?.hasError('min')">Replicas must be at least
                         1.</small>
+                      <small *ngIf="generalSettingsForm.get('replicas')?.hasError('maxlength')">Replicas must be at most 5 characters.</small>
+                      <small *ngIf="generalSettingsForm.get('replicas')?.hasError('pattern')">Replicas must be a number.</small>
                     </div>
                   </ng-container>
                   <ng-container *ngIf="isAutoScaleEnabled">
@@ -196,7 +198,7 @@
                         <div class="input-group">
                           <span class="input-group-text">min</span>
                           <input type="text" class="form-control custom-values" formControlName="hpaMinReplicas"
-                            placeholder="Min">
+                            placeholder="Min" maxlength="5">
                         </div>
                         <div class="text-danger text-format my-1" *ngIf="isError('hpaMinReplicas', 'required')">
                           <small>Replicas is required.</small>
@@ -209,12 +211,15 @@
                           *ngIf="!isError('hpaMinReplicas', 'pattern') && isError('hpaMinReplicas', 'min') && !isError('hpaMinReplicas', 'required')">
                           <small>Minimum value should be 1.</small>
                         </div>
+                        <div class="text-danger text-format mt-1" *ngIf="isError('hpaMinReplicas', 'maxlength')">
+                          <small>Min replicas must be at most 5 characters.</small>
+                        </div>
                       </div>
                       <div class="w-100">
                         <div class="input-group">
                           <span class="input-group-text">max</span>
                           <input type="text" class="form-control custom-values" formControlName="hpaMaxReplicas"
-                            placeholder="Max">
+                            placeholder="Max" maxlength="5">
                         </div>
                         <div class="text-danger text-format" *ngIf="isError('hpaMaxReplicas', 'required')">
                           <small>This field is required.</small>
@@ -223,9 +228,12 @@
                           *ngIf="isError('hpaMaxReplicas', 'pattern') && !isError('hpaMaxReplicas', 'required')">
                           <small>Only numbers are allowed.</small>
                         </div>
-                        <div class="text-danger text-format"
+                      <div class="text-danger text-format"
                           *ngIf="generalSettingsForm.get('hpaMaxReplicas')?.hasError('maxLessThanMin') && !generalSettingsForm.get('hpaMaxReplicas')?.hasError('required') && ((generalSettingsForm.get('hpaMaxReplicas')?.touched || generalSettingsForm.get('hpaMaxReplicas')?.dirty) || (generalSettingsForm.get('hpaMinReplicas')?.touched || generalSettingsForm.get('hpaMinReplicas')?.dirty))">
                           <small>Max value must be greater than min value.</small>
+                        </div>
+                        <div class="text-danger text-format mt-1" *ngIf="isError('hpaMaxReplicas', 'maxlength')">
+                          <small>Max replicas must be at most 5 characters.</small>
                         </div>
                       </div>
                     </div>
@@ -266,8 +274,11 @@
                   <div class="text-danger my-1" *ngIf="ephemeralExhausted">
                     Ephemeral storage usage exceeded.
                   </div>
-                  <div class="text-danger my-1" *ngIf="isError('ephemeralStorage', 'pattern')">
+                  <div class="text-danger my-1" *ngIf="isError('ephemeralStorage', 'pattern') && !isError('ephemeralStorage', 'maxlength')">
                     Only numbers are allowed.The value will be considered in 'Gi'.
+                  </div>
+                  <div class="text-danger my-1" *ngIf="isError('ephemeralStorage', 'maxlength')">
+                    Ephemeral storage must be at most 5 characters.
                   </div>
                 </div>
               </div>
@@ -347,7 +358,7 @@
                   <input id="healthEndpoint" type="text" for="healthEndpoint" formControlName="healthEndpoint"
                     placeholder="/health" class="form-control custom-values custom-txt-width w-100">
                   <div *ngIf="isError('healthEndpoint', 'maxlength')" class="text-danger text-format mt-1">
-                    <small>Maximum 250 characters allowed.</small>
+                    <small>Maximum 50 characters allowed.</small>
                   </div>
                   <div *ngIf="isError('healthEndpoint', 'pattern')" class="text-danger text-format mt-1">
                     <small>Health endpoint must start with /.</small>

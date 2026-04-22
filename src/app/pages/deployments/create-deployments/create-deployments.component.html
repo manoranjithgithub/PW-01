@@ -141,12 +141,16 @@
                   <input type="text" class="form-control" formControlName="replicas" data-testid="input-replicas"
                     *ngIf="!isAutoScaleEnabled">
                   <div class="text-danger my-1" data-testid="error-replicas-pattern"
-                    *ngIf="isError('replicas', 'pattern') && !isError('replicas', 'min') && !isAutoScaleEnabled">
+                    *ngIf="isError('replicas', 'pattern') && !isError('replicas', 'min') && !isError('replicas', 'maxlength') && !isAutoScaleEnabled">
                     Replicas must be a number.
                   </div>
                   <div class="text-danger my-1" data-testid="error-replicas-min"
                     *ngIf="isError('replicas', 'min') && !isAutoScaleEnabled">
                     Replicas must be at least 1.
+                  </div>
+                  <div class="text-danger my-1" data-testid="error-replicas-maxlength"
+                    *ngIf="isError('replicas', 'maxlength')">
+                    Replicas must be at most 5 characters.
                   </div>
                 </ng-container>
                 <ng-container *ngIf="isAutoScaleEnabled">
@@ -154,7 +158,7 @@
                     <div class="w-100">
                       <!-- <label class="form-label">Min</label> -->
                       <input type="text" class="form-control" formControlName="hpaMinReplicas"
-                        data-testid="input-hpa-min" placeholder="Min">
+                        data-testid="input-hpa-min" placeholder="Min" maxlength="5">
                       <div class="text-danger my-1" data-testid="error-hpamin-required"
                         *ngIf="isError('hpaMinReplicas', 'required')">
                         This field is required.
@@ -171,7 +175,7 @@
                     <div class="w-100">
                       <!-- <label class="form-label">Max</label> -->
                       <input type="text" class="form-control" formControlName="hpaMaxReplicas"
-                        data-testid="input-hpa-max" placeholder="Max">
+                        data-testid="input-hpa-max" placeholder="Max" maxlength="5">
                       <div class="text-danger my-1" data-testid="error-hpamax-required"
                         *ngIf="isError('hpaMaxReplicas', 'required')">
                         This field is required.
@@ -241,6 +245,9 @@
                   </span>
                 </label>
                 <input type="text" class="form-control" formControlName="folderPath" data-testid="input-folder-path">
+                  <div class="text-danger my-1" data-testid="error-folder-path-maxlength" *ngIf="isError('folderPath', 'maxlength')">
+                  Maximum 50 characters only.
+                </div>
               </div>
               <div class="col-md-4">
                 <label class="form-label" data-testid="label-docker-file-name">Docker File Name
@@ -251,6 +258,9 @@
                 </label>
                 <input type="text" class="form-control" formControlName="dockerFileName"
                   data-testid="input-docker-file-name">
+                <div class="text-danger my-1" data-testid="error-docker-file-name-maxlength" *ngIf="isError('dockerFileName', 'maxlength')">
+                  Maximum 40 characters only.
+                </div>
               </div>
               <div class="col-md-4">
                 <label class="form-label" data-testid="label-health-endpoint">Health Endpoint</label>
@@ -258,7 +268,7 @@
                   data-testid="input-health-endpoint" placeholder="/health">
                 <div *ngIf="isError('healthEndpoint','maxlength')" data-testid="error-health-maxlength"
                   class="text-danger my-1">
-                  Maximun 250 characters only.
+                  Maximum 50 characters only.
                 </div>
                 <div *ngIf="isError('healthEndpoint','pattern')" data-testid="error-health-pattern"
                   class="text-danger my-1">
@@ -286,8 +296,12 @@
                   Ephemeral storage usage exceeded.
                 </div>
                 <div class="text-danger my-1" data-testid="error-ephemeral-pattern"
-                  *ngIf="isError('ephemeralStorage', 'pattern')">
+                  *ngIf="isError('ephemeralStorage', 'pattern') && !isError('ephemeralStorage', 'maxlength')">
                   Only numbers are allowed.The value will be considered in 'Gi'.
+                </div>
+                <div class="text-danger my-1" data-testid="error-ephemeral-maxlength"
+                  *ngIf="isError('ephemeralStorage', 'maxlength')">
+                  Ephemeral storage must be at most 5 characters.
                 </div>
               </div>
             </div>
