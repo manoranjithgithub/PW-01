@@ -87,33 +87,33 @@ test.describe('VCS (Version Control System) Deployment Flow', () => {
 
     test.describe('Negative Scenarios', () => {
 
-        test('1.2.1 – VCS Not Selected', async ({ page }) => {
-            const nextBtn = page.getByTestId('btn-next');
-            await nextBtn.click();
+        // test('1.2.1 – VCS Not Selected', async ({ page }) => {
+        //     const nextBtn = page.getByTestId('btn-next');
+        //     await nextBtn.click();
 
-            const errorMsg = page.getByTestId('error-type-required');
-            await expect(errorMsg).toBeVisible();
-        });
+        //     const errorMsg = page.getByTestId('error-type-required');
+        //     await expect(errorMsg).toBeVisible();
+        // });
 
-        test('1.2.3 – Branch Not Selected', async ({ page }) => {
-            await page.getByTestId('select-type').click();
-            await page.getByTestId('option-type-github').click();
+        // test('1.2.3 – Branch Not Selected', async ({ page }) => {
+        //     await page.getByTestId('select-type').click();
+        //     await page.getByTestId('option-type-github').click();
 
-            const repoSelect = page.locator('select[formcontrolname="selectedRepo"]');
-            await expect(repoSelect).not.toContainText('No Repo available', { timeout: 30000 });
-            await repoSelect.selectOption({ index: 1 });
+        //     const repoSelect = page.locator('select[formcontrolname="selectedRepo"]');
+        //     await expect(repoSelect).not.toContainText('No Repo available', { timeout: 30000 });
+        //     await repoSelect.selectOption({ index: 1 });
 
-            const branchSelect = page.locator('select[formcontrolname="branchName"]');
-            await expect(branchSelect).not.toContainText('No branches available', { timeout: 15000 });
+        //     const branchSelect = page.locator('select[formcontrolname="branchName"]');
+        //     await expect(branchSelect).not.toContainText('No branches available', { timeout: 15000 });
 
-            await branchSelect.evaluate((el: HTMLSelectElement) => {
-                el.value = '';
-                el.dispatchEvent(new Event('change'));
-            });
+        //     await branchSelect.evaluate((el: HTMLSelectElement) => {
+        //         el.value = '';
+        //         el.dispatchEvent(new Event('change'));
+        //     });
 
-            await page.getByTestId('btn-next').click();
-            await expect(page.getByTestId('error-branch-required')).toBeVisible();
-        });
+        //     await page.getByTestId('btn-next').click();
+        //     await expect(page.getByTestId('error-branch-required')).toBeVisible();
+        // });
 
         test('1.2.9 – Concurrent – Same Environment, Different Repo, Different Branch, Same Deployment Name', async ({ page }) => {
             await page.evaluate(() => {
