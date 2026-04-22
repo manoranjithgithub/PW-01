@@ -64,7 +64,7 @@ export class DeploymentMetricsComponent implements OnInit, AfterViewInit, OnDest
   intervals = INTERVALS;
   chartEmptyText: string = 'No data to display';
   storageUsageData = METRICS_REFRESH_INTERVALS;
-  readonly throttleLimit = 100;
+  readonly throttleLimit = 20;
 
   showNoDataMessage: boolean = false;
   deploymentdetails: any;
@@ -406,6 +406,9 @@ export class DeploymentMetricsComponent implements OnInit, AfterViewInit, OnDest
     const timeConfig = this.getTimeScaleConfig();
     const throttleAxisMax = this.getThrottleAxisMax(points);
     const throttleAxisStepSize = this.getThrottleAxisStepSize(throttleAxisMax);
+    const isThrottleBreached = points.some(p => Number(p.y) > this.throttleLimit);
+    const standardThresholdColor = isThrottleBreached ? '#ff6b6b' : '#22a328';
+    const avgThrottleFillColor = isThrottleBreached ? 'rgba(255, 107, 107, 0.12)' : 'rgba(34, 163, 40, 0.12)';
 
     this.cpuThrottleChart = new Chart(this.throttleChartRef.nativeElement, {
       type: 'line',
@@ -414,19 +417,19 @@ export class DeploymentMetricsComponent implements OnInit, AfterViewInit, OnDest
           {
             label: `Avg Throttle (${this.formatThrottleForLabel(this.average(points.map(p => p.y)))})`,
             data: points,
-            borderColor: '#ff9800',
-            backgroundColor: 'rgba(255, 152, 0, 0.18)',
+            borderColor: standardThresholdColor,
+            backgroundColor: avgThrottleFillColor,
             fill: true,
             tension: 0.4,
             pointRadius: 0,
             pointHoverRadius: 4,
-            pointBackgroundColor: '#ff9800',
+            pointBackgroundColor: standardThresholdColor,
             borderWidth: 3
           },
           {
-            label: `Throttle Limit (${this.throttleLimit}%)`,
+            label: `Standard Threshold (${this.throttleLimit}%)`,
             data: points.map(p => ({ x: p.x, y: this.throttleLimit })),
-            borderColor: '#ff6b6b',
+            borderColor: standardThresholdColor,
             borderWidth: 1,
             borderDash: [5, 5],
             borderCapStyle: 'round',
@@ -434,7 +437,7 @@ export class DeploymentMetricsComponent implements OnInit, AfterViewInit, OnDest
             pointHoverRadius: 4,
             pointHoverBorderWidth: 2,
             pointHoverBackgroundColor: '#ffffff',
-            pointHoverBorderColor: '#ff6b6b',
+            pointHoverBorderColor: standardThresholdColor,
             fill: false,
             parsing: false,
             order: 0
@@ -468,7 +471,7 @@ export class DeploymentMetricsComponent implements OnInit, AfterViewInit, OnDest
             bodyColor: '#111827',
             displayColors: false,
             padding: 10,
-            filter: (ctx) => !String(ctx.dataset?.label || '').toLowerCase().includes('limit'),
+            filter: (ctx) => !String(ctx.dataset?.label || '').toLowerCase().includes('threshold'),
             callbacks: {
               title: (items) => {
                 const x = items[0]?.parsed?.x;
@@ -781,13 +784,12 @@ export class DeploymentMetricsComponent implements OnInit, AfterViewInit, OnDest
   }
 
   private getThrottleAxisMax(points: Array<{ x: Date; y: number }>): number {
-    const maxThrottleValue = Math.max(this.throttleLimit, ...points.map(point => Number(point.y) || 0));
-    if (maxThrottleValue <= this.throttleLimit) return this.throttleLimit;
+    const maxThrottleValue = Math.max(100, ...points.map(point => Number(point.y) || 0));
+    if (maxThrottleValue <= 100) return 100;
     return Math.ceil(maxThrottleValue / 20) * 20;
   }
 
   private getThrottleAxisStepSize(axisMax: number): number {
-    if (axisMax <= this.throttleLimit) return 20;
     return 20;
   }
 
