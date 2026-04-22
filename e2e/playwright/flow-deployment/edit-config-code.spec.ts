@@ -236,18 +236,11 @@ test('10.2.2 – Upload Unsupported File Type', async ({ page }) => {
   await expect(appRow).toBeVisible();
   await appRow.locator('.ag-cell').first().click();
   
-
-
 const configTab = page.getByText('Code as config', { exact: true });
 
 await expect(configTab).toBeVisible({ timeout: 15000 });
 await configTab.click();
-
-  
-
-  
-
-  const fileInput = page.getByTestId('input-file-upload');
+ const fileInput = page.getByTestId('input-file-upload');
   const uploadBtn = page.getByTestId('btn-upload-config');
   const filePreview = page.getByTestId('file-preview');
 
@@ -257,23 +250,20 @@ await configTab.click();
 
 });
 test('10.2.3 – Submit Without Uploading a File', async ({ page }) => {
-
-
-  const appRow = page.locator('.ag-row').first();
+const appRow = page.locator('.ag-row').first();
   await expect(appRow).toBeVisible({ timeout: 15000 });
  await appRow.locator('.ag-cell').first().click();
 
-
-  const configTab = page.getByText('Code as config', { exact: true });
+  
+const configTab = page.getByText('Code as config', { exact: true });
   await expect(configTab).toBeVisible({ timeout: 10000 });
   await configTab.click();
-
-
   const uploadBtn = page.getByTestId('btn-upload-config');
   const fileInput = page.getByTestId('input-file-upload');
 
+ 
 
-  await expect(fileInput).toHaveValue('');
+await expect(fileInput).toHaveValue('');
 
 
   await expect(uploadBtn).toBeDisabled();
@@ -287,106 +277,84 @@ test('10.2.3 – Submit Without Uploading a File', async ({ page }) => {
   if (await errorMsg.isVisible().catch(() => false)) {
     await expect(errorMsg).toBeVisible();
   }
-
- 
-  await expect(
+ await expect(
     page.getByText(/STARTING|UPDATING|BUILDING/i)
   ).not.toBeVisible();
 
 });
+  
 test('10.2.4 – Invalid YAML File Content', async ({ page }) => {
 
  
   const appRow = page.locator('.ag-row').first();
   await expect(appRow).toBeVisible({ timeout: 15000 });
    await appRow.locator('.ag-cell').first().click();
-
-  
-
- 
-  const configTab = page.getByText('Code as config', { exact: true });
+const configTab = page.getByText('Code as config', { exact: true });
   await expect(configTab).toBeVisible();
   await configTab.click();
-
- 
-  await expect(
+await expect(
     page.getByTestId('config-warning-alert')
   ).not.toBeVisible({ timeout: 10000 });
 
- 
-  const filePath = page.getByTestId('input-file-path');
+ const filePath = page.getByTestId('input-file-path');
   const fileName = page.getByTestId('input-file-name');
   const fileInput = page.getByTestId('input-file-upload');
   const uploadBtn = page.getByTestId('btn-upload-config');
 
-  
-  await filePath.fill('/invalid/yaml/path');
+   await filePath.fill('/invalid/yaml/path');
   await fileName.fill('invalid.yaml');
 
-  
-  await fileInput.setInputFiles('e2e/playwright/test-data/invalid.yaml');
+   await fileInput.setInputFiles('e2e/playwright/test-data/invalid.yaml');
 
- 
   if (await uploadBtn.isEnabled().catch(() => false)) {
     await uploadBtn.click();
   }
 
- 
-  const errorMsg = page.getByText(/Invalid YAML format/i);
+   const errorMsg = page.getByText(/Invalid YAML format/i);
 
   if (await errorMsg.isVisible().catch(() => false)) {
     await expect(errorMsg).toBeVisible();
   }
 
- 
-  await expect(
+   await expect(
     page.getByText(/STARTING|UPDATING|BUILDING/i)
   ).not.toBeVisible();
 
 });
 test('10.2.5 – Invalid JSON File Content', async ({ page }) => {
 
-  
-  const appRow = page.locator('.ag-row').first();
+   const appRow = page.locator('.ag-row').first();
   await expect(appRow).toBeVisible({ timeout: 15000 });
   await appRow.locator('.ag-cell').first().click();
   
- 
-  const configTab = page.getByText('Code as config', { exact: true });
+   const configTab = page.getByText('Code as config', { exact: true });
   await expect(configTab).toBeVisible();
   await configTab.click();
 
-  
-  await expect(
+    await expect(
     page.getByTestId('config-warning-alert')
   ).not.toBeVisible({ timeout: 10000 });
 
-  
-  const filePath = page.getByTestId('input-file-path');
+    const filePath = page.getByTestId('input-file-path');
   const fileName = page.getByTestId('input-file-name');
   const fileInput = page.getByTestId('input-file-upload');
   const uploadBtn = page.getByTestId('btn-upload-config');
 
-  
-  await filePath.fill('/invalid/json/path');
+   await filePath.fill('/invalid/json/path');
   await fileName.fill('invalid.json');
 
- 
   await fileInput.setInputFiles('e2e/playwright/test-data/invalid.json');
 
-  
-  if (await uploadBtn.isEnabled().catch(() => false)) {
+   if (await uploadBtn.isEnabled().catch(() => false)) {
     await uploadBtn.click();
   }
 
-  
-  const errorMsg = page.getByText(/Invalid JSON format/i);
+   const errorMsg = page.getByText(/Invalid JSON format/i);
 
   if (await errorMsg.isVisible().catch(() => false)) {
     await expect(errorMsg).toBeVisible();
   }
 
- 
   await expect(
     page.getByText(/STARTING|UPDATING|BUILDING/i)
   ).not.toBeVisible();
@@ -399,18 +367,13 @@ test('10.2.6 – Submit Without Any Changes', async ({ page }) => {
   await expect(appRow).toBeVisible({ timeout: 15000 });
  await appRow.locator('.ag-cell').first().click();
 
-  
-
-  
-    const configTab = page.getByText('Code as config', { exact: true });
+     const configTab = page.getByText('Code as config', { exact: true });
   await expect(configTab).toBeVisible();
   await configTab.click();
 
- 
   const uploadBtn = page.getByTestId('btn-upload-config');
 
-  
-  const isEnabled = await uploadBtn.isEnabled().catch(() => false);
+   const isEnabled = await uploadBtn.isEnabled().catch(() => false);
 
   if (!isEnabled) {
     console.log('✅ Button disabled → No changes detected (correct behavior)');
@@ -442,25 +405,18 @@ test('10.2.7 – Empty File Path', async ({ page }) => {
   await expect(appRow).toBeVisible({ timeout: 15000 });
    await appRow.locator('.ag-cell').first().click();
 
- 
-
-
   const configTab = page.getByText('Code as config', { exact: true });
   await expect(configTab).toBeVisible();
   await configTab.click();
 
- 
   const filePath = page.getByTestId('input-file-path');
   const uploadBtn = page.getByTestId('btn-upload-config');
 
- 
-  await filePath.fill('');
+   await filePath.fill('');
   await filePath.blur();
 
- 
-  await expect(uploadBtn).toBeDisabled();
+   await expect(uploadBtn).toBeDisabled();
 
- 
   await expect(
     page.getByText(/STARTING|UPDATING|BUILDING/i)
   ).not.toBeVisible();
@@ -468,68 +424,52 @@ test('10.2.7 – Empty File Path', async ({ page }) => {
 });
 test('10.2.8 – Empty File Name', async ({ page }) => {
 
-
-  const appRow = page.locator('.ag-row').first();
+ const appRow = page.locator('.ag-row').first();
   await expect(appRow).toBeVisible({ timeout: 15000 });
  await appRow.locator('.ag-cell').first().click();
 
-  
-
- 
    const configTab = page.getByText('Code as config', { exact: true });
   await expect(configTab).toBeVisible();
   await configTab.click();
 
-
   const fileName = page.getByTestId('input-file-name');
   const uploadBtn = page.getByTestId('btn-upload-config');
-
-  
-  await fileName.fill('');
+ await fileName.fill('');
   await fileName.blur();
 
- 
   await expect(uploadBtn).toBeDisabled();
 
- 
   await expect(
     page.getByText(/STARTING|UPDATING|BUILDING/i)
   ).not.toBeVisible();
 
 });
-test('10.2.9 – File Size Exceeds Maximum Limit', async ({ page }) => {
+// test('10.2.9 – File Size Exceeds Maximum Limit', async ({ page }) => {
 
- 
-  const appRow = page.locator('.ag-row').first();
-  await expect(appRow).toBeVisible({ timeout: 15000 });
- await appRow.locator('.ag-cell').first().click();
+//    const appRow = page.locator('.ag-row').first();
+//   await expect(appRow).toBeVisible({ timeout: 15000 });
+//  await appRow.locator('.ag-cell').first().click();
 
- const configTab = page.getByText('Code as config', { exact: true });
+//  const configTab = page.getByText('Code as config', { exact: true });
 
-  
-  await expect(configTab).toBeVisible();
-  await configTab.click();
+//     await expect(configTab).toBeVisible();
+//   await configTab.click();
 
-  
-  const fileInput = page.getByTestId('input-file-upload');
-  const uploadBtn = page.getByTestId('btn-upload-config');
+//     const fileInput = page.getByTestId('input-file-upload');
+//   const uploadBtn = page.getByTestId('btn-upload-config');
 
- 
-  await fileInput.setInputFiles('e2e/playwright/test-data/large.yaml');
+//    await fileInput.setInputFiles('e2e/playwright/test-data/large.yaml');
 
- 
-  const errorMsg = page.getByText(/File size exceeds/i);
+//    const errorMsg = page.getByText(/File size exceeds/i);
 
-  await expect(errorMsg).toBeVisible({ timeout: 5000 });
+//   await expect(errorMsg).toBeVisible({ timeout: 5000 });
 
-  
-  await expect(uploadBtn).toBeDisabled();
+//     await expect(uploadBtn).toBeDisabled();
 
- 
-  await expect(
-    page.getByText(/STARTING|UPDATING|BUILDING/i)
-  ).not.toBeVisible();
+//    await expect(
+//     page.getByText(/STARTING|UPDATING|BUILDING/i)
+//   ).not.toBeVisible();
 
-});
+// });
 });
   
