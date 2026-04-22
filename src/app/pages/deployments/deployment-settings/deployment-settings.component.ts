@@ -164,13 +164,13 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
       name: ['', Validators.maxLength(40)],
       instanceType: ['', Validators.required],
       region: [{ value: '', disabled: true }],
-      replicas: ['', [Validators.required, Validators.min(1)]],
+      replicas: ['', [Validators.required, Validators.min(1), Validators.maxLength(5), Validators.pattern('^[0-9]+$')]],
       hpaEnabled: [false],
-      hpaMinReplicas: ['', [Validators.pattern('^[0-9]+$'), Validators.min(1)]],
-      hpaMaxReplicas: ['', [Validators.pattern('^[0-9]+$')]],
-      ephemeralStorage: [null, Validators.pattern("^[0-9]*\\.?[0-9]+$")],
+      hpaMinReplicas: ['', [Validators.pattern('^[0-9]+$'), Validators.min(1), Validators.max(5), Validators.maxLength(5)]],
+      hpaMaxReplicas: ['', [Validators.pattern('^[0-9]+$'), Validators.maxLength(5)]],
+      ephemeralStorage: [null, [Validators.pattern("^[0-9]*\\.?[0-9]+$"), Validators.maxLength(5)]],
       storage: [null, Validators.pattern("^[0-9]+$")],
-      healthEndpoint: ['', [Validators.maxLength(250), Validators.pattern('^/.*')]],
+      healthEndpoint: ['', [Validators.maxLength(50), Validators.pattern('^/.*')]],
       port: ['', [Validators.maxLength(5), Validators.pattern('^[0-9]+$'), Validators.min(1),
       Validators.max(65535)]],
       buildCommand: ['', Validators.maxLength(250)],
@@ -736,7 +736,12 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
       this.generalSettingsForm.get('hpaMaxReplicas')?.updateValueAndValidity();
     } else {
       // this.generalSettingsForm.get('replicas')?.setValue(value ? value : '1');
-      this.generalSettingsForm.get('replicas')?.setValidators([Validators.required, Validators.min(1)]);
+      this.generalSettingsForm.get('replicas')?.setValidators([
+        Validators.required,
+        Validators.min(1),
+        Validators.maxLength(5),
+        Validators.pattern('^[0-9]+$')
+      ]);
       this.generalSettingsForm.get('replicas')?.updateValueAndValidity();
       this.generalSettingsForm.get('hpaMinReplicas')?.setValue('');
       this.generalSettingsForm.get('hpaMaxReplicas')?.setValue('');
