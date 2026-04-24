@@ -23,13 +23,6 @@ export default defineConfig({
     storageState: 'playwright/.auth/user.json',
   },
 
-  webServer: {
-    command: 'ng serve --poll 2000',
-    port: 4200,
-    reuseExistingServer: true,
-    timeout: 300 * 1000,
-  },
-
   projects: [
     /* Test against desktop browsers */
     {
