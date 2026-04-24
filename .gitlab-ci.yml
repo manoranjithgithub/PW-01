@@ -25,9 +25,15 @@ e2e:
   image: node:22.1.0
   variables:
     TEST_ENV: "dev"
+    PLAYWRIGHT_BROWSERS_PATH: "playwright-browsers"
+  cache:
+    key: playwright-browsers
+    paths:
+      - playwright-browsers/
   script:
     - npm ci --legacy-peer-deps
-    - npx playwright test
+    - npx playwright install chromium
+    - npx playwright test --project=chromium
   artifacts:
     when: always
     paths:
