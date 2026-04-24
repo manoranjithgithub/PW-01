@@ -2,7 +2,7 @@ import { test as setup } from '@playwright/test';
 
 setup('authenticate', async ({ page }) => {
 
-    await page.goto('https://app.dev.nimbuz.tech');
+    await page.goto('/');
 
     await page.getByRole('textbox').first().fill('Dev');
 

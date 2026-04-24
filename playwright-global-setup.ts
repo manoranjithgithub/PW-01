@@ -1,7 +1,8 @@
 import { chromium, FullConfig } from '@playwright/test';
+import { envConfig } from './e2e/playwright/env';
 
 async function globalSetup(config: FullConfig) {
-    const baseURL = 'https://app.dev.nimbuz.tech';
+    const baseURL = `https://app.${envConfig.domain}`;
     const browser = await chromium.launch();
     const page = await browser.newPage({ baseURL });
 

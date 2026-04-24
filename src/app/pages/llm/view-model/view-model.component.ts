@@ -536,9 +536,23 @@ export class ViewModelComponent implements OnInit, OnDestroy {
   }
 
   get usageBaseUrl(): string {
-    return 'https://ai.nimbuz.tech';
+    const environmentRaw = localStorage.getItem('environment');
+    if (!environmentRaw) return 'https://ai.nimbuz.tech';
+
+    try {
+      const envObj = JSON.parse(environmentRaw);
+      const envType = String(envObj?.type || '').toLowerCase();
+      return envType === 'prod' ? 'https://ai.nimbuz.tech' : 'https://ai.dev.nimbuz.tech';
+    } catch {
+      return 'https://ai.nimbuz.tech';
+    }
   }
 
+  get usageEndpointHost(): string {
+    return this.usageBaseUrl.replace(/^https?:\/\//, '');
+  }
+
+  
   get usageModel(): string {
     return String(this.modelData?.model || this.modelData?.modelId || '');
   }
@@ -763,7 +777,7 @@ public class Example {
       { label: 'Provider', value: this.safeValue(this.modelData.provider) },
       { label: 'Model', value: this.safeValue(this.modelData.model) },
       { label: 'Key Prefix', value: this.safeValue(this.modelData.keyPrefix) },
-      { label: 'Endpoint', value: 'ai.nimbuz.tech' },
+      { label: 'Endpoint', value: this.usageEndpointHost },
       { label: 'Created', value: this.createdDisplay }
     ];
   }

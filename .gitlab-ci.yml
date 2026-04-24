@@ -1,5 +1,6 @@
 stages:
   - code-quality-check
+  - e2e
   - build
   - deploy
 
@@ -18,6 +19,25 @@ sonarqube:
     - npm install --only-dev --legacy-peer-deps
     - node sonar.js $SONAR_HOST_URL $SONAR_TOKEN
   allow_failure: true
+
+e2e:
+  stage: e2e
+  image: 096985928716.dkr.ecr.ap-southeast-1.amazonaws.com/node-base:20-playwright
+  variables:
+    TEST_ENV: "dev"
+  script:
+    - npm ci --legacy-peer-deps
+    - npx playwright test
+  artifacts:
+    when: always
+    paths:
+      - playwright-report/
+      - test-results/
+    reports:
+      junit: test-results/junit.xml
+  allow_failure: true
+  only:
+    - ua-module-01
 
 build:
   stage: build
