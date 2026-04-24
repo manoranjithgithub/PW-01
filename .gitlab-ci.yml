@@ -22,7 +22,7 @@ sonarqube:
 
 e2e:
   stage: e2e
-  image: 096985928716.dkr.ecr.ap-southeast-1.amazonaws.com/node-base:20-playwright
+  image: node:22.1.0
   variables:
     TEST_ENV: "dev"
   script:
