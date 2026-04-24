@@ -41,6 +41,7 @@ Chart.register(LineElement, LineController, CategoryScale, LinearScale, PointEle
 export class DeploymentMetricsComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('cpuChartCanvas', { static: false }) chartRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('ramChartCanvas', { static: false }) ramChartRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('cpuThrottleChartCanvas', { static: false }) throttleChartRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('storageChartCanvas', { static: false }) storageChartRef!: ElementRef<HTMLCanvasElement>;
 
   dropdownOpen: boolean = false;
@@ -49,9 +50,11 @@ export class DeploymentMetricsComponent implements OnInit, AfterViewInit, OnDest
 
   cpuChart!: Chart<any>;
   ramChart!: Chart<any>;
+  cpuThrottleChart!: Chart<any>;
   storageChart!: Chart<any>;
   cpuUsageData: any[] = [];
   ramUsageData: any[] = [];
+  cpuThrottleData: any[] = [];
   private pendingMetricsRequests = 0;
 
   filterForm!: FormGroup;
@@ -61,6 +64,7 @@ export class DeploymentMetricsComponent implements OnInit, AfterViewInit, OnDest
   intervals = INTERVALS;
   chartEmptyText: string = 'No data to display';
   storageUsageData = METRICS_REFRESH_INTERVALS;
+  readonly throttleLimit = 20;
 
   showNoDataMessage: boolean = false;
   deploymentdetails: any;
@@ -72,6 +76,7 @@ export class DeploymentMetricsComponent implements OnInit, AfterViewInit, OnDest
   cpuUsagePercent: number = 0;
   currentCpuLabel: string = '0';
   currentRamLabel: string = '0';
+  currentThrottleLabel: string = '0.00';
   deploymentInstanceType: string = '';
 
   private destroy$ = new Subject<void>();
@@ -84,7 +89,7 @@ export class DeploymentMetricsComponent implements OnInit, AfterViewInit, OnDest
       if (params['id'] != undefined) {
         this.deploymentId = params['id'];
       }
-      this.deploymentService.getDeploymentById(this.deploymentId).subscribe((res: any) => {
+      this.deploymentService.getDeploymentById(this.deploymentId).pipe(takeUntil(this.destroy$)).subscribe((res: any) => {
         this.deploymentdetails = res.data;
         this.deploymentInstanceType = this.deploymentdetails?.application?.instanceType || '';
         this.computeMaxLimits();
@@ -117,7 +122,7 @@ export class DeploymentMetricsComponent implements OnInit, AfterViewInit, OnDest
   }
 
   computeMaxLimits(): void {
-    this.deploymentService.getInstanceTypes().subscribe((response: any) => {
+    this.deploymentService.getInstanceTypes().pipe(takeUntil(this.destroy$)).subscribe((response: any) => {
       this.instanceTypes = response.data;
       const deploymentInstanceType = this.deploymentdetails?.application?.instanceType;
 
@@ -384,6 +389,147 @@ export class DeploymentMetricsComponent implements OnInit, AfterViewInit, OnDest
     });
   }
 
+  renderCpuThrottleChart(): void {
+    if (!this.throttleChartRef || !this.throttleChartRef.nativeElement) {
+      console.warn('throttleChartRef not ready, retrying...');
+      setTimeout(() => this.renderCpuThrottleChart(), 500);
+      return;
+    }
+    if (this.cpuThrottleChart) this.cpuThrottleChart.destroy();
+
+    const points = this.cpuThrottleData.map(item => ({
+      x: this.parseTimestampToDate(item._id),
+      y: (Number(item.throttleAverage) || 0) * 100
+    }));
+    if (points.length === 1) points.push({ x: new Date(points[0].x.getTime() + 1000), y: points[0].y });
+
+    const timeConfig = this.getTimeScaleConfig();
+    const throttleAxisMax = this.getThrottleAxisMax(points);
+    const throttleAxisStepSize = this.getThrottleAxisStepSize(throttleAxisMax);
+    const isThrottleBreached = points.some(p => Number(p.y) > this.throttleLimit);
+    const standardThresholdColor = isThrottleBreached ? '#ff6b6b' : '#22a328';
+    const avgThrottleFillColor = isThrottleBreached ? 'rgba(255, 107, 107, 0.12)' : 'rgba(34, 163, 40, 0.12)';
+
+    this.cpuThrottleChart = new Chart(this.throttleChartRef.nativeElement, {
+      type: 'line',
+      data: {
+        datasets: [
+          {
+            label: `Avg Throttle (${this.formatThrottleForLabel(this.average(points.map(p => p.y)))})`,
+            data: points,
+            borderColor: standardThresholdColor,
+            backgroundColor: avgThrottleFillColor,
+            fill: true,
+            tension: 0.4,
+            pointRadius: 0,
+            pointHoverRadius: 4,
+            pointBackgroundColor: standardThresholdColor,
+            borderWidth: 3
+          },
+          {
+            label: `Standard Threshold (${this.throttleLimit}%)`,
+            data: points.map(p => ({ x: p.x, y: this.throttleLimit })),
+            borderColor: standardThresholdColor,
+            borderWidth: 1,
+            borderDash: [5, 5],
+            borderCapStyle: 'round',
+            pointRadius: 0,
+            pointHoverRadius: 4,
+            pointHoverBorderWidth: 2,
+            pointHoverBackgroundColor: '#ffffff',
+            pointHoverBorderColor: standardThresholdColor,
+            fill: false,
+            parsing: false,
+            order: 0
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: true,
+            position: 'bottom',
+            align: 'start',
+            labels: {
+              usePointStyle: false,
+              boxWidth: 20,
+              boxHeight: 4,
+              padding: 18,
+              color: '#6b7a90',
+              font: { size: 12 }
+            }
+          },
+          title: { display: false },
+          tooltip: {
+            enabled: true,
+            backgroundColor: '#ffffff',
+            borderColor: '#e4e9f1',
+            borderWidth: 1,
+            titleColor: '#3b4a5a',
+            bodyColor: '#111827',
+            displayColors: false,
+            padding: 10,
+            filter: (ctx) => !String(ctx.dataset?.label || '').toLowerCase().includes('threshold'),
+            callbacks: {
+              title: (items) => {
+                const x = items[0]?.parsed?.x;
+                if (!x) return '';
+                const d = new Date(x);
+                const dateStr = d.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+                const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                return `${dateStr} ${timeStr}`;
+              },
+              label: (ctx) => `CPU Throttle: ${Number(ctx.parsed.y).toFixed(2)} %`
+            }
+          }
+        },
+        interaction: { mode: 'index', intersect: false },
+        scales: {
+          x: {
+            type: 'time',
+            time: { tooltipFormat: 'PPpp', ...timeConfig },
+            title: { display: false },
+            ticks: {
+              autoSkip: true,
+              maxTicksLimit: 6,
+              autoSkipPadding: 12,
+              maxRotation: 0,
+              minRotation: 0,
+              color: '#7a889c',
+              callback: (val: any) => {
+                const d = new Date(val);
+                const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const durationVal: any = this.filterForm?.get('duration')?.value;
+                if (durationVal && Number(durationVal) <= 60) return timeStr;
+                const dateStr = d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+                return `${dateStr} ${timeStr}`;
+              }
+            },
+            grid: { color: 'rgba(15, 23, 42, 0.06)' }
+          },
+          y: {
+            title: { display: false },
+            min: 0,
+            max: throttleAxisMax,
+            beginAtZero: true,
+            ticks: {
+              color: '#7a889c',
+              stepSize: throttleAxisStepSize,
+              callback: (value: any) => `${value}%`
+            },
+            grid: {
+              color: (context: any) => Number(context.tick?.value) === this.throttleLimit
+                ? 'transparent'
+                : 'rgba(15, 23, 42, 0.06)'
+            }
+          }
+        }
+      }
+    });
+  }
+
   renderStorageChart(): void {
     if (!this.chartRef || !this.chartRef.nativeElement) {
       console.warn('chartRef not ready, retrying...');
@@ -442,7 +588,7 @@ export class DeploymentMetricsComponent implements OnInit, AfterViewInit, OnDest
     const params = this.computeFilterParams();
     if (!params) return;
 
-    // show loader immediately and expect two requests (cpu + memory)
+    // show loader immediately and expect two requests (cpu includes throttle + memory)
     this.loading = true;
     this.pendingMetricsRequests = 2;
 
@@ -497,13 +643,26 @@ export class DeploymentMetricsComponent implements OnInit, AfterViewInit, OnDest
     const environmentId = JSON.parse(localStorage.getItem('environment') || '{}').id || '';
     // const deploymentId = JSON.parse(localStorage.getItem('deployment') || '{}').id || '';
 
-    this.deploymentService.getDeploymentMetricsByTime(environmentId, params.fromISO, params.toISO, params.timeIntervalSeconds, 'cpu', this.deploymentId).subscribe((res: any) => {
+    this.deploymentService.getDeploymentMetricsByTime(environmentId, params.fromISO, params.toISO, params.timeIntervalSeconds, 'cpu', this.deploymentId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((res: any) => {
       const cpuValues: [number | string, number | null][] = res.data?.usageRange?.data?.result?.[0]?.values || [];
+      const throttleValues: [number | string, number | null][] = res.data?.throttleRange?.data?.result?.[0]?.values || [];
 
       if (!cpuValues || cpuValues.length === 0) {
         this.cpuUsageData = [];
       } else {
         this.cpuUsageData = cpuValues.map(([ts, value]) => ({ _id: ts.toString(), cpuAverage: +Number(value || 0).toFixed(2) }));
+      }
+
+      if (!throttleValues || throttleValues.length === 0) {
+        this.cpuThrottleData = [];
+        this.currentThrottleLabel = '0.00';
+      } else {
+        this.cpuThrottleData = throttleValues.map(([ts, value]) => ({ _id: ts.toString(), throttleAverage: +Number(value || 0).toFixed(6) }));
+        // Calculate average throttle
+        const averageThrottle = this.average(this.cpuThrottleData.map(item => Number(item.throttleAverage) || 0));
+        this.currentThrottleLabel = (averageThrottle * 100).toFixed(2);
       }
 
       // Calculate CPU usage percent
@@ -516,19 +675,24 @@ export class DeploymentMetricsComponent implements OnInit, AfterViewInit, OnDest
         this.currentCpuLabel = '0';
       }
       this.renderCpuChart();
-      this.decrementPendingRequests();
-    }, (err) => {
-      console.error('Failed to fetch CPU metrics', err);
-      this.cpuUsageData = [];
-      this.decrementPendingRequests();
-    });
+      this.renderCpuThrottleChart();
+
+        this.decrementPendingRequests();
+      }, (err) => {
+        console.error('Failed to fetch CPU metrics', err);
+        this.cpuUsageData = [];
+        this.cpuThrottleData = [];
+        this.decrementPendingRequests();
+      });
   }
 
   private onFilterMem(params: { fromISO: string; toISO: string; timeIntervalSeconds: number }): void {
     const environmentId = JSON.parse(localStorage.getItem('environment') || '{}').id || '';
     // const deploymentId = JSON.parse(localStorage.getItem('deployment') || '{}').id || '';
 
-    this.deploymentService.getDeploymentMetricsByTime(environmentId, params.fromISO, params.toISO, params.timeIntervalSeconds, 'memory', this.deploymentId).subscribe((res: any) => {
+    this.deploymentService.getDeploymentMetricsByTime(environmentId, params.fromISO, params.toISO, params.timeIntervalSeconds, 'memory', this.deploymentId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((res: any) => {
       const memValues: [number | string, number | null][] = res.data?.usageRange?.data?.result?.[0]?.values || [];
 
       if (!memValues || memValues.length === 0) {
@@ -547,13 +711,13 @@ export class DeploymentMetricsComponent implements OnInit, AfterViewInit, OnDest
         this.currentRamLabel = '0';
       }
       this.renderRamChart();
-      this.renderStorageChart();
-      this.decrementPendingRequests();
-    }, (err) => {
-      console.error('Failed to fetch Memory metrics', err);
-      this.ramUsageData = [];
-      this.decrementPendingRequests();
-    });
+        this.renderStorageChart();
+        this.decrementPendingRequests();
+      }, (err) => {
+        console.error('Failed to fetch Memory metrics', err);
+        this.ramUsageData = [];
+        this.decrementPendingRequests();
+      });
   }
 
   private decrementPendingRequests(): void {
@@ -614,6 +778,21 @@ export class DeploymentMetricsComponent implements OnInit, AfterViewInit, OnDest
   private formatCpuForLabel(val: number): string {
     return `${Number(val).toFixed(2)} mCPU`;
   }
+
+  private formatThrottleForLabel(val: number): string {
+    return `${Number(val).toFixed(2)} %`;
+  }
+
+  private getThrottleAxisMax(points: Array<{ x: Date; y: number }>): number {
+    const maxThrottleValue = Math.max(100, ...points.map(point => Number(point.y) || 0));
+    if (maxThrottleValue <= 100) return 100;
+    return Math.ceil(maxThrottleValue / 20) * 20;
+  }
+
+  private getThrottleAxisStepSize(axisMax: number): number {
+    return 20;
+  }
+
   private average(arr: number[]): number {
     if (!arr || arr.length === 0) return 0;
     return arr.reduce((s, v) => s + (Number(v) || 0), 0) / arr.length;
@@ -630,6 +809,9 @@ export class DeploymentMetricsComponent implements OnInit, AfterViewInit, OnDest
     }
     if (this.ramChart) {
       this.ramChart.destroy();
+    }
+    if (this.cpuThrottleChart) {
+      this.cpuThrottleChart.destroy();
     }
     if (this.storageChart) {
       this.storageChart.destroy();

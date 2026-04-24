@@ -140,21 +140,21 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
         ],
       ],
       vcsAutoDeploy: [false],
-      replicas: ['1', [Validators.pattern('^[0-9]+$'), Validators.min(1)]],
+      replicas: ['1', [Validators.pattern('^[0-9]+$'), Validators.min(1), Validators.maxLength(5)]],
       hpaEnabled: [false],
-      hpaMinReplicas: ['', [Validators.pattern('^[0-9]+$'), Validators.min(1)]],
-      hpaMaxReplicas: ['', [Validators.pattern('^[0-9]+$')]],
+      hpaMinReplicas: ['', [Validators.pattern('^[0-9]+$'), Validators.min(1), Validators.maxLength(5)]],
+      hpaMaxReplicas: ['', [Validators.pattern('^[0-9]+$'), Validators.maxLength(5)]],
       instanceType: ['', Validators.required],
       buildCommand: [null, Validators.maxLength(60)],
       startCommand: [null, Validators.maxLength(60)],
       installCommand: [null],
-      ephemeralStorage: ['2', Validators.pattern('^[0-9]*\\.?[0-9]+$')],
+      ephemeralStorage: ['2', [Validators.pattern('^[0-9]*\.?[0-9]+$'), Validators.maxLength(5)]],
       storage: [null, Validators.pattern('^[0-9]+$')],
-      healthEndpoint: [null, [Validators.maxLength(250), Validators.pattern('^/.*')]],
+      healthEndpoint: [null, [Validators.maxLength(50), Validators.pattern('^/.*')]],
       zipFilename: [{ value: null, disabled: true }],
       // dockerfilePath: [null],
-      folderPath: [null],
-      dockerFileName: [null],
+      folderPath: [null, Validators.maxLength(50)],
+      dockerFileName: [null, Validators.maxLength(40)],
       port: ['', [Validators.maxLength(5), Validators.pattern('^[0-9]+$'),
       Validators.min(1), Validators.max(65535)
       ]],
@@ -368,7 +368,7 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
   }
   isError(controlName: string, errorType: string): boolean {
     const control = this.stepOneForm.controls[controlName];
-    return control.hasError(errorType) && control.touched;
+    return control.hasError(errorType) && (control.touched || control.dirty);
   }
 
   fileValidator(allowedExtensions: string[]) {

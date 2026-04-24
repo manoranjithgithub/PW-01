@@ -68,6 +68,14 @@
           </div>
         </div>
         <div class="stat-pill">
+          <div class="stat-label">CPU Throttle</div>
+          <div class="stat-main">{{ currentThrottleLabel }} <span>%</span></div>
+          <div class="stat-meta">
+            <span class="delta neutral">Average</span>
+            <span>throttle</span>
+          </div>
+        </div>
+        <div class="stat-pill">
           <div class="stat-label">Instance Type</div>
           <div class="stat-main">{{ deploymentInstanceType|| '-' }}</div>
           <div class="stat-meta">
@@ -100,6 +108,19 @@
             <div *ngIf="showNoDataMessage" class="empty-state">{{ chartEmptyText }}</div>
             <div *ngIf="!showNoDataMessage" class="chart-container">
               <canvas #ramChartCanvas></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="chart-card full">
+          <div class="card-head full-card-head">
+            <div class="card-title">CPU Throttle</div>
+            <div class="card-sub">CPU Throttle Over Time</div>
+          </div>
+          <div class="card-body">
+            <div *ngIf="showNoDataMessage" class="empty-state">{{ chartEmptyText }}</div>
+            <div *ngIf="!showNoDataMessage" class="chart-container full-chart-container">
+              <canvas #cpuThrottleChartCanvas></canvas>
             </div>
           </div>
         </div>
