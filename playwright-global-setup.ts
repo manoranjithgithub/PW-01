@@ -7,6 +7,7 @@ async function globalSetup(config: FullConfig) {
     const page = await browser.newPage({ baseURL });
 
     await page.goto('/projects');
+    await page.waitForLoadState('networkidle');
 
     try {
         const loginButton = page.locator('button:has-text("Login")');

@@ -29,7 +29,7 @@ e2e:
 
   script:
     - npm ci --legacy-peer-deps
-    - npx playwright test
+    - npx playwright test --workers=2 --retries=2
 
   artifacts:
     when: always
