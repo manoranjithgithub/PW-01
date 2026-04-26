@@ -22,7 +22,7 @@ stages:
 
 e2e:
   stage: e2e
-  image: mcr.microsoft.com/playwright:v1.43.0-jammy
+  image: mcr.microsoft.com/playwright:v1.58.1-jammy
 
   variables:
     TEST_ENV: "dev"
