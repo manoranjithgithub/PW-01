@@ -27,14 +27,14 @@ e2e:
   variables:
     TEST_ENV: "dev"
 
-script:
+  script:
   - npm ci --legacy-peer-deps
   - npm run build
   - npx serve -s dist &
   - sleep 10
   - npx playwright test --workers=2 --retries=1
 
-artifacts:
+  artifacts:
     when: always
     paths:
       - playwright-report/
@@ -42,8 +42,8 @@ artifacts:
     reports:
       junit: test-results/junit.xml
 
-allow_failure: true
-only:
+  allow_failure: true
+  only:
     - ua-module-01
 
 build:
