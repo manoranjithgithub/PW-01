@@ -28,8 +28,8 @@ e2e:
     TEST_ENV: "dev"
 
   script:
-- npm ci --legacy-peer-deps
-- npx playwright test --workers=4 --retries=0
+      - npm ci --legacy-peer-deps
+      - npx playwright test --workers=4 --retries=0
 
   artifacts:
     when: always
