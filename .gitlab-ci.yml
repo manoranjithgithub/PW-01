@@ -4,21 +4,21 @@ stages:
   - build
   - deploy
 
-# es-lint:
-#   stage: code-quality-check
-#   image: node:22.1.0
-#   script:
-#     - npm install --only-dev --legacy-peer-deps
-#     - npx eslint '**/*.js' --max-warnings=0
-#   allow_failure: true
+es-lint:
+  stage: code-quality-check
+  image: node:22.1.0
+  script:
+    - npm install --only-dev --legacy-peer-deps
+    - npx eslint '**/*.js' --max-warnings=0
+  allow_failure: true
 
-# sonarqube:
-#   stage: code-quality-check
-#   image: node:22.1.0
-#   script:
-#     - npm install --only-dev --legacy-peer-deps
-#     - node sonar.js $SONAR_HOST_URL $SONAR_TOKEN
-#   allow_failure: true
+sonarqube:
+  stage: code-quality-check
+  image: node:22.1.0
+  script:
+    - npm install --only-dev --legacy-peer-deps
+    - node sonar.js $SONAR_HOST_URL $SONAR_TOKEN
+  allow_failure: true
 
 e2e:
   stage: e2e
@@ -41,7 +41,7 @@ e2e:
 
   allow_failure: true
   only:
-    - ua-module-01
+    - dev
 
 build:
   stage: build
