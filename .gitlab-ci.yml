@@ -34,7 +34,7 @@ script:
   - sleep 10
   - npx playwright test --workers=2 --retries=1
 
-  artifacts:
+artifacts:
     when: always
     paths:
       - playwright-report/
@@ -42,8 +42,8 @@ script:
     reports:
       junit: test-results/junit.xml
 
-  allow_failure: true
-  only:
+allow_failure: true
+only:
     - ua-module-01
 
 build:
