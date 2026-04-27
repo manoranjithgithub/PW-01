@@ -1,8 +1,8 @@
 stages:
   - code-quality-check
-  - e2e
   - build
   - deploy
+  - e2e
 
 es-lint:
   stage: code-quality-check
