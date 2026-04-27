@@ -1,6 +1,12 @@
 import { defineConfig, devices } from '@playwright/test';
+import { envConfig } from './e2e/playwright/env';
 
 export default defineConfig({
+
+  reporter: process.env.CI ? [
+    ['junit', { outputFile: 'test-results/junit.xml' }],
+    ['html', { open: 'never' }],
+  ] : undefined,
 
   testDir: 'e2e/playwright',
   globalSetup: './playwright-global-setup.ts',
@@ -10,18 +16,11 @@ export default defineConfig({
   retries: 1,
 
   use: {
-    baseURL: 'http://localhost:4200',
+    baseURL: `https://app.${envConfig.domain}`,
     headless: true,
     viewport: { width: 1280, height: 800 },
     ignoreHTTPSErrors: true,
     storageState: 'playwright/.auth/user.json',
-  },
-
-  webServer: {
-    command: 'ng serve --poll 2000',
-    port: 4200,
-    reuseExistingServer: true,
-    timeout: 300 * 1000,
   },
 
   projects: [

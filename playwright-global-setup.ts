@@ -1,15 +1,17 @@
 import { chromium, FullConfig } from '@playwright/test';
+import { envConfig } from './e2e/playwright/env';
 
 async function globalSetup(config: FullConfig) {
-    const baseURL = 'https://app.dev.nimbuz.tech';
+    const baseURL = `https://app.${envConfig.domain}`;
     const browser = await chromium.launch();
     const page = await browser.newPage({ baseURL });
 
     await page.goto('/projects');
+    await page.waitForLoadState('networkidle');
 
     try {
         const loginButton = page.locator('button:has-text("Login")');
-        await loginButton.waitFor({ state: 'visible', timeout: 5000 });
+        await loginButton.waitFor({ state: 'visible', timeout: 60000 });
 
         await page.getByRole('textbox').first().fill('Testing');
         await page.getByRole('textbox').nth(1).fill('Test@123');

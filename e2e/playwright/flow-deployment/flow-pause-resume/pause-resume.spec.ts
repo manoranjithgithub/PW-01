@@ -2,10 +2,6 @@ import { test, expect, Page } from '@playwright/test';
 
 test.describe('12.1   Positive Pause/Resume Application', () => {
 
-    test.use({
-        baseURL: 'https://app.dev.nimbuz.tech/'
-    });
-
     test.beforeEach(async ({ page }) => {
         test.setTimeout(120000);
 
