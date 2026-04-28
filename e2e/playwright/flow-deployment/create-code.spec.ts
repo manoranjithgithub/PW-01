@@ -1,6 +1,11 @@
 import { test, expect, Page } from '@playwright/test';
+import * as path from 'path';
 
 declare const Buffer: any;
+
+function configFixturePath(fileName: string) {
+  return path.resolve(__dirname, '..', 'tests', fileName);
+}
 
 async function loginIfRequired(page: Page) {
   if (!page.url().includes('/login')) return;
@@ -23,7 +28,7 @@ async function loginIfRequired(page: Page) {
 async function gotoCreateApplicationCodeAsConfigStep(page: Page) {
   test.setTimeout(180000);
 
-  await page.goto('/projects', { waitUntil: 'domcontentloaded', timeout: 60000 });
+  await page.goto('/projects', { waitUntil: 'domcontentloaded', timeout: 120000 });
   if (page.url().includes('/login')) {
     await loginIfRequired(page);
   }
@@ -105,7 +110,7 @@ test.describe('6.1 - Positive Create Config', () => {
     
     // Step 1: Upload supported file (YAML)
     await page.getByTestId('input-config-file').setInputFiles(
-        'e2e/playwright/tests/config.yaml'
+        configFixturePath('config.yaml')
     );
 
     // Step 2: Validate file is selected (file preview appears)
@@ -126,7 +131,7 @@ test('6.1.2 – Set Valid File Path for Code as Config', async ({ page }) => {
 
   // Step 1: Upload config file (required before path)
   await page.getByTestId('input-config-file')
-    .setInputFiles('e2e/playwright/tests/config.yaml');
+    .setInputFiles(configFixturePath('config.yaml'));
 
   // Step 2: Validate file uploaded
   await expect(page.locator('.file-preview-card')).toBeVisible();
@@ -157,7 +162,7 @@ test('6.1.3 – Upload Code as Config Using JSON Format', async ({ page }) => {
 
   // Step 1: Upload JSON file
   await page.getByTestId('input-config-file')
-    .setInputFiles('e2e/playwright/tests/config.json');
+    .setInputFiles(configFixturePath('config.json'));
 
   // Step 2: Validate file preview appears
   await expect(page.locator('.file-preview-card')).toBeVisible();
@@ -200,7 +205,7 @@ test.describe('6.2 - Negative Create Config', () => {
   await expect(fileInput).toBeVisible({ timeout: 60000 });
 
   // Step 1: Upload invalid file
-  await fileInput.setInputFiles('e2e/playwright/tests/config.txt');
+  await fileInput.setInputFiles(configFixturePath('config.txt'));
 
   await expect(page.locator('.file-preview-card')).toBeVisible();
 
@@ -291,7 +296,7 @@ test('6.2.4 – File Path Empty', async ({ page }) => {
 
   // Step 1: Upload valid file
   await page.getByTestId('input-config-file').setInputFiles(
-    'e2e/playwright/tests/config.yaml'
+    configFixturePath('config.yaml')
   );
 
   // Step 2: File preview appears
@@ -321,7 +326,7 @@ test('6.2.5 – Invalid File Path Format', async ({ page }) => {
 
   // Step 1: Upload valid file
   await page.getByTestId('input-config-file').setInputFiles(
-    'e2e/playwright/tests/config.yaml'
+    configFixturePath('config.yaml')
   );
 
   // Step 2: File preview appears

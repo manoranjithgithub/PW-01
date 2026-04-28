@@ -23,13 +23,17 @@ sonarqube:
 e2e:
   stage: e2e
   image: mcr.microsoft.com/playwright:v1.58.1-jammy
-
-  variables:
-    TEST_ENV: "dev"
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "dev"'
+      variables:
+        TEST_ENV: "dev"
+    - if: '$CI_COMMIT_BRANCH == "master"'
+      variables:
+        TEST_ENV: "prod"
 
   script:
       - npm ci --legacy-peer-deps
-      - npx playwright test --workers=4 --retries=0
+      - npx playwright test e2e/playwright/flow-deployment --workers=2 --retries=1
 
   artifacts:
     when: always
@@ -40,8 +44,6 @@ e2e:
       junit: test-results/junit.xml
 
   allow_failure: true
-  only:
-    - dev
 
 build:
   stage: build

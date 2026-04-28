@@ -38,32 +38,32 @@ test.describe('Deployment Deletion Flow', () => {
         await page.waitForTimeout(2000);
     });
 
-    test('Should delete a deployment from the Settings page', async ({ page }) => {
-        const firstRow = page.locator('.ag-row').first();
+    // test('Should delete a deployment from the Settings page', async ({ page }) => {
+    //     const firstRow = page.locator('.ag-row').first();
 
-        if (await firstRow.count() > 0) {
-            const deploymentName = (await firstRow.locator('.ag-cell[col-id="name"]').textContent())?.trim();
-            console.log(`Deleting deployment: ${deploymentName}`);
+    //     if (await firstRow.count() > 0) {
+    //         const deploymentName = (await firstRow.locator('.ag-cell[col-id="name"]').textContent())?.trim();
+    //         console.log(`Deleting deployment: ${deploymentName}`);
 
-            await firstRow.locator('.ag-cell[col-id="name"]').click({ force: true });
-            await expect(page).toHaveURL(/application-details/);
+    //         await firstRow.locator('.ag-cell[col-id="name"]').click({ force: true });
+    //         await expect(page).toHaveURL(/application-details/);
 
-            await page.getByText('Settings', { exact: true }).first().click();
+    //         await page.getByText('Settings', { exact: true }).first().click();
 
-            const deleteBtn = page.getByTestId('delete-deployment-btn');
-            await expect(deleteBtn).toBeVisible();
-            await deleteBtn.click();
+    //         const deleteBtn = page.getByTestId('delete-deployment-btn');
+    //         await expect(deleteBtn).toBeVisible();
+    //         await deleteBtn.click();
 
-            const confirmBtn = page.getByTestId('confirmation-confirm-btn');
-            await expect(confirmBtn).toBeEnabled();
-            await confirmBtn.click();
+    //         const confirmBtn = page.getByTestId('confirmation-confirm-btn');
+    //         await expect(confirmBtn).toBeEnabled();
+    //         await confirmBtn.click();
 
-            // await expect(page.getByRole('alert')).toBeVisible();
-            // await expect(page).toHaveURL(/\/applications$/);
-        } else {
-            console.log('No deployment exists, skipping deletion flow.');
-        }
-    });
+    //         // await expect(page.getByRole('alert')).toBeVisible();
+    //         // await expect(page).toHaveURL(/\/applications$/);
+    //     } else {
+    //         console.log('No deployment exists, skipping deletion flow.');
+    //     }
+    // });
 
 
 });

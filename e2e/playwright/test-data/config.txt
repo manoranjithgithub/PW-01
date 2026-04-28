@@ -1,0 +1,1 @@
+invalid upload type for Code-as-Config tests

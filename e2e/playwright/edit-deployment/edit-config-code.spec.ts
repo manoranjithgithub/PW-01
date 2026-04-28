@@ -1,4 +1,9 @@
 import { test, expect } from '@playwright/test';
+import * as path from 'path';
+
+function testDataPath(fileName: string) {
+  return path.resolve(__dirname, '..', 'test-data', fileName);
+}
 
 test.describe('10.1 - positive code as config', () => {
 
@@ -48,7 +53,7 @@ await configTab.click();
 await page.getByTestId('input-file-name').fill('updated-config.yaml');
 
 await page.getByTestId('input-file-upload')
-  .setInputFiles('e2e/playwright/test-data/sample.yaml');
+  .setInputFiles(testDataPath('sample.yaml'));
 
 await page.getByTestId('btn-upload-config').click();
 await page.waitForLoadState('networkidle');
@@ -93,7 +98,7 @@ await fileName.blur();
 
 // upload
 await page.getByTestId('input-file-upload')
-  .setInputFiles('e2e/playwright/test-data/config.json');
+  .setInputFiles(testDataPath('config.json'));
 
 // wait button
 await expect(uploadBtn).toBeEnabled({ timeout: 10000 });
@@ -142,7 +147,7 @@ await expect(
   console.log('Existing Name:', existingName);
 
  
-  await fileInput.setInputFiles('e2e/playwright/test-data/sample.yaml');
+  await fileInput.setInputFiles(testDataPath('sample.yaml'));
 
  
   await fileName.fill(existingName);
@@ -244,7 +249,7 @@ await configTab.click();
   const uploadBtn = page.getByTestId('btn-upload-config');
   const filePreview = page.getByTestId('file-preview');
 
-  await fileInput.setInputFiles('e2e/playwright/test-data/config.txt');
+  await fileInput.setInputFiles(testDataPath('config.txt'));
  await expect(filePreview).not.toBeVisible();
  await expect(uploadBtn).toBeDisabled();
 
@@ -304,7 +309,7 @@ await expect(
    await filePath.fill('/invalid/yaml/path');
   await fileName.fill('invalid.yaml');
 
-   await fileInput.setInputFiles('e2e/playwright/test-data/invalid.yaml');
+   await fileInput.setInputFiles(testDataPath('invalid.yaml'));
 
   if (await uploadBtn.isEnabled().catch(() => false)) {
     await uploadBtn.click();
@@ -343,7 +348,7 @@ test('10.2.5 – Invalid JSON File Content', async ({ page }) => {
    await filePath.fill('/invalid/json/path');
   await fileName.fill('invalid.json');
 
-  await fileInput.setInputFiles('e2e/playwright/test-data/invalid.json');
+  await fileInput.setInputFiles(testDataPath('invalid.json'));
 
    if (await uploadBtn.isEnabled().catch(() => false)) {
     await uploadBtn.click();

@@ -2,29 +2,42 @@ import { chromium, FullConfig } from '@playwright/test';
 import { envConfig } from './e2e/playwright/env';
 
 async function globalSetup(config: FullConfig) {
-    const baseURL = `https://app.${envConfig.domain}`;
-    const browser = await chromium.launch();
-    const page = await browser.newPage({ baseURL });
+  const baseURL = `https://app.${envConfig.domain}`;
 
-    await page.goto('/projects');
+  const browser = await chromium.launch();
+  const context = await browser.newContext();
+  const page = await context.newPage();
+
+  // 👉 Go to app
+  await page.goto(baseURL, { waitUntil: 'domcontentloaded' });
+
+  // 👉 Wait for page to stabilize
+  await page.waitForLoadState('networkidle');
+
+  try {
+    // 👉 Wait for login form (if not already logged in)
+    const usernameInput = page.getByRole('textbox').first();
+    await usernameInput.waitFor({ state: 'visible', timeout: 15000 });
+
+    // 👉 Fill login details
+    await usernameInput.fill('Testing');
+    await page.getByRole('textbox').nth(1).fill('Test@123');
+
+    // 👉 Click login
+    await page.getByRole('button', { name: /login/i }).click();
+
+    // 👉 Wait for navigation after login
+    await page.waitForURL('**/projects*', { timeout: 30000 });
     await page.waitForLoadState('networkidle');
 
-    try {
-        const loginButton = page.locator('button:has-text("Login")');
-        await loginButton.waitFor({ state: 'visible', timeout: 60000 });
+  } catch (err) {
+    console.log('⚠️ Login step skipped (already logged in or different UI)');
+  }
 
-        await page.getByRole('textbox').first().fill('Testing');
-        await page.getByRole('textbox').nth(1).fill('Test@123');
-        await page.getByRole('button', { name: /login/i }).click();
+  // 👉 Save session
+  await context.storageState({ path: 'playwright/.auth/user.json' });
 
-        await page.waitForURL('**/projects*');
-        await page.waitForLoadState('networkidle');
-    } catch (error) {
-        console.log('Login form not found, might already have a session active or different setup.');
-    }
-
-    await page.context().storageState({ path: 'playwright/.auth/user.json' });
-    await browser.close();
+  await browser.close();
 }
 
 export default globalSetup;
