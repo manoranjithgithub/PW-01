@@ -1,0 +1,3 @@
+app:
+  name: nimbuz-e2e
+  enabled: true

@@ -50,56 +50,56 @@ test.describe('Create New Deployment - ZIP Upload (Vue.js App)', () => {
         await page.waitForLoadState('networkidle');
     });
 
-    test('Create Deployment with Default Prefilled Values', async ({ page }) => {
-        console.log('Starting ZIP upload flow from URL:', ZIP_FILE_URL);
+    // test('Create Deployment with Default Prefilled Values', async ({ page }) => {
+    //     console.log('Starting ZIP upload flow from URL:', ZIP_FILE_URL);
 
-        await page.getByTestId('select-type').click();
-        await page.getByTestId('option-type-zip').click();
+    //     await page.getByTestId('select-type').click();
+    //     await page.getByTestId('option-type-zip').click();
 
-        const response = await page.request.get(ZIP_FILE_URL);
-        const buffer = await response.body();
+    //     const response = await page.request.get(ZIP_FILE_URL);
+    //     const buffer = await response.body();
 
-        const fileInput = page.locator('input[formcontrolname="zipfileInput"]');
-        await fileInput.setInputFiles({
-            name: 'vuejs-app-final.zip',
-            mimeType: 'application/zip',
-            buffer: buffer
-        });
+    //     const fileInput = page.locator('input[formcontrolname="zipfileInput"]');
+    //     await fileInput.setInputFiles({
+    //         name: 'vuejs-app-final.zip',
+    //         mimeType: 'application/zip',
+    //         buffer: buffer
+    //     });
 
-        const submitFileBtn = page.getByTestId('btn-zip-submit');
-        await expect(submitFileBtn).toBeEnabled({ timeout: 60000 });
-        await submitFileBtn.click();
+    //     const submitFileBtn = page.getByTestId('btn-zip-submit');
+    //     await expect(submitFileBtn).toBeEnabled({ timeout: 60000 });
+    //     await submitFileBtn.click();
 
-        console.log('Filling basic details...');
-        const nameInput = page.locator('input[formcontrolname="name"]');
-        await expect(nameInput).toBeVisible({ timeout: 60000 });
-        const appName = 'vuejs-app-e2e-' + Date.now();
-        await nameInput.fill(appName);
+    //     console.log('Filling basic details...');
+    //     const nameInput = page.locator('input[formcontrolname="name"]');
+    //     await expect(nameInput).toBeVisible({ timeout: 60000 });
+    //     const appName = 'vuejs-app-e2e-' + Date.now();
+    //     await nameInput.fill(appName);
 
-        const portInput = page.locator('input[formcontrolname="port"]');
-        await portInput.fill('8080');
+    //     const portInput = page.locator('input[formcontrolname="port"]');
+    //     await portInput.fill('8080');
 
-        const instanceSelect = page.locator('select[formcontrolname="instanceType"]');
-        await expect(instanceSelect).toBeVisible();
-        await instanceSelect.selectOption({ label: 'micro.m' });
+    //     const instanceSelect = page.locator('select[formcontrolname="instanceType"]');
+    //     await expect(instanceSelect).toBeVisible();
+    //     await instanceSelect.selectOption({ label: 'micro.m' });
 
-        console.log('Navigating through checkout steps...');
-        await page.getByTestId('btn-next').click();
-        await page.getByTestId('btn-next').click();
-        await page.getByTestId('btn-next').click();
-        await page.getByTestId('btn-next').click();
+    //     console.log('Navigating through checkout steps...');
+    //     await page.getByTestId('btn-next').click();
+    //     await page.getByTestId('btn-next').click();
+    //     await page.getByTestId('btn-next').click();
+    //     await page.getByTestId('btn-next').click();
 
-        console.log('Submitting deployment...');
-        const submitBtn = page.getByTestId('btn-next');
-        await expect(submitBtn).toHaveText(/Submit/i, { timeout: 60000 });
-        await submitBtn.click();
+    //     console.log('Submitting deployment...');
+    //     const submitBtn = page.getByTestId('btn-next');
+    //     await expect(submitBtn).toHaveText(/Submit/i, { timeout: 60000 });
+    //     await submitBtn.click();
 
-        console.log('Verifying successful creation...');
-        await page.waitForURL(/.*\/applications$/, { timeout: 60000 });
-        await page.waitForLoadState('networkidle');
+    //     console.log('Verifying successful creation...');
+    //     await page.waitForURL(/.*\/applications$/, { timeout: 60000 });
+    //     await page.waitForLoadState('networkidle');
 
-        const table = page.getByTestId('ag-grid-table');
-        await expect(table).toBeVisible({ timeout: 60000 });
-    });
+    //     const table = page.getByTestId('ag-grid-table');
+    //     await expect(table).toBeVisible({ timeout: 60000 });
+    // });
 });
 

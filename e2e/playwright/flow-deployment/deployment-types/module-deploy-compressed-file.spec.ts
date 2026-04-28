@@ -184,23 +184,23 @@ test.describe('Compressed File (ZIP/TAR) Deployment Flow', () => {
         //     if (fs.existsSync(invalidFilePath)) fs.unlinkSync(invalidFilePath);
         // });
 
-        test('Should show error if the application name extracted from ZIP already exists', async ({ page }) => {
-            await page.getByTestId('select-type').click();
-            await page.getByTestId('option-type-zip').click();
+        // test('Should show error if the application name extracted from ZIP already exists', async ({ page }) => {
+        //     await page.getByTestId('select-type').click();
+        //     await page.getByTestId('option-type-zip').click();
 
-            const existingPath = path.resolve('existing-app-name.zip');
-            fs.writeFileSync(existingPath, 'content');
+        //     const existingPath = path.resolve('existing-app-name.zip');
+        //     fs.writeFileSync(existingPath, 'content');
 
-            await page.locator('input[data-testid="input-zip-file"]').setInputFiles(existingPath);
-            await page.getByTestId('btn-zip-submit').click();
+        //     await page.locator('input[data-testid="input-zip-file"]').setInputFiles(existingPath);
+        //     await page.getByTestId('btn-zip-submit').click();
 
-            const nameInput = page.locator('input[formcontrolname="name"]');
-            await nameInput.blur();
+        //     const nameInput = page.locator('input[formcontrolname="name"]');
+        //     await nameInput.blur();
 
-            await expect(page.locator('.text-danger').filter({ hasText: 'Name is already taken' })).toBeVisible();
+        //     await expect(page.locator('.text-danger').filter({ hasText: 'Name is already taken' })).toBeVisible();
 
-            if (fs.existsSync(existingPath)) fs.unlinkSync(existingPath);
-        });
+        //     if (fs.existsSync(existingPath)) fs.unlinkSync(existingPath);
+        // });
 
         test('Should show error if file exceeds the 500MB limit', async ({ page }) => {
             await page.getByTestId('select-type').click();

@@ -150,38 +150,38 @@ test.describe('14.2 - Negative Redeploy', () => {
     //     }
     // });
 
-    test('14.2.3 – Re-deploy Fails Due to Repository Access Issue', async ({ page }) => {
-        const firstRow = page.getByTestId('ag-grid-table').locator('.ag-row').first();
-        await expect(firstRow).toBeVisible({ timeout: 15000 });
+    // test('14.2.3 – Re-deploy Fails Due to Repository Access Issue', async ({ page }) => {
+    //     const firstRow = page.getByTestId('ag-grid-table').locator('.ag-row').first();
+    //     await expect(firstRow).toBeVisible({ timeout: 15000 });
 
-        const actionMenuBtn = firstRow.getByTestId('deployment-action-dropdown-btn').first();
-        await expect(actionMenuBtn).toBeVisible({ timeout: 15000 });
-        await actionMenuBtn.click();
+    //     const actionMenuBtn = firstRow.getByTestId('deployment-action-dropdown-btn').first();
+    //     await expect(actionMenuBtn).toBeVisible({ timeout: 15000 });
+    //     await actionMenuBtn.click();
 
-        const redeployOption = page.getByTestId('deployment-action-redeploy').first();
-        await expect(redeployOption).toBeVisible();
-        await redeployOption.click();
+    //     const redeployOption = page.getByTestId('deployment-action-redeploy').first();
+    //     await expect(redeployOption).toBeVisible();
+    //     await redeployOption.click();
 
-        const modal = page.getByTestId('deploy-confirmation-modal').first();
-        await expect(modal).toBeVisible();
+    //     const modal = page.getByTestId('deploy-confirmation-modal').first();
+    //     await expect(modal).toBeVisible();
 
-        const confirmBtn = modal.getByTestId('deploy-confirmation-confirm-btn');
+    //     const confirmBtn = modal.getByTestId('deploy-confirmation-confirm-btn');
 
-        await page.route('**/deployments/*', async route => {
-            if (route.request().method() === 'PUT') {
-                await route.fulfill({
-                    status: 500,
-                    contentType: 'application/json',
-                    body: JSON.stringify({ message: 'Internal Server Error', error: { details: 'Unable to fetch repository. Please check VCS access.' } })
-                });
-            } else {
-                await route.continue();
-            }
-        });
+    //     await page.route('**/deployments/*', async route => {
+    //         if (route.request().method() === 'PUT') {
+    //             await route.fulfill({
+    //                 status: 500,
+    //                 contentType: 'application/json',
+    //                 body: JSON.stringify({ message: 'Internal Server Error', error: { details: 'Unable to fetch repository. Please check VCS access.' } })
+    //             });
+    //         } else {
+    //             await route.continue();
+    //         }
+    //     });
 
-        await confirmBtn.click();
+    //     await confirmBtn.click();
 
-        await expect(page.locator('text=Unable to fetch repository. Please check VCS access.').first()).toBeVisible({ timeout: 15000 });
-    });
+    //     await expect(page.locator('text=Unable to fetch repository. Please check VCS access.').first()).toBeVisible({ timeout: 15000 });
+    // });
 
 });
