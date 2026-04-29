@@ -1,9 +1,13 @@
 # nimbuz-portal-fe
 
 ## latest version
-1.0.4
+1.0.5
 
 ## change log
+### 1.0.5
+implementation: playwright e2e implementation
+
+
 ### 1.0.4
 implementation: cpu throttle graph
 bugfix: https://gitlab.dilligentech.com/dt/paas/nimbuz-ops-hub/-/issues/3057

@@ -4,7 +4,7 @@
         'incomplete': i < currentStep && !isStepCompleted(i),
         'active': i === currentStep,
         'disabled': !canNavigateToStep(i)
-      }" (click)="canNavigateToStep(i) && goToStep(i)">
+      }" [attr.data-testid]="'step-' + step.label.toLowerCase().replace(' ', '-')" (click)="canNavigateToStep(i) && goToStep(i)">
     <div class="circle">
       <span *ngIf="i < currentStep">
         <ng-container *ngIf="isStepCompleted(i)">&#10003;</ng-container>
@@ -35,7 +35,7 @@
                   {{ option.name }}
                 </mat-option>
               </mat-select>
-              <div class="text-danger my-1" *ngIf="isError('type', 'required')">
+              <div class="text-danger my-1" data-testid="error-type-required" *ngIf="isError('type', 'required')">
                 Please select a VCS provider.
               </div>
             </div>
@@ -78,7 +78,7 @@
                       {{ option }}
                     </option>
                   </select>
-                  <div class="text-danger my-1" *ngIf="isError('branchName', 'required')">
+                  <div class="text-danger my-1" data-testid="error-branch-required" *ngIf="isError('branchName', 'required')">
                     Please select a branch.
                   </div>
                 </div>

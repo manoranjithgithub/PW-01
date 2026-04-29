@@ -1,9 +1,9 @@
 <div class="raw-editor-container">
     <div class="tab-container">
-        <button class="tab-button" [class.active]="activeTab === 'env'" (click)="activeTab = 'env'">
+        <button class="tab-button" data-testid="raw-editor-tab-env" [class.active]="activeTab === 'env'" (click)="activeTab = 'env'">
             ENV
         </button>
-        <button class="tab-button" [class.active]="activeTab === 'json'" (click)="activeTab = 'json'">
+        <button class="tab-button" data-testid="raw-editor-tab-json" [class.active]="activeTab === 'json'" (click)="activeTab = 'json'">
             JSON
         </button>
     </div>
@@ -12,7 +12,7 @@
         <!-- <pre class="highlighted" [innerHTML]="highlightedContent"></pre> -->
 
         <!-- <div class="highlight-layer" [innerHTML]="highlightedText"></div> -->
-        <textarea class="editor-textarea" [ngModel]="activeTab === 'env' ? envData : jsonData"
+        <textarea class="editor-textarea" data-testid="raw-editor-textarea" [ngModel]="activeTab === 'env' ? envData : jsonData"
             (ngModelChange)="onDataChange($event)">
         </textarea>
     </div>
@@ -30,8 +30,8 @@
             <span *ngIf="copied" class="popover-message right">Copied!</span>
         </span>
         <div class="action-buttons">
-            <button class="cancel-button" (click)="closeRawEditor()">Cancel</button>
-            <button class="btn btn-primary" (click)="updateVariables()"
+            <button class="cancel-button" data-testid="raw-editor-cancel" (click)="closeRawEditor()">Cancel</button>
+            <button class="btn btn-primary" data-testid="raw-editor-update" (click)="updateVariables()"
                 [disabled]="(activeTab === 'json' && !isJsonValid) || (activeTab === 'env' && !isEnvValid)">Update
                 Variables</button>
         </div>

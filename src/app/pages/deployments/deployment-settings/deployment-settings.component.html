@@ -12,7 +12,8 @@
 </c-alert>
 <c-alert color="warning" *ngIf="isBuilding">
   <div class="warn-text">
-    <i class="bi bi-exclamation-triangle-fill"></i> Application settings cannot be edited while the application is building
+    <i class="bi bi-exclamation-triangle-fill"></i> Application settings cannot be edited while the application is
+    building
   </div>
 </c-alert>
 <fieldset [disabled]="formDisabled" class="card-child">
@@ -340,9 +341,8 @@
                 </div>
                 <div class="flex-fill mb-3">
                   <label for="dockerFileName" class="custom-label">Dockerfile Name
-                    <span
-                      [cTooltip]="'Specify the docker file name. Default is Dockerfile.'"
-                      cTooltipPlacement="top" class="text-warning cursor mx-1">
+                    <span [cTooltip]="'Specify the docker file name. Default is Dockerfile.'" cTooltipPlacement="top"
+                      class="text-warning cursor mx-1">
                       <i class="bi bi-exclamation-circle"></i>
                     </span>
                   </label>
@@ -384,6 +384,7 @@
       this environment. This cannot be undone.</div>
     <div class="mt-2">
       <button class="btn button-format-solid custom-label" (click)="deleteDeployment()"
+        data-testid="delete-deployment-btn"
         [disabled]="!permissionService.canDeleteForCurrentUser(getCurrentProjectId(), getCurrentEnvId())"
         [attr.title]="!permissionService.canDeleteForCurrentUser(getCurrentProjectId(), getCurrentEnvId()) ? 'You are not authorized to view that page.' : null">
         <i class="bi bi-trash"></i> Delete Application

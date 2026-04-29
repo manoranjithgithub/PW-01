@@ -1,0 +1,1 @@
+This is a plain text config file used for negative E2E upload tests.
