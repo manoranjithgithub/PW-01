@@ -1,83 +1,126 @@
-<c-alert color="warning" *ngIf="isBuilding">
+<c-alert color="warning" *ngIf="isBuilding" data-testid="config-warning-alert">
   <div class="warn-text">
-    <i class="bi bi-exclamation-triangle-fill"></i> Config maps cannot be edited while the application is
-    building
+    <i class="bi bi-exclamation-triangle-fill"></i>
+    Config maps cannot be edited while the application is building
   </div>
 </c-alert>
-<div class="card-child">
+
+<div class="card-child" data-testid="config-card-container">
+
   <c-card-group *ngIf="!deploymentdetails">
-    <c-card>
-      <p><small>No config maps to display for this deployment.</small></p>
+    <c-card data-testid="no-config-card">
+      <p data-testid="no-config-text">
+        <small>No config maps to display for this deployment.</small>
+      </p>
     </c-card>
   </c-card-group>
+
   <c-card-group>
-    <c-card>
-      <c-accordion>
+    <c-card data-testid="config-card">
+
+      <c-accordion data-testid="config-accordion">
+
         <c-accordion-item #item0="cAccordionItem" [visible]="true">
+
+          <!-- HEADER BUTTON -->
           <ng-template cTemplateId="accordionHeaderTemplate">
-            <button (click)="item0.toggleItem()" [collapsed]="!item0.visible" cAccordionButton>
-              <i class="bi bi-file-earmark-text mx-1"></i>Config-as-code
+            <button
+              (click)="item0.toggleItem()"
+              [collapsed]="!item0.visible"
+              cAccordionButton
+              data-testid="config-as-code-toggle"
+            >
+              <i class="bi bi-file-earmark-text mx-1"></i>
+              Config-as-code
             </button>
           </ng-template>
+
+          <!-- BODY -->
           <ng-template cTemplateId="accordionBodyTemplate">
-            <div class="accordion-body">
+            <div class="accordion-body" data-testid="config-body">
+
               <fieldset [disabled]="fileUploadForm.disabled">
-                <form [formGroup]="fileUploadForm">
-                  <div class="d-flex justify-content-between gap-2">
-                    <div class="my-2 w-100">
-                      <label class="custom-label my-1"><b>File Path</b></label>
-                      <input type="text" formControlName="filePath" name="filePath" class="form-control" />
-                    </div>
-                    <div class="my-2 w-100">
-                      <label class="custom-label my-1"><b>File Name</b></label>
-                      <input type="text" formControlName="fileName" name="filePath" class="form-control" />
-                    </div>
-                  </div>
-                  <div class="d-flex justify-content-start align-items-start gap-2">
-                    <div class="my-2 w-50">
-                      <label for="fileInput" class="custom-label my-1"><b>Select a file to upload</b></label>
-                      <input type="file" id="fileInput" formControlName="fileInput" class="form-control custom-label"
-                        (change)="onFileSelect($event)" accept=".json,.yml,.yaml" />
-                      <div
-                        *ngIf="fileUploadForm.get('fileInput')?.hasError('invalidFileType') && fileUploadForm.get('fileInput')?.touched"
-                        class="text-danger my-2">
-                        Invalid file type. Only .yml, .json files are allowed.
-                      </div>
-                      <div
-                        *ngIf="fileUploadForm.get('fileInput')?.hasError('fileSizeExceeded') && fileUploadForm.get('fileInput')?.touched"
-                        class="text-danger my-2">
-                        File size exceeds the limit of 100MB.
-                      </div>
-                    </div>
-                    <div *ngIf="selectedFileName" class="file-preview-card">
-                      <div class="file-icon">
-                        <i class="bi bi-file-earmark"></i>
-                      </div>
-                      <div class="file-info">
-                        <div class="file-name">{{ selectedFileName }}</div>
-                        <div class="file-meta">
-                          <span class="file-size">{{ formatFileSize(selectedFileSize) }}</span>
-                          <span class="file-date">{{ getFileTimeAgo(selectedFileTime) }}</span>
-                        </div>
-                      </div>
-                      <div class="file-badge">{{ getFileType(selectedFileName) }}</div>
-                      <span class="delete-btn" (click)="clearFile()" title="Remove">
-                        <i class="bi bi-x-lg"></i>
-                      </span>
-                    </div>
+
+                <form [formGroup]="fileUploadForm" data-testid="config-form">
+
+                  <!-- FILE PATH -->
+                  <div class="my-2 w-100">
+                    <label class="custom-label my-1" data-testid="label-file-path">
+                      <b>File Path</b>
+                    </label>
+                    <input
+                      type="text"
+                      formControlName="filePath"
+                      class="form-control"
+                      data-testid="input-file-path"
+                    />
                   </div>
 
+                  <!-- FILE NAME -->
+                  <div class="my-2 w-100">
+                    <label class="custom-label my-1" data-testid="label-file-name">
+                      <b>File Name</b>
+                    </label>
+                    <input
+                      type="text"
+                      formControlName="fileName"
+                      class="form-control"
+                      data-testid="input-file-name"
+                    />
+                  </div>
+
+                  <!-- FILE INPUT -->
+                  <div class="my-2 w-50">
+                    <label class="custom-label my-1" data-testid="label-file-upload">
+                      <b>Select a file to upload</b>
+                    </label>
+                    <input
+                      type="file"
+                      id="fileInput"
+                      formControlName="fileInput"
+                      class="form-control"
+                      (change)="onFileSelect($event)"
+                      accept=".json,.yml,.yaml"
+                      data-testid="input-file-upload"
+                    />
+                  </div>
+
+                  <!-- FILE PREVIEW -->
+                  <div *ngIf="selectedFileName" class="file-preview-card" data-testid="file-preview">
+                    <div class="file-name" data-testid="file-name">{{ selectedFileName }}</div>
+
+                    <span
+                      class="delete-btn"
+                      (click)="clearFile()"
+                      data-testid="btn-remove-file"
+                    >
+                      <i class="bi bi-x-lg"></i>
+                    </span>
+                  </div>
+
+                  <!-- UPLOAD BUTTON -->
                   <div class="d-flex justify-content-end my-2">
-                    <button class="btn button-format-solid custom-label mt-2" (click)="updateConfigFile()"
-                      [disabled]="fileUploadForm.invalid || fileUploadForm.pristine"><i class="bi bi-upload"></i> Upload
+                    <button
+                      class="btn button-format-solid custom-label mt-2"
+                      (click)="updateConfigFile()"
+                      [disabled]="fileUploadForm.invalid || fileUploadForm.pristine"
+                      data-testid="btn-upload-config"
+                    >
+                      <i class="bi bi-upload"></i> Upload
                     </button>
                   </div>
+
                 </form>
+
               </fieldset>
+
             </div>
           </ng-template>
+
         </c-accordion-item>
       </c-accordion>
+
     </c-card>
   </c-card-group>
+
 </div>
