@@ -1,9 +1,15 @@
 # nimbuz-portal-fe
 
 ## latest version
-1.0.5
+1.0.6
 
 ## change log
+### 1.0.6
+implementation: show balance toaster added
+bugfix: https://gitlab.dilligentech.com/dt/paas/nimbuz-ops-hub/-/issues/3066
+        https://gitlab.dilligentech.com/dt/paas/nimbuz-ops-hub/-/issues/3071
+        https://gitlab.dilligentech.com/dt/paas/nimbuz-ops-hub/-/issues/3039
+
 ### 1.0.5
 implementation: playwright e2e implementation
 

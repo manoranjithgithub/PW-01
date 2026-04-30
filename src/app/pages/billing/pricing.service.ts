@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
@@ -14,7 +14,9 @@ export class PricingsService {
   constructor(public http: HttpClient) { }
 
   getInvoiceList(accountId: string, limit: number, offset: number) {
-    return this.http.get(`${this.pricingManagement}/invoices?account_id=${accountId}&limit=${limit}&offset=${offset}`)
+    return this.http.get(`${this.pricingManagement}/invoices?account_id=${accountId}&limit=${limit}&offset=${offset}`, {
+      headers: this.getAuthHeaders()
+    })
       .pipe(
         catchError(this.handleError.bind(this))
       );
@@ -103,6 +105,13 @@ export class PricingsService {
       }
     }
     return throwError(() => new Error(errorMessage));
+  }
+
+  private getAuthHeaders(): HttpHeaders {
+    const token = localStorage.getItem('accessToken');
+    return token
+      ? new HttpHeaders({ Authorization: `Bearer ${token}` })
+      : new HttpHeaders();
   }
 
 

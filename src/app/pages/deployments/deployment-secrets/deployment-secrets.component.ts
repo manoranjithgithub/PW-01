@@ -33,6 +33,7 @@ export class DeploymentSecretsComponent implements OnInit {
   @Input() deploymentData: any;
   @Input() canAddVariables: boolean = false;
   @Input({ required: false }) secretDataFromParent: any;
+  @Input() forceDisable: boolean = false;
   @Output() secretDetails = new EventEmitter<any>();
 
   @ViewChild('rawEditorModel') private rawEditorModel!: ModalComponent;
@@ -61,7 +62,7 @@ export class DeploymentSecretsComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.freezeAddNewData = this.currentStatus && this.currentStatus?.toLowerCase() === 'building' ? true : false;
+    this.freezeAddNewData = this.forceDisable || (this.currentStatus && this.currentStatus?.toLowerCase() === 'building' ? true : false);
     this.isBuilding = this.currentStatus?.toLowerCase() === 'building' ? true : false;
     const resourceUsage = JSON.parse(localStorage.getItem('resourceUsage') || '[]');
     const deploymentResource = resourceUsage.find(
@@ -81,7 +82,7 @@ export class DeploymentSecretsComponent implements OnInit {
         this.isEditSecret = true;
         // Use deploymentdetails passed from parent
         const isStopped = this.deploymentdetails?.status?.toLowerCase() === 'stopped';
-        const freezeAddNewData = isStopped || this.currentStatus?.toLowerCase() === 'building' ? true : false;
+        const freezeAddNewData = this.forceDisable || isStopped || this.currentStatus?.toLowerCase() === 'building' ? true : false;
         const shouldDisable = freezeAddNewData || !(this.permissionService.canWriteGlobal() || this.permissionService.canAdminGlobal() || this.permissionService.canDeleteForCurrentUser(null, null));
         this.freezeAddNewData = shouldDisable;
         this.isBuilding = this.currentStatus?.toLowerCase() === 'building' ? true : false;

@@ -39,6 +39,8 @@ import { LoaderComponent } from '../../loader/loader.component';
 import { ProjectsService } from '../../../../pages/projects/projects.service';
 import { LayoutActionService } from '../../../services/layout-action.service';
 import { environment } from '../../../../../environments/environment';
+import { PricingsService } from '../../../../pages/billing/pricing.service';
+import { InvoiceRow } from '../../../../core/models/company-billing-info.model';
 
 // function isOverflown(element: HTMLElement) {
 //   return (
@@ -84,6 +86,12 @@ export class DefaultLayoutComponent implements OnInit {
   subText: string = '';
   currentUrl: string = '';
   showSwitchProject = false;
+  showBillingCard = false;
+  isClosing = false;
+  billingToastData: { availableCredit: number; currency?: string } | null = null;
+  billingCardLoaded = false;
+  private billingInvoices: InvoiceRow[] = [];
+  private billingCardRequestStarted = false;
 
   readonly #colorModeService = inject(ColorModeService);
   readonly colorMode = this.#colorModeService.colorMode;
@@ -102,7 +110,8 @@ export class DefaultLayoutComponent implements OnInit {
     private sharedService: SharedService, private sidebarService: SidebarService, private renderer: Renderer2,
     private toastr: ToastrService, private projectService: ProjectsService,
     private layoutActionService: LayoutActionService,
-    public permissionService: PermissionService
+    public permissionService: PermissionService,
+    private pricingService: PricingsService
   ) {
     this.#colorModeService.localStorageItemName.set('theme-default');
 
@@ -224,6 +233,7 @@ export class DefaultLayoutComponent implements OnInit {
   ngOnInit(): void {
     this.savedTheme = localStorage.getItem('theme-default') || 'light';
     this.colorMode.set(this.savedTheme);
+    this.showBillingCard = this.shouldShowBillingBalanceCard();
     
     this.sidebarService.sidebarToggle$.subscribe((visible) => {
       const sidebarEl = this.sidebarRef.nativeElement;
@@ -250,6 +260,9 @@ export class DefaultLayoutComponent implements OnInit {
       }
 
       this.navItems = baseItems;
+      if (this.showBillingCard && userData && !this.billingCardRequestStarted) {
+        this.loadBillingCardData();
+      }
     });
   }
 
@@ -316,5 +329,74 @@ export class DefaultLayoutComponent implements OnInit {
     } catch {
       return mode;
     }
+  }
+  get billingToastCreditLabel(): string {
+    if (!this.billingCardLoaded || !this.billingToastData) {
+      return '--';
+    }
+    return this.sharedService.formatMoney(
+      this.billingToastData?.availableCredit || 0,
+      this.billingToastData?.currency
+    );
+  }
+
+  private loadBillingCardData(): void {
+    if (!this.shouldShowBillingBalanceCard()) {
+      this.showBillingCard = false;
+      return;
+    }
+
+    const token = this.authService.getAccessToken();
+    const accountId = localStorage.getItem('accountId');
+    if (!token || !accountId) {
+      this.billingToastData = null;
+      this.billingCardLoaded = true;
+      return;
+    }
+
+    this.billingCardRequestStarted = true;
+    this.pricingService.getInvoiceList(accountId, 100, 0).subscribe({
+      next: (response: any) => {
+        if (!response?.success) {
+          this.billingToastData = null;
+          this.billingCardLoaded = true;
+          return;
+        }
+
+        const payload = response.data || {};
+        this.billingInvoices = Array.isArray(payload.data) ? payload.data : [];
+        const availableCredit = this.billingInvoices
+          .filter((invoice) => this.sharedService.isUnappliedFund(invoice))
+          .reduce((sum, invoice) => sum + this.getAmount(invoice.total), 0);
+
+        this.billingToastData = {
+          availableCredit
+        };
+        this.billingCardLoaded = true;
+      },
+      error: () => {
+        this.billingToastData = null;
+        this.billingCardLoaded = true;
+      }
+    });
+  }
+
+  private getAmount(value: any): number {
+    const amount = Number(value || 0);
+    return Number.isFinite(amount) ? amount : 0;
+  }
+
+  private shouldShowBillingBalanceCard(): boolean {
+    return localStorage.getItem('isshowBalance') === 'true';
+  }
+
+  closeBillingCard() {
+    this.isClosing = true;
+
+    setTimeout(() => {
+      this.showBillingCard = false;
+      this.isClosing = false;
+      localStorage.removeItem('isshowBalance');
+    }, 300);
   }
 }
