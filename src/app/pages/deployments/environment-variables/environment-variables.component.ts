@@ -41,6 +41,7 @@ export class EnvironmentVariablesComponent implements OnInit {
   @Input() deploymentData: any;
   @Input() canAddVariables: boolean = false;
   @Input({ required: false }) envDataFromParent: any;
+  @Input() forceDisable: boolean = false;
   deploymentResourceExhausted: boolean = false;
   editIndex: number | null = null;
   updatedReq: any
@@ -58,7 +59,7 @@ export class EnvironmentVariablesComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.freezeAddNewData = this.currentStatus && this.currentStatus?.toLowerCase() === 'building' ? true : false;
+    this.freezeAddNewData = this.forceDisable || (this.currentStatus && this.currentStatus?.toLowerCase() === 'building' ? true : false);
     this.isBuilding = this.currentStatus?.toLowerCase() === 'building' ? true : false;
     const resourceUsage = JSON.parse(localStorage.getItem('resourceUsage') || '[]');
 
@@ -73,7 +74,7 @@ export class EnvironmentVariablesComponent implements OnInit {
         this.isEditEnv = true;
         // Use deploymentdetails passed from parent
         const isStopped = this.deploymentdetails?.status?.toLowerCase() === 'stopped';
-        const freezeAddNewData = isStopped || this.currentStatus?.toLowerCase() === 'building' ? true : false;
+        const freezeAddNewData = this.forceDisable || isStopped || this.currentStatus?.toLowerCase() === 'building' ? true : false;
         const shouldDisable = freezeAddNewData || !(this.permissionService.canWriteGlobal() || this.permissionService.canAdminGlobal() || this.permissionService.canDeleteForCurrentUser(null, null));
         this.freezeAddNewData = shouldDisable;
         this.isBuilding = this.currentStatus?.toLowerCase() === 'building' ? true : false;

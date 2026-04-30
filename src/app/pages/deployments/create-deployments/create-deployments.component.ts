@@ -165,7 +165,7 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
     this.fileUploadForm = this._fb.group(
       {
         fileInput: [''],
-        filePath: [''],
+        filePath: ['', [Validators.maxLength(40)]],
       },
       { validators: this.configAsFilePairValidator() }
     );

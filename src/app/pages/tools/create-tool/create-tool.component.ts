@@ -182,6 +182,9 @@ export class CreateToolComponent implements OnInit, OnDestroy {
     const { name, ...formValues } = this.form.getRawValue();
 
     if (this.form.valid) {
+      const instanceTypeField = this.formStructure.find(field => field.function === 'resource');
+      const instanceType = instanceTypeField ? formValues[instanceTypeField.key] : undefined;
+
       this.formStructure.forEach(field => {
         if (field.append && formValues.hasOwnProperty(field.key)) {
           formValues[field.key] = formValues[field.key] + field.append;
@@ -194,6 +197,7 @@ export class CreateToolComponent implements OnInit, OnDestroy {
         version: this.toolDetails.version,
         repository: this.toolDetails.repository,
         values: formValues,
+        instanceType: instanceType,
         environmentId: this.env,
         projectId: JSON.parse(localStorage.getItem('project') || '{}').id
       }

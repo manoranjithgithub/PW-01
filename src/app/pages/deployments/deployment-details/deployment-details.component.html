@@ -50,24 +50,30 @@
     <c-tab-pane class="p-3 preview" role="tabpanel">
       <ng-container *ngIf="selectedTabIndex === 1">
         <app-environment-variables [canAddVariables]="true"
-          [currentStatus]="lastReleaseData[0]?.status" [deploymentdetails]="deploymentdetails"></app-environment-variables>
+          [currentStatus]="lastReleaseData[0]?.status" [forceDisable]="forceDisableInputs"
+          [deploymentdetails]="deploymentdetails"></app-environment-variables>
       </ng-container>
     </c-tab-pane>
 
     <c-tab-pane class="p-3 preview" role="tabpanel">
       <ng-container *ngIf="selectedTabIndex === 2">
         <app-deployment-secrets [canAddVariables]="true"
-          [currentStatus]="lastReleaseData[0]?.status" [deploymentdetails]="deploymentdetails"></app-deployment-secrets>
+          [currentStatus]="lastReleaseData[0]?.status" [forceDisable]="forceDisableInputs"
+          [deploymentdetails]="deploymentdetails"></app-deployment-secrets>
       </ng-container>
     </c-tab-pane>
     <c-tab-pane class="p-3 preview" role="tabpanel">
-      <app-deployment-config-maps [currentStatus]="lastReleaseData[0]?.status" [deploymentdetails]="deploymentdetails"></app-deployment-config-maps>
+      <ng-container *ngIf="selectedTabIndex === 3 && deploymentdetails">
+        <app-deployment-config-maps [currentStatus]="lastReleaseData[0]?.status" [forceDisable]="forceDisableInputs"
+          [deploymentdetails]="deploymentdetails"></app-deployment-config-maps>
+      </ng-container>
     </c-tab-pane>
 
     <c-tab-pane class="p-3 preview" role="tabpanel">
       <ng-container *ngIf="selectedTabIndex === 4">
         <app-deployment-settings (closeModalEvent)="closeModalEvent.emit()"
-          [currentStatus]="lastReleaseData[0]?.status" [deploymentdetails]="deploymentdetails"></app-deployment-settings>
+          [currentStatus]="lastReleaseData[0]?.status" [forceDisable]="forceDisableInputs"
+          [deploymentdetails]="deploymentdetails"></app-deployment-settings>
       </ng-container>
     </c-tab-pane>
     <c-tab-pane class="p-3 preview" role="tabpanel">
@@ -85,7 +91,8 @@
     <c-tab-pane class="p-3 preview" role="tabpanel">
       <ng-container *ngIf="selectedTabIndex === 7">
         <app-deployment-networking (closeModalEvent)="closeModalEvent.emit()"
-          [currentStatus]="lastReleaseData[0]?.status" [deploymentdetails]="deploymentdetails"></app-deployment-networking>
+          [currentStatus]="lastReleaseData[0]?.status" [forceDisable]="forceDisableInputs"
+          [deploymentdetails]="deploymentdetails"></app-deployment-networking>
       </ng-container>
     </c-tab-pane>
   </c-tab-content>

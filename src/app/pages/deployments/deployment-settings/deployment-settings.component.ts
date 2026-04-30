@@ -96,6 +96,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
   customDnsHost = new FormControl;
   ingressDomain: string = '';
   @Input() currentStatus: string = '';
+  @Input() forceDisable: boolean = false;
   freezeAddNewData: boolean = false;
   isBuilding: boolean = false;
   public formDisabled: boolean = false;
@@ -109,8 +110,8 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
     private viewportScroller: ViewportScroller, public permissionService: PermissionService
   ) { }
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['currentStatus']) {
-      this.freezeAddNewData = this.currentStatus && this.currentStatus?.toLowerCase() === 'building' ? true : false;
+    if (changes['currentStatus'] || changes['forceDisable']) {
+      this.freezeAddNewData = this.forceDisable || (this.currentStatus && this.currentStatus?.toLowerCase() === 'building' ? true : false);
       this.isBuilding = this.currentStatus?.toLowerCase() === 'building' ? true : false;
       this.formDisabled = this.freezeAddNewData || !(this.permissionService.canWriteGlobal() || this.permissionService.canAdminGlobal() || this.permissionService.canDeleteForCurrentUser(null, null));
       if (this.formDisabled) {
@@ -194,7 +195,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
       folderPath: [{ value: '', disabled: true }],
       vcsAutoDeploy: [false],
     });
-    this.freezeAddNewData = this.currentStatus && this.currentStatus?.toLowerCase() === 'building' ? true : false;
+    this.freezeAddNewData = this.forceDisable || (this.currentStatus && this.currentStatus?.toLowerCase() === 'building' ? true : false);
 
     const shouldDisable = this.freezeAddNewData || !(this.permissionService.canWriteGlobal() || this.permissionService.canAdminGlobal() || this.permissionService.canDeleteForCurrentUser(null, null));
     this.formDisabled = shouldDisable;
@@ -211,7 +212,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit, OnCha
       // Use deploymentdetails passed from parent
       if (this.deploymentdetails) {
         const isStopped = this.deploymentdetails?.status?.toLowerCase() === 'stopped';
-        const freezeAddNewData = isStopped || this.currentStatus?.toLowerCase() === 'building' ? true : false;
+        const freezeAddNewData = this.forceDisable || isStopped || this.currentStatus?.toLowerCase() === 'building' ? true : false;
         const shouldDisable = freezeAddNewData || !(this.permissionService.canWriteGlobal() || this.permissionService.canAdminGlobal() || this.permissionService.canDeleteForCurrentUser(null, null));
         this.freezeAddNewData = freezeAddNewData;
         this.formDisabled = shouldDisable;

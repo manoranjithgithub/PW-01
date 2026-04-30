@@ -303,6 +303,21 @@ export class PaymentsComponent implements OnInit {
     }
     return date.toLocaleDateString('en-US', {
       year: 'numeric',
+      month: 'short'
+    });
+  }
+
+  getIssueDate(row: InvoiceRow): string {
+    const createdAt = row['created_at'];
+    if (!createdAt) {
+      return '--';
+    }
+    const date = new Date(createdAt);
+    if (isNaN(date.getTime())) {
+      return '--';
+    }
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
       month: 'short',
       day: 'numeric'
     });
@@ -315,17 +330,7 @@ export class PaymentsComponent implements OnInit {
   }
 
   formatMoney(amount: number | undefined | null, currencyFrom?: string): string {
-    const target = this.sharedService.getCurrency() || 'USD';
-    const converted = this.sharedService.convertAmount(Number(amount || 0), currencyFrom || 'USD', target);
-    try {
-      return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: target,
-        minimumFractionDigits: 2,
-      }).format(converted);
-    } catch (e) {
-      return String(converted);
-    }
+    return this.sharedService.formatMoney(amount, currencyFrom);
   }
 
   maskSensitiveId(value: string | null | undefined): string {

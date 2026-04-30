@@ -103,9 +103,8 @@
         <thead>
           <tr>
             <th>S.No</th>
-            <th>Issued date</th>
-            <th>Type</th>
-            <th>ID</th>
+            <th>Billing Period</th>
+            <th>Issue Date</th>
             <th>Subtotal</th>
             <th>Tax</th>
             <th>Credit</th>
@@ -118,8 +117,7 @@
           <tr *ngFor="let row of filteredTransactionRecords; let i = index">
             <td>{{ offset + i + 1 }}</td>
             <td>{{ getIssuedDate(row) }}</td>
-            <td>Billing</td>
-            <td>{{ row.id }}</td>
+            <td>{{ getIssueDate(row) }}</td>
             <td>{{ formatMoney(row.subtotal || 0, row.currency) }}</td>
             <td>{{ formatMoney(row.tax_amount || 0, row.currency) }}</td>
             <td>{{ formatMoney(row.credit_applied ||0, row.currency) }}</td>
