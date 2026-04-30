@@ -57,6 +57,7 @@ export class LoginComponent implements OnInit {
       next: (response) => {
         this.toaster.success('You’re logged in successfully!');
         localStorage.setItem('accessToken', response.data.token);
+        localStorage.setItem('isshowBalance', 'true');
         this.permissionService.loadPolicies().subscribe({
           next: () => {
             if (this.authService.isTokenReady()) {

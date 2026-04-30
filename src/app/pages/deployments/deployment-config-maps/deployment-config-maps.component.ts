@@ -18,6 +18,7 @@ export class DeploymentConfigMapsComponent implements OnInit {
   fileUploadForm!: FormGroup;
   @Input() deploymentdetails: any;
   @Input() currentStatus: string = '';
+  @Input() forceDisable: boolean = false;
 
   fileName: string | null = null;
   freezeAddNewData: boolean = false;
@@ -28,19 +29,21 @@ export class DeploymentConfigMapsComponent implements OnInit {
   selectedFileSize: number = 0;
   selectedFileTime: Date = new Date();
 
+  isSubmitButtonDisabled: boolean = false;
+
   constructor(private fb: FormBuilder,
     private deploymentsService: DeploymentsService, private ac: ActivatedRoute, private toaster: ToastrService,
     public permissionService: PermissionService
   ) { }
 
   ngOnInit(): void {
-    this.freezeAddNewData = this.currentStatus && this.currentStatus === 'Building' ? true : false;
+    this.freezeAddNewData = this.forceDisable || (this.currentStatus && this.currentStatus === 'Building' ? true : false);
     this.isBuilding = this.currentStatus && this.currentStatus === 'Building' ? true : false;
     
     this.fileUploadForm = this.fb.group({
       fileInput: [''],
-      filePath: [''],
-      fileName: ['']
+      filePath: ['', [Validators.required, Validators.maxLength(40)]],
+      fileName: ['', [Validators.required, Validators.maxLength(40)]]
     });
 
     const shouldDisableForm = this.freezeAddNewData || !(this.permissionService.canWriteGlobal() || this.permissionService.canAdminGlobal() || this.permissionService.canDeleteForCurrentUser(null, null));
@@ -50,22 +53,38 @@ export class DeploymentConfigMapsComponent implements OnInit {
       this.fileUploadForm.enable();
     }
 
+    this.fileUploadForm.statusChanges.subscribe(status => {
+      this.isSubmitButtonDisabled = status !== 'VALID';
+    });
+
     this.ac.queryParams.subscribe(params => {
       const depolyementId = params['id'];
       if (depolyementId) {
         // Use deploymentdetails passed from parent
         this.isBuilding = this.currentStatus?.toLowerCase() === 'building' ? true : false;
         const isStopped = this.deploymentdetails?.status?.toLowerCase() === 'stopped';
-        const freezeAddNewData = isStopped || this.currentStatus?.toLowerCase() === 'building' ? true : false;
+        const freezeAddNewData = this.forceDisable || isStopped || this.currentStatus?.toLowerCase() === 'building' ? true : false;
         const shouldDisable = freezeAddNewData || !(this.permissionService.canWriteGlobal() || this.permissionService.canAdminGlobal() || this.permissionService.canDeleteForCurrentUser(null, null));
         if (shouldDisable) {
           this.fileUploadForm.disable();
         } else {
           this.fileUploadForm.enable();
         }
-        this.fileUploadForm.get('filePath')?.setValue(this.deploymentdetails?.config?.path)
-        this.fileUploadForm.get('fileName')?.setValue(this.deploymentdetails?.config?.name)
-        this.selectedFileName = this.deploymentdetails?.config?.name;
+
+        const configPath = this.deploymentdetails?.config?.path || '';
+        const configName = this.deploymentdetails?.config?.name || '';
+
+        this.fileUploadForm.get('filePath')?.setValue(configPath);
+        this.fileUploadForm.get('fileName')?.setValue(configName);
+
+        if (!configPath && !configName) {
+          this.fileUploadForm.get('filePath')?.clearValidators();
+          this.fileUploadForm.get('fileName')?.clearValidators();
+        }
+
+        this.fileUploadForm.updateValueAndValidity();
+
+        this.selectedFileName = configName;
         this.base64Snippet = this.deploymentdetails?.config?.data ? this.deploymentdetails?.config?.data.substring(0, 60) + '...' : '';
       }
     });

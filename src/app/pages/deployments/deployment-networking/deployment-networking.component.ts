@@ -22,6 +22,7 @@ export class DeploymentNetworkingComponent implements OnInit {
 
   @Output() closeModalEvent = new EventEmitter<void>();
   @Input() currentStatus: string = '';
+  @Input() forceDisable: boolean = false;
   @ViewChild('dnsSetupModal') dnsSetupModal!: TemplateRef<any>;
   networkSettingsForm !: FormGroup;
   public formDisabled: boolean = false;
@@ -116,7 +117,7 @@ export class DeploymentNetworkingComponent implements OnInit {
       customDnsHost: ['', this.noProtocolValidator.bind(this)]
     });
 
-    this.freezeAddNewData = this.currentStatus && this.currentStatus?.toLowerCase() === 'building' ? true : false;
+    this.freezeAddNewData = this.forceDisable || (this.currentStatus && this.currentStatus?.toLowerCase() === 'building' ? true : false);
     this.isBuilding = this.currentStatus && this.currentStatus?.toLowerCase() === 'building' ? true : false;
     const shouldDisable = this.freezeAddNewData || !(this.permissionService.canWriteGlobal() || this.permissionService.canAdminGlobal() || this.permissionService.canDeleteForCurrentUser(null, null));
     this.formDisabled = shouldDisable;
@@ -140,7 +141,7 @@ export class DeploymentNetworkingComponent implements OnInit {
         this.getDeploymentById();
         
         const isStopped = this.deploymentdetails?.status?.toLowerCase() === 'stopped';
-        const freezeAddNewData = isStopped || this.currentStatus?.toLowerCase() === 'building' ? true : false;
+        const freezeAddNewData = this.forceDisable || isStopped || this.currentStatus?.toLowerCase() === 'building' ? true : false;
         this.freezeAddNewData = freezeAddNewData;
         this.isBuilding = this.currentStatus?.toLowerCase() === 'building' ? true : false;        
         const shouldDisable = freezeAddNewData || !(this.permissionService.canWriteGlobal() || this.permissionService.canAdminGlobal() || this.permissionService.canDeleteForCurrentUser(null, null));

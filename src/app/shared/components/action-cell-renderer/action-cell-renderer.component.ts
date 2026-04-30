@@ -233,6 +233,7 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
         (result) => {
           if (result) {
             this.isPauseResumeDisabled = true;
+            this.sharedService.setOptimisticDeploymentDisabled(data?.id, type === 'Pause');
             this.http.updateDeployment(data?.id, req).subscribe((res: any) => {
               if (res.status.toLowerCase() === "success") {
                 this.toaster.success(`Application ${type === 'Pause' ? 'paused' : 'resumed'} successfully`);
@@ -243,6 +244,7 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
               }, 10000);
             },
               err => {
+                this.sharedService.clearOptimisticDeploymentDisabled(data?.id);
                 this.toaster.error(`Error in ${type} application`);
                 this.isPauseResumeDisabled = false;
               });

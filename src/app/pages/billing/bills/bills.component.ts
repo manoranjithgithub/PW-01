@@ -416,17 +416,7 @@ export class BillsComponent implements OnInit, OnChanges {
   }
 
   formatMoney(amount: number | undefined | null, currencyFrom?: string): string {
-    const target = this.sharedService.getCurrency() || 'USD';
-    const converted = this.sharedService.convertAmount(Number(amount || 0), currencyFrom || 'USD', target);
-    try {
-      return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: target,
-        minimumFractionDigits: 2,
-      }).format(converted);
-    } catch (e) {
-      return String(converted);
-    }
+    return this.sharedService.formatMoney(amount, currencyFrom);
   }
 
   toggleMonthPicker(event: MouseEvent): void {
