@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { CookieService } from 'ngx-cookie-service';
 import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { getStatusMeta as helperGetStatusMeta } from '../helpers/status.helper';
+import { InvoiceRow } from '../../core/models/company-billing-info.model';
 
 export interface User {
   id?: string;
@@ -41,6 +42,7 @@ export class SharedService {
 
   private lastReleaseData = new BehaviorSubject<string | null>(null);
   releaseStatus$ = this.lastReleaseData.asObservable();
+  private optimisticDeploymentDisabled = new Map<string, boolean>();
 
   private currencyChangeSource = new BehaviorSubject<string>(this.getCurrencyFromStorage());
   currencyChange$ = this.currencyChangeSource.asObservable();
@@ -129,6 +131,25 @@ export class SharedService {
     return inUsd * dstRate;
   }
 
+  formatMoney(amount: number | undefined | null, currencyFrom?: string): string {
+    const target = this.getCurrency() || 'USD';
+    const converted = this.convertAmount(Number(amount || 0), currencyFrom || 'USD', target);
+    try {
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: target,
+        minimumFractionDigits: 2,
+      }).format(converted);
+    } catch (e) {
+      return String(converted);
+    }
+  }
+
+  isUnappliedFund(invoice: InvoiceRow): boolean {
+    const status = (invoice.status || '').toLowerCase();
+    return status === 'credit' || status === 'unapplied';
+  }
+
   async ensureRatesFor(symbols: string[]): Promise<void> {
     if (!symbols || symbols.length === 0) return;
     const symbolsToFetch = symbols.map(s => s.toUpperCase()).filter(s => s !== 'USD');
@@ -211,6 +232,21 @@ export class SharedService {
 
   getlastReleaseData(): string | null {
     return this.lastReleaseData.getValue();
+  }
+
+  setOptimisticDeploymentDisabled(deploymentId: string, disabled: boolean): void {
+    if (!deploymentId) return;
+    this.optimisticDeploymentDisabled.set(deploymentId, disabled);
+  }
+
+  getOptimisticDeploymentDisabled(deploymentId: string): boolean {
+    if (!deploymentId) return false;
+    return this.optimisticDeploymentDisabled.get(deploymentId) || false;
+  }
+
+  clearOptimisticDeploymentDisabled(deploymentId: string): void {
+    if (!deploymentId) return;
+    this.optimisticDeploymentDisabled.delete(deploymentId);
   }
 
   getStatusMeta(status: string): { icon: string; statusClass: string; label: string } {

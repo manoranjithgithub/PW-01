@@ -373,6 +373,9 @@
               <div *ngIf="fileUploadForm.get('filePath')?.hasError('pairRequired') && (fileUploadForm.get('filePath')?.touched || fileUploadForm.get('filePath')?.dirty)" class="text-danger my-2">
                 File path is required when a file is uploaded.
               </div>
+              <div *ngIf="fileUploadForm.get('filePath')?.hasError('maxlength') && (fileUploadForm.get('filePath')?.touched || fileUploadForm.get('filePath')?.dirty)" class="text-danger my-2">
+                File path cannot exceed 40 characters.
+              </div>
             </div>
           </form>
         </div>

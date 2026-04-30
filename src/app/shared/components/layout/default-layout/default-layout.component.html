@@ -95,3 +95,19 @@
   </div>
 
 </div>
+<div 
+  class="billing-toast" 
+  [class.hide]="isClosing"
+  *ngIf="showBillingCard"
+>
+  <div class="toast-content">
+    <div class="toast-alert-icon">
+      <i class="bi bi-wallet2"></i>
+    </div>
+    <div class="toast-copy">
+      <span class="toast-title">Available Credits</span>
+      <span class="toast-value">{{ billingToastCreditLabel }}</span>
+    </div>
+    <button type="button" class="toast-close" (click)="closeBillingCard()" aria-label="Close billing card">&times;</button>
+  </div>
+</div>

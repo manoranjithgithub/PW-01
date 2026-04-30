@@ -62,6 +62,7 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
   appName = '';
   deploymentdetails: any;
   lastReleaseData: any = null;
+  forceDisableInputs = false;
 
   private destroy$ = new Subject<void>();
   private subscription?: Subscription;
@@ -93,6 +94,7 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
           if (params['id'] !== undefined) {
             this.deploymentId = params['id'];
             this.selectedTabIndex = Number(params['tabIndex']) || 0;
+            this.forceDisableInputs = this.sharedService.getOptimisticDeploymentDisabled(this.deploymentId);
             return this.deploymentService.getDeploymentById(this.deploymentId);
           }
           return [];
@@ -103,6 +105,9 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
 
         if (data?.status?.toLowerCase() === 'success') {
           this.deploymentdetails = data.data;
+          if (this.forceDisableInputs) {
+            this.sharedService.clearOptimisticDeploymentDisabled(this.deploymentId);
+          }
           this.startSSE();
           this.getDeploymentStatus();
           this.startStatusPolling();
