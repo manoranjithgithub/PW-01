@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, TemplateRef, ViewChild } from '@angular/core';
 import { NgbModal, NgbModalOptions, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { ModalConfig } from './modal.config';
 import { SidebarService } from '../../services/sidebar.service';
@@ -14,6 +14,7 @@ import { SidebarService } from '../../services/sidebar.service';
 export class ModalComponent implements OnInit {
   @Input() public modalConfig!: ModalConfig;
   @Input() public header: string = '';
+  @Output() public modalClosed = new EventEmitter<void>();
   @ViewChild('modal') private modalContent!: TemplateRef<ModalComponent>;
   private modalRef!: NgbModalRef;
 
@@ -40,10 +41,12 @@ export class ModalComponent implements OnInit {
   public close() {
     this.sidebarService.showSidebar();
     this.modalRef?.close();
+    this.modalClosed.emit();
   }
 
   public dismiss() {
     // this.sidebarService.showSidebar();
     this.modalRef.dismiss();
+    this.modalClosed.emit();
   }
 }

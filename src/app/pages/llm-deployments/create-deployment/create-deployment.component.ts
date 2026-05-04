@@ -63,12 +63,12 @@ export class CreateDeploymentComponent implements OnInit {
 
     this.http.createDeployement(payload).subscribe({
       next: (res: any) => {
-        const msg = res?.message || 'Deployment created';
+        const msg = 'Application submitted successfully';
         this.toastr.success(msg);
         this.router.navigate(['llm/list']);
       },
       error: (err: any) => {
-        const errMsg = err?.message || 'Failed to create deployment';
+        const errMsg = err?.message || 'Failed to create application';
         this.toastr.error(errMsg);
       }
     });

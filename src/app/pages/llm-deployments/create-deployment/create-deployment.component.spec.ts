@@ -124,12 +124,12 @@ describe('CreateDeploymentComponent', () => {
 
     it('should show success toast and navigate on success', () => {
       serviceSpy.createDeployement.and.returnValue(
-        of({ message: 'Deployment created successfully' })
+        of({ message: 'Application submitted successfully' })
       );
 
       component.onSubmit();
 
-      expect(toastrSpy.success).toHaveBeenCalledWith('Deployment created successfully');
+      expect(toastrSpy.success).toHaveBeenCalledWith('Application submitted successfully');
       expect(routerSpy.navigate).toHaveBeenCalledWith(['llm/list']);
     });
 
