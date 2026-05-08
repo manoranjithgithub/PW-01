@@ -151,11 +151,16 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
   }
 
   get canEditTool(): boolean {
-    return !!this.permissionService?.canWriteForCurrentUser?.(this.currentProjectId, this.envId) && !this.isToolStopped();
+    return !!this.permissionService?.canWriteForCurrentUser?.(this.currentProjectId, this.envId) && !this.isToolStatusStopped();
   }
 
   private isToolStopped(): boolean {
     return ['stopped', 'stop', 'paused'].includes(this.toolStatus);
+  }
+
+  private isToolStatusStopped(): boolean {
+    const status = String(this.params?.data?.status || this.params?.data?.state || '').toLowerCase();
+    return status === 'stopped' || status === 'stop' || status === 'paused';
   }
 
   private getToolActionKey(data: any = this.params?.data): string {
@@ -183,15 +188,15 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
     }
 
     if (data) {
-      Object.assign(data, { status, toolActionStatus: status });
+      data.toolActionStatus = status;
     }
 
     if (this.params?.data) {
-      Object.assign(this.params.data, { status, toolActionStatus: status });
+      this.params.data.toolActionStatus = status;
     }
 
     if (this.params?.node?.data) {
-      Object.assign(this.params.node.data, { status, toolActionStatus: status });
+      this.params.node.data.toolActionStatus = status;
     }
 
     this.params?.api?.refreshCells?.({
