@@ -79,7 +79,7 @@ export class ReviewScreenComponent implements OnInit {
     this.deploymentsService.createDeployement(req).subscribe({
       next: (res: any) => {
         if (res.status?.toLowerCase() === 'success') {
-          this.toaster.success(res?.message);
+          this.toaster.success('Application submitted successfully');
           // this.websocketService.sendMessage({ messages: 'new message' });
           this.router.navigate(['/applications']);
         }
