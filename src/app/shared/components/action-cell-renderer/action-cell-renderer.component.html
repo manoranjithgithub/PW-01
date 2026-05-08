@@ -8,9 +8,17 @@
     </li>
     <li>
       <a class="custom-dropdown-item" role="button"
-        (click)="permissionService.canWriteForCurrentUser(currentProjectId, envId) && onOptionSelected('edit')"
+        (click)="canEditTool && onOptionSelected('edit')"
+        [class.disabled]="!canEditTool"
+        [attr.aria-disabled]="!canEditTool">Edit</a>
+    </li>
+    <li>
+      <a class="custom-dropdown-item" role="button"
+        (click)="permissionService.canWriteForCurrentUser(currentProjectId, envId) && onOptionSelected(toolStartStopAction)"
         [class.disabled]="!permissionService.canWriteForCurrentUser(currentProjectId, envId)"
-        [attr.aria-disabled]="!permissionService.canWriteForCurrentUser(currentProjectId, envId)">Edit</a>
+        [attr.aria-disabled]="!permissionService.canWriteForCurrentUser(currentProjectId, envId)">
+        {{ toolStartStopLabel }}
+      </a>
     </li>
     <!-- <li>
       <a class="custom-dropdown-item"

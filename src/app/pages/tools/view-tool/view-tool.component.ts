@@ -61,6 +61,11 @@ export class ViewToolComponent implements OnInit, OnDestroy {
   private statusPollInterval?: any;
   private statusSseSub: Subscription | null = null;
 
+  get isToolStopped(): boolean {
+    const status = String(this.toolDetails?.data?.status || this.toolStatus || '').toLowerCase();
+    return status === 'stopped' || status === 'stop' || status === 'paused';
+  }
+
   constructor(
     private http: ToolsService,
     private ac: ActivatedRoute,
@@ -299,6 +304,7 @@ export class ViewToolComponent implements OnInit, OnDestroy {
     });
   }
   editTool() {
+    if (this.isToolStopped) return;
     this.route.navigate(['/tools/edit-tool'], { queryParams: { selectedEdit: this.toolName, id: this.deploymentId } });
   }
   getMonthlyRate(fieldKey: string): number {

@@ -52,6 +52,7 @@ import { DeployConfirmationComponent } from '../deploy-confirmation/deploy-confi
   styleUrl: './action-cell-renderer.component.scss',
 })
 export class ActionCellRendererComponent implements ICellRendererAngularComp {
+  private static toolActionStatusByKey = new Map<string, 'running' | 'stopped'>();
 
   params: any;
   additionalParam: string = '';
@@ -141,6 +142,64 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
     return this.params?.data?.status?.toLowerCase() === 'stopped' ? 'Resume' : 'Pause';
   }
 
+  get toolStartStopLabel(): string {
+    return this.isToolStopped() ? 'Start' : 'Stop';
+  }
+
+  get toolStartStopAction(): string {
+    return this.isToolStopped() ? 'startTool' : 'stopTool';
+  }
+
+  get canEditTool(): boolean {
+    return !!this.permissionService?.canWriteForCurrentUser?.(this.currentProjectId, this.envId) && !this.isToolStopped();
+  }
+
+  private isToolStopped(): boolean {
+    return ['stopped', 'stop', 'paused'].includes(this.toolStatus);
+  }
+
+  private getToolActionKey(data: any = this.params?.data): string {
+    const envId = data?.namespace || data?.environmentId || this.envId || '';
+    const name = data?.name || data?.id || data?._id || '';
+    return envId && name ? `${envId}:${name}` : '';
+  }
+
+  private get toolStatus(): string {
+    const data = this.params?.data;
+    const key = this.getToolActionKey(data);
+    return String(
+      (key && ActionCellRendererComponent.toolActionStatusByKey.get(key)) ||
+      data?.toolActionStatus ||
+      data?.status ||
+      data?.state ||
+      ''
+    ).toLowerCase();
+  }
+
+  private updateToolActionStatus(data: any, status: 'running' | 'stopped'): void {
+    const key = this.getToolActionKey(data);
+    if (key) {
+      ActionCellRendererComponent.toolActionStatusByKey.set(key, status);
+    }
+
+    if (data) {
+      Object.assign(data, { status, toolActionStatus: status });
+    }
+
+    if (this.params?.data) {
+      Object.assign(this.params.data, { status, toolActionStatus: status });
+    }
+
+    if (this.params?.node?.data) {
+      Object.assign(this.params.node.data, { status, toolActionStatus: status });
+    }
+
+    this.params?.api?.refreshCells?.({
+      rowNodes: this.params?.node ? [this.params.node] : undefined,
+      force: true
+    });
+  }
+
   onOptionSelected(action: string): void {
     this.isDropdownOpen = false;
     this.onActionSelected(action);
@@ -166,6 +225,10 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
       case 'view':
         this.view(this.params.data);
         break;
+      case 'startTool':
+      case 'stopTool':
+        this.toggleToolState(this.params.data, action);
+        break;
       case 'redeploy':
         this.restart(this.params.data);
         break;
@@ -176,6 +239,46 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
         this.pause(this.params.data, 'Resume');
         break;
     }
+  }
+
+  toggleToolState(data: any, action: 'startTool' | 'stopTool'): void {
+    const isStart = action === 'startTool';
+    const label = isStart ? 'Start' : 'Stop';
+    const envId = data?.namespace || data?.environmentId || this.envId;
+    const name = data?.name;
+
+    if (!envId || !name) {
+      this.toaster.error(`Unable to ${label.toLowerCase()} tool`);
+      return;
+    }
+
+    const modalRef = this.modalService.open(DeployConfirmationComponent);
+    modalRef.componentInstance.message = `Are you sure you want to ${label} this Tool?`;
+
+    modalRef.result.then((result) => {
+      if (!result) return;
+
+      const req = {
+        environmentId: envId,
+        name,
+        action: isStart ? 'resume' as const : 'pause' as const,
+        projectId: data?.projectId || this.currentProjectId
+      };
+
+      this.http.pauseResumeTool(req).subscribe({
+        next: (res: any) => {
+          if (String(res?.status || '').toLowerCase() === 'success' || res?.success) {
+            this.updateToolActionStatus(data, isStart ? 'running' : 'stopped');
+            this.toaster.success(`Tool ${isStart ? 'started' : 'stopped'} successfully`);
+          } else {
+            this.toaster.error(res?.message || `Unable to ${label.toLowerCase()} tool`);
+          }
+        },
+        error: () => {
+          this.toaster.error(`Unable to ${label.toLowerCase()} tool`);
+        }
+      });
+    });
   }
 
   isRevokedLlmModel(): boolean {
@@ -200,6 +303,7 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
       this.route.navigate(['/edit-deployment'], { queryParams: { id: data.name } });
     }
     if (this.additionalParam === "tools") {
+      if (!this.canEditTool) return;
       const id = data?.id || data?._id || '';
       this.route.navigate(['/tools/edit-tool'], { queryParams: { selectedEdit: data.name, id } });
     }
