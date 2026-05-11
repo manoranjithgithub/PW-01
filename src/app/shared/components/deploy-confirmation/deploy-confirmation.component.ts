@@ -21,6 +21,14 @@ export class DeployConfirmationComponent {
       return 'Redeploying will start a new deployment using your current source configuration.';
     }
 
+    if (normalizedMessage.includes('tool') && normalizedMessage.includes('start')) {
+      return 'The tool service will start running again and become available shortly.';
+    }
+
+    if (normalizedMessage.includes('tool') && normalizedMessage.includes('stop')) {
+      return 'The tool service will pause and remain unavailable until you start it again.';
+    }
+
     if (normalizedMessage.includes('resume')) {
       return 'Resuming the application will allow it to continue running normally.';
     }

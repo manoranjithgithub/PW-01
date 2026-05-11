@@ -23,7 +23,7 @@ export class ToolsComponent implements OnInit, OnDestroy {
   envId: string = '';
   rowData: any = [];
   rowClassRules = {
-    'tool-row-disabled': (params: any) => String(params?.data?.status || '').toLowerCase() === 'deploying'
+    'tool-row-disabled': (params: any) => this.isToolInstalling(params?.data)
   };
 
   private subscription: Subscription | undefined;
@@ -132,6 +132,7 @@ export class ToolsComponent implements OnInit, OnDestroy {
       sortable: true,
       filter: true,
       width: 150,
+      tooltipValueGetter: (params: any) => this.getToolHoverMessage(params.data),
       // flex: 1,
       cellRenderer: (params: any) => {
         const status = params.value;
@@ -147,6 +148,7 @@ export class ToolsComponent implements OnInit, OnDestroy {
     {
       headerName: 'HOST',
       field: 'privateHost',
+      tooltipValueGetter: (params: any) => this.getToolHoverMessage(params.data),
       cellRenderer: (params: any) => {
         const privateUrl = params.data?.privateHost || '';
         const publicUrl = params.data?.publicHost || '';
@@ -212,6 +214,7 @@ export class ToolsComponent implements OnInit, OnDestroy {
     },
     {
       headerName: 'Port',
+      tooltipValueGetter: (params: any) => this.getToolHoverMessage(params.data),
       cellRenderer: (params: any) => {
         const rawPorts = params.data?.ports;
         const portItems = Array.isArray(rawPorts) ? rawPorts : (rawPorts ? [rawPorts] : []);
@@ -276,6 +279,7 @@ export class ToolsComponent implements OnInit, OnDestroy {
       field: "actions",
       width: 100,
       cellStyle: { cursor: 'pointer' },
+      tooltipValueGetter: (params: any) => this.getToolHoverMessage(params.data),
       cellRenderer: ActionCellRendererComponent,
       cellRendererParams: {
         additionalParam: 'tools',
@@ -288,8 +292,7 @@ export class ToolsComponent implements OnInit, OnDestroy {
   }
 
   gotoAction(params: any) {
-    const status = String(params?.status || '').toLowerCase();
-    if (status === 'deploying') {
+    if (this.isToolInstalling(params)) {
       return;
     }
     this.toolName = params.name;
@@ -297,11 +300,15 @@ export class ToolsComponent implements OnInit, OnDestroy {
   }
 
   getToolHoverMessage(params: any): string | null {
-    const status = String(params?.status || '').toLowerCase();
-    if (status === 'deploying') {
+    if (this.isToolInstalling(params)) {
       return 'Tool is deploying. Please wait until it is up.';
     }
     return null;
+  }
+
+  isToolInstalling(params: any): boolean {
+    const status = String(params?.status || '').toLowerCase();
+    return status === 'deploying' || status === 'not available';
   }
 
   getAvailableTools(envId: string): void {
@@ -414,6 +421,9 @@ export class ToolsComponent implements OnInit, OnDestroy {
       return 'assets/images/icons/mongodb.svg';
     } if (name.includes('n8n')) {
       return 'assets/images/icons/n8n.png';
+    }
+    if (name.includes('minio')) {
+      return 'assets/images/icons/minio.png';
     }
     if (name.includes('rabbitmq')) {
       return 'assets/images/icons/rabbitmq.png';

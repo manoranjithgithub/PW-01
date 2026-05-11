@@ -2,6 +2,7 @@ import {
   AfterViewInit,
   ChangeDetectorRef,
   Component,
+  ElementRef,
   OnInit,
   ViewChild,
   ViewEncapsulation,
@@ -61,6 +62,7 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
 
   @ViewChild('stepper') stepper!: MatStepper;
   @ViewChild('zipDeploymentModel') public zipDeploymentModel!: ModalComponent;
+  @ViewChild('zipFileInput') zipFileInput?: ElementRef<HTMLInputElement>;
 
   public zipDeploymentConfig: any = {
     modalTitle: 'Zip Deployment',
@@ -84,6 +86,9 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
   fileError: string = '';
   fileExtension: string = '';
   selectedFile: File | null = null;
+  zipFileSubmitted = false;
+  showZipDropdownError = false;
+  vcsLoadError = '';
   selectedConfigFile: File | null = null;
   branches: any;
   selectedLabRepo: any;
@@ -274,7 +279,11 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
     this.route.queryParams.subscribe((params) => {
       const provider = params['provider'];
       const code = params['code'];
-      if (!provider || !code) {
+      if (provider && !code) {
+        this.resetVcsSelection();
+        return;
+      }
+      if (!provider) {
         return;
       }
       this.selectedVCS = provider;
@@ -282,8 +291,10 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
       this.deploymentsService.getVCSCallback(code, this.currentProjectId, provider).subscribe((res: any) => {
         if (res && res.status?.toLowerCase() === 'success') {
           this.fetchRepos(provider);
+        } else {
+          this.resetVcsSelection();
         }
-      })
+      }, () => this.resetVcsSelection())
     });
   }
 
@@ -362,7 +373,7 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
       .subscribe((results: any) => {
         this.submitted = false;
         if (!results) return;
-        this.toaster.success('Application created successfully');
+        this.toaster.success('Application submitted successfully');
         this.router.navigate(['/applications']);
       });
   }
@@ -401,7 +412,13 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
 
   onZipUpload(): void {
     if (this.selectedFile === null) {
-      this.fileError = 'Please select a valid file to upload.';
+      this.showZipFileRequiredError();
+      this.fileError = 'Please choose a valid zip or tar file';
+      return;
+    }
+    if (this.zipUploadForm.invalid) {
+      this.zipUploadForm.markAllAsTouched();
+      return;
     }
     else {
       const fileNameWithoutExtension = this.removeFileExtension(this.selectedFile?.name || '');
@@ -420,12 +437,45 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
           .get('zipFilename')
           ?.patchValue(this.selectedFile?.name);
         this.checkAvailablity();
+        this.zipFileSubmitted = true;
+        this.showZipDropdownError = false;
+        this.fileError = '';
 
         this.zipDeploymentModel.dismiss();
       }
       this.zipUploadForm.get('zipfileInput')?.patchValue(this.selectedFile?.name);
 
     }
+  }
+
+  onZipModalClosed(): void {
+    if (this.selectedVCS === 'zip' && !this.zipFileSubmitted) {
+      if (this.selectedFile === null) {
+        this.showZipFileRequiredError();
+      } else {
+        this.showZipDropdownError = true;
+      }
+      this.fileError = 'Please choose a valid zip or tar file';
+      this.clearPendingZipFile();
+    }
+  }
+
+  private clearPendingZipFile(): void {
+    this.selectedFile = null;
+    this.fileExtension = '';
+    this.zipUploadForm.reset();
+    this.stepOneForm.get('zipFilename')?.reset();
+    if (this.zipFileInput?.nativeElement) {
+      this.zipFileInput.nativeElement.value = '';
+    }
+  }
+
+  private showZipFileRequiredError(): void {
+    const zipFileInput = this.zipUploadForm.get('zipfileInput');
+    zipFileInput?.setErrors({ ...(zipFileInput.errors || {}), required: true });
+    zipFileInput?.markAsTouched();
+    zipFileInput?.markAsDirty();
+    this.showZipDropdownError = true;
   }
 
   onZipFileSelect(event: any): void {
@@ -437,26 +487,27 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
       this.fileValidator(allowedExtensions),
       this.fileSizeValidator(500_000_000),
     ]);
-    zipfileinput?.updateValueAndValidity();
-    const zipfileInputControl = this.zipUploadForm.get('zipfileInput');
+
+    this.zipFileSubmitted = false;
     if (file) {
       this.selectedFile = file;
-      if (file.size > 500_000_000) {
+      zipfileinput?.setValue(file.name);
+      zipfileinput?.markAsDirty();
+      zipfileinput?.markAsTouched();
+      this.removeFileExtension(file.name);
+      zipfileinput?.updateValueAndValidity();
+
+      if (zipfileinput?.hasError('fileSizeExceeded')) {
         this.fileError = 'File size exceeds the allowed limit.';
-        zipfileinput?.updateValueAndValidity();
+      } else if (zipfileinput?.hasError('invalidFileType')) {
+        this.fileError = 'Please upload valid file type';
       } else {
-        if (!zipfileInputControl?.errors?.['invalidFileType']) {
-          this.fileError = '';
-          this.zipUploadForm.get('zipfileInput')?.setValidators([
-            Validators.required,
-            this.fileValidator(allowedExtensions),
-            this.fileSizeValidator(500_000_000),
-          ]);
-          this.zipUploadForm.get('zipfileInput')?.updateValueAndValidity();
-        } else {
-          this.fileError = 'Please upload valid file type';
-        }
+        this.fileError = '';
       }
+    } else {
+      this.selectedFile = null;
+      zipfileinput?.setValue('');
+      zipfileinput?.updateValueAndValidity();
     }
   }
 
@@ -472,6 +523,7 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
     if (!this.selectedVCS) {
       return;
     }
+    this.vcsLoadError = '';
     const vcs = this.selectedVCS;
     let repoIdOrName: string | number;
     if (vcs === 'gitlab') {
@@ -501,11 +553,13 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
             this.stepOneForm.get('branchName')?.setValue(firstBranch);
             this.selectedRepoDetails.branchName = firstBranch;
           } else {
+            this.toaster?.error('No branches available for the selected repository.');
             this.stepOneForm.get('branchName')?.reset();
+            this.selectedRepoDetails.branchName = '';
           }
         },
         error: (err) => {
-          this.toaster?.error(`Failed to fetch branches from ${vcs}`);
+          this.handleVcsLoadFailure(true);
         }
       });
 
@@ -530,20 +584,23 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
     }
     switch (this.currentStep) {
       case 0:
-        // On step 0 (General), mark all fields as touched if form is invalid to show validation errors
+        let hasGeneralError = false;
         if (this.stepOneForm.invalid) {
           this.stepOneForm.markAllAsTouched();
-          return;
+          hasGeneralError = true;
         }
-        // If ZIP deployment is selected, validate that a file is selected
         if (this.selectedVCS === 'zip') {
-          if (this.zipUploadForm.invalid) {
-            this.zipUploadForm.markAllAsTouched();
-            this.fileError = 'Please choose a valid ZIP or TAR file';
-            this.zipDeploymentModel.open();
-            return;
+          if (this.zipUploadForm.invalid || !this.zipFileSubmitted) {
+            if (this.zipUploadForm.invalid) {
+              this.showZipFileRequiredError();
+            } else {
+              this.showZipDropdownError = true;
+            }
+            this.fileError = 'Please choose a valid zip or tar file';
+            hasGeneralError = true;
           }
         }
+        if (hasGeneralError) return;
         break;
       case 1:
         this.child.addVariable();
@@ -576,12 +633,16 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
     // this.stepOneForm.get('dockerfilePath')?.setValidators(null);
     //     this.stepOneForm.get('dockerfilePath')?.updateValueAndValidity();
     this.selectedVCS = option.value;
+    this.vcsLoadError = '';
     const handlers: any = {
       github: () => this.handleVCS('github'),
       gitlab: () => this.handleVCS('gitlab'),
       zip: () => {
         this.zipDeploymentModel.open();
         this.zipUploadForm.reset();
+        this.stepOneForm.get('zipFilename')?.reset();
+        this.zipFileSubmitted = false;
+        this.showZipDropdownError = false;
       },
       // docker: () => {
       //   this.stepOneForm.get('dockerfilePath')?.setValidators([Validators.required, Validators.maxLength(250)]);
@@ -601,7 +662,23 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
       this.redirectToOAuth(type);
     }
   }
+
+  private resetVcsSelection(): void {
+    this.selectedVCS = '';
+    this.reposList = [];
+    this.branches = [];
+    this.vcsLoadError = '';
+    this.stepOneForm.get('type')?.reset('');
+    this.stepOneForm.get('selectedRepo')?.reset();
+    this.stepOneForm.get('selectedRepo')?.clearValidators();
+    this.stepOneForm.get('selectedRepo')?.updateValueAndValidity();
+    this.stepOneForm.get('branchName')?.reset();
+    this.stepOneForm.get('branchName')?.clearValidators();
+    this.stepOneForm.get('branchName')?.updateValueAndValidity();
+  }
+
   private fetchRepos(type: 'github' | 'gitlab') {
+    this.vcsLoadError = '';
     this.deploymentsService.getAvailableRepos(type, this.currentProjectId).subscribe({
       next: (data: any) => {
         if (data.status?.toLowerCase() === 'success') {
@@ -609,22 +686,52 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
 
           if (this.reposList.length > 0) {
             this.stepOneForm.get('selectedRepo')?.setValue(this.reposList[0].id);
+          } else {
+            this.toaster.error('No repositories available for the selected account.');
+            this.stepOneForm.get('selectedRepo')?.reset();
+            this.stepOneForm.get('selectedRepo')?.setValidators([Validators.required]);
+            this.stepOneForm.get('selectedRepo')?.markAsTouched();
+            this.stepOneForm.get('selectedRepo')?.updateValueAndValidity();
+            this.branches = [];
+            this.stepOneForm.get('branchName')?.reset();
+            this.stepOneForm.get('branchName')?.clearValidators();
+            this.stepOneForm.get('branchName')?.updateValueAndValidity();
           }
         } else {
-          this.reposList = [];
+          this.handleVcsLoadFailure();
         }
       },
       error: (err) => {
-        this.toaster.error('Error in getting user repository');
-        this.reposList = [];
+        this.handleVcsLoadFailure();
       }
     });
     this.stepOneForm.get('selectedRepo')?.markAsTouched();
     this.stepOneForm.get('selectedRepo')?.setValidators([Validators.required]);
     this.stepOneForm.get('selectedRepo')?.updateValueAndValidity();
   }
+
+  private handleVcsLoadFailure(branchOnly = false): void {
+    this.vcsLoadError = 'Unable to fetch repositories. Please try again.';
+    this.toaster.error(this.vcsLoadError);
+    if (!branchOnly) {
+      this.reposList = [];
+      this.stepOneForm.get('selectedRepo')?.reset();
+      this.stepOneForm.get('selectedRepo')?.setValidators([Validators.required]);
+      this.stepOneForm.get('selectedRepo')?.markAsTouched();
+      this.stepOneForm.get('selectedRepo')?.updateValueAndValidity();
+    }
+    this.branches = [];
+    this.stepOneForm.get('branchName')?.reset();
+    this.stepOneForm.get('branchName')?.setValidators([Validators.required]);
+    this.stepOneForm.get('branchName')?.markAsTouched();
+    this.stepOneForm.get('branchName')?.updateValueAndValidity();
+  }
   private normalizeRepos(type: 'github' | 'gitlab', repos: any[]) {
-    return repos.map((repo: any) => ({
+    const visibleRepos = type === 'gitlab'
+      ? repos.filter((repo: any) => repo.permission === true)
+      : repos;
+
+    return visibleRepos.map((repo: any) => ({
       ...repo,
       webhook:
         type === 'github'
@@ -643,12 +750,6 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
   isNextDisabled(): boolean {
     if (this.submitted) return true;
     if (!(this.permissionService.canWriteGlobal() || this.permissionService.canAdminGlobal())) return true;
-
-    if (this.currentStep === 0) {
-      if (this.stepOneForm.invalid) return true;
-      if (this.selectedVCS === 'zip' && this.zipUploadForm.invalid) return true;
-    }
-    if (this.currentStep === 3 && this.fileUploadForm.invalid) return true;
     return false;
   }
 
@@ -657,9 +758,6 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
     if (!(this.permissionService.canWriteGlobal() || this.permissionService.canAdminGlobal())) {
       return 'You are not authorized to view that page.';
     }
-    if (this.currentStep === 0 && this.stepOneForm.invalid) return 'Please fix validation errors to continue.';
-    if (this.currentStep === 0 && this.selectedVCS === 'zip' && this.zipUploadForm.invalid) return 'Please choose a valid ZIP or TAR file.';
-    if (this.currentStep === 3 && this.fileUploadForm.invalid) return 'Please fix validation errors to continue.';
     return null;
   }
 

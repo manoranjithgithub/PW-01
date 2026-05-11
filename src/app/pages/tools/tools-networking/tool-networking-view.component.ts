@@ -12,6 +12,7 @@ import { SHARED_IMPORTS } from '../../../shared/shared-imports';
 export class ToolNetworkingViewComponent {
   @Input() viewdata: any;
   @Input() allowGenerate: boolean = false;
+  @Input() readOnlyMode: boolean = false;
   @Output() generateHost = new EventEmitter<void>();
 
   private get data(): any {
@@ -74,10 +75,12 @@ export class ToolNetworkingViewComponent {
   }
 
   requestGenerate() {
+    if (this.readOnlyMode) return;
     this.generateHost.emit();
   }
 
   clearPublicHost() {
+    if (this.readOnlyMode) return;
     if (this.viewdata && this.viewdata.data) {
       this.viewdata.data.publicHost = null;
     } else if (this.viewdata) {
