@@ -28,6 +28,13 @@ export class DeploymentsService {
       );
   }
 
+  pauseResumeTool(req: { environmentId: string; name: string; action: 'pause' | 'resume'; projectId?: string }) {
+    return this.http.patch(`${this.deploymentManagement}/tools/pause-resume`, req)
+      .pipe(
+        catchError(this.handleError.bind(this))
+      );
+  }
+
   disconnectProfile(projectID: string, provider: string) {
     return this.http.delete(`${this.projectsBaseUrl}/integrations/vcs?projectId=${projectID}&provider=${provider}`)
       .pipe(

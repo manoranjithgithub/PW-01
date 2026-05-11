@@ -37,6 +37,7 @@ describe('ActionCellRendererComponent', () => {
     deploymentServiceSpy = jasmine.createSpyObj('DeploymentsService', [
       'updateDeployment',
       'deleteTools',
+      'pauseResumeTool',
       'getReleasesViewByDeploymentId',
       'getDeploymentViewLogs'
     ]);

@@ -38,15 +38,15 @@
                         </label>
                         <ng-container [ngSwitch]="field.type">
                             <input class="form-control" *ngSwitchCase="'disabled'" [formControlName]="field.key"
-                                [id]="field.key" type="text" [value]="field.key" [readonly]="!field.update">
+                                [id]="field.key" type="text" [value]="field.key" [readonly]="!field.update || isToolStopped">
                             <input class="form-control" *ngSwitchCase="'text'" [formControlName]="field.key"
                                 [id]="field.key" type="text" placeholder="{{field.placeholder}}"
-                                [readonly]="!field.update">
+                                [readonly]="!field.update || isToolStopped">
 
                             <div class="input-group" *ngSwitchCase="'password'">
                                 <input id="{{field.key}}" [formControlName]="field.key"
                                     [type]="hide[field.key] ? 'password' : 'text'" class="form-control"
-                                    autocomplete="new-password" [readonly]="!field.update" />
+                                    autocomplete="new-password" [readonly]="!field.update || isToolStopped" />
 
                                 <span class="input-group-addon">
                                     <i class="positioning glyphicon bi"
@@ -57,7 +57,7 @@
 
                             <div class="position-relative" *ngSwitchCase="'select'">
                                 <select class="form-select" [formControlName]="field.key" [id]="field.key"
-                                    (change)="onFieldChange($event,field.function, field.label)" [disabled]="!field.update">
+                                    (change)="onFieldChange($event,field.function, field.label)" [disabled]="!field.update || isToolStopped">
                                     <option *ngFor="let option of field.options" [value]="option">{{ option }}</option>
                                 </select>
                                 <span class=" d-flex  justify-content-end align-items-end" style="font-size: 12px;"
@@ -86,7 +86,7 @@
                 <div class="d-flex justify-content-between  my-4">
                     <button class="btn button-format-outline" (click)="showToolsTable()"><i
                             class="bi bi-arrow-left"></i> Tools list</button>
-                    <div><button class="btn button-format-solid" (click)="onSubmit()">Update</button></div>
+                    <div><button class="btn button-format-solid" (click)="onSubmit()" [disabled]="isToolStopped">Update</button></div>
                 </div>
             </form>
         </c-tab-pane>
@@ -94,7 +94,7 @@
         <c-tab-pane class="p-3 preview" role="tabpanel">
             <ng-container *ngIf="toolDetails">
                 <!-- <p class="text-center m-4">We’re enhancing this page to serve you better. Stay tuned</p> -->
-                <app-tool-networking-view [viewdata]="toolDetails" [allowGenerate]="true"
+                <app-tool-networking-view [viewdata]="toolDetails" [allowGenerate]="!isToolStopped" [readOnlyMode]="isToolStopped"
                     (generateHost)="onGenerateHost()"></app-tool-networking-view>
             </ng-container>
         </c-tab-pane>
