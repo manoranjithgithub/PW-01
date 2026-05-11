@@ -13,7 +13,7 @@
         [class.disabled]="!canEditTool"
         [attr.aria-disabled]="!canEditTool">Edit</a>
     </li>
-    <!-- <li>
+    <li>
       <a class="custom-dropdown-item" role="button"
         (click)="permissionService.canWriteForCurrentUser(currentProjectId, envId) && !isToolActionDisabled && onOptionSelected(toolStartStopAction)"
         [class.disabled]="!permissionService.canWriteForCurrentUser(currentProjectId, envId) || isToolActionDisabled"
@@ -21,7 +21,7 @@
         [attr.title]="toolDisabledTooltip">
         {{ toolStartStopLabel }}
       </a>
-    </li> -->
+    </li>
     <!-- <li>
       <a class="custom-dropdown-item"
         role="button"
