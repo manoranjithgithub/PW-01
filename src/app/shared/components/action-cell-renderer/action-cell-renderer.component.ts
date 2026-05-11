@@ -150,8 +150,20 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
     return this.isToolStopped() ? 'startTool' : 'stopTool';
   }
 
+  get isToolActionDisabled(): boolean {
+    if (this.additionalParam !== 'tools') return false;
+
+    return this.isToolInstalling();
+  }
+
+  get toolDisabledTooltip(): string | null {
+    return this.isToolActionDisabled ? 'Tool is deploying. Please wait until it is up.' : null;
+  }
+
   get canEditTool(): boolean {
-    return !!this.permissionService?.canWriteForCurrentUser?.(this.currentProjectId, this.envId) && !this.isToolStatusStopped();
+    return !!this.permissionService?.canWriteForCurrentUser?.(this.currentProjectId, this.envId)
+      && !this.isToolStatusStopped()
+      && !this.isToolActionDisabled;
   }
 
   private isToolStopped(): boolean {
@@ -161,6 +173,11 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
   private isToolStatusStopped(): boolean {
     const status = String(this.params?.data?.status || this.params?.data?.state || '').toLowerCase();
     return status === 'stopped' || status === 'stop' || status === 'paused';
+  }
+
+  private isToolInstalling(): boolean {
+    const status = String(this.params?.data?.status || '').toLowerCase();
+    return status === 'deploying' || status === 'not available';
   }
 
   private getToolActionKey(data: any = this.params?.data): string {
@@ -211,6 +228,8 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
   }
 
   onActionSelected(action: string): void {
+    if (this.isToolActionDisabled) return;
+
     if (this.additionalParam === 'llm-models') {
       if (this.params?.onActionClick) {
         this.params.onActionClick(action, this.params?.data);
@@ -545,6 +564,11 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
 
   toggleDropdown(event: MouseEvent, btnRef?: HTMLElement): void {
     event.stopPropagation();
+    if (this.isToolActionDisabled) {
+      this.isDropdownOpen = false;
+      return;
+    }
+
     const btn = (btnRef as HTMLElement) || (event.target as HTMLElement);
     this.updateDropdownPosition(btn);
 
