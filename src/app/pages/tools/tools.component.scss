@@ -1,11 +1,6 @@
 ::ng-deep .tools .nav-item{
     margin: auto;
 }
-.btn-align{
-    position: relative;
-    top: 50px;
-}
-
 :host ::ng-deep .ag-row.tool-row-disabled {
     cursor: not-allowed;
     background-color: #f8fafc;
