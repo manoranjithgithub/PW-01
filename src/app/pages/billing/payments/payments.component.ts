@@ -27,6 +27,7 @@ export class PaymentsComponent implements OnInit {
   transactionsFilter = '';
   transactionStatusFilter: StatusFilterOption = 'all';
   selectedTimeRange: TimeRangeOption = '3m';
+  availableCredit = 0;
 
   readonly timeRangeOptions: Array<{ value: TimeRangeOption; label: string }> = [
     { value: '3m', label: 'Last 3 months' },
@@ -72,10 +73,6 @@ export class PaymentsComponent implements OnInit {
     return this.tableData.filter((invoice) => this.isDuePayment(invoice));
   }
 
-  get unappliedFunds(): InvoiceRow[] {
-    return this.tableData.filter((invoice) => this.isUnappliedFund(invoice));
-  }
-
   get transactions(): InvoiceRow[] {
     return this.tableData;
   }
@@ -88,10 +85,6 @@ export class PaymentsComponent implements OnInit {
 
   get totalOutstandingBalance(): number {
     return this.duePayments.reduce((sum, invoice) => sum + this.getAmount(invoice.total), 0);
-  }
-
-  get totalAvailableFunds(): number {
-    return this.unappliedFunds.reduce((sum, invoice) => sum + this.getAmount(invoice.total), 0);
   }
 
   get lastPaidInvoice(): InvoiceRow | null {
@@ -238,6 +231,7 @@ export class PaymentsComponent implements OnInit {
 
   ngOnInit(): void {
     this.getInvoiceList();
+    this.getAvailableCredits();
     this.loadBillingDetails();
     this.sharedService.currencyChange$.subscribe(() => {
       this.tableData = Array.isArray(this.tableData) ? [...this.tableData] : this.tableData;
@@ -412,6 +406,7 @@ export class PaymentsComponent implements OnInit {
 
   refreshInvoices(): void {
     this.getInvoiceList();
+    this.getAvailableCredits();
   }
 
   getInvoiceList(): void {
@@ -436,9 +431,22 @@ export class PaymentsComponent implements OnInit {
     return (status === 'draft' || status === 'unpaid') && this.getAmount(invoice.total || invoice.subtotal) > 0;
   }
 
-  private isUnappliedFund(invoice: InvoiceRow): boolean {
-    const status = (invoice.status || '').toLowerCase();
-    return status === 'credit' || status === 'unapplied';
+  getAvailableCredits(): void {
+    const accountId = localStorage.getItem('accountId');
+    if (!accountId) {
+      this.availableCredit = 0;
+      return;
+    }
+
+    this.http.getAvailableCredits(accountId).subscribe({
+      next: (response: any) => {
+        this.availableCredit = this.getAmount(response?.data?.total_available_credit);
+      },
+      error: (error) => {
+        console.error('Error fetching available credit:', error);
+        this.availableCredit = 0;
+      }
+    });
   }
 
   private filterRecords(records: InvoiceRow[], query: string): InvoiceRow[] {
