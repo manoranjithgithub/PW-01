@@ -95,9 +95,10 @@ export class LLMComponent implements OnInit, OnDestroy {
       cellRenderer: (params: any) => {
         const meta = this.sharedService.getStatusMeta(params.value);
         const statusClass = meta.statusClass === 'secondary' ? 'muted' : meta.statusClass;
+        const statusLabel = this.getDisplayStatusLabel(meta.label);
         return `
           <span class="status-badge status-inline status-${statusClass} text-capitalize">
-            <i class="bi ${meta.icon}"></i> ${meta.label.toLowerCase()}
+            <i class="bi ${meta.icon}"></i> ${statusLabel}
           </span>
         `;
       }
@@ -867,5 +868,9 @@ export class LLMComponent implements OnInit, OnDestroy {
     if (!normalized) return 'unknown';
     if (normalized === 'active') return 'running';
     return normalized;
+  }
+
+  private getDisplayStatusLabel(status: any): string {
+    return String(status || '').toLowerCase() === 'running' ? 'subscribed' : String(status || '').toLowerCase();
   }
 }

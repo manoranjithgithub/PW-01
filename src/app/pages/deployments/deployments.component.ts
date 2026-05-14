@@ -94,9 +94,16 @@ export class DeploymentsComponent implements OnInit, OnDestroy {
       onCellClicked: (event: CellClickedEvent) => this.gotoAction(event.data)
     },
     {
-      headerName: '',
+      headerName: 'Actions',
       field: 'actions',
       width: 102,
+      minWidth: 102,
+      maxWidth: 102,
+      pinned: 'right',
+      lockPinned: true,
+      suppressMovable: true,
+      sortable: false,
+      filter: false,
       cellRenderer: ActionCellRendererComponent,
       valueGetter: (params) => { return params.data; },
       cellStyle: { cursor: 'pointer' },

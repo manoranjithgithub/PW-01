@@ -40,7 +40,6 @@ import { ProjectsService } from '../../../../pages/projects/projects.service';
 import { LayoutActionService } from '../../../services/layout-action.service';
 import { environment } from '../../../../../environments/environment';
 import { PricingsService } from '../../../../pages/billing/pricing.service';
-import { InvoiceRow } from '../../../../core/models/company-billing-info.model';
 
 // function isOverflown(element: HTMLElement) {
 //   return (
@@ -90,7 +89,6 @@ export class DefaultLayoutComponent implements OnInit {
   isClosing = false;
   billingToastData: { availableCredit: number; currency?: string } | null = null;
   billingCardLoaded = false;
-  private billingInvoices: InvoiceRow[] = [];
   private billingCardRequestStarted = false;
 
   readonly #colorModeService = inject(ColorModeService);
@@ -355,7 +353,7 @@ export class DefaultLayoutComponent implements OnInit {
     }
 
     this.billingCardRequestStarted = true;
-    this.pricingService.getInvoiceList(accountId, 100, 0).subscribe({
+    this.pricingService.getAvailableCredits(accountId).subscribe({
       next: (response: any) => {
         if (!response?.success) {
           this.billingToastData = null;
@@ -363,14 +361,8 @@ export class DefaultLayoutComponent implements OnInit {
           return;
         }
 
-        const payload = response.data || {};
-        this.billingInvoices = Array.isArray(payload.data) ? payload.data : [];
-        const availableCredit = this.billingInvoices
-          .filter((invoice) => this.sharedService.isUnappliedFund(invoice))
-          .reduce((sum, invoice) => sum + this.getAmount(invoice.total), 0);
-
         this.billingToastData = {
-          availableCredit
+          availableCredit: this.getAmount(response?.data?.total_available_credit)
         };
         this.billingCardLoaded = true;
       },
