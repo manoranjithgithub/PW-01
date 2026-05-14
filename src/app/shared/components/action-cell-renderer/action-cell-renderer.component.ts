@@ -422,8 +422,12 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
 
   openConfirmationDialog() {
     const modalRef = this.modalService.open(ConfirmationModalComponent);
-    modalRef.componentInstance.selectedItem = '';
+    modalRef.componentInstance.selectedItem = this.additionalParam === 'tools' ? 'Tool' : '';
     modalRef.componentInstance.message = 'Are you sure you want to proceed?';
+    if (this.additionalParam === 'tools') {
+      modalRef.componentInstance.requireConfirmation = true;
+      modalRef.componentInstance.confirmationWord = this.toolName;
+    }
 
     modalRef.result.then(
       (result) => {
