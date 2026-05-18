@@ -48,3 +48,18 @@
   display: inline-block;
   max-width: 230px;
 }
+
+:host ::ng-deep .ag-pinned-right-header,
+:host ::ng-deep .ag-pinned-right-cols-container {
+  border-left: 0 !important;
+}
+
+:host ::ng-deep .ag-pinned-right-header .ag-header-cell,
+:host ::ng-deep .ag-pinned-right-cols-container .ag-cell {
+  border-left: 0 !important;
+}
+
+:host ::ng-deep .ag-pinned-right-header .ag-header-cell-comp-wrapper {
+  border-left: 0 !important;
+  border-right: 0 !important;
+}
