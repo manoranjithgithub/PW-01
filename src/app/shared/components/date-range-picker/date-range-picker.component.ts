@@ -1,7 +1,7 @@
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { NgxDaterangepickerMd } from 'ngx-daterangepicker-material';
+import { NgxDaterangepickerMd, DaterangepickerDirective } from 'ngx-daterangepicker-material';
 import dayjs from 'dayjs';
 
 @Component({
@@ -11,12 +11,14 @@ import dayjs from 'dayjs';
   templateUrl: './date-range-picker.component.html',
   styleUrls: ['./date-range-picker.component.scss']
 })
-export class DateRangePickerComponent implements OnInit, OnChanges {
+export class DateRangePickerComponent implements OnInit, OnChanges, AfterViewInit {
   @Input() fromTimestamp: string = '';
   @Input() toTimestamp: string = '';
   @Input() label: string = 'Date Range';
 
   @Output() apply = new EventEmitter<{ fromTimestamp: string; toTimestamp: string }>();
+
+  @ViewChild(DaterangepickerDirective) pickerDirective!: DaterangepickerDirective;
 
   selected: { startDate: dayjs.Dayjs; endDate: dayjs.Dayjs } | null = null;
 
@@ -34,6 +36,14 @@ export class DateRangePickerComponent implements OnInit, OnChanges {
 
   ngOnInit(): void {
     this.syncInputToPicker();
+  }
+
+  ngAfterViewInit(): void {
+    setTimeout(() => {
+      if (this.pickerDirective) {
+        this.pickerDirective.open();
+      }
+    }, 150);
   }
 
   ngOnChanges(changes: SimpleChanges): void {
