@@ -167,7 +167,7 @@
 
           <div class="analytics-toolbar mb-3" [formGroup]="usageFiltersForm">
             <div class="analytics-field duration-field">
-              <label for="duration" class="form-label">Time Duration:</label>
+              <label for="duration" class="form-label">Time Duration</label>
               <select id="duration" formControlName="duration" class="form-select" (change)="onDurationSelect($event)">
                 <option *ngFor="let duration of durations" [value]="duration.value">
                   {{ duration.label }}
@@ -176,7 +176,7 @@
             </div>
 
             <div class="analytics-field timezone-field">
-              <label for="timeZone" class="form-label">Time Zone:</label>
+              <label for="timeZone" class="form-label">Time Zone</label>
               <select id="timeZone" formControlName="timeZone" class="form-select">
                 <option *ngFor="let tz of timeZones" [value]="tz.value">{{ tz.label }}</option>
               </select>
@@ -184,7 +184,7 @@
 
             <ng-container *ngIf="usageFiltersForm.get('duration')?.value === 'custom'">
               <div class="analytics-field datetime-field position-relative daterange-wrapper">
-                <label class="form-label">Date Range:</label>
+                <label class="form-label">Date Range</label>
                 <div class="daterange-input-wrapper" (click)="openDatePicker()">
                   <input class="form-control bg-white cursor-pointer" type="text" readonly
                     [value]="formattedRangeDisplay" />
