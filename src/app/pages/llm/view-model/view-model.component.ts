@@ -808,7 +808,7 @@ public class Example {
     const select = event.target as HTMLSelectElement;
     const value = select.value;
 
-    this.usageFiltersForm.get('duration')?.setValue(value, { emitEvent: false });
+    this.usageFiltersForm.get('duration')?.setValue(value);
 
     if (value !== 'custom') {
       this.refreshUsageAnalytics(true);
