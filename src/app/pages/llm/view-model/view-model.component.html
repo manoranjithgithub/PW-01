@@ -183,104 +183,11 @@
             </div>
 
             <ng-container *ngIf="usageFiltersForm.get('duration')?.value === 'custom'">
-              <div class="analytics-field datetime-field position-relative daterange-wrapper">
-                <label class="form-label">Date Range</label>
-                <div class="daterange-input-wrapper" (click)="openDatePicker()">
-                  <input class="form-control bg-white cursor-pointer" type="text" readonly
-                    [value]="formattedRangeDisplay" />
-                  <i class="bi bi-calendar3 calendar-icon"></i>
-                </div>
-
-                <div class="custom-daterange-picker-popover" *ngIf="isDatePickerOpen">
-                  <div class="daterange-picker-body">
-
-                    <div class="calendar-container">
-                      <div class="calendar-header">
-                        <button class="nav-btn" (click)="prevMonth(); $event.stopPropagation()">&lt;</button>
-                        <span class="month-label">{{ getMonthYearLabel(leftMonthDate) }}</span>
-                        <span class="nav-placeholder"></span>
-                      </div>
-                      <div class="weeks-grid">
-                        <div class="day-headers">
-                          <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
-                        </div>
-                        <div class="weeks-row" *ngFor="let week of leftMonthWeeks">
-                          <span *ngFor="let day of week" class="day-cell" [class.off-month]="!day.isCurrentMonth"
-                            [class.is-today]="day.isToday" [class.selected-start]="isStartDate(day.date)"
-                            [class.selected-end]="isEndDate(day.date)" [class.in-range]="isInRange(day.date)"
-                            (click)="selectDay(day.date); $event.stopPropagation()">
-                            {{ day.date.getDate() }}
-                          </span>
-                        </div>
-                      </div>
-                      <div class="time-picker-container mt-2">
-                        <select [value]="startHour" (change)="onStartHourChange($event); $event.stopPropagation()"
-                          (click)="$event.stopPropagation()" class="form-select time-select">
-                          <option *ngFor="let h of hoursList" [value]="h">{{ h }}</option>
-                        </select>
-                        <span class="colon">:</span>
-                        <select [value]="startMinute" (change)="onStartMinuteChange($event); $event.stopPropagation()"
-                          (click)="$event.stopPropagation()" class="form-select time-select">
-                          <option *ngFor="let m of minutesList" [value]="m">{{ m < 10 ? '0' + m : m }}</option>
-                        </select>
-                        <select [value]="startAmpm" (change)="onStartAmpmChange($event); $event.stopPropagation()"
-                          (click)="$event.stopPropagation()" class="form-select time-select">
-                          <option value="AM">AM</option>
-                          <option value="PM">PM</option>
-                        </select>
-                      </div>
-                    </div>
-
-
-                    <div class="calendar-container">
-                      <div class="calendar-header">
-                        <span class="nav-placeholder"></span>
-                        <span class="month-label">{{ getMonthYearLabel(rightMonthDate) }}</span>
-                        <button class="nav-btn" (click)="nextMonth(); $event.stopPropagation()">&gt;</button>
-                      </div>
-                      <div class="weeks-grid">
-                        <div class="day-headers">
-                          <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
-                        </div>
-                        <div class="weeks-row" *ngFor="let week of rightMonthWeeks">
-                          <span *ngFor="let day of week" class="day-cell" [class.off-month]="!day.isCurrentMonth"
-                            [class.is-today]="day.isToday" [class.selected-start]="isStartDate(day.date)"
-                            [class.selected-end]="isEndDate(day.date)" [class.in-range]="isInRange(day.date)"
-                            (click)="selectDay(day.date); $event.stopPropagation()">
-                            {{ day.date.getDate() }}
-                          </span>
-                        </div>
-                      </div>
-                      <div class="time-picker-container mt-2">
-                        <select [value]="endHour" (change)="onEndHourChange($event); $event.stopPropagation()"
-                          (click)="$event.stopPropagation()" class="form-select time-select">
-                          <option *ngFor="let h of hoursList" [value]="h">{{ h }}</option>
-                        </select>
-                        <span class="colon">:</span>
-                        <select [value]="endMinute" (change)="onEndMinuteChange($event); $event.stopPropagation()"
-                          (click)="$event.stopPropagation()" class="form-select time-select">
-                          <option *ngFor="let m of minutesList" [value]="m">{{ m < 10 ? '0' + m : m }}</option>
-                        </select>
-                        <select [value]="endAmpm" (change)="onEndAmpmChange($event); $event.stopPropagation()"
-                          (click)="$event.stopPropagation()" class="form-select time-select">
-                          <option value="AM">AM</option>
-                          <option value="PM">PM</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="daterange-picker-footer">
-                    <span class="preview-range">{{ tempRangeDisplay }}</span>
-                    <div class="footer-actions">
-                      <button class="btn btn-sm btn-light border me-2"
-                        (click)="closeDatePicker(); $event.stopPropagation()">Cancel</button>
-                      <button class="btn btn-sm btn-primary"
-                        (click)="applyCustomRange(); $event.stopPropagation()">Apply</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <app-date-range-picker
+                [fromTimestamp]="usageFiltersForm.value.fromTimestamp"
+                [toTimestamp]="usageFiltersForm.value.toTimestamp"
+                (apply)="onCustomRangeApplied($event)">
+              </app-date-range-picker>
             </ng-container>
 
             <div class="analytics-field analytics-limit">

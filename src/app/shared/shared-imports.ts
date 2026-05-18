@@ -13,6 +13,7 @@ import { RouterLink, RouterOutlet } from '@angular/router';
 import { AgGridTableComponent } from './components/ag-grid-table/ag-grid-table.component';
 import { DefaultHeaderComponent } from './components/layout';
 import { LoaderComponent } from './components/loader/loader.component';
+import { DateRangePickerComponent } from './components/date-range-picker/date-range-picker.component';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSelectModule } from '@angular/material/select';
 
@@ -28,6 +29,7 @@ export const SHARED_IMPORTS = [
     AgGridModule,
     MatIconModule,
     LoaderComponent,
+    DateRangePickerComponent,
     FormsModule,
     MatAutocompleteModule,
     MatFormFieldModule,
