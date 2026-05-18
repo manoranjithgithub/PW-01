@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, ElementRef, EventEmitter, HostListener, Input, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -15,6 +15,15 @@ export class DateRangePickerComponent implements OnInit {
   @Input() label: string = 'Date Range';
 
   @Output() apply = new EventEmitter<{ fromTimestamp: string; toTimestamp: string }>();
+
+  constructor(private elementRef: ElementRef) {}
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (!this.elementRef.nativeElement.contains(event.target)) {
+      this.closeDatePicker();
+    }
+  }
 
   isDatePickerOpen = false;
   tempStartDate: Date | null = null;
