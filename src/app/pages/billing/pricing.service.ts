@@ -21,6 +21,16 @@ export class PricingsService {
         catchError(this.handleError.bind(this))
       );
   }
+
+  getAvailableCredits(accountId: string): Observable<any> {
+    return this.http.get(`${this.pricingManagement}/accounts/${accountId}/availableCredits`, {
+      headers: this.getAuthHeaders()
+    })
+      .pipe(
+        catchError(this.handleError.bind(this))
+      );
+  }
+
   paynow(invoiceId: string): Observable<any> {
     return this.http.post<any>(`${this.pricingManagement}/pay`, { invoiceId })
       .pipe(

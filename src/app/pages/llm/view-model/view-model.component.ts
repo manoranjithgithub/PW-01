@@ -773,7 +773,7 @@ public class Example {
 
     return [
       { label: 'Name', value: this.safeValue(this.modelData.name) },
-      { label: 'Status', value: this.safeValue(this.modelData.status) },
+      { label: 'Status', value: this.getDisplayStatusLabel(this.modelData.status) },
       { label: 'Provider', value: this.safeValue(this.modelData.provider) },
       { label: 'Model', value: this.safeValue(this.modelData.model) },
       { label: 'Key Prefix', value: this.safeValue(this.modelData.keyPrefix) },
@@ -792,6 +792,12 @@ public class Example {
     if (!normalized) return 'unknown';
     if (normalized === 'active') return 'running';
     return normalized;
+  }
+
+  private getDisplayStatusLabel(status: any): string {
+    const normalized = String(status || '').trim().toLowerCase();
+    if (!normalized) return '-';
+    return normalized === 'running' ? 'subscribed' : normalized;
   }
 
   private extractRateLimitDisplay(row: any): string {
