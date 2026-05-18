@@ -42,6 +42,40 @@ export class ViewModelComponent implements OnInit, OnDestroy {
   usageEvents: any[] = [];
   usageFrom = '';
   usageTo = '';
+
+  isDatePickerOpen = false;
+  tempStartDate: Date | null = null;
+  tempEndDate: Date | null = null;
+  startHour = 12;
+  startMinute = 0;
+  startAmpm = 'AM';
+  endHour = 12;
+  endMinute = 0;
+  endAmpm = 'AM';
+  leftMonthDate = new Date();
+  rightMonthDate = new Date(new Date().setMonth(new Date().getMonth() + 1));
+  leftMonthWeeks: any[][] = [];
+  rightMonthWeeks: any[][] = [];
+  hoursList = Array.from({ length: 12 }, (_, i) => i + 1);
+  minutesList = Array.from({ length: 60 }, (_, i) => i);
+
+  durations = [
+    { label: 'Last 15 mins', value: '15m' },
+    { label: 'Last 30 mins', value: '30m' },
+    { label: 'Last 1 hour', value: '1h' },
+    { label: 'Past 1 day', value: '1d' },
+    { label: 'Past 7 days', value: '7d' },
+    { label: 'Past 1 month', value: '30d' },
+    { label: 'Custom', value: 'custom' }
+  ];
+  timeZones = [
+    { label: 'IST (Asia/Kolkata)', value: 'IST' },
+    { label: 'UTC', value: 'UTC' },
+    { label: 'PST (America/Los_Angeles)', value: 'PST' },
+    { label: 'EST (America/New_York)', value: 'EST' },
+    { label: 'CET (Europe/Paris)', value: 'CET' }
+  ];
+
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -56,9 +90,15 @@ export class ViewModelComponent implements OnInit, OnDestroy {
     this.rateLimitForm = this.fb.group({
       rateLimitPerMinute: [{ value: '', disabled: true }, [Validators.required, Validators.min(1), Validators.max(10)]]
     });
+
+    const now = new Date();
+    const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60000); // 1 day in ms
+
     this.usageFiltersForm = this.fb.group({
-      from: [this.toLocalDateTimeInput(this.getHoursAgoDate(24))],
-      to: [this.toLocalDateTimeInput(new Date())],
+      duration: ['1d'],
+      timeZone: ['IST'],
+      fromTimestamp: [this.toLocalDateTimeInput(oneDayAgo)],
+      toTimestamp: [this.toLocalDateTimeInput(now)],
       limit: [50, [Validators.required, Validators.min(1)]]
     });
   }
@@ -83,6 +123,8 @@ export class ViewModelComponent implements OnInit, OnDestroy {
       // (e.g. rate-limit metadata) are available in View.
       this.loadModelById(id);
     });
+
+
 
     this.focusSubscription = fromEvent(document, 'visibilitychange')
       .pipe(takeUntil(this.destroy$))
@@ -552,7 +594,7 @@ export class ViewModelComponent implements OnInit, OnDestroy {
     return this.usageBaseUrl.replace(/^https?:\/\//, '');
   }
 
-  
+
   get usageModel(): string {
     return String(this.modelData?.model || this.modelData?.modelId || '');
   }
@@ -708,10 +750,30 @@ public class Example {
       return;
     }
 
-    const from = this.toIsoOrUndefined(this.usageFiltersForm.value.from);
-    const to = this.toIsoOrUndefined(this.usageFiltersForm.value.to);
-    const limit = Number(this.usageFiltersForm.value.limit || 50);
-    if (from && to && new Date(from).getTime() > new Date(to).getTime()) {
+    let fromIso: string | undefined;
+    let toIso: string | undefined;
+    const filterValues = this.usageFiltersForm.value;
+
+    if (filterValues.duration === 'custom') {
+      fromIso = this.toIsoOrUndefined(filterValues.fromTimestamp);
+      toIso = this.toIsoOrUndefined(filterValues.toTimestamp);
+    } else {
+      const toDt = new Date();
+      let fromDt = new Date();
+      switch (filterValues.duration) {
+        case '15m': fromDt = new Date(toDt.getTime() - 15 * 60000); break;
+        case '30m': fromDt = new Date(toDt.getTime() - 30 * 60000); break;
+        case '1h': fromDt = new Date(toDt.getTime() - 60 * 60000); break;
+        case '1d': fromDt = new Date(toDt.getTime() - 24 * 60 * 60000); break;
+        case '7d': fromDt = new Date(toDt.getTime() - 7 * 24 * 60 * 60000); break;
+        case '30d': fromDt = new Date(toDt.getTime() - 30 * 24 * 60 * 60000); break;
+      }
+      fromIso = fromDt.toISOString();
+      toIso = toDt.toISOString();
+    }
+
+    const limit = Number(filterValues.limit || 50);
+    if (fromIso && toIso && new Date(fromIso).getTime() > new Date(toIso).getTime()) {
       this.usageError = '`From` must be earlier than `To`.';
       return;
     }
@@ -719,13 +781,13 @@ public class Example {
     this.usageLoading = true;
     this.usageError = '';
     this.sharedService.show();
-    this.llmService.getKeyUsage(llmId, keyId, { from, to, limit }).subscribe({
+    this.llmService.getKeyUsage(llmId, keyId, { from: fromIso, to: toIso, limit }).subscribe({
       next: (res: any) => {
         const data = (res?.data && typeof res.data === 'object') ? res.data : (res || {});
         this.usageSummary = data?.summary || null;
         this.usageEvents = Array.isArray(data?.events) ? data.events : [];
-        this.usageFrom = String(data?.from || from || '');
-        this.usageTo = String(data?.to || to || '');
+        this.usageFrom = String(data?.from || fromIso || '');
+        this.usageTo = String(data?.to || toIso || '');
         this.usageLoaded = true;
         this.usageLoading = false;
         this.sharedService.hide();
@@ -741,24 +803,252 @@ public class Example {
   }
 
   refreshUsageAnalytics(updateToNow: boolean = true): void {
-    if (updateToNow) {
-      this.usageFiltersForm.patchValue({ to: this.toLocalDateTimeInput(new Date()) });
+    if (updateToNow && this.usageFiltersForm.value.duration === 'custom') {
+      this.usageFiltersForm.patchValue({ toTimestamp: this.toLocalDateTimeInput(new Date()) });
     }
     this.usageLoaded = false;
     this.loadUsageAnalytics(true);
+  }
+
+  get formattedRangeDisplay(): string {
+    const fromVal = this.usageFiltersForm.get('fromTimestamp')?.value;
+    const toVal = this.usageFiltersForm.get('toTimestamp')?.value;
+    if (!fromVal || !toVal) return '';
+    return this.formatRangeDate(new Date(fromVal)) + ' - ' + this.formatRangeDate(new Date(toVal));
+  }
+
+  get tempRangeDisplay(): string {
+    if (!this.tempStartDate) return 'Select start date';
+    if (!this.tempEndDate) return 'Select end date';
+
+    const start = this.combineDateAndTime(this.tempStartDate, this.startHour, this.startMinute, this.startAmpm);
+    const end = this.combineDateAndTime(this.tempEndDate, this.endHour, this.endMinute, this.endAmpm);
+
+    return this.formatRangeDate(start) + ' - ' + this.formatRangeDate(end);
+  }
+
+  formatRangeDate(date: Date): string {
+    const m = date.getMonth() + 1;
+    const d = date.getDate();
+    let h = date.getHours();
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12 || 12;
+    const min = String(date.getMinutes()).padStart(2, '0');
+    return `${m}/${d} ${String(h).padStart(2, '0')}:${min} ${ampm}`;
+  }
+
+  openDatePicker(): void {
+    const fromVal = this.usageFiltersForm.get('fromTimestamp')?.value;
+    const toVal = this.usageFiltersForm.get('toTimestamp')?.value;
+
+    const start = fromVal ? new Date(fromVal) : new Date();
+    const end = toVal ? new Date(toVal) : new Date();
+
+    this.tempStartDate = start;
+    this.tempEndDate = end;
+
+    this.leftMonthDate = new Date(start);
+    this.rightMonthDate = new Date(new Date(start).setMonth(start.getMonth() + 1));
+
+    const sh = start.getHours();
+    this.startAmpm = sh >= 12 ? 'PM' : 'AM';
+    this.startHour = sh % 12 || 12;
+    this.startMinute = start.getMinutes();
+
+    const eh = end.getHours();
+    this.endAmpm = eh >= 12 ? 'PM' : 'AM';
+    this.endHour = eh % 12 || 12;
+    this.endMinute = end.getMinutes();
+
+    this.generateCalendars();
+    this.isDatePickerOpen = true;
+  }
+
+  closeDatePicker(): void {
+    this.isDatePickerOpen = false;
+  }
+
+  generateCalendars(): void {
+    this.leftMonthWeeks = this.getWeeksForMonth(this.leftMonthDate);
+    this.rightMonthWeeks = this.getWeeksForMonth(this.rightMonthDate);
+  }
+
+  getWeeksForMonth(date: Date): any[][] {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const firstDay = new Date(year, month, 1);
+
+    const startDate = new Date(firstDay);
+    const dayOfWeek = firstDay.getDay();
+    startDate.setDate(startDate.getDate() - dayOfWeek);
+
+    const weeks: any[][] = [];
+    let currentWeek: any[] = [];
+
+    for (let i = 0; i < 42; i++) {
+      const curr = new Date(startDate);
+      curr.setDate(startDate.getDate() + i);
+      currentWeek.push({
+        date: curr,
+        isCurrentMonth: curr.getMonth() === month,
+        isToday: this.isSameDay(curr, new Date())
+      });
+
+      if (currentWeek.length === 7) {
+        weeks.push(currentWeek);
+        currentWeek = [];
+      }
+    }
+    return weeks;
+  }
+
+  getMonthYearLabel(date: Date): string {
+    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  }
+
+  prevMonth(): void {
+    this.leftMonthDate = new Date(this.leftMonthDate.setMonth(this.leftMonthDate.getMonth() - 1));
+    this.rightMonthDate = new Date(this.rightMonthDate.setMonth(this.rightMonthDate.getMonth() - 1));
+    this.generateCalendars();
+  }
+
+  nextMonth(): void {
+    this.leftMonthDate = new Date(this.leftMonthDate.setMonth(this.leftMonthDate.getMonth() + 1));
+    this.rightMonthDate = new Date(this.rightMonthDate.setMonth(this.rightMonthDate.getMonth() + 1));
+    this.generateCalendars();
+  }
+
+  isSameDay(d1: Date | null, d2: Date | null): boolean {
+    if (!d1 || !d2) return false;
+    return d1.getFullYear() === d2.getFullYear() &&
+      d1.getMonth() === d2.getMonth() &&
+      d1.getDate() === d2.getDate();
+  }
+
+  isStartDate(date: Date): boolean {
+    return this.isSameDay(date, this.tempStartDate);
+  }
+
+  isEndDate(date: Date): boolean {
+    return this.isSameDay(date, this.tempEndDate);
+  }
+
+  isInRange(date: Date): boolean {
+    if (!this.tempStartDate || !this.tempEndDate) return false;
+    const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const start = new Date(this.tempStartDate.getFullYear(), this.tempStartDate.getMonth(), this.tempStartDate.getDate());
+    const end = new Date(this.tempEndDate.getFullYear(), this.tempEndDate.getMonth(), this.tempEndDate.getDate());
+    return d > start && d < end;
+  }
+
+  selectDay(day: Date): void {
+    const clickedDate = new Date(day.getFullYear(), day.getMonth(), day.getDate());
+
+    if (!this.tempStartDate || (this.tempStartDate && this.tempEndDate)) {
+      this.tempStartDate = clickedDate;
+      this.tempEndDate = null;
+    } else if (this.tempStartDate && !this.tempEndDate) {
+      if (clickedDate < this.tempStartDate) {
+        this.tempEndDate = this.tempStartDate;
+        this.tempStartDate = clickedDate;
+      } else {
+        this.tempEndDate = clickedDate;
+      }
+    }
+  }
+
+  applyCustomRange(): void {
+    if (!this.tempStartDate || !this.tempEndDate) return;
+
+    const start = this.combineDateAndTime(this.tempStartDate, this.startHour, this.startMinute, this.startAmpm);
+    const end = this.combineDateAndTime(this.tempEndDate, this.endHour, this.endMinute, this.endAmpm);
+
+    this.usageFiltersForm.patchValue({
+      fromTimestamp: this.toLocalDateTimeInput(start),
+      toTimestamp: this.toLocalDateTimeInput(end)
+    });
+
+    this.isDatePickerOpen = false;
+    this.refreshUsageAnalytics(false);
+  }
+
+  combineDateAndTime(date: Date, hour: number, minute: number, ampm: string): Date {
+    const d = new Date(date);
+    let h = Number(hour);
+    if (ampm === 'PM' && h < 12) h += 12;
+    if (ampm === 'AM' && h === 12) h = 0;
+    d.setHours(h, Number(minute), 0, 0);
+    return d;
+  }
+
+  onStartHourChange(event: Event): void {
+    this.startHour = Number((event.target as HTMLSelectElement).value);
+  }
+  onStartMinuteChange(event: Event): void {
+    this.startMinute = Number((event.target as HTMLSelectElement).value);
+  }
+  onStartAmpmChange(event: Event): void {
+    this.startAmpm = (event.target as HTMLSelectElement).value;
+  }
+  onEndHourChange(event: Event): void {
+    this.endHour = Number((event.target as HTMLSelectElement).value);
+  }
+  onEndMinuteChange(event: Event): void {
+    this.endMinute = Number((event.target as HTMLSelectElement).value);
+  }
+  onEndAmpmChange(event: Event): void {
+    this.endAmpm = (event.target as HTMLSelectElement).value;
+  }
+
+  onDurationSelect(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    const value = select.value;
+
+    this.usageFiltersForm.get('duration')?.setValue(value, { emitEvent: false });
+
+    if (value !== 'custom') {
+      this.refreshUsageAnalytics(true);
+    }
+  }
+
+  getIanaTimeZone(tz: string): string {
+    const map: { [key: string]: string } = {
+      'IST': 'Asia/Kolkata',
+      'UTC': 'UTC',
+      'PST': 'America/Los_Angeles',
+      'EST': 'America/New_York',
+      'CET': 'Europe/Paris'
+    };
+    return map[tz] || 'Asia/Kolkata';
   }
 
   formatDateTime(value: any): string {
     if (!value) return '-';
     const date = new Date(value);
     if (isNaN(date.getTime())) return String(value);
-    return date.toLocaleString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+
+    const tzLabel = this.usageFiltersForm?.value?.timeZone || 'IST';
+    const iana = this.getIanaTimeZone(tzLabel);
+
+    try {
+      const opts: Intl.DateTimeFormatOptions = {
+        timeZone: iana,
+        year: 'numeric',
+        month: 'short',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      };
+      return new Intl.DateTimeFormat('en-US', opts).format(date) + ` (${tzLabel})`;
+    } catch (e) {
+      return date.toLocaleString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
   }
 
   formatCost(value: any): string {

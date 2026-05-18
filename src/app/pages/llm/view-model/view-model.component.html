@@ -18,13 +18,16 @@
       </c-nav-item>
     </c-nav>
     <div class="d-flex align-items-center gap-2 flex-wrap">
-      <button class="btn button-format-solid px-4 btn-align" (click)="editRateLimit()" [disabled]="!modelData || isEditingRateLimit || isSavingRateLimit">
+      <button class="btn button-format-solid px-4 btn-align" (click)="editRateLimit()"
+        [disabled]="!modelData || isEditingRateLimit || isSavingRateLimit">
         <i class="bi bi-pencil"></i> Edit
       </button>
-      <button class="btn btn-outline-secondary px-3" (click)="rotateKey()" [disabled]="!modelData || isRotatingKey || isSavingRateLimit">
+      <button class="btn btn-outline-secondary px-3" (click)="rotateKey()"
+        [disabled]="!modelData || isRotatingKey || isSavingRateLimit">
         <i class="bi bi-arrow-repeat"></i> {{ isRotatingKey ? 'Rotating...' : 'Rotate Key' }}
       </button>
-      <button class="btn btn-outline-danger px-3" (click)="deleteModel()" [disabled]="!modelData || isDeletingModel || isSavingRateLimit || isRotatingKey">
+      <button class="btn btn-outline-danger px-3" (click)="deleteModel()"
+        [disabled]="!modelData || isDeletingModel || isSavingRateLimit || isRotatingKey">
         <i class="bi bi-trash"></i> {{ isDeletingModel ? 'Deleting...' : 'Delete' }}
       </button>
     </div>
@@ -42,20 +45,17 @@
           <div class="col-md-6 mb-3">
             <form [formGroup]="rateLimitForm">
               <label class="form-label">Rate Limit Per Minute</label>
-              <input
-                *ngIf="isEditingRateLimit; else rateLimitReadonly"
-                class="form-control"
-                type="number"
-                min="1"
-                formControlName="rateLimitPerMinute"
-              />
+              <input *ngIf="isEditingRateLimit; else rateLimitReadonly" class="form-control" type="number" min="1"
+                formControlName="rateLimitPerMinute" />
               <ng-template #rateLimitReadonly>
                 <input class="form-control" type="text" [value]="rateLimitDisplay" readonly />
               </ng-template>
-              <small class="text-danger" *ngIf="rateLimitForm.get('rateLimitPerMinute')?.hasError('min') && rateLimitForm.get('rateLimitPerMinute')?.touched">
+              <small class="text-danger"
+                *ngIf="rateLimitForm.get('rateLimitPerMinute')?.hasError('min') && rateLimitForm.get('rateLimitPerMinute')?.touched">
                 Provide a valid number greater than 0.
               </small>
-              <small class="text-danger" *ngIf="rateLimitForm.get('rateLimitPerMinute')?.hasError('max') && rateLimitForm.get('rateLimitPerMinute')?.touched">
+              <small class="text-danger"
+                *ngIf="rateLimitForm.get('rateLimitPerMinute')?.hasError('max') && rateLimitForm.get('rateLimitPerMinute')?.touched">
                 Maximum allowed value is 10.
               </small>
             </form>
@@ -63,10 +63,12 @@
         </div>
 
         <div class="d-flex justify-content-end gap-2 mb-3" *ngIf="isEditingRateLimit">
-          <button type="button" class="btn btn-outline-secondary" (click)="cancelRateLimitEdit()" [disabled]="isSavingRateLimit">
+          <button type="button" class="btn btn-outline-secondary" (click)="cancelRateLimitEdit()"
+            [disabled]="isSavingRateLimit">
             Cancel
           </button>
-          <button type="button" class="btn button-format-solid" (click)="saveRateLimit()" [disabled]="isSavingRateLimit">
+          <button type="button" class="btn button-format-solid" (click)="saveRateLimit()"
+            [disabled]="isSavingRateLimit">
             {{ isSavingRateLimit ? 'Saving...' : 'Save' }}
           </button>
         </div>
@@ -111,44 +113,23 @@
         </div>
 
         <div class="sdk-tabs">
-          <button
-            type="button"
-            class="sdk-tab-btn"
-            [class.active]="selectedSdkTab === 'curl'"
-            (click)="setSdkTab('curl')"
-          >
+          <button type="button" class="sdk-tab-btn" [class.active]="selectedSdkTab === 'curl'"
+            (click)="setSdkTab('curl')">
             cURL
           </button>
-          <button
-            type="button"
-            class="sdk-tab-btn"
-            [class.active]="selectedSdkTab === 'python'"
-            (click)="setSdkTab('python')"
-          >
+          <button type="button" class="sdk-tab-btn" [class.active]="selectedSdkTab === 'python'"
+            (click)="setSdkTab('python')">
             Python SDK
           </button>
-          <button
-            type="button"
-            class="sdk-tab-btn"
-            [class.active]="selectedSdkTab === 'javascript'"
-            (click)="setSdkTab('javascript')"
-          >
+          <button type="button" class="sdk-tab-btn" [class.active]="selectedSdkTab === 'javascript'"
+            (click)="setSdkTab('javascript')">
             JavaScript SDK
           </button>
-          <button
-            type="button"
-            class="sdk-tab-btn"
-            [class.active]="selectedSdkTab === 'go'"
-            (click)="setSdkTab('go')"
-          >
+          <button type="button" class="sdk-tab-btn" [class.active]="selectedSdkTab === 'go'" (click)="setSdkTab('go')">
             Go SDK
           </button>
-          <button
-            type="button"
-            class="sdk-tab-btn"
-            [class.active]="selectedSdkTab === 'java'"
-            (click)="setSdkTab('java')"
-          >
+          <button type="button" class="sdk-tab-btn" [class.active]="selectedSdkTab === 'java'"
+            (click)="setSdkTab('java')">
             Java SDK
           </button>
         </div>
@@ -157,11 +138,15 @@
           <button type="button" class="snippet-copy-btn" (click)="copyCurrentSnippet()" title="Copy code">
             <i class="bi bi-clipboard"></i>
           </button>
-          <pre class="api-snippet mb-0" *ngIf="selectedSdkTab === 'curl'"><code [textContent]="curlSnippet"></code></pre>
-          <pre class="api-snippet mb-0" *ngIf="selectedSdkTab === 'python'"><code [textContent]="pythonSnippet"></code></pre>
-          <pre class="api-snippet mb-0" *ngIf="selectedSdkTab === 'javascript'"><code [textContent]="jsSnippet"></code></pre>
+          <pre class="api-snippet mb-0"
+            *ngIf="selectedSdkTab === 'curl'"><code [textContent]="curlSnippet"></code></pre>
+          <pre class="api-snippet mb-0"
+            *ngIf="selectedSdkTab === 'python'"><code [textContent]="pythonSnippet"></code></pre>
+          <pre class="api-snippet mb-0"
+            *ngIf="selectedSdkTab === 'javascript'"><code [textContent]="jsSnippet"></code></pre>
           <pre class="api-snippet mb-0" *ngIf="selectedSdkTab === 'go'"><code [textContent]="goSnippet"></code></pre>
-          <pre class="api-snippet mb-0" *ngIf="selectedSdkTab === 'java'"><code [textContent]="javaSnippet"></code></pre>
+          <pre class="api-snippet mb-0"
+            *ngIf="selectedSdkTab === 'java'"><code [textContent]="javaSnippet"></code></pre>
         </div>
       </div>
 
@@ -181,23 +166,132 @@
           </div>
 
           <div class="analytics-toolbar mb-3" [formGroup]="usageFiltersForm">
-            <div class="analytics-field">
-              <label class="form-label">From</label>
-              <input class="form-control" type="datetime-local" formControlName="from" />
+            <div class="analytics-field duration-field">
+              <label for="duration" class="form-label">Time Duration:</label>
+              <select id="duration" formControlName="duration" class="form-select" (change)="onDurationSelect($event)">
+                <option *ngFor="let duration of durations" [value]="duration.value">
+                  {{ duration.label }}
+                </option>
+              </select>
             </div>
-            <div class="analytics-field">
-              <label class="form-label">To</label>
-              <input class="form-control" type="datetime-local" formControlName="to" />
+
+            <div class="analytics-field timezone-field">
+              <label for="timeZone" class="form-label">Time Zone:</label>
+              <select id="timeZone" formControlName="timeZone" class="form-select">
+                <option *ngFor="let tz of timeZones" [value]="tz.value">{{ tz.label }}</option>
+              </select>
             </div>
+
+            <ng-container *ngIf="usageFiltersForm.get('duration')?.value === 'custom'">
+              <div class="analytics-field datetime-field position-relative daterange-wrapper">
+                <label class="form-label">Date Range:</label>
+                <div class="daterange-input-wrapper" (click)="openDatePicker()">
+                  <input class="form-control bg-white cursor-pointer" type="text" readonly
+                    [value]="formattedRangeDisplay" />
+                  <i class="bi bi-calendar3 calendar-icon"></i>
+                </div>
+
+                <div class="custom-daterange-picker-popover" *ngIf="isDatePickerOpen">
+                  <div class="daterange-picker-body">
+
+                    <div class="calendar-container">
+                      <div class="calendar-header">
+                        <button class="nav-btn" (click)="prevMonth(); $event.stopPropagation()">&lt;</button>
+                        <span class="month-label">{{ getMonthYearLabel(leftMonthDate) }}</span>
+                        <span class="nav-placeholder"></span>
+                      </div>
+                      <div class="weeks-grid">
+                        <div class="day-headers">
+                          <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+                        </div>
+                        <div class="weeks-row" *ngFor="let week of leftMonthWeeks">
+                          <span *ngFor="let day of week" class="day-cell" [class.off-month]="!day.isCurrentMonth"
+                            [class.is-today]="day.isToday" [class.selected-start]="isStartDate(day.date)"
+                            [class.selected-end]="isEndDate(day.date)" [class.in-range]="isInRange(day.date)"
+                            (click)="selectDay(day.date); $event.stopPropagation()">
+                            {{ day.date.getDate() }}
+                          </span>
+                        </div>
+                      </div>
+                      <div class="time-picker-container mt-2">
+                        <select [value]="startHour" (change)="onStartHourChange($event); $event.stopPropagation()"
+                          (click)="$event.stopPropagation()" class="form-select time-select">
+                          <option *ngFor="let h of hoursList" [value]="h">{{ h }}</option>
+                        </select>
+                        <span class="colon">:</span>
+                        <select [value]="startMinute" (change)="onStartMinuteChange($event); $event.stopPropagation()"
+                          (click)="$event.stopPropagation()" class="form-select time-select">
+                          <option *ngFor="let m of minutesList" [value]="m">{{ m < 10 ? '0' + m : m }}</option>
+                        </select>
+                        <select [value]="startAmpm" (change)="onStartAmpmChange($event); $event.stopPropagation()"
+                          (click)="$event.stopPropagation()" class="form-select time-select">
+                          <option value="AM">AM</option>
+                          <option value="PM">PM</option>
+                        </select>
+                      </div>
+                    </div>
+
+
+                    <div class="calendar-container">
+                      <div class="calendar-header">
+                        <span class="nav-placeholder"></span>
+                        <span class="month-label">{{ getMonthYearLabel(rightMonthDate) }}</span>
+                        <button class="nav-btn" (click)="nextMonth(); $event.stopPropagation()">&gt;</button>
+                      </div>
+                      <div class="weeks-grid">
+                        <div class="day-headers">
+                          <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+                        </div>
+                        <div class="weeks-row" *ngFor="let week of rightMonthWeeks">
+                          <span *ngFor="let day of week" class="day-cell" [class.off-month]="!day.isCurrentMonth"
+                            [class.is-today]="day.isToday" [class.selected-start]="isStartDate(day.date)"
+                            [class.selected-end]="isEndDate(day.date)" [class.in-range]="isInRange(day.date)"
+                            (click)="selectDay(day.date); $event.stopPropagation()">
+                            {{ day.date.getDate() }}
+                          </span>
+                        </div>
+                      </div>
+                      <div class="time-picker-container mt-2">
+                        <select [value]="endHour" (change)="onEndHourChange($event); $event.stopPropagation()"
+                          (click)="$event.stopPropagation()" class="form-select time-select">
+                          <option *ngFor="let h of hoursList" [value]="h">{{ h }}</option>
+                        </select>
+                        <span class="colon">:</span>
+                        <select [value]="endMinute" (change)="onEndMinuteChange($event); $event.stopPropagation()"
+                          (click)="$event.stopPropagation()" class="form-select time-select">
+                          <option *ngFor="let m of minutesList" [value]="m">{{ m < 10 ? '0' + m : m }}</option>
+                        </select>
+                        <select [value]="endAmpm" (change)="onEndAmpmChange($event); $event.stopPropagation()"
+                          (click)="$event.stopPropagation()" class="form-select time-select">
+                          <option value="AM">AM</option>
+                          <option value="PM">PM</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="daterange-picker-footer">
+                    <span class="preview-range">{{ tempRangeDisplay }}</span>
+                    <div class="footer-actions">
+                      <button class="btn btn-sm btn-light border me-2"
+                        (click)="closeDatePicker(); $event.stopPropagation()">Cancel</button>
+                      <button class="btn btn-sm btn-primary"
+                        (click)="applyCustomRange(); $event.stopPropagation()">Apply</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+
             <div class="analytics-field analytics-limit">
               <label class="form-label">Limit</label>
               <input class="form-control" type="number" min="1" formControlName="limit" />
             </div>
-            <div class="analytics-refresh">
+            <!-- <div class="analytics-refresh">
               <button class="btn button-format-solid" (click)="refreshUsageAnalytics()" [disabled]="usageLoading">
-                {{ usageLoading ? 'Loading...' : 'Refresh' }}
+                {{ usageLoading ? 'Loading...' : 'Apply Filter' }}
               </button>
-            </div>
+            </div> -->
           </div>
 
           <div *ngIf="usageError" class="alert alert-danger mb-3">{{ usageError }}</div>
@@ -264,7 +358,8 @@
             <ng-template #noUsageEvents>
               <div class="analytics-empty">
                 <h6 class="mb-1">No Usage Events</h6>
-                <p class="mb-0 text-muted">{{ usageLoading ? 'Loading usage events...' : 'No usage events found for the selected range.' }}</p>
+                <p class="mb-0 text-muted">{{ usageLoading ? 'Loading usage events...' : 'No usage events found for the
+                  selected range.' }}</p>
               </div>
             </ng-template>
           </ng-container>
