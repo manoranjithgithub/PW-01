@@ -1,119 +1,18 @@
 <div class="analytics-field datetime-field position-relative daterange-wrapper">
   <label class="form-label" *ngIf="label">{{ label }}</label>
-  <div class="daterange-input-wrapper position-relative cursor-pointer" (click)="openDatePicker()">
-    <input class="form-control bg-white cursor-pointer pe-5" type="text" readonly
-      [value]="formattedRangeDisplay" />
-    <i class="bi bi-calendar3 position-absolute end-0 top-50 translate-middle-y me-3 text-secondary pointer-events-none"></i>
-  </div>
-
-  <div class="card shadow-lg p-3 position-absolute border border-light rounded-3 daterange-popover" *ngIf="isDatePickerOpen" (click)="$event.stopPropagation()">
-    <div class="row g-3">
-      <!-- Left Month Calendar -->
-      <div class="col-12 col-md-6 d-flex flex-column">
-        <div class="d-flex justify-content-between align-items-center mb-2">
-          <button class="btn btn-sm btn-light border-0 py-0 px-2" (click)="prevMonth(); $event.stopPropagation()">&lt;</button>
-          <span class="fw-bold text-dark small">{{ getMonthYearLabel(leftMonthDate) }}</span>
-          <span style="width: 24px;"></span>
-        </div>
-        
-        <div class="d-grid text-center fw-bold text-secondary mb-1" style="grid-template-columns: repeat(7, 1fr); font-size: 11px;">
-          <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
-        </div>
-        
-        <div class="d-grid gap-1" style="grid-template-columns: repeat(7, 1fr); min-height: 180px;">
-          <ng-container *ngFor="let week of leftMonthWeeks">
-            <span *ngFor="let day of week" 
-              class="day-cell d-inline-flex align-items-center justify-content-center cursor-pointer rounded-2 small fw-medium"
-              [class.text-muted]="!day.isCurrentMonth"
-              [class.opacity-50]="!day.isCurrentMonth"
-              [class.border]="day.isToday"
-              [class.border-secondary]="day.isToday"
-              [class.bg-primary]="isStartDate(day.date) || isEndDate(day.date)"
-              [class.text-white]="isStartDate(day.date) || isEndDate(day.date)"
-              [class.bg-primary-subtle]="isInRange(day.date)"
-              [class.text-primary]="isInRange(day.date)"
-              (click)="selectDay(day.date); $event.stopPropagation()">
-              {{ day.date.getDate() }}
-            </span>
-          </ng-container>
-        </div>
-
-        <div class="d-flex align-items-center justify-content-center gap-1 mt-3 pt-2 border-top border-light" style="border-top-style: dashed !important;">
-          <select [value]="startHour" (change)="onStartHourChange($event); $event.stopPropagation()"
-            class="form-select form-select-sm w-auto py-0 px-2" style="font-size: 11px; height: 26px;">
-            <option *ngFor="let h of hoursList" [value]="h">{{ h }}</option>
-          </select>
-          <span class="text-secondary small font-monospace">:</span>
-          <select [value]="startMinute" (change)="onStartMinuteChange($event); $event.stopPropagation()"
-            class="form-select form-select-sm w-auto py-0 px-2" style="font-size: 11px; height: 26px;">
-            <option *ngFor="let m of minutesList" [value]="m">{{ m < 10 ? '0' + m : m }}</option>
-          </select>
-          <select [value]="startAmpm" (change)="onStartAmpmChange($event); $event.stopPropagation()"
-            class="form-select form-select-sm w-auto py-0 px-2" style="font-size: 11px; height: 26px;">
-            <option value="AM">AM</option>
-            <option value="PM">PM</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Right Month Calendar -->
-      <div class="col-12 col-md-6 d-flex flex-column">
-        <div class="d-flex justify-content-between align-items-center mb-2">
-          <span style="width: 24px;"></span>
-          <span class="fw-bold text-dark small">{{ getMonthYearLabel(rightMonthDate) }}</span>
-          <button class="btn btn-sm btn-light border-0 py-0 px-2" (click)="nextMonth(); $event.stopPropagation()">&gt;</button>
-        </div>
-        
-        <div class="d-grid text-center fw-bold text-secondary mb-1" style="grid-template-columns: repeat(7, 1fr); font-size: 11px;">
-          <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
-        </div>
-        
-        <div class="d-grid gap-1" style="grid-template-columns: repeat(7, 1fr); min-height: 180px;">
-          <ng-container *ngFor="let week of rightMonthWeeks">
-            <span *ngFor="let day of week" 
-              class="day-cell d-inline-flex align-items-center justify-content-center cursor-pointer rounded-2 small fw-medium"
-              [class.text-muted]="!day.isCurrentMonth"
-              [class.opacity-50]="!day.isCurrentMonth"
-              [class.border]="day.isToday"
-              [class.border-secondary]="day.isToday"
-              [class.bg-primary]="isStartDate(day.date) || isEndDate(day.date)"
-              [class.text-white]="isStartDate(day.date) || isEndDate(day.date)"
-              [class.bg-primary-subtle]="isInRange(day.date)"
-              [class.text-primary]="isInRange(day.date)"
-              (click)="selectDay(day.date); $event.stopPropagation()">
-              {{ day.date.getDate() }}
-            </span>
-          </ng-container>
-        </div>
-
-        <div class="d-flex align-items-center justify-content-center gap-1 mt-3 pt-2 border-top border-light" style="border-top-style: dashed !important;">
-          <select [value]="endHour" (change)="onEndHourChange($event); $event.stopPropagation()"
-            class="form-select form-select-sm w-auto py-0 px-2" style="font-size: 11px; height: 26px;">
-            <option *ngFor="let h of hoursList" [value]="h">{{ h }}</option>
-          </select>
-          <span class="text-secondary small font-monospace">:</span>
-          <select [value]="endMinute" (change)="onEndMinuteChange($event); $event.stopPropagation()"
-            class="form-select form-select-sm w-auto py-0 px-2" style="font-size: 11px; height: 26px;">
-            <option *ngFor="let m of minutesList" [value]="m">{{ m < 10 ? '0' + m : m }}</option>
-          </select>
-          <select [value]="endAmpm" (change)="onEndAmpmChange($event); $event.stopPropagation()"
-            class="form-select form-select-sm w-auto py-0 px-2" style="font-size: 11px; height: 26px;">
-            <option value="AM">AM</option>
-            <option value="PM">PM</option>
-          </select>
-        </div>
-      </div>
-    </div>
-
-    <!-- Footer Actions -->
-    <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top border-light">
-      <span class="fw-semibold text-secondary small">{{ tempRangeDisplay }}</span>
-      <div class="d-flex">
-        <button class="btn btn-sm btn-outline-secondary me-2 py-1 px-3" style="font-size: 12px;"
-          (click)="closeDatePicker(); $event.stopPropagation()">Cancel</button>
-        <button class="btn btn-sm btn-primary py-1 px-3" style="font-size: 12px;"
-          (click)="applyCustomRange(); $event.stopPropagation()">Apply</button>
-      </div>
-    </div>
+  <div class="daterange-input-wrapper position-relative cursor-pointer">
+    <input type="text"
+           ngxDaterangepickerMd
+           [(ngModel)]="selected"
+           [locale]="locale"
+           [timePicker]="true"
+           [timePickerIncrement]="1"
+           [timePicker24Hour]="false"
+           [alwaysShowCalendars]="true"
+           [linkedCalendars]="true"
+           (change)="onDatesUpdated($event)"
+           class="form-control bg-white cursor-pointer pe-5"
+           readonly />
+    <i class="bi bi-calendar3 position-absolute end-0 top-50 translate-middle-y me-3 text-secondary pointer-events-none" style="z-index: 10;"></i>
   </div>
 </div>

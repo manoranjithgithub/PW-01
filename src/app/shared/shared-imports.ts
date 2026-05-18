@@ -16,6 +16,7 @@ import { LoaderComponent } from './components/loader/loader.component';
 import { DateRangePickerComponent } from './components/date-range-picker/date-range-picker.component';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSelectModule } from '@angular/material/select';
+import { NgxDaterangepickerMd } from 'ngx-daterangepicker-material';
 
 export const SHARED_IMPORTS = [
     ReactiveFormsModule,
@@ -30,6 +31,7 @@ export const SHARED_IMPORTS = [
     MatIconModule,
     LoaderComponent,
     DateRangePickerComponent,
+    NgxDaterangepickerMd,
     FormsModule,
     MatAutocompleteModule,
     MatFormFieldModule,

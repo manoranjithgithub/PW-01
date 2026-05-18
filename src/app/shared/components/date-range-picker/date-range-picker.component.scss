@@ -1,4 +1,4 @@
-/* Custom Date Range Picker Component Styles */
+/* Reusable Date Range Picker Styles */
 :host {
   display: block;
 }
@@ -13,46 +13,32 @@
   cursor: pointer;
 }
 
-.daterange-popover {
-  top: 100%;
-  left: 0;
-  margin-top: 6px;
-  z-index: 1050;
-  width: 550px;
-  max-width: 95vw;
-}
-
-.day-cell {
-  width: 100%;
-  height: 28px;
-  transition: all 0.1s ease;
-  user-select: none;
-
-  &:hover {
-    background-color: var(--cui-tertiary-bg, #f1f5f9) !important;
-    color: var(--cui-body-color, #0f172a) !important;
+/* Ensure the calendar popover styling matches our premium theme variables */
+::ng-deep .md-drppicker {
+  font-family: inherit !important;
+  border: 1px solid #dbe3ef !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.08), 0 8px 15px -6px rgba(0, 0, 0, 0.05) !important;
+  padding: 16px !important;
+  
+  .calendar {
+    font-family: inherit !important;
+    max-width: 270px !important;
+  }
+  
+  .btn {
+    font-size: 12px !important;
+    padding: 4px 12px !important;
+    font-weight: 600 !important;
   }
 
-  &.bg-primary {
+  td.active, td.active:hover {
     background-color: var(--cui-primary, #2563eb) !important;
     color: #ffffff !important;
-
-    &:hover {
-      background-color: var(--cui-primary, #2563eb) !important;
-      color: #ffffff !important;
-    }
   }
 
-  &.bg-primary-subtle {
+  td.in-range {
     background-color: var(--cui-primary-bg-subtle, #eff6ff) !important;
     color: var(--cui-primary-text-emphasis, #1d4ed8) !important;
-  }
-}
-
-@media (max-width: 575px) {
-  .daterange-popover {
-    width: 290px !important;
-    left: 50% !important;
-    transform: translateX(-50%) !important;
   }
 }
