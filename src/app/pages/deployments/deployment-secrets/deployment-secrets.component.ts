@@ -104,8 +104,8 @@ export class DeploymentSecretsComponent implements OnInit {
 
   createRule(): FormGroup {
     return this.fb.group({
-      name: ['', [Validators.required, Validators.maxLength(40), Validators.pattern('^[A-Za-z0-9._-]+$')]],
-      value: ['', [Validators.required, Validators.maxLength(50)]],
+      name: ['', [Validators.required, Validators.maxLength(253), Validators.pattern('^[A-Za-z0-9._-]+$')]],
+      value: ['', [Validators.required ]],
     }, { validators: this.nameValueDependencyValidator });
   }
 
@@ -245,8 +245,8 @@ export class DeploymentSecretsComponent implements OnInit {
 
     this.rulesFormArray.clear();
     this.rulesFormArray.push(this.fb.group({
-      name: [secret.EnvVariable, [Validators.required, Validators.maxLength(40), Validators.pattern('^[A-Za-z0-9._-]+$')]],
-      value: [secret.Value, [Validators.required, Validators.maxLength(50)]]
+      name: [secret.EnvVariable, [Validators.required, Validators.maxLength(253), Validators.pattern('^[A-Za-z0-9._-]+$')]],
+      value: [secret.Value, [Validators.required]]
     }));
   }
   deleteSecret(index: number) {

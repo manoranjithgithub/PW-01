@@ -40,7 +40,7 @@
                   <small
                     *ngIf="rule.get('name')?.invalid && rule.get('name')?.dirty && rule.get('name')?.errors?.['maxlength']"
                     class="text-danger">
-                    Variable name must be at most 40 characters.
+                    Variable name must be at most 253 characters.
                   </small>
                   <small
                     *ngIf="rule.get('name')?.invalid && rule.get('name')?.dirty && rule.get('name')?.errors?.['pattern']"
@@ -63,9 +63,9 @@
                   <small *ngIf="rule.get('value')?.invalid && rule.get('value')?.dirty && rule.get('value')?.errors?.['required']" class="text-danger">
                     Variable value is required.
                   </small>
-                  <small *ngIf="rule.get('value')?.invalid && rule.get('value')?.dirty && rule.get('value')?.errors?.['maxlength']" class="text-danger">
-                    Variable value must be at most 50 characters.
-                  </small>
+                  <!-- <small *ngIf="rule.get('value')?.invalid && rule.get('value')?.dirty && rule.get('value')?.errors?.['maxlength']" class="text-danger">
+                    Variable value must be at most 50 characters. -->
+                  <!-- </small> -->
                   <!-- <small *ngIf="rule.errors?.['valueRequired'] && (rule.dirty || rule.touched)" class="text-danger">
                     Value is required if name is provided.
                   </small> -->
@@ -98,10 +98,10 @@
       <c-callout color="light" class="d-flex justify-content-center row ">
         <div *ngFor="let variable of envList; let i = index" class="variable-container row w-100"
           [attr.data-testid]="'env-row-' + i">
-          <div class="col-md-4">
+          <div class="col-md-5">
             <div class="variable-name" [attr.data-testid]="'env-name-' + i">{{ variable.EnvVariable }}</div>
           </div>
-          <div class="col-md-7">
+          <div class="col-md-6 ">
             <div class="variable-value-wrapper font-sm password-value"><span [attr.data-testid]="'env-value-' + i" title="{{ variable.Value }}">{{ variable.Value }}</span></div>
           </div>
           <div class="col-md-1">
