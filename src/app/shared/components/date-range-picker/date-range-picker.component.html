@@ -1,0 +1,19 @@
+<div class="analytics-field datetime-field position-relative daterange-wrapper">
+  <label class="form-label" *ngIf="label">{{ label }}</label>
+  <div class="daterange-input-wrapper position-relative cursor-pointer">
+    <input type="text"
+           ngxDaterangepickerMd
+           [(ngModel)]="selected"
+           [locale]="locale"
+           [timePicker]="true"
+           [timePickerIncrement]="1"
+           [timePicker24Hour]="false"
+           [alwaysShowCalendars]="true"
+           [linkedCalendars]="true"
+           [showCancel]="true"
+           (change)="onDatesUpdated($event)"
+           class="form-control bg-white cursor-pointer pe-5"
+           readonly />
+    <i class="bi bi-calendar3 position-absolute end-0 top-50 translate-middle-y me-3 text-secondary" style="z-index: 10;" (click)="openCalendar($event)"></i>
+  </div>
+</div>
