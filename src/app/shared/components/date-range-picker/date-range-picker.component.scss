@@ -14,77 +14,200 @@
 
 ::ng-deep .md-drppicker {
   font-family: inherit !important;
-  border: 1px solid #dbe3ef !important;
-  border-radius: 12px !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 16px !important;
   box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.08), 0 8px 15px -6px rgba(0, 0, 0, 0.05) !important;
-  padding: 16px !important;
+  padding: 20px !important;
   background-color: #ffffff !important;
-
-
-  display: flex !important;
-  flex-direction: row !important;
-  flex-wrap: wrap !important;
-  justify-content: center !important;
-  align-items: flex-start !important;
-  gap: 16px !important;
-  max-width: 580px !important;
+  width: auto !important;
+  max-width: none !important;
+  color: #111827 !important;
 
   .calendar {
     font-family: inherit !important;
-    max-width: 260px !important;
-    flex: 0 0 auto !important;
-    margin: 0 !important;
-  }
-
-  .buttons {
-    flex: 1 0 100% !important;
-    text-align: right !important;
-    margin: 12px 0 0 0 !important;
+    max-width: 280px !important;
+    margin: 0 12px !important;
     padding: 0 !important;
-    display: flex !important;
-    justify-content: flex-end !important;
-    gap: 8px !important;
 
-    .buttons_input {
-      display: flex !important;
-      gap: 8px !important;
-      width: auto !important;
+    .calendar-table {
+      padding: 0 !important;
+      border: none !important;
     }
   }
 
-  .btn {
-    font-size: 12px !important;
-    padding: 4px 12px !important;
+
+  th.month {
     font-weight: 600 !important;
-    border-radius: 6px !important;
-    text-transform: uppercase !important;
-    height: 32px !important;
-    line-height: normal !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    box-shadow: none !important;
+    color: #111827 !important;
+    font-size: 15px !important;
   }
 
-  .btn.btn-default {
-    background-color: #f1f5f9 !important;
-    color: #475569 !important;
-    border: 1px solid #cbd5e1 !important;
+  th.prev,
+  th.next {
+    span {
+      border-color: #6b7280 !important;
+    }
+
+    &:hover {
+      background-color: #f3f4f6 !important;
+      border-radius: 8px !important;
+
+      span {
+        border-color: #111827 !important;
+      }
+    }
   }
 
-  .btn:not(.btn-default) {
-    background-color: var(--cui-primary, #ff771c) !important;
-    color: #ffffff !important;
+  th {
+    color: #6b7280 !important;
+    font-weight: 500 !important;
+    font-size: 13px !important;
+  }
+
+  td {
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 4px !important;
+    color: #4b5563 !important;
+    font-size: 14px !important;
+    border: 1px solid transparent !important;
+
+    &.off {
+      color: #d1d5db !important;
+      background-color: transparent !important;
+    }
+
+    &.available:hover {
+      background-color: #f3f4f6 !important;
+      border-radius: 8px !important;
+      border-color: transparent !important;
+    }
+  }
+
+  td.today {
+    border: 1px solid #e5e7eb !important;
+    border-radius: 8px !important;
   }
 
   td.active,
   td.active:hover {
-    background-color: var(--cui-primary, #ff771c) !important;
+    background-color: #2563eb !important;
     color: #ffffff !important;
+    border-radius: 8px !important;
   }
 
   td.in-range {
-    background-color: var(--cui-primary-bg-subtle, #fff7f1) !important;
-    color: var(--cui-primary-text-emphasis, #9a3412) !important;
+    background-color: #2563eb !important;
+    color: #ffffff !important;
+    border-radius: 0 !important;
+  }
+
+  td.start-date {
+    border-radius: 8px 0 0 8px !important;
+  }
+
+  td.end-date {
+    border-radius: 0 8px 8px 0 !important;
+  }
+
+  td.start-date.end-date {
+    border-radius: 8px !important;
+  }
+
+  .calendar-time {
+    border-top: 1px dashed #e5e7eb !important;
+    margin-top: 20px !important;
+    padding-top: 20px !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+
+    .select-highlight,
+    .select-bar {
+      display: none !important;
+    }
+
+    select {
+      appearance: none !important;
+      background: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%236b7280' viewBox='0 0 24 24'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E") no-repeat right 8px center !important;
+      background-color: #ffffff !important;
+      border: 1px solid #e5e7eb !important;
+      border-radius: 8px !important;
+      padding: 8px 32px 8px 12px !important;
+      font-size: 14px !important;
+      color: #111827 !important;
+      margin: 0 4px !important;
+      cursor: pointer !important;
+      outline: none !important;
+
+      &:focus {
+        border-color: #2563eb !important;
+        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2) !important;
+      }
+    }
+  }
+
+  .buttons {
+    margin-top: 20px !important;
+    padding-top: 20px !important;
+    border-top: 1px solid #f3f4f6 !important;
+    display: flex !important;
+    justify-content: flex-end !important;
+    align-items: center !important;
+    width: 100% !important;
+
+    .buttons_input {
+      display: flex !important;
+      gap: 12px !important;
+      width: 100% !important;
+      justify-content: flex-end !important;
+      align-items: center !important;
+    }
+
+    .drp-selected {
+      font-size: 14px !important;
+      color: #111827 !important;
+      font-weight: 500 !important;
+      flex: 1 !important;
+      text-align: left !important;
+      padding-right: 16px !important;
+      display: block !important;
+    }
+  }
+
+  .btn {
+    font-size: 14px !important;
+    padding: 8px 24px !important;
+    font-weight: 500 !important;
+    border-radius: 24px !important;
+    text-transform: none !important;
+    height: auto !important;
+    line-height: 1.5 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-shadow: none !important;
+    cursor: pointer !important;
+    border: none !important;
+    margin: 0 !important;
+  }
+
+  .btn.btn-default {
+    background-color: #f3f4f6 !important;
+    color: #111827 !important;
+    border: 1px solid #e5e7eb !important;
+
+    &:hover {
+      background-color: #e5e7eb !important;
+    }
+  }
+
+  .btn:not(.btn-default) {
+    background-color: #111827 !important;
+    color: #ffffff !important;
+
+    &:hover {
+      background-color: #000000 !important;
+    }
   }
 }

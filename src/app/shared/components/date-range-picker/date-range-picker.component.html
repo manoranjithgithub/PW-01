@@ -10,9 +10,10 @@
            [timePicker24Hour]="false"
            [alwaysShowCalendars]="true"
            [linkedCalendars]="true"
+           [showCancel]="true"
            (change)="onDatesUpdated($event)"
            class="form-control bg-white cursor-pointer pe-5"
            readonly />
-    <i class="bi bi-calendar3 position-absolute end-0 top-50 translate-middle-y me-3 text-secondary pointer-events-none" style="z-index: 10;"></i>
+    <i class="bi bi-calendar3 position-absolute end-0 top-50 translate-middle-y me-3 text-secondary" style="z-index: 10;" (click)="openCalendar($event)"></i>
   </div>
 </div>

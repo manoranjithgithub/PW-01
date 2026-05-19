@@ -82,4 +82,14 @@ export class DateRangePickerComponent implements OnInit, OnChanges, AfterViewIni
     const min = String(date.getMinutes()).padStart(2, '0');
     return `${y}-${m}-${d}T${h}:${min}`;
   }
+
+  openCalendar(event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    if (this.pickerDirective) {
+      this.pickerDirective.open();
+    }
+  }
 }
+
