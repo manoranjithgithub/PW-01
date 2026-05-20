@@ -115,7 +115,7 @@
                 <span class="d-block">{{envData?.name}}</span>
             </div> -->
             <div class="row mb-4">
-                <div *ngFor="let entry of objectKeys(envData.data)" class="col-md-6">
+                <div *ngFor="let entry of objectKeys(envData.data)" class="col-md-12">
                     <!-- <label class="mb-1">{{entry}} :</label>
                     <span class="">{{envData.data[entry]}}</span> -->
                     <div class="env-row">
@@ -144,7 +144,7 @@
                 <span class="d-block">{{secretData?.name}}</span>
             </div> -->
             <div class="row mb-4">
-                <div *ngFor="let entry of objectKeys(secretData?.data)" class="col-md-6">
+                <div *ngFor="let entry of objectKeys(secretData?.data)" class="col-md-12">
                     <div class="env-row">
                         <label class="env-label">{{secretData?.data[entry].EnvVariable}} :</label>
                         <span class="env-value"
