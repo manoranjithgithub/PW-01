@@ -53,6 +53,11 @@ export class EditToolComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   private statusSseSub: Subscription | null = null;
 
+  get isToolStopped(): boolean {
+    const status = String(this.toolDetails?.data?.status || '').toLowerCase();
+    return status === 'stopped' || status === 'stop' || status === 'paused';
+  }
+
   constructor(private http: ToolsService, private ac: ActivatedRoute,
     private route: Router, private fb: FormBuilder, private toastr: ToastrService,
     private sharedService: SharedService,
@@ -194,11 +199,13 @@ export class EditToolComponent implements OnInit, OnDestroy {
 
       const modifiedSchemaValue = this.addNameViewField(finalSchema);
       this.createForm(modifiedSchemaValue);
+      this.applyToolEditState();
       this.getToolStatus();
     });
   }
 
   onSubmit(): void {
+    if (this.isToolStopped) return;
     const { name, ...formValues } = this.form.getRawValue();
     if (this.form.valid) {
       this.formStructure.forEach(field => {
@@ -232,6 +239,7 @@ export class EditToolComponent implements OnInit, OnDestroy {
   }
 
   onGenerateHost() {
+    if (this.isToolStopped) return;
     const { name, ...formValues } = this.form.getRawValue();
     try {
       const req = {
@@ -288,6 +296,7 @@ export class EditToolComponent implements OnInit, OnDestroy {
               this.layoutActionService.setExtraTitle(
                 `${this.toolViewName} (${newStatus})`
               );
+              this.applyToolEditState();
             }
           }
         }
@@ -302,6 +311,16 @@ export class EditToolComponent implements OnInit, OnDestroy {
     if (this.statusSseSub) {
       this.statusSseSub.unsubscribe();
       this.statusSseSub = null;
+    }
+  }
+
+  private applyToolEditState(): void {
+    if (!this.form) return;
+
+    if (this.isToolStopped) {
+      this.form.disable({ emitEvent: false });
+    } else {
+      this.form.enable({ emitEvent: false });
     }
   }
 
@@ -360,6 +379,8 @@ export class EditToolComponent implements OnInit, OnDestroy {
     const modalRef = this.modalService.open(ConfirmationModalComponent);
     modalRef.componentInstance.selectedItem = 'Tool';
     modalRef.componentInstance.message = 'Are you sure you want to proceed?';
+    modalRef.componentInstance.requireConfirmation = true;
+    modalRef.componentInstance.confirmationWord = this.toolViewName || this.paramsEdit;
 
     modalRef.result.then(result => {
       if (result) {

@@ -61,6 +61,11 @@ export class ViewToolComponent implements OnInit, OnDestroy {
   private statusPollInterval?: any;
   private statusSseSub: Subscription | null = null;
 
+  get isToolStopped(): boolean {
+    const status = String(this.toolDetails?.data?.status || this.toolStatus || '').toLowerCase();
+    return status === 'stopped' || status === 'stop' || status === 'paused';
+  }
+
   constructor(
     private http: ToolsService,
     private ac: ActivatedRoute,
@@ -284,6 +289,8 @@ export class ViewToolComponent implements OnInit, OnDestroy {
     const modalRef = this.modalService.open(ConfirmationModalComponent);
     modalRef.componentInstance.selectedItem = 'Tool';
     modalRef.componentInstance.message = 'Are you sure you want to proceed?';
+    modalRef.componentInstance.requireConfirmation = true;
+    modalRef.componentInstance.confirmationWord = this.toolViewName || this.toolName || this.selectedView;
 
     modalRef.result.then(result => {
       if (result) {
@@ -299,6 +306,7 @@ export class ViewToolComponent implements OnInit, OnDestroy {
     });
   }
   editTool() {
+    if (this.isToolStopped) return;
     this.route.navigate(['/tools/edit-tool'], { queryParams: { selectedEdit: this.toolName, id: this.deploymentId } });
   }
   getMonthlyRate(fieldKey: string): number {

@@ -1,6 +1,6 @@
 {
   "name": "nimbuz",
-  "version": "1.0.6",
+  "version": "1.0.8",
   "copyright": "Copyright 2024 creativeLabs Łukasz Holeczek",
   "license": "MIT",
   "author": "The CoreUI Team (https://github.com/orgs/coreui/people) and contributors",
@@ -70,7 +70,9 @@
     "litepicker": "^2.0.12",
     "lodash-es": "^4.17.21",
     "marked": "9.0.0",
+    "moment": "^2.30.1",
     "ngx-cookie-service": "17.0.0",
+    "ngx-daterangepicker-material": "^6.0.4",
     "ngx-markdown": "17.1.0",
     "ngx-pagination": "^6.0.3",
     "ngx-scrollbar": "^13.0.3",

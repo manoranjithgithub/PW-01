@@ -279,7 +279,11 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
     this.route.queryParams.subscribe((params) => {
       const provider = params['provider'];
       const code = params['code'];
-      if (!provider || !code) {
+      if (provider && !code) {
+        this.resetVcsSelection();
+        return;
+      }
+      if (!provider) {
         return;
       }
       this.selectedVCS = provider;
@@ -287,8 +291,10 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
       this.deploymentsService.getVCSCallback(code, this.currentProjectId, provider).subscribe((res: any) => {
         if (res && res.status?.toLowerCase() === 'success') {
           this.fetchRepos(provider);
+        } else {
+          this.resetVcsSelection();
         }
-      })
+      }, () => this.resetVcsSelection())
     });
   }
 
@@ -367,7 +373,7 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
       .subscribe((results: any) => {
         this.submitted = false;
         if (!results) return;
-        this.toaster.success('Application created successfully');
+        this.toaster.success('Application submitted successfully');
         this.router.navigate(['/applications']);
       });
   }
@@ -656,6 +662,21 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
       this.redirectToOAuth(type);
     }
   }
+
+  private resetVcsSelection(): void {
+    this.selectedVCS = '';
+    this.reposList = [];
+    this.branches = [];
+    this.vcsLoadError = '';
+    this.stepOneForm.get('type')?.reset('');
+    this.stepOneForm.get('selectedRepo')?.reset();
+    this.stepOneForm.get('selectedRepo')?.clearValidators();
+    this.stepOneForm.get('selectedRepo')?.updateValueAndValidity();
+    this.stepOneForm.get('branchName')?.reset();
+    this.stepOneForm.get('branchName')?.clearValidators();
+    this.stepOneForm.get('branchName')?.updateValueAndValidity();
+  }
+
   private fetchRepos(type: 'github' | 'gitlab') {
     this.vcsLoadError = '';
     this.deploymentsService.getAvailableRepos(type, this.currentProjectId).subscribe({
@@ -668,8 +689,13 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
           } else {
             this.toaster.error('No repositories available for the selected account.');
             this.stepOneForm.get('selectedRepo')?.reset();
+            this.stepOneForm.get('selectedRepo')?.setValidators([Validators.required]);
+            this.stepOneForm.get('selectedRepo')?.markAsTouched();
+            this.stepOneForm.get('selectedRepo')?.updateValueAndValidity();
             this.branches = [];
             this.stepOneForm.get('branchName')?.reset();
+            this.stepOneForm.get('branchName')?.clearValidators();
+            this.stepOneForm.get('branchName')?.updateValueAndValidity();
           }
         } else {
           this.handleVcsLoadFailure();
@@ -701,7 +727,11 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
     this.stepOneForm.get('branchName')?.updateValueAndValidity();
   }
   private normalizeRepos(type: 'github' | 'gitlab', repos: any[]) {
-    return repos.map((repo: any) => ({
+    const visibleRepos = type === 'gitlab'
+      ? repos.filter((repo: any) => repo.permission === true)
+      : repos;
+
+    return visibleRepos.map((repo: any) => ({
       ...repo,
       webhook:
         type === 'github'

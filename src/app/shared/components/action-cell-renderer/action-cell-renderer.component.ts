@@ -52,6 +52,7 @@ import { DeployConfirmationComponent } from '../deploy-confirmation/deploy-confi
   styleUrl: './action-cell-renderer.component.scss',
 })
 export class ActionCellRendererComponent implements ICellRendererAngularComp {
+  private static toolActionStatusByKey = new Map<string, 'running' | 'stopped'>();
 
   params: any;
   additionalParam: string = '';
@@ -141,12 +142,94 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
     return this.params?.data?.status?.toLowerCase() === 'stopped' ? 'Resume' : 'Pause';
   }
 
+  get toolStartStopLabel(): string {
+    return this.isToolStopped() ? 'Start' : 'Stop';
+  }
+
+  get toolStartStopAction(): string {
+    return this.isToolStopped() ? 'startTool' : 'stopTool';
+  }
+
+  get isToolActionDisabled(): boolean {
+    if (this.additionalParam !== 'tools') return false;
+
+    return this.isToolInstalling();
+  }
+
+  get toolDisabledTooltip(): string | null {
+    return this.isToolActionDisabled ? 'Tool is deploying. Please wait until it is up.' : null;
+  }
+
+  get canEditTool(): boolean {
+    return !!this.permissionService?.canWriteForCurrentUser?.(this.currentProjectId, this.envId)
+      && !this.isToolStatusStopped()
+      && !this.isToolActionDisabled;
+  }
+
+  private isToolStopped(): boolean {
+    return ['stopped', 'stop', 'paused'].includes(this.toolStatus);
+  }
+
+  private isToolStatusStopped(): boolean {
+    const status = String(this.params?.data?.status || this.params?.data?.state || '').toLowerCase();
+    return status === 'stopped' || status === 'stop' || status === 'paused';
+  }
+
+  private isToolInstalling(): boolean {
+    const status = String(this.params?.data?.status || '').toLowerCase();
+    return status === 'deploying' || status === 'not available';
+  }
+
+  private getToolActionKey(data: any = this.params?.data): string {
+    const envId = data?.namespace || data?.environmentId || this.envId || '';
+    const name = data?.name || data?.id || data?._id || '';
+    return envId && name ? `${envId}:${name}` : '';
+  }
+
+  private get toolStatus(): string {
+    const data = this.params?.data;
+    const key = this.getToolActionKey(data);
+    return String(
+      (key && ActionCellRendererComponent.toolActionStatusByKey.get(key)) ||
+      data?.toolActionStatus ||
+      data?.status ||
+      data?.state ||
+      ''
+    ).toLowerCase();
+  }
+
+  private updateToolActionStatus(data: any, status: 'running' | 'stopped'): void {
+    const key = this.getToolActionKey(data);
+    if (key) {
+      ActionCellRendererComponent.toolActionStatusByKey.set(key, status);
+    }
+
+    if (data) {
+      data.toolActionStatus = status;
+    }
+
+    if (this.params?.data) {
+      this.params.data.toolActionStatus = status;
+    }
+
+    if (this.params?.node?.data) {
+      this.params.node.data.toolActionStatus = status;
+    }
+
+    this.params?.api?.refreshCells?.({
+      rowNodes: this.params?.node ? [this.params.node] : undefined,
+      force: true
+    });
+  }
+
   onOptionSelected(action: string): void {
     this.isDropdownOpen = false;
     this.onActionSelected(action);
   }
 
   onActionSelected(action: string): void {
+    if (this.isToolActionDisabled) return;
+
     if (this.additionalParam === 'llm-models') {
       if (this.params?.onActionClick) {
         this.params.onActionClick(action, this.params?.data);
@@ -166,6 +249,10 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
       case 'view':
         this.view(this.params.data);
         break;
+      case 'startTool':
+      case 'stopTool':
+        this.toggleToolState(this.params.data, action);
+        break;
       case 'redeploy':
         this.restart(this.params.data);
         break;
@@ -176,6 +263,46 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
         this.pause(this.params.data, 'Resume');
         break;
     }
+  }
+
+  toggleToolState(data: any, action: 'startTool' | 'stopTool'): void {
+    const isStart = action === 'startTool';
+    const label = isStart ? 'Start' : 'Stop';
+    const envId = data?.namespace || data?.environmentId || this.envId;
+    const name = data?.name;
+
+    if (!envId || !name) {
+      this.toaster.error(`Unable to ${label.toLowerCase()} tool`);
+      return;
+    }
+
+    const modalRef = this.modalService.open(DeployConfirmationComponent);
+    modalRef.componentInstance.message = `Are you sure you want to ${label} this Tool?`;
+
+    modalRef.result.then((result) => {
+      if (!result) return;
+
+      const req = {
+        environmentId: envId,
+        name,
+        action: isStart ? 'resume' as const : 'pause' as const,
+        projectId: data?.projectId || this.currentProjectId
+      };
+
+      this.http.pauseResumeTool(req).subscribe({
+        next: (res: any) => {
+          if (String(res?.status || '').toLowerCase() === 'success' || res?.success) {
+            this.updateToolActionStatus(data, isStart ? 'running' : 'stopped');
+            this.toaster.success(`Tool ${isStart ? 'started' : 'stopped'} successfully`);
+          } else {
+            this.toaster.error(res?.message || `Unable to ${label.toLowerCase()} tool`);
+          }
+        },
+        error: () => {
+          this.toaster.error(`Unable to ${label.toLowerCase()} tool`);
+        }
+      });
+    });
   }
 
   isRevokedLlmModel(): boolean {
@@ -200,6 +327,7 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
       this.route.navigate(['/edit-deployment'], { queryParams: { id: data.name } });
     }
     if (this.additionalParam === "tools") {
+      if (!this.canEditTool) return;
       const id = data?.id || data?._id || '';
       this.route.navigate(['/tools/edit-tool'], { queryParams: { selectedEdit: data.name, id } });
     }
@@ -296,6 +424,10 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
     const modalRef = this.modalService.open(ConfirmationModalComponent);
     modalRef.componentInstance.selectedItem = '';
     modalRef.componentInstance.message = 'Are you sure you want to proceed?';
+    // if (this.additionalParam === 'tools') {
+    //   modalRef.componentInstance.requireConfirmation = true;
+    //   modalRef.componentInstance.confirmationWord = this.toolName;
+    // }
 
     modalRef.result.then(
       (result) => {
@@ -436,6 +568,11 @@ export class ActionCellRendererComponent implements ICellRendererAngularComp {
 
   toggleDropdown(event: MouseEvent, btnRef?: HTMLElement): void {
     event.stopPropagation();
+    if (this.isToolActionDisabled) {
+      this.isDropdownOpen = false;
+      return;
+    }
+
     const btn = (btnRef as HTMLElement) || (event.target as HTMLElement);
     this.updateDropdownPosition(btn);
 

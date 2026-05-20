@@ -1,9 +1,16 @@
 # nimbuz-portal-fe
 
 ## latest version
-1.0.6
+1.0.8
 
 ## change log
+### 1.0.8
+implementation: Credit balance Api integration & ui/ux bug fixes
+
+### 1.0.7
+implementation: tool start and stop implementation & qb/fixes in deployment type vcs
+
+
 ### 1.0.6
 implementation: show balance toaster added
 bugfix: https://gitlab.dilligentech.com/dt/paas/nimbuz-ops-hub/-/issues/3066

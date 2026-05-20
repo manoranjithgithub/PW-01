@@ -55,6 +55,7 @@ test.describe('VCS (Version Control System) Deployment Flow', () => {
 
             const repoCount = await repoSelect.locator('option').count();
             expect(repoCount).toBeGreaterThan(0);
+            await expect(repoSelect).toHaveValue(/.+/);
         });
 
         test('1.1.4 – Fetch Branches for Selected Repository', async ({ page }) => {
@@ -65,23 +66,105 @@ test.describe('VCS (Version Control System) Deployment Flow', () => {
             const repoSelect = page.locator('select[formcontrolname="selectedRepo"]');
             await expect(repoSelect).not.toContainText('No Repo available', { timeout: 30000 });
 
-            const branchResponsePromise = page.waitForResponse(res => res.request().method() === 'GET' && res.url().includes('branch'), { timeout: 30000 }).catch(() => null);
-
-            await repoSelect.selectOption({ index: 1 });
-            await branchResponsePromise;
-
             const branchSelect = page.locator('select[formcontrolname="branchName"]');
             await expect(branchSelect).toBeVisible();
-            await expect(branchSelect).not.toContainText('No branches available', { timeout: 15000 });
+            const repoCount = await repoSelect.locator('option').count();
+            let hasBranches = false;
+
+            for (let index = 0; index < repoCount; index++) {
+                const branchResponsePromise = page.waitForResponse(res => res.request().method() === 'GET' && res.url().includes('branch'), { timeout: 30000 }).catch(() => null);
+                await repoSelect.selectOption({ index });
+                await branchResponsePromise;
+
+                const branchText = (await branchSelect.textContent()) || '';
+                if (!branchText.includes('No branches available')) {
+                    hasBranches = true;
+                    break;
+                }
+            }
+
+            expect(hasBranches).toBeTruthy();
 
             const branchCount = await branchSelect.locator('option').count();
             expect(branchCount).toBeGreaterThan(0);
 
-            await branchSelect.selectOption({ index: 1 });
+            await branchSelect.selectOption({ index: 0 });
             await expect(branchSelect).toHaveValue(/.+/);
         });
 
+        test('1.1.5 – Successful Application Deployment via VCS', async ({ page }) => {
+            let deploymentPayload: any;
 
+            await page.route('**/deployments**', async route => {
+                if (route.request().method() !== 'POST') {
+                    await route.continue();
+                    return;
+                }
+
+                deploymentPayload = route.request().postDataJSON();
+                await route.fulfill({
+                    status: 200,
+                    contentType: 'application/json',
+                    body: JSON.stringify({
+                        status: 'success',
+                        message: 'Application submitted successfully',
+                        data: { id: 'mock-vcs-deployment-id' }
+                    })
+                });
+            });
+
+            await page.getByTestId('select-type').click();
+            await page.getByTestId('option-type-github').click();
+
+            const repoSelect = page.locator('select[formcontrolname="selectedRepo"]');
+            await expect(repoSelect).not.toContainText('No Repo available', { timeout: 30000 });
+
+            const branchSelect = page.locator('select[formcontrolname="branchName"]');
+            await expect(branchSelect).toBeVisible();
+
+            const repoCount = await repoSelect.locator('option').count();
+            let hasBranches = false;
+            for (let index = 0; index < repoCount; index++) {
+                const branchResponsePromise = page.waitForResponse(res => res.request().method() === 'GET' && res.url().includes('branch'), { timeout: 30000 }).catch(() => null);
+                await repoSelect.selectOption({ index });
+                await branchResponsePromise;
+
+                const branchText = (await branchSelect.textContent()) || '';
+                if (!branchText.includes('No branches available')) {
+                    hasBranches = true;
+                    break;
+                }
+            }
+            expect(hasBranches).toBeTruthy();
+            await branchSelect.selectOption({ index: 0 });
+
+            const appName = `vcs-app-${Date.now()}`;
+            await page.locator('input[formcontrolname="name"]').fill(appName);
+            const portInput = page.locator('input[formcontrolname="port"]');
+            if (await portInput.isVisible()) {
+                await portInput.fill('8080');
+            }
+
+            await page.getByTestId('btn-next').click();
+            await page.getByTestId('btn-next').click();
+            await page.getByTestId('btn-next').click();
+            await page.getByTestId('btn-next').click();
+
+            await expect(page.getByTestId('review-details-title')).toBeVisible({ timeout: 60000 });
+            const deploymentResponsePromise = page.waitForResponse(response =>
+                response.request().method() === 'POST' &&
+                /\/deployments\/?(\?.*)?$/.test(response.url())
+            );
+            await page.getByTestId('btn-next').click();
+
+            const deploymentResponse = await deploymentResponsePromise;
+            expect(deploymentResponse.ok()).toBeTruthy();
+            expect((await deploymentResponse.json()).message).toBe('Application submitted successfully');
+            await expect(page).toHaveURL(/.*\/applications$/, { timeout: 60000 });
+            expect(deploymentPayload?.name).toBe(appName);
+            expect(deploymentPayload?.sourceCode?.type).toBe('vcs');
+            expect(deploymentPayload?.sourceCode?.gitUrl).toContain('github.com');
+        });
 
     });
 
@@ -135,7 +218,9 @@ test.describe('VCS (Version Control System) Deployment Flow', () => {
             await expect(page.getByTestId('error-name-validation')).toBeVisible();
 
             const nextBtn = page.getByTestId('btn-next');
-            await expect(nextBtn).toBeDisabled();
+            await nextBtn.click();
+            await expect(page.getByTestId('error-name-validation')).toBeVisible();
+            await expect(page).toHaveURL(/.*\/create-application$/);
         });
     });
 });

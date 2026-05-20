@@ -42,6 +42,26 @@ export class ViewModelComponent implements OnInit, OnDestroy {
   usageEvents: any[] = [];
   usageFrom = '';
   usageTo = '';
+
+
+
+  durations = [
+    { label: 'Last 15 mins', value: '15m' },
+    { label: 'Last 30 mins', value: '30m' },
+    { label: 'Last 1 hour', value: '1h' },
+    { label: 'Past 1 day', value: '1d' },
+    { label: 'Past 7 days', value: '7d' },
+    { label: 'Past 1 month', value: '30d' },
+    { label: 'Custom', value: 'custom' }
+  ];
+  timeZones = [
+    { label: 'IST (Asia/Kolkata)', value: 'IST' },
+    { label: 'UTC', value: 'UTC' },
+    { label: 'PST (America/Los_Angeles)', value: 'PST' },
+    { label: 'EST (America/New_York)', value: 'EST' },
+    { label: 'CET (Europe/Paris)', value: 'CET' }
+  ];
+
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -56,9 +76,15 @@ export class ViewModelComponent implements OnInit, OnDestroy {
     this.rateLimitForm = this.fb.group({
       rateLimitPerMinute: [{ value: '', disabled: true }, [Validators.required, Validators.min(1), Validators.max(10)]]
     });
+
+    const now = new Date();
+    const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60000); // 1 day in ms
+
     this.usageFiltersForm = this.fb.group({
-      from: [this.toLocalDateTimeInput(this.getHoursAgoDate(24))],
-      to: [this.toLocalDateTimeInput(new Date())],
+      duration: ['1d'],
+      timeZone: ['IST'],
+      fromTimestamp: [this.toLocalDateTimeInput(oneDayAgo)],
+      toTimestamp: [this.toLocalDateTimeInput(now)],
       limit: [50, [Validators.required, Validators.min(1)]]
     });
   }
@@ -83,6 +109,8 @@ export class ViewModelComponent implements OnInit, OnDestroy {
       // (e.g. rate-limit metadata) are available in View.
       this.loadModelById(id);
     });
+
+
 
     this.focusSubscription = fromEvent(document, 'visibilitychange')
       .pipe(takeUntil(this.destroy$))
@@ -552,7 +580,7 @@ export class ViewModelComponent implements OnInit, OnDestroy {
     return this.usageBaseUrl.replace(/^https?:\/\//, '');
   }
 
-  
+
   get usageModel(): string {
     return String(this.modelData?.model || this.modelData?.modelId || '');
   }
@@ -708,10 +736,30 @@ public class Example {
       return;
     }
 
-    const from = this.toIsoOrUndefined(this.usageFiltersForm.value.from);
-    const to = this.toIsoOrUndefined(this.usageFiltersForm.value.to);
-    const limit = Number(this.usageFiltersForm.value.limit || 50);
-    if (from && to && new Date(from).getTime() > new Date(to).getTime()) {
+    let fromIso: string | undefined;
+    let toIso: string | undefined;
+    const filterValues = this.usageFiltersForm.value;
+
+    if (filterValues.duration === 'custom') {
+      fromIso = this.toIsoOrUndefined(filterValues.fromTimestamp);
+      toIso = this.toIsoOrUndefined(filterValues.toTimestamp);
+    } else {
+      const toDt = new Date();
+      let fromDt = new Date();
+      switch (filterValues.duration) {
+        case '15m': fromDt = new Date(toDt.getTime() - 15 * 60000); break;
+        case '30m': fromDt = new Date(toDt.getTime() - 30 * 60000); break;
+        case '1h': fromDt = new Date(toDt.getTime() - 60 * 60000); break;
+        case '1d': fromDt = new Date(toDt.getTime() - 24 * 60 * 60000); break;
+        case '7d': fromDt = new Date(toDt.getTime() - 7 * 24 * 60 * 60000); break;
+        case '30d': fromDt = new Date(toDt.getTime() - 30 * 24 * 60 * 60000); break;
+      }
+      fromIso = fromDt.toISOString();
+      toIso = toDt.toISOString();
+    }
+
+    const limit = Number(filterValues.limit || 50);
+    if (fromIso && toIso && new Date(fromIso).getTime() > new Date(toIso).getTime()) {
       this.usageError = '`From` must be earlier than `To`.';
       return;
     }
@@ -719,13 +767,13 @@ public class Example {
     this.usageLoading = true;
     this.usageError = '';
     this.sharedService.show();
-    this.llmService.getKeyUsage(llmId, keyId, { from, to, limit }).subscribe({
+    this.llmService.getKeyUsage(llmId, keyId, { from: fromIso, to: toIso, limit }).subscribe({
       next: (res: any) => {
         const data = (res?.data && typeof res.data === 'object') ? res.data : (res || {});
         this.usageSummary = data?.summary || null;
         this.usageEvents = Array.isArray(data?.events) ? data.events : [];
-        this.usageFrom = String(data?.from || from || '');
-        this.usageTo = String(data?.to || to || '');
+        this.usageFrom = String(data?.from || fromIso || '');
+        this.usageTo = String(data?.to || toIso || '');
         this.usageLoaded = true;
         this.usageLoading = false;
         this.sharedService.hide();
@@ -741,24 +789,70 @@ public class Example {
   }
 
   refreshUsageAnalytics(updateToNow: boolean = true): void {
-    if (updateToNow) {
-      this.usageFiltersForm.patchValue({ to: this.toLocalDateTimeInput(new Date()) });
+    if (updateToNow && this.usageFiltersForm.value.duration === 'custom') {
+      this.usageFiltersForm.patchValue({ toTimestamp: this.toLocalDateTimeInput(new Date()) });
     }
     this.usageLoaded = false;
     this.loadUsageAnalytics(true);
+  }
+
+  onCustomRangeApplied(event: { fromTimestamp: string; toTimestamp: string }): void {
+    this.usageFiltersForm.patchValue({
+      fromTimestamp: event.fromTimestamp,
+      toTimestamp: event.toTimestamp
+    });
+    this.refreshUsageAnalytics(false);
+  }
+
+  onDurationSelect(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    const value = select.value;
+
+    this.usageFiltersForm.get('duration')?.setValue(value);
+
+    if (value !== 'custom') {
+      this.refreshUsageAnalytics(true);
+    }
+  }
+
+  getIanaTimeZone(tz: string): string {
+    const map: { [key: string]: string } = {
+      'IST': 'Asia/Kolkata',
+      'UTC': 'UTC',
+      'PST': 'America/Los_Angeles',
+      'EST': 'America/New_York',
+      'CET': 'Europe/Paris'
+    };
+    return map[tz] || 'Asia/Kolkata';
   }
 
   formatDateTime(value: any): string {
     if (!value) return '-';
     const date = new Date(value);
     if (isNaN(date.getTime())) return String(value);
-    return date.toLocaleString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+
+    const tzLabel = this.usageFiltersForm?.value?.timeZone || 'IST';
+    const iana = this.getIanaTimeZone(tzLabel);
+
+    try {
+      const opts: Intl.DateTimeFormatOptions = {
+        timeZone: iana,
+        year: 'numeric',
+        month: 'short',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      };
+      return new Intl.DateTimeFormat('en-US', opts).format(date) + ` (${tzLabel})`;
+    } catch (e) {
+      return date.toLocaleString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
   }
 
   formatCost(value: any): string {
@@ -773,7 +867,7 @@ public class Example {
 
     return [
       { label: 'Name', value: this.safeValue(this.modelData.name) },
-      { label: 'Status', value: this.safeValue(this.modelData.status) },
+      { label: 'Status', value: this.getDisplayStatusLabel(this.modelData.status) },
       { label: 'Provider', value: this.safeValue(this.modelData.provider) },
       { label: 'Model', value: this.safeValue(this.modelData.model) },
       { label: 'Key Prefix', value: this.safeValue(this.modelData.keyPrefix) },
@@ -792,6 +886,12 @@ public class Example {
     if (!normalized) return 'unknown';
     if (normalized === 'active') return 'running';
     return normalized;
+  }
+
+  private getDisplayStatusLabel(status: any): string {
+    const normalized = String(status || '').trim().toLowerCase();
+    if (!normalized) return '-';
+    return normalized === 'running' ? 'subscribed' : normalized;
   }
 
   private extractRateLimitDisplay(row: any): string {

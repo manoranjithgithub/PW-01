@@ -57,7 +57,7 @@
                     </option>
                   </select>
                   <div class="text-danger my-1" data-testid="error-repo-required"
-                    *ngIf="isError('selectedRepo', 'required')">
+                    *ngIf="isError('selectedRepo', 'required') || (selectedVCS && (selectedVCS === 'github' || selectedVCS === 'gitlab') && (!reposList || reposList.length === 0))">
                     Please select a repository.
                   </div>
                 </div>
@@ -86,11 +86,8 @@
                       {{ option }}
                     </option>
                   </select>
-                  <div class="text-danger my-1" data-testid="error-branch-required" *ngIf="isError('branchName', 'required')">
+                  <div class="text-danger my-1" data-testid="error-branch-required" *ngIf="isError('branchName', 'required') || (selectedVCS && (selectedVCS === 'github' || selectedVCS === 'gitlab') && (!branches || branches.length === 0))">
                     Please select a branch.
-                  </div>
-                  <div class="text-danger my-1" data-testid="error-vcs-load" *ngIf="vcsLoadError">
-                    {{ vcsLoadError }}
                   </div>
                 </div>
               </div>

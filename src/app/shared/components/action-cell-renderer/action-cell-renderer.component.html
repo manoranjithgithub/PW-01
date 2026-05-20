@@ -1,5 +1,6 @@
 <div class="custom-dropdown d-inline-block" *ngIf="additionalParam === 'tools'">
-  <button #dropdownBtn class="btn btn-icon" type="button" (click)="toggleDropdown($event, dropdownBtn)">
+  <button #dropdownBtn class="btn btn-icon" type="button" (click)="toggleDropdown($event, dropdownBtn)"
+    [disabled]="isToolActionDisabled" [attr.title]="toolDisabledTooltip">
     <i class="bi bi-three-dots-vertical"></i>
   </button>
   <ul *ngIf="isDropdownOpen" #menu class="custom-dropdown-menu floating-dropdown" [ngStyle]="dropdownStyle">
@@ -8,9 +9,18 @@
     </li>
     <li>
       <a class="custom-dropdown-item" role="button"
-        (click)="permissionService.canWriteForCurrentUser(currentProjectId, envId) && onOptionSelected('edit')"
-        [class.disabled]="!permissionService.canWriteForCurrentUser(currentProjectId, envId)"
-        [attr.aria-disabled]="!permissionService.canWriteForCurrentUser(currentProjectId, envId)">Edit</a>
+        (click)="canEditTool && onOptionSelected('edit')"
+        [class.disabled]="!canEditTool"
+        [attr.aria-disabled]="!canEditTool">Edit</a>
+    </li>
+    <li>
+      <a class="custom-dropdown-item" role="button"
+        (click)="permissionService.canWriteForCurrentUser(currentProjectId, envId) && !isToolActionDisabled && onOptionSelected(toolStartStopAction)"
+        [class.disabled]="!permissionService.canWriteForCurrentUser(currentProjectId, envId) || isToolActionDisabled"
+        [attr.aria-disabled]="!permissionService.canWriteForCurrentUser(currentProjectId, envId) || isToolActionDisabled"
+        [attr.title]="toolDisabledTooltip">
+        {{ toolStartStopLabel }}
+      </a>
     </li>
     <!-- <li>
       <a class="custom-dropdown-item"
