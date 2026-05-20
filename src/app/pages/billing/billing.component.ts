@@ -81,7 +81,7 @@ export class BillingComponent implements OnInit {
   }
 
   get monthPickerMonth(): number {
-    return this.billsComponent?.monthPickerMonth ?? new Date().getMonth();
+    return this.billsComponent?.monthPickerMonth ?? new Date().getMonth() +1;
   }
 
   set monthPickerMonth(value: number) {
