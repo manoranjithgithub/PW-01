@@ -221,30 +221,26 @@ $primary: mat.define-palette(mat.$indigo-palette, 500);
 $accent: mat.define-palette(mat.$pink-palette, A200, A100, A400);
 $warn: mat.define-palette(mat.$red-palette);
 
-$app-theme: mat.define-light-theme((
-  color: (
-    primary: $primary,
-    accent: $accent,
-    warn: $warn,
-  ),
-  typography: mat.define-typography-config(),
-  density: 0,
-));
+$app-theme: mat.define-light-theme((color: (primary: $primary,
+        accent: $accent,
+        warn: $warn,
+      ),
+      typography: mat.define-typography-config(),
+      density: 0,
+    ));
 
 .light-theme {
   @include mat.all-component-themes($app-theme);
 }
 
 // Dark theme
-$app-dark-theme: mat.define-dark-theme((
-  color: (
-    primary: $primary,
-    accent: $accent,
-    warn: $warn,
-  ),
-  typography: mat.define-typography-config(),
-  density: 0,
-));
+$app-dark-theme: mat.define-dark-theme((color: (primary: $primary,
+        accent: $accent,
+        warn: $warn,
+      ),
+      typography: mat.define-typography-config(),
+      density: 0,
+    ));
 
 .dark-theme {
   // Only include color styles for the dark theme to avoid duplicating
@@ -508,6 +504,7 @@ $app-dark-theme: mat.define-dark-theme((
   box-shadow: var(--bs-card-box-shadow);
   padding: 15px;
 }
+
 // .toast-success,
 // .toast-error,
 // .toast-info,
@@ -519,6 +516,7 @@ $app-dark-theme: mat.define-dark-theme((
   box-shadow: 0 6px 18px rgba(2, 6, 23, 0.6) !important;
   font-size: 14px !important;
 }
+
 .toast-error {
   background-color: #dc3546 !important;
   border: 1px solid #dc3545
@@ -748,7 +746,7 @@ fieldset:disabled .btn {
 
 
 .custom-dropdown-menu {
- // position: absolute;
+  // position: absolute;
   top: 100%;
   right: 0;
   list-style: none;
@@ -805,7 +803,7 @@ fieldset:disabled .btn {
 }
 
 .custom-dropdown-menu li:hover {
-background-color: #f0f0f0;
+  background-color: #f0f0f0;
 }
 
 .custom-dropdown-item {
@@ -928,7 +926,8 @@ background-color: #f0f0f0;
   color: #dc3545;
   padding: 0 5px;
 }
-.secondary i{
+
+.secondary i {
   padding: 0 5px;
 }
 
@@ -947,16 +946,37 @@ background-color: #f0f0f0;
 }
 
 .dropdown-item {
-  padding:5px 20px;
+  padding: 5px 20px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.12);
-  &:last-child{
+
+  &:last-child {
     border-bottom: 0;
   }
 }
-.ag-icon-first, .ag-icon-previous, .ag-icon-next, .ag-icon-last {
+
+.ag-icon-first,
+.ag-icon-previous,
+.ag-icon-next,
+.ag-icon-last {
   background: #000;
   color: #fff !important;
 }
-.ag-picker-field-display{
+
+.ag-picker-field-display {
   color: #000;
+}
+
+/* Force Date Range Picker side-by-side layout globally */
+.md-drppicker.double {
+  min-width: 600px !important;
+  width: auto !important;
+}
+
+.md-drppicker.double .calendar.left {
+  clear: none !important;
+}
+
+.md-drppicker.ltr .ranges,
+.md-drppicker.ltr .calendar {
+  float: left !important;
 }
