@@ -95,22 +95,31 @@
     margin-bottom: 0.5rem;
     border-radius: 8px;
     align-items: center;
+    display: flex;
+    width: 100%;
+    
 }
 
 .variable-name {
     font-weight: bold;
     font-size: 14px;
     color: #333;
+    display: block;
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .variable-value-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+    display: block;
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     font-size: 14px;
     color: #333;
 }
-
 .btn-icon {
     background: none;
     border: none;
@@ -144,17 +153,18 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 240px; 
-  display: inline-block;
+  display: block;
+  width: 100%;
   text-align: left;
+
 }
 .variable-value-wrapper {
   display: flex;
-  justify-content: flex-end; 
   align-items: center;
   gap: 0.5rem;
   font-size: 14px;
   color: #333;
-  min-width: 180px;
-  max-width: 250px;
+  width: 100%;
 }
+  
+  

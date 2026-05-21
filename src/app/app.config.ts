@@ -16,6 +16,7 @@ import { HTTP_INTERCEPTORS, provideHttpClient } from '@angular/common/http';
 import { AuthInterceptor } from '../app/core/services/auth.interceptor';
 import { ToastrModule } from 'ngx-toastr';
 import { provideMarkdown } from 'ngx-markdown';
+import { NgxDaterangepickerMd } from 'ngx-daterangepicker-material';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -42,6 +43,7 @@ export const appConfig: ApplicationConfig = {
     })),
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
     provideHttpClient(),
-    provideMarkdown()
+    provideMarkdown(),
+    importProvidersFrom(NgxDaterangepickerMd.forRoot())
   ]
 };
