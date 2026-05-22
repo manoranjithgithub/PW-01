@@ -110,6 +110,14 @@ deploy-prod:
     - tar -xvzf helm-v3.15.0-linux-amd64.tar.gz
     - mv linux-amd64/helm /usr/bin/
     - rm -rf linux-amd64
+    - mkdir -p ~/.kube
+    - echo "$PROD_AP_SOUTH_1A_KUBECONFIG"
+    - echo "$PROD_AP_SOUTH_1A_KUBECONFIG" | base64 -d > ~/.kube/config
+    - ls ~/.kube
+    - cat ~/.kube/config
+    - chmod 600 ~/.kube/config
+    - export KUBECONFIG=$HOME/.kube/config
+    - helm ls --kubeconfig=$HOME/.kube/config
     - helm repo add --username $HELM_REGISTRY_USER --password $HELM_REGISTRY_TOKEN dt-charts ${CI_API_V4_URL}/projects/34/packages/helm/stable
     - helm upgrade --install portal dt-charts/microservice --set namespace=nimbuz-prod --set env=prod --set subDomain=app --set appName=portal --set image.repository=096985928716.dkr.ecr.ap-southeast-1.amazonaws.com/microservices/${CI_PROJECT_NAME} --set image.tag=$(jq .version package.json -r) --set resources.limits.cpu=30m --set resources.limits.memory=128Mi --set resources.requests.cpu=30m --set resources.requests.memory=128Mi --set instanceClass=regular --set image.pullPolicy=Always --set service.targetPort=80 --namespace nimbuz-prod
   only:
