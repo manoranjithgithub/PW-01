@@ -21,16 +21,14 @@
             </option>
           </select>
         </div>
-        <ng-container *ngIf="filterForm.get('duration')?.value === 'custom'">
-          <div class="filter-group">
-            <label class="filter-label">From</label>
-            <input type="datetime-local" formControlName="fromTimestamp" class="filter-input datetime-input" (change)="onFilter()" />
-          </div>
-          <div class="filter-group">
-            <label class="filter-label">To</label>
-            <input type="datetime-local" formControlName="toTimestamp" class="filter-input datetime-input" (change)="onFilter()" />
-          </div>
-        </ng-container>
+        <div class="filter-group" *ngIf="filterForm.get('duration')?.value === 'custom'">
+          <app-date-range-picker 
+            [fromTimestamp]="filterForm.get('fromTimestamp')?.value"
+            [toTimestamp]="filterForm.get('toTimestamp')?.value"
+            label="Custom Date Range"
+            (apply)="onDateRangeApply($event)">
+          </app-date-range-picker>
+        </div>
         <!-- Apply Filter button removed. -->
       </form>
 
