@@ -50,7 +50,7 @@ export class DeploymentObservabilityComponent implements OnInit, OnDestroy {
     { label: '30s', value: 30000 },
     { label: '1m', value: 60000 }
   ];
-  selectedRefreshInterval = 30000;
+  selectedRefreshInterval = 0;
   private refreshTimer: ReturnType<typeof setInterval> | null = null;
   deploymentId: any;
   pageSizes: number[] = [200, 250, 300];
