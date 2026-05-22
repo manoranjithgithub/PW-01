@@ -58,7 +58,21 @@
   </ul> -->
 
   <div class="body flex-grow-1 main-container">
-    <app-breadcrumb></app-breadcrumb>
+    <div class="d-flex justify-content-between align-items-center mb-1 pe-4">
+      <app-breadcrumb></app-breadcrumb>
+      <div class="dashboard-current-selection d-flex flex-wrap align-items-center gap-3 justify-content-end text-end" *ngIf="isDashboardPage()">
+        <div class="current-selection-pill project-pill">
+            <span class="current-label-text">CURRENT PROJECT</span>
+            <div class="divider"></div>
+            <span class="current-value">{{ currentProjectName }}</span>
+        </div>
+        <div class="current-selection-pill env-pill">
+            <span class="current-label-text">CURRENT ENV</span>
+            <div class="divider"></div>
+            <span class="current-value">{{ currentEnvName }}</span>
+        </div>
+      </div>
+    </div>
     <div class="mt-2 mb-4" *ngIf="shouldShowPageHeader()">
       <div class="d-flex  align-items-start">
         <div class="d-flex align-items-center gap-2">
