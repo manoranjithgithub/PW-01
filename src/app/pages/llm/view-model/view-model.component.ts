@@ -132,9 +132,9 @@ export class ViewModelComponent implements OnInit, OnDestroy {
     if (index === 2) {
       this.loadUsageAnalytics();
 
-      this.pollSubscription = timer(30000, 30000).subscribe(() => {
-        this.refreshUsageAnalytics(true);
-      });
+      // this.pollSubscription = timer(30000, 30000).subscribe(() => {
+      //   this.refreshUsageAnalytics(true);
+      // });
     }
   }
 
