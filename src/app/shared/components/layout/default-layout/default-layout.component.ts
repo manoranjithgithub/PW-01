@@ -98,6 +98,7 @@ export class DefaultLayoutComponent implements OnInit {
   showPageActionButton = false;
   openDropdown = '';
   selectedItemFromCom: string | null = null;
+  pageActionState: any = null;
   currentUser: string = '';
   savedTheme: string = '';
   sidebarVisible = false;
@@ -177,6 +178,9 @@ export class DefaultLayoutComponent implements OnInit {
 
     this.layoutActionService.extraTitle$.subscribe(title => {
       this.selectedItemFromCom = title;
+    });
+    this.layoutActionService.actionState$.subscribe(state => {
+      this.pageActionState = state;
     });
 
   }
@@ -338,8 +342,8 @@ export class DefaultLayoutComponent implements OnInit {
     this.colorMode.set(color);
     this.sharedService.emitValueChange(color);
   }
-  onPageActionClick() {
-    this.layoutActionService.triggerAction();
+  onPageActionClick(action: string = 'delete') {
+    this.layoutActionService.triggerAction(action);
   }
   updateButtonVisibility() {
     const currentUrl = this.router.url;
@@ -358,6 +362,40 @@ export class DefaultLayoutComponent implements OnInit {
   getItemStatus(): string {
     const match = this.selectedItemFromCom?.match(/\(([^)]+)\)/);
     return match ? match[1] : '';
+  }
+
+  isViewToolPage(): boolean {
+    return this.router.url.split('?')[0].startsWith('/tools/view-tool');
+  }
+
+  isApplicationDetailsPage(): boolean {
+    return this.router.url.split('?')[0].startsWith('/applications/application-details');
+  }
+
+  canPerformToolStartStop(): boolean {
+    return this.permissionService.canWriteForCurrentUser(this.getCurrentProjectId(), this.getCurrentEnvId());
+  }
+
+  canPerformApplicationAction(): boolean {
+    return this.permissionService.canWriteForCurrentUser(this.getCurrentProjectId(), this.getCurrentEnvId());
+  }
+
+  canPerformApplicationRedeploy(): boolean {
+    return this.canPerformApplicationAction() && this.pageActionState?.sourceType !== 'file';
+  }
+
+  canPerformApplicationPauseResume(): boolean {
+    return this.canPerformApplicationAction() && !this.pageActionState?.pauseResumeDisabled;
+  }
+
+  getToolStartStopLabel(): string {
+    const status = this.getItemStatus().toLowerCase();
+    return ['stopped', 'stop', 'paused'].includes(status) ? 'Start' : 'Stop';
+  }
+
+  getApplicationPauseResumeLabel(): string {
+    const status = this.getItemStatus().toLowerCase();
+    return status === 'stopped' || status === 'paused' ? 'Resume' : 'Pause';
   }
   get cleanColorMode() {
     const mode = this.colorMode();

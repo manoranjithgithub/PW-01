@@ -295,6 +295,12 @@ export class CreateToolComponent implements OnInit, OnDestroy {
   get monthlyInstanceRate(): number {
     return this.hourlyInstanceRate * 730;
   }
+
+  getMonthlyRate(fieldKey: string): number {
+    const rate = Number(this.selectedResource[fieldKey]?.instanceHourRate ?? 0);
+    return rate * 730;
+  }
+
   formatCurrency(value: any | undefined, fromCurrency?: string): string {
     if (value == null || isNaN(Number(value))) return '';
     const target = this.sharedService.getCurrency() || 'USD';

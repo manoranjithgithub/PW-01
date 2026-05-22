@@ -54,7 +54,7 @@ export class DeploymentSettingsComponent implements OnInit, AfterViewInit {
 
   zipUpload: boolean = false;
   vcsDeploy: boolean = false;
-  allowedFileTypes: string[] = ['.zip', '.tar'];
+  allowedFileTypes: string[] = ['.zip', '.tar', '.rar'];
   fileError: string = '';
   selectedFile: File | null = null;
   serviceList: any;

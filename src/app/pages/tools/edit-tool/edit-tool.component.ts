@@ -50,6 +50,12 @@ export class EditToolComponent implements OnInit, OnDestroy {
   get monthlyInstanceRate(): number {
     return this.hourlyInstanceRate * 730;
   }
+
+  getMonthlyRate(fieldKey: string): number {
+    const rate = Number(this.selectedResource[fieldKey]?.instanceHourRate ?? 0);
+    return rate * 730;
+  }
+
   private destroy$ = new Subject<void>();
   private statusSseSub: Subscription | null = null;
 

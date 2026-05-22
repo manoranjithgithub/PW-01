@@ -67,6 +67,18 @@
   width: 200px;
 }
 
+.refresh-interval-select {
+  width: 76px;
+  min-width: 76px;
+  padding-right: 2rem;
+}
+
+.refresh-interval-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
 // .form-group {
 //   padding-top: 8px;
 // }

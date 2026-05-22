@@ -18,6 +18,8 @@ import { LayoutActionService } from '../../../shared/services/layout-action.serv
 import { PermissionService } from '../../../shared/services/permission.service';
 import { ToolMonitoringComponent } from '../tool-monitoring/tool-monitoring.component';
 import { ToolMetricsComponent } from '../tool-metrics/tool-metrics.component';
+import { DeployConfirmationComponent } from '../../../shared/components/deploy-confirmation/deploy-confirmation.component';
+import { DeploymentsService } from '../../../shared/services/deployments.service';
 
 @Component({
   selector: 'app-view-tool',
@@ -76,6 +78,7 @@ export class ViewToolComponent implements OnInit, OnDestroy {
     private toastr: ToastrService,
     private layoutActionService: LayoutActionService,
     public permissionService: PermissionService,
+    private deploymentsService: DeploymentsService,
   ) {
     this.form = this.fb.group({});
     const storedValue = localStorage.getItem('environment');
@@ -107,7 +110,11 @@ export class ViewToolComponent implements OnInit, OnDestroy {
 
     this.layoutActionService.actionClick$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(() => {
+      .subscribe((action) => {
+        if (action === 'startStop') {
+          this.toggleToolState();
+          return;
+        }
         this.onLayoutButtonClick();
       });
   }
@@ -243,6 +250,9 @@ export class ViewToolComponent implements OnInit, OnDestroy {
     this.http.getToolDetailsById(this.env, this.selectedView).subscribe((res: any) => {
       this.toolDetails = res;
       this.toolViewName = this.toolDetails.data.name;
+      const status = this.toolDetails?.data?.status || this.toolStatus || 'not available';
+      this.toolStatus = status;
+      this.layoutActionService.setExtraTitle(`${this.toolViewName} (${status})`);
       this.viewdata = this.toolDetails.data.schema;
       this.submitted = false;
       this.getToolStatus();
@@ -309,8 +319,36 @@ export class ViewToolComponent implements OnInit, OnDestroy {
     if (this.isToolStopped) return;
     this.route.navigate(['/tools/edit-tool'], { queryParams: { selectedEdit: this.toolName, id: this.deploymentId } });
   }
+
+  toggleToolState(): void {
+    const isStart = this.isToolStopped;
+    const label = isStart ? 'Start' : 'Stop';
+    const modalRef = this.modalService.open(DeployConfirmationComponent);
+    modalRef.componentInstance.message = `Are you sure you want to ${label} this Tool?`;
+
+    modalRef.result.then(result => {
+      if (!result) return;
+
+      const projectId = JSON.parse(localStorage.getItem('project') || '{}')?.id;
+      const req = {
+        environmentId: this.env,
+        name: this.toolViewName || this.toolName,
+        action: isStart ? 'resume' as const : 'pause' as const,
+        projectId
+      };
+
+      this.deploymentsService.pauseResumeTool(req).subscribe((res: any) => {
+        if (String(res?.status || '').toLowerCase() === 'success' || res?.success) {
+          this.toastr.success(`Tool ${isStart ? 'started' : 'stopped'} successfully`);
+        } else {
+          this.toastr.error(res?.message || `Unable to ${label.toLowerCase()} tool`);
+        }
+      });
+    });
+  }
+
   getMonthlyRate(fieldKey: string): number {
-  const rate = Number(this.selectedResource[fieldKey]?.instanceHourRate ?? 0);
-  return rate * 720;
-}
+    const rate = Number(this.selectedResource[fieldKey]?.instanceHourRate ?? 0);
+    return rate * 730;
+  }
 }
