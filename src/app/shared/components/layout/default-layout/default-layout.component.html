@@ -33,7 +33,7 @@
   </c-sidebar-footer>
   }
   <div class="fixed-profile mx-4 mb-2 rounded mt-3 mb-4">
-    <div class="hstack gap-4">
+    <!-- <div class="hstack gap-4">
       <div class="text-dark mode-type">{{ cleanColorMode === 'light' ? 'Light Mode' : 'Dark Mode' }}</div>
       <div class="john-title">
         <div class="theme-toggle">
@@ -46,7 +46,7 @@
           </label>
         </div>
       </div>
-    </div>
+    </div> -->
   </div>
 </c-sidebar>
 
@@ -76,8 +76,38 @@
               <i class="bi bi-three-dots-vertical"></i>
             </button>
             <ul cDropdownMenu class="dropdown-menu dropdown-menu-end" style="padding: 0;">
+              <li *ngIf="isApplicationDetailsPage()"
+                [attr.title]="!canPerformApplicationRedeploy() ? (pageActionState?.sourceType === 'file' ? 'Redeploy is not available for zip/tar/rar deployments.' : 'You are not authorized to perform this action.') : null">
+                <a class="dropdown-item" role="button"
+                  (click)="canPerformApplicationRedeploy() && onPageActionClick('redeploy')"
+                  [class.disabled]="!canPerformApplicationRedeploy()"
+                  [attr.aria-disabled]="!canPerformApplicationRedeploy()"
+                  [attr.title]="!canPerformApplicationRedeploy() ? (pageActionState?.sourceType === 'file' ? 'Redeploy is not available for zip/tar/rar deployments.' : 'You are not authorized to perform this action.') : null">
+                  Redeploy
+                </a>
+              </li>
+              <li *ngIf="isApplicationDetailsPage()"
+                [attr.title]="!canPerformApplicationPauseResume() ? 'You are not authorized to perform this action.' : null">
+                <a class="dropdown-item" role="button"
+                  (click)="canPerformApplicationPauseResume() && onPageActionClick('pauseResume')"
+                  [class.disabled]="!canPerformApplicationPauseResume()"
+                  [attr.aria-disabled]="!canPerformApplicationPauseResume()"
+                  [attr.title]="!canPerformApplicationPauseResume() ? 'You are not authorized to perform this action.' : null">
+                  {{ getApplicationPauseResumeLabel() }}
+                </a>
+              </li>
+              <li *ngIf="isViewToolPage()"
+                [attr.title]="!canPerformToolStartStop() ? 'You are not authorized to perform this action.' : null">
+                <a class="dropdown-item" role="button"
+                  (click)="canPerformToolStartStop() && onPageActionClick('startStop')"
+                  [class.disabled]="!canPerformToolStartStop()"
+                  [attr.aria-disabled]="!canPerformToolStartStop()"
+                  [attr.title]="!canPerformToolStartStop() ? 'You are not authorized to perform this action.' : null">
+                  {{ getToolStartStopLabel() }}
+                </a>
+              </li>
               <li [attr.title]="!canPerformPageDelete() ? 'You are not authorized to perform this action.' : null">
-                <a class="dropdown-item" role="button" (click)="canPerformPageDelete() && onPageActionClick()"
+                <a class="dropdown-item" role="button" (click)="canPerformPageDelete() && onPageActionClick('delete')"
                   [class.disabled]="!canPerformPageDelete()" [attr.aria-disabled]="!canPerformPageDelete()"
                   [attr.title]="!canPerformPageDelete() ? 'You are not authorized to perform this action.' : null">
                   Delete

@@ -1,5 +1,4 @@
-<form [formGroup]="filterForm" (ngSubmit)="onFilter()"
-  class="filter-bar d-flex align-items-end gap-3 px-3 w-100 mb-0">
+<form [formGroup]="filterForm" class="filter-bar d-flex align-items-end gap-3 px-3 w-100 mb-0">
   <div class="form-group">
     <label class="custom-label">Search by keyword</label>
     <input type="text" class="form-control custom-values" placeholder="Search..." formControlName="searchText" />
@@ -7,36 +6,42 @@
 
   <div class="form-group">
     <label for="duration" class="custom-label">Time Duration:</label>
-    <select id="duration" formControlName="duration" class="form-control  custom-values">
-      <option *ngFor="let duration of durations" [value]="duration.value">
-        {{ duration.label }}
+    <select id="duration" formControlName="duration" class="form-control custom-values" (change)="onDurationSelect($event)">
+      <option *ngFor="let duration of durations" [value]="duration?.value">
+        {{ duration?.label }}
       </option>
     </select>
   </div>
 
   <div class="form-group">
     <label for="timeZone" class="custom-label">Time Zone:</label>
-    <select id="timeZone" formControlName="timeZone" class="form-select custom-values">
-      <option *ngFor="let tz of timeZones" [value]="tz.value">{{ tz.label }}</option>
+    <select id="timeZone" formControlName="timeZone" class="form-select custom-values" (change)="onTimeZoneSelect()">
+      <option *ngFor="let tz of timeZones" [value]="tz?.value">{{ tz?.label }}</option>
     </select>
   </div>
 
   <ng-container *ngIf="filterForm.get('duration')?.value === 'custom'">
-    <div class="d-flex align-items-end gap-3">
-      <div class="form-group">
-        <label class="custom-label">From:</label>
-        <input type="datetime-local" formControlName="fromTimestamp" class="form-control custom-values" />
-      </div>
-
-      <div class="form-group">
-        <label class="custom-label">To:</label>
-        <input type="datetime-local" formControlName="toTimestamp" class="form-control custom-values" />
-      </div>
-    </div>
+    <app-date-range-picker
+      [fromTimestamp]="filterForm.value.fromTimestamp"
+      [toTimestamp]="filterForm.value.toTimestamp"
+      (apply)="onCustomRangeApplied($event)">
+    </app-date-range-picker>
   </ng-container>
 
-  <div class="form-group d-flex align-items-center gap-2 justify-content-between">
-    <button type="submit" class="btn btn-primary p-2 custom-label">Apply Filter</button>
+  <div class="form-group log-actions d-flex align-items-end gap-2 justify-content-between">
+    <!-- <button type="button" class="btn btn-outline-secondary" (click)="onRefresh()" title="Refresh Logs">
+      <i class="bi bi-arrow-clockwise"></i>
+    </button> -->
+    <div class="refresh-interval-field">
+      <label class="custom-label">Refresh</label>
+      <select class="form-select custom-values refresh-interval-select"
+        [ngModel]="selectedRefreshInterval"
+        [ngModelOptions]="{ standalone: true }"
+        (change)="onRefreshIntervalChange($event)"
+        title="Auto refresh interval">
+        <option *ngFor="let interval of refreshIntervals" [value]="interval?.value">{{ interval?.label }}</option>
+      </select>
+    </div>
     <button type="button" class="btn btn-outline-secondary" (click)="onRefresh()" title="Refresh Logs">
       <i class="bi bi-arrow-clockwise"></i>
     </button>

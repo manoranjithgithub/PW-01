@@ -704,7 +704,9 @@ export class BillsComponent implements OnInit, OnChanges {
     this.http.getCostByService(
       accountId,
       this.startDate,
-      this.endDate
+      this.endDate,
+      this.selectedEnvironmentId !== 'all' && this.selectedProjectId !== 'all' ? String(this.selectedEnvironmentId) : undefined,
+      this.selectedProjectId !== 'all' ? String(this.selectedProjectId) : undefined
     ).pipe(
       catchError(() => of({ data: [] }))
     ).subscribe({

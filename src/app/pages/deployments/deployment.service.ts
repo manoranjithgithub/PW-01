@@ -1,9 +1,10 @@
 import { Injectable, NgZone } from '@angular/core';
-import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpContext, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { createSSEObservable } from '../../shared/utils/sse.utils';
+import { SKIP_LOADER } from '../../core/services/auth.interceptor';
 
 @Injectable({
   providedIn: 'root'
@@ -130,8 +131,11 @@ export class DeploymentsService {
         catchError(this.handleError.bind(this))
       );
   }
-  getSelectedDeploymentLogs(req: any) {
-    return this.http.post(`${this.logServiceUrl}/v1/logs`, req)
+  getSelectedDeploymentLogs(req: any, options?: { skipLoader?: boolean }) {
+    const httpOptions = options?.skipLoader
+      ? { context: new HttpContext().set(SKIP_LOADER, true) }
+      : {};
+    return this.http.post(`${this.logServiceUrl}/v1/logs`, req, httpOptions)
       .pipe(
         catchError(this.handleError.bind(this))
       );
