@@ -409,11 +409,43 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
     };
   }
 
+  private async isArchiveEmpty(file: File): Promise<boolean> {
+    const buffer = await file.arrayBuffer();
+    const fileName = file.name.toLowerCase();
+
+    if (fileName.endsWith('.zip')) {
+      const view = new DataView(buffer);
+      const endOfCentralDirectorySignature = 0x06054b50;
+      const maxSearchLength = Math.min(view.byteLength, 65_557);
+
+      for (let i = view.byteLength - 22; i >= view.byteLength - maxSearchLength; i--) {
+        if (i < 0) break;
+        if (view.getUint32(i, true) === endOfCentralDirectorySignature) {
+          return view.getUint16(i + 10, true) === 0;
+        }
+      }
+
+      return false;
+    }
+
+    if (fileName.endsWith('.tar')) {
+      const bytes = new Uint8Array(buffer);
+      const firstBlock = bytes.subarray(0, 512);
+      return firstBlock.every((value) => value === 0);
+    }
+
+    if (fileName.endsWith('.rar')) {
+      return buffer.byteLength === 0;
+    }
+
+    return false;
+  }
+
 
   onZipUpload(): void {
     if (this.selectedFile === null) {
       this.showZipFileRequiredError();
-      this.fileError = 'Please choose a valid zip or tar file';
+      this.fileError = 'Please choose a valid zip, tar, or rar file';
       return;
     }
     if (this.zipUploadForm.invalid) {
@@ -455,7 +487,7 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
       } else {
         this.showZipDropdownError = true;
       }
-      this.fileError = 'Please choose a valid zip or tar file';
+      this.fileError = 'Please choose a valid zip, tar, or rar file';
       this.clearPendingZipFile();
     }
   }
@@ -481,7 +513,7 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
   onZipFileSelect(event: any): void {
     const file = event.target.files[0];
     const zipfileinput = this.zipUploadForm.get('zipfileInput');
-    const allowedExtensions = ['zip', 'tar'];
+    const allowedExtensions = ['zip', 'tar', 'rar'];
     zipfileinput?.setValidators([
       Validators.required,
       this.fileValidator(allowedExtensions),
@@ -497,17 +529,32 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
       this.removeFileExtension(file.name);
       zipfileinput?.updateValueAndValidity();
 
+      if (file.size === 0) {
+        zipfileinput?.setErrors({ ...(zipfileinput.errors || {}), emptyFile: true });
+        this.fileError = 'Uploaded file is empty. Please upload a valid application package';
+        return;
+      }
+
       if (zipfileinput?.hasError('fileSizeExceeded')) {
         this.fileError = 'File size exceeds the allowed limit.';
       } else if (zipfileinput?.hasError('invalidFileType')) {
         this.fileError = 'Please upload valid file type';
       } else {
         this.fileError = '';
+        this.isArchiveEmpty(file).then((isEmpty) => {
+          if (this.selectedFile !== file || !isEmpty) return;
+          zipfileinput?.setErrors({ ...(zipfileinput.errors || {}), emptyFile: true });
+          zipfileinput?.markAsDirty();
+          zipfileinput?.markAsTouched();
+          this.fileError = 'Uploaded file is empty. Please upload a valid application package';
+          this.cdr.detectChanges();
+        });
       }
     } else {
       this.selectedFile = null;
       zipfileinput?.setValue('');
       zipfileinput?.updateValueAndValidity();
+      this.fileError = '';
     }
   }
 
@@ -596,7 +643,7 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
             } else {
               this.showZipDropdownError = true;
             }
-            this.fileError = 'Please choose a valid zip or tar file';
+            this.fileError = 'Please choose a valid zip, tar, or rar file';
             hasGeneralError = true;
           }
         }

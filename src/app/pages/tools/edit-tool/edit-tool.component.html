@@ -65,8 +65,8 @@
                                     <span class="me-2"><b>Instance Price :</b></span>
                                     <span>{{ formatCurrency(selectedResource[field.label]?.instanceHourRate || 0,
                                         selectedResource[field.label]?.currency || 'USD')
-                                        }} / hr<br>{{ formatCurrency(selectedResource[field.label]?.instanceHourRate ||
-                                        0 * 720, selectedResource[field.label]?.currency || 'USD') }} /mo</span>
+                                        }} / hr<br>{{ formatCurrency(getMonthlyRate(field.label),
+                                        selectedResource[field.label]?.currency || 'USD') }} /mo</span>
                                 </span>
                             </div>
                         </ng-container>
