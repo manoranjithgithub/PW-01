@@ -23,6 +23,7 @@ export class ForgotPasswordComponent implements OnInit {
   successMessage: string = '';
   loading: boolean = false;
   visiblePasswordFields = new Set<string>();
+  resetToken: string | null = null;
   forgotPasswordForm !: FormGroup;
 
 
@@ -30,11 +31,12 @@ export class ForgotPasswordComponent implements OnInit {
     private fb: FormBuilder,
     private http: UserService,
     private router: Router,
+    private route: ActivatedRoute,
     private toaster: ToastrService,
     private authService: AuthService
   ) {
     this.forgotPasswordForm = this.fb.group({
-      username: ['', [Validators.required]],
+      // username: ['', [Validators.required]],
       password: ['', [Validators.required, Validators.pattern(VALIDATION_REGEX.NEW_PASSWORD)]],
       confirmPassword: ['', [Validators.required]],
     }, { validators: this.passwordMatchValidator });
@@ -61,6 +63,7 @@ export class ForgotPasswordComponent implements OnInit {
 
   ngOnInit(): void {
     this.currentUrl = this.router.url;
+    this.resetToken = this.route.snapshot.queryParamMap.get('token') || this.route.snapshot.paramMap.get('token') || null;
   }
 
   private handleSuccess(): void {
@@ -91,8 +94,9 @@ Please check your email for instructions to reset your password.`;
     delete this.forgotPasswordForm.value.confirmPassword;
     const finalPayload = {
       ...this.forgotPasswordForm.value,
-      type: type === 'nimbuz' ? 'individual' : 'business',
-      orgName: type === 'nimbuz' ? 'nimbuz' : type
+      // type: type === 'nimbuz' ? 'individual' : 'business',
+      // orgName: type === 'nimbuz' ? 'nimbuz' : type
+       token: this.resetToken
     };
     this.http.forgotPassword(finalPayload).subscribe({
       next: () => {
