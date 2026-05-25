@@ -102,7 +102,8 @@ export class DefaultLayoutComponent implements OnInit {
   currentUser: string = '';
   savedTheme: string = '';
   sidebarVisible = false;
-
+  currentProjectName: string = 'N/A';
+  currentEnvName: string = 'N/A';
 
   constructor(private authService: AuthService, private deployemntService: DeploymentsService,
     private router: Router, private titleService: Title, private ac: ActivatedRoute,
@@ -207,6 +208,35 @@ export class DefaultLayoutComponent implements OnInit {
     }
   }
 
+  updateCurrentSelectionNames() {
+    const envStr = localStorage.getItem('environment');
+    const projectStr = localStorage.getItem('project');
+
+    const env = this.parseStoredItem(envStr);
+    const project = this.parseStoredItem(projectStr);
+
+    const projectName = typeof project === 'string'
+      ? project
+      : project?.name || project?.projectName || project?.projectname || project?.id;
+    const envName = typeof env === 'string'
+      ? env
+      : env?.name || env?.environment || env?.envname || env?.id;
+
+    this.currentProjectName = projectName || 'N/A';
+    this.currentEnvName = envName || 'N/A';
+  }
+
+  private parseStoredItem(item: string | null): any {
+    if (!item) {
+      return {};
+    }
+    try {
+      return JSON.parse(item);
+    } catch {
+      return item;
+    }
+  }
+
   @HostListener('window:scroll', [])
   onScroll() {
     this.isScrolled = window.scrollY > 50;
@@ -222,6 +252,10 @@ export class DefaultLayoutComponent implements OnInit {
       this.currentUrl.includes(path)
     );
     // return this.currentUrl.includes('/project');
+  }
+
+  isDashboardPage(): boolean {
+    return this.currentUrl.includes('/dashboard');
   }
 
   shouldShowProjectSwitch(): boolean {
@@ -266,6 +300,14 @@ export class DefaultLayoutComponent implements OnInit {
         this.loadBillingCardData();
       }
     });
+
+    this.sharedService.envValueChange$.subscribe(() => {
+      this.updateCurrentSelectionNames();
+    });
+    this.sharedService.projectValueChange$.subscribe(() => {
+      this.updateCurrentSelectionNames();
+    });
+    this.updateCurrentSelectionNames();
   }
 
   updateTitle(): void {
