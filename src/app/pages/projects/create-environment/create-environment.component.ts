@@ -110,25 +110,33 @@ export class CreateEnvironmentComponent implements OnInit {
     if (this.environmentForm.value.region == "ap-south-1 (Mumbai) - Default") {
       this.environmentForm.value.region = 'ap-south-1';
     }
+    const selectedProjectId = this.environmentForm.value.project;
     const req = {
       name: this.environmentForm.value.name,
       region: this.environmentForm.value.region,
-      projectId: this.environmentForm.value.project
+      projectId: selectedProjectId
     }
-    this.project.createEnvironment(req).subscribe((res: any) => {
-      if (res.status) {
-        this.toaster.success(res.message);
-        this.project.getEnvironmentsByProject(this.projectId).subscribe((envRes: any) => {
-          this.project.getAllProjects().subscribe((res: any) => {
-            const project = res.data.find((item: any) => item.id === this.environmentForm.get('project')?.value);
-            this.shared.emitEnvDDChange(envRes.data);
-            this.shared.emitProjectDDChange(project);
+    this.project.createEnvironment(req).subscribe((createRes: any) => {
+      if (createRes.status) {
+        this.toaster.success(createRes.message);
+        this.project.getEnvironmentsByProject(selectedProjectId).subscribe((envRes: any) => {
+          const environments = envRes?.data || [];
+          const createdEnv = environments.find((env: any) => env.id === createRes?.data?.id)
+            || environments.find((env: any) => env.name === req.name)
+            || createRes?.data
+            || environments[0];
+
+          this.project.getAllProjects().subscribe((projectRes: any) => {
+            const projects = projectRes?.data || [];
+            const project = projects.find((item: any) => item.id === selectedProjectId);
+            this.shared.emitEnvDDChange(environments);
+            this.shared.emitProjectDDChange(projects);
             // this.shared.setCookie('project', JSON.stringify(project), 10);
             localStorage.setItem('project', JSON.stringify(project));
             this.shared.emitProjectValueChange(project);
             // this.shared.setCookie('environment', JSON.stringify(res?.data), 10);
-            localStorage.setItem('environment', JSON.stringify(res?.data));
-            this.shared.emitEnvValueChange(res?.data);
+            localStorage.setItem('environment', JSON.stringify(createdEnv));
+            this.shared.emitEnvValueChange(createdEnv);
             this.router.navigate(['/projects']);
           })
 
@@ -137,7 +145,7 @@ export class CreateEnvironmentComponent implements OnInit {
       }
       else {
         this.toaster.error("Environment creation failed");
-        console.error(res.message);
+        console.error(createRes.message);
       }
     });
   }
