@@ -160,6 +160,9 @@ export class SwitchProjectComponent implements OnInit {
     if (!env) return;
     this.selectedEnvironmentObj = this.listOfenvironments.find(e => e.id === env.id) || env;
     this.selectedEnvironment = this.selectedEnvironmentObj?.name;
+
+    localStorage.setItem('environment', JSON.stringify(this.selectedEnvironmentObj));
+    this.sharedService.emitEnvValueChange(this.selectedEnvironmentObj);
   }
   showEnvironment(): void {
     this.showEnvironmentModel.open();
