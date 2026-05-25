@@ -170,6 +170,7 @@ export class DefaultLayoutComponent implements OnInit {
         if (event instanceof NavigationEnd) {
           this.updateTitle();
           this.updateButtonVisibility();
+          this.updateCurrentSelectionNames();
         }
 
         this.currentUrl = this.router.url;
