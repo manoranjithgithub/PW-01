@@ -199,7 +199,8 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     const envCookie = this.safeParseJSON(localStorage.getItem('environment'));
     //const envCookie = this.safeParseJSON(this.sharedService.getCookie('environment'));
 
-    const matchedEnv = this.environmentList?.find((e: any) => e.id === envCookie?.id);
+    const selectedEnv = this.environmentList?.find((e: any) => e.id === this.selectedEnvId);
+    const matchedEnv = selectedEnv || this.environmentList?.find((e: any) => e.id === envCookie?.id);
     const defaultEnv = copiedList[0];
 
     this.selectedEnvId = matchedEnv?.id || defaultEnv?.id;
