@@ -15,6 +15,10 @@ interface RegionGroup {
   name: string;
   environments: any[];
 }
+
+const PROJECT_STORAGE_KEY = 'project';
+const ENVIRONMENT_STORAGE_KEY = 'environment';
+
 @Component({
   selector: 'app-switch-project',
   standalone: true,
@@ -52,6 +56,7 @@ export class SwitchProjectComponent implements OnInit {
   };
   private projectSubscription?: Subscription;
   private envSubscription?: Subscription;
+  private environmentRequestId = 0;
 
   selectedEnvironmentObj: any;
   vcsProfileInfo: any = {};
@@ -71,14 +76,23 @@ export class SwitchProjectComponent implements OnInit {
   ngOnInit(): void {
     this.getBasicInfo();
 
-    this.projectSubscription = this.sharedService.projectDDChange$.subscribe((projects: any[]) => {
-      this.listOfProjects = projects || [];
-      this.getSelectedProject(projects[0]);
+    this.projectSubscription = this.sharedService.projectDDChange$.subscribe((projects: any[] | any) => {
+      const projectList = Array.isArray(projects) ? projects : projects ? [projects] : [];
+      const { project } = this.getSavedSelections();
+      this.listOfProjects = projectList || [];
+      const selectedProject = this.listOfProjects.find((item: any) => item.id === this.form.value.project?.id)
+        || this.listOfProjects.find((item: any) => item.id === project?.id)
+        || this.listOfProjects[0];
+      this.getSelectedProject(selectedProject);
     });
 
     this.envSubscription = this.sharedService.envDDChange$.subscribe((envs: any[]) => {
       this.listOfenvironments = envs || [];
-      this.getSelectedEnv(envs[0]);
+      const { environment } = this.getSavedSelections();
+      const selectedEnv = this.listOfenvironments.find((env: any) => env.id === this.selectedEnvironmentObj?.id)
+        || this.listOfenvironments.find((env: any) => env.id === environment?.id)
+        || this.listOfenvironments[0];
+      this.getSelectedEnv(selectedEnv);
     });
 
     this.form.get('project')?.valueChanges.subscribe(val => {
@@ -104,7 +118,9 @@ export class SwitchProjectComponent implements OnInit {
   getRegionsAndEnvironment(): void {
     const { region } = this.getSavedSelections();
     if (!this.projectId) return;
+    const requestId = ++this.environmentRequestId;
     this.projectService.getAllEnvironmentsByProject(this.projectId).subscribe((res: any) => {
+      if (requestId !== this.environmentRequestId) return;
       this.listOfenvironments = res?.data || [];
       this.listOfRegions = [{
         name: 'ap-south-1',
@@ -117,7 +133,12 @@ export class SwitchProjectComponent implements OnInit {
 
   getSelectedProject(project: any): void {
     if (!project) return;
+    const isProjectChanged = this.projectId !== project.id;
     this.projectId = project.id;
+    if (isProjectChanged) {
+      this.selectedEnvironmentObj = null;
+      this.selectedEnvironment = '';
+    }
     this.form.get('project')?.setValue(project, { emitEvent: false });
     this.getRegionsAndEnvironment();
   }
@@ -128,15 +149,20 @@ export class SwitchProjectComponent implements OnInit {
     if (!data) return;
     this.selectedRegion = data.name;
     this.form.get('region')?.setValue(data, { emitEvent: false });
-    this.getSelectedEnv(environment);
+    const environmentsForRegion = data.environments?.length ? data.environments : this.listOfenvironments;
+    const selectedEnv = environmentsForRegion.find((env: any) => env.id === this.selectedEnvironmentObj?.id)
+      || environmentsForRegion.find((env: any) => env.id === environment?.id)
+      || environmentsForRegion[0];
+    this.getSelectedEnv(selectedEnv);
   }
 
   getSelectedEnv(env: any): void {
     if (!env) return;
-    this.selectedEnvironmentObj = this.listOfenvironments.find(e => e.id === env.id) || this.listOfenvironments[0];
+    this.selectedEnvironmentObj = this.listOfenvironments.find(e => e.id === env.id) || env;
     this.selectedEnvironment = this.selectedEnvironmentObj?.name;
-    
+
     localStorage.setItem('environment', JSON.stringify(this.selectedEnvironmentObj));
+    this.sharedService.emitEnvValueChange(this.selectedEnvironmentObj);
   }
   showEnvironment(): void {
     this.showEnvironmentModel.open();
@@ -150,10 +176,10 @@ export class SwitchProjectComponent implements OnInit {
 
   updateEnvSelection(): void {
     this.selectedProject = this.form.value.project?.name;
-    localStorage.setItem('project', JSON.stringify(this.form.value.project));
+    localStorage.setItem(PROJECT_STORAGE_KEY, JSON.stringify(this.form.value.project));
     this.sharedService.emitProjectValueChange(this.form.value.project);
     this.selectedEnvironment = this.selectedEnvironmentObj?.name;
-    localStorage.setItem('environment', JSON.stringify(this.selectedEnvironmentObj));
+    localStorage.setItem(ENVIRONMENT_STORAGE_KEY, JSON.stringify(this.selectedEnvironmentObj));
     this.sharedService.emitEnvValueChange(this.selectedEnvironmentObj);
     const projectId = this.form.value.project?.id;
     if (projectId) {
@@ -174,9 +200,9 @@ export class SwitchProjectComponent implements OnInit {
 
   private getSavedSelections() {
     return {
-      project: this.safeParse(localStorage.getItem('project')),
+      project: this.safeParse(localStorage.getItem(PROJECT_STORAGE_KEY)),
       region: 'ap-south-1a',
-      environment: this.safeParse(localStorage.getItem('environment'))
+      environment: this.safeParse(localStorage.getItem(ENVIRONMENT_STORAGE_KEY))
     };
   }
   private safeParse(value: string | null): any {

@@ -98,10 +98,12 @@ export class DefaultLayoutComponent implements OnInit {
   showPageActionButton = false;
   openDropdown = '';
   selectedItemFromCom: string | null = null;
+  pageActionState: any = null;
   currentUser: string = '';
   savedTheme: string = '';
   sidebarVisible = false;
-
+  currentProjectName: string = 'N/A';
+  currentEnvName: string = 'N/A';
 
   constructor(private authService: AuthService, private deployemntService: DeploymentsService,
     private router: Router, private titleService: Title, private ac: ActivatedRoute,
@@ -168,6 +170,7 @@ export class DefaultLayoutComponent implements OnInit {
         if (event instanceof NavigationEnd) {
           this.updateTitle();
           this.updateButtonVisibility();
+          this.updateCurrentSelectionNames();
         }
 
         this.currentUrl = this.router.url;
@@ -176,6 +179,9 @@ export class DefaultLayoutComponent implements OnInit {
 
     this.layoutActionService.extraTitle$.subscribe(title => {
       this.selectedItemFromCom = title;
+    });
+    this.layoutActionService.actionState$.subscribe(state => {
+      this.pageActionState = state;
     });
 
   }
@@ -203,6 +209,35 @@ export class DefaultLayoutComponent implements OnInit {
     }
   }
 
+  updateCurrentSelectionNames() {
+    const envStr = localStorage.getItem('environment');
+    const projectStr = localStorage.getItem('project');
+
+    const env = this.parseStoredItem(envStr);
+    const project = this.parseStoredItem(projectStr);
+
+    const projectName = typeof project === 'string'
+      ? project
+      : project?.name || project?.projectName || project?.projectname || project?.id;
+    const envName = typeof env === 'string'
+      ? env
+      : env?.name || env?.environment || env?.envname || env?.id;
+
+    this.currentProjectName = projectName || 'N/A';
+    this.currentEnvName = envName || 'N/A';
+  }
+
+  private parseStoredItem(item: string | null): any {
+    if (!item) {
+      return {};
+    }
+    try {
+      return JSON.parse(item);
+    } catch {
+      return item;
+    }
+  }
+
   @HostListener('window:scroll', [])
   onScroll() {
     this.isScrolled = window.scrollY > 50;
@@ -218,6 +253,10 @@ export class DefaultLayoutComponent implements OnInit {
       this.currentUrl.includes(path)
     );
     // return this.currentUrl.includes('/project');
+  }
+
+  isDashboardPage(): boolean {
+    return this.currentUrl.includes('/dashboard');
   }
 
   shouldShowProjectSwitch(): boolean {
@@ -262,6 +301,14 @@ export class DefaultLayoutComponent implements OnInit {
         this.loadBillingCardData();
       }
     });
+
+    this.sharedService.envValueChange$.subscribe(() => {
+      this.updateCurrentSelectionNames();
+    });
+    this.sharedService.projectValueChange$.subscribe(() => {
+      this.updateCurrentSelectionNames();
+    });
+    this.updateCurrentSelectionNames();
   }
 
   updateTitle(): void {
@@ -296,8 +343,8 @@ export class DefaultLayoutComponent implements OnInit {
     this.colorMode.set(color);
     this.sharedService.emitValueChange(color);
   }
-  onPageActionClick() {
-    this.layoutActionService.triggerAction();
+  onPageActionClick(action: string = 'delete') {
+    this.layoutActionService.triggerAction(action);
   }
   updateButtonVisibility() {
     const currentUrl = this.router.url;
@@ -316,6 +363,40 @@ export class DefaultLayoutComponent implements OnInit {
   getItemStatus(): string {
     const match = this.selectedItemFromCom?.match(/\(([^)]+)\)/);
     return match ? match[1] : '';
+  }
+
+  isViewToolPage(): boolean {
+    return this.router.url.split('?')[0].startsWith('/tools/view-tool');
+  }
+
+  isApplicationDetailsPage(): boolean {
+    return this.router.url.split('?')[0].startsWith('/applications/application-details');
+  }
+
+  canPerformToolStartStop(): boolean {
+    return this.permissionService.canWriteForCurrentUser(this.getCurrentProjectId(), this.getCurrentEnvId());
+  }
+
+  canPerformApplicationAction(): boolean {
+    return this.permissionService.canWriteForCurrentUser(this.getCurrentProjectId(), this.getCurrentEnvId());
+  }
+
+  canPerformApplicationRedeploy(): boolean {
+    return this.canPerformApplicationAction() && this.pageActionState?.sourceType !== 'file';
+  }
+
+  canPerformApplicationPauseResume(): boolean {
+    return this.canPerformApplicationAction() && !this.pageActionState?.pauseResumeDisabled;
+  }
+
+  getToolStartStopLabel(): string {
+    const status = this.getItemStatus().toLowerCase();
+    return ['stopped', 'stop', 'paused'].includes(status) ? 'Start' : 'Stop';
+  }
+
+  getApplicationPauseResumeLabel(): string {
+    const status = this.getItemStatus().toLowerCase();
+    return status === 'stopped' || status === 'paused' ? 'Resume' : 'Pause';
   }
   get cleanColorMode() {
     const mode = this.colorMode();

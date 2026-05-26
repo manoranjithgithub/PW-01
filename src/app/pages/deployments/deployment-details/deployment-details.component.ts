@@ -27,9 +27,11 @@ import {
   takeUntil
 } from 'rxjs';
 import { DeploymentsService } from '../deployment.service';
+import { DeploymentsService as SharedDeploymentsService } from '../../../shared/services/deployments.service';
 import { ToastrService } from 'ngx-toastr';
 import { SharedService } from '../../../shared/services/shared.service';
 import { SHARED_IMPORTS } from '../../../shared/shared-imports';
+import { DeployConfirmationComponent } from '../../../shared/components/deploy-confirmation/deploy-confirmation.component';
 
 @Component({
   selector: 'app-deployment-details',
@@ -63,6 +65,7 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
   deploymentdetails: any;
   lastReleaseData: any = null;
   forceDisableInputs = false;
+  isPauseResumeDisabled = false;
 
   private destroy$ = new Subject<void>();
   private subscription?: Subscription;
@@ -80,6 +83,7 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
     private sharedService: SharedService,
     private layoutActionService: LayoutActionService,
     private deploymentService: DeploymentsService,
+    private sharedDeploymentService: SharedDeploymentsService,
     private location: Location,
     private activateRoute: ActivatedRoute,
     private toastr: ToastrService,
@@ -116,6 +120,7 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
         this.layoutActionService.setExtraTitle(
           `${data.data.name} (${data.data.status})`
         );
+        this.updateLayoutActionState();
       });
 
     this.activateRoute.fragment.subscribe((fragment: string | null) => {
@@ -132,8 +137,17 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
 
     this.layoutActionService.actionClick$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(() => {
-        this.onLayoutButtonClick();
+      .subscribe((action) => {
+        switch (String(action || '').toLowerCase()) {
+          case 'redeploy':
+            this.redeployApplication();
+            return;
+          case 'pauseresume':
+            this.pauseResumeApplication();
+            return;
+          default:
+            this.onLayoutButtonClick();
+        }
       });
 
     this.subscription = this.sharedService.envValueChange$.subscribe(() => {
@@ -215,6 +229,7 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
               this.layoutActionService.setExtraTitle(
                 `${this.deploymentdetails.name} (${newStatus})`
               );
+              this.updateLayoutActionState();
             }
           }
         }
@@ -301,12 +316,85 @@ export class DeploymentDetailsComponent implements OnInit, OnDestroy {
     });
   }
 
+  private updateLayoutActionState(): void {
+    this.layoutActionService.setActionState({
+      sourceType: this.deploymentdetails?.sourceCode?.type || '',
+      pauseResumeDisabled: this.isPauseResumeDisabled
+    });
+  }
+
+  redeployApplication(): void {
+    if (!this.deploymentdetails?.id) return;
+    if (this.deploymentdetails?.sourceCode?.type === 'file') {
+      return;
+    }
+
+    const modalRef = this.modalService.open(DeployConfirmationComponent);
+    modalRef.componentInstance.message = 'Are you sure you want to redeploy this application?';
+
+    modalRef.result.then(result => {
+      if (!result) return;
+
+      this.sharedDeploymentService
+        .updateDeployment(this.deploymentdetails.id, { sourceCode: this.deploymentdetails?.sourceCode })
+        .subscribe({
+          next: (res: any) => {
+            if (res.status?.toLowerCase() === 'success') {
+              this.toastr.success('Redeploy initiated');
+            }
+          },
+          error: () => {
+            this.toastr.error('Error redeploying application');
+          }
+        });
+    });
+  }
+
+  pauseResumeApplication(): void {
+    if (!this.deploymentdetails?.id) return;
+
+    const currentStatus = String(this.deploymentdetails?.status || '').toLowerCase();
+    const type = currentStatus === 'stopped' || currentStatus === 'paused' ? 'Resume' : 'Pause';
+    const req = {
+      action: type === 'Pause' ? 'pause' : 'resume',
+    };
+
+    const modalRef = this.modalService.open(DeployConfirmationComponent);
+    modalRef.componentInstance.message = `Are you sure you want to ${type} this Application?`;
+
+    modalRef.result.then(result => {
+      if (!result) return;
+
+      this.isPauseResumeDisabled = true;
+      this.updateLayoutActionState();
+      this.sharedService.setOptimisticDeploymentDisabled(this.deploymentdetails.id, type === 'Pause');
+      this.sharedDeploymentService.updateDeployment(this.deploymentdetails.id, req).subscribe({
+        next: (res: any) => {
+          if (res.status?.toLowerCase() === 'success') {
+            this.toastr.success(`Application ${type === 'Pause' ? 'paused' : 'resumed'} successfully`);
+          }
+          setTimeout(() => {
+            this.isPauseResumeDisabled = false;
+            this.updateLayoutActionState();
+          }, 10000);
+        },
+        error: () => {
+          this.sharedService.clearOptimisticDeploymentDisabled(this.deploymentdetails.id);
+          this.toastr.error(`Error in ${type} application`);
+          this.isPauseResumeDisabled = false;
+          this.updateLayoutActionState();
+        }
+      });
+    });
+  }
+
   ngOnDestroy(): void {
     this.stopSSE();
     this.stopStatusPolling();
     this.destroy$.next();
     this.destroy$.complete();
     this.layoutActionService.clearExtraTitle();
+    this.layoutActionService.clearActionState();
     this.subscription?.unsubscribe();
   }
 }

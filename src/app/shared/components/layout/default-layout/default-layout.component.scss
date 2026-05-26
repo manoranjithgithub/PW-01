@@ -297,3 +297,60 @@
     transform: translateX(100%);
   }
 }
+
+.dashboard-current-selection {
+  gap: 1rem;
+}
+
+.current-selection-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.4rem 1rem;
+  border-radius: 50rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  background-color: #ffffff;
+  border: 1px solid #f0f0f0;
+  gap: 0.75rem;
+
+  &.env-pill {
+    background-color: #ffffff;
+    border-color: #f0f0f0;
+    color: #ffffff;
+
+    .current-label-text {
+      color: #5c7590;
+    }
+    .current-value {
+      color: #1E1B39;
+    }
+    .divider {
+      background-color: #e0e0e0;
+    }
+  }
+
+  .current-label-text {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    color: #5c7590;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+  }
+
+  .divider {
+    width: 1px;
+    height: 16px;
+    background-color: #e0e0e0;
+  }
+
+  .current-value {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #1E1B39;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .dashboard-current-selection {
+    justify-content: flex-start;
+  }
+}

@@ -161,6 +161,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     this.selectedProjectId = project.id;
     //this.sharedService.setCookie('project', JSON.stringify(project), 10);
     localStorage.setItem('project', JSON.stringify(project));
+    this.sharedService.emitProjectValueChange(project);
     this.projectService.getProjectDetailsById(project.id).subscribe((res: any) => {
       this.vcsProfileInfo = {
         github: res.data.github,
@@ -181,6 +182,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     this.selectedEnvId = env?.id;
     // this.sharedService.setCookie('environment', JSON.stringify(env), 10);
     localStorage.setItem('environment', JSON.stringify(env));
+    this.sharedService.emitEnvValueChange(env);
     localStorage.getItem('resourceUsage');
     if (localStorage.getItem('resourceUsage')) {
       this.loadResourceUsageFromCookie();
@@ -197,7 +199,8 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     const envCookie = this.safeParseJSON(localStorage.getItem('environment'));
     //const envCookie = this.safeParseJSON(this.sharedService.getCookie('environment'));
 
-    const matchedEnv = this.environmentList?.find((e: any) => e.id === envCookie?.id);
+    const selectedEnv = this.environmentList?.find((e: any) => e.id === this.selectedEnvId);
+    const matchedEnv = selectedEnv || this.environmentList?.find((e: any) => e.id === envCookie?.id);
     const defaultEnv = copiedList[0];
 
     this.selectedEnvId = matchedEnv?.id || defaultEnv?.id;

@@ -1,4 +1,4 @@
-import { AfterViewChecked, Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CardBodyComponent, CardComponent, CardGroupComponent } from '@coreui/angular';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -8,6 +8,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { HighlightPipe } from '../../../shared/pipes/highlight.pipe';
 import { ActivatedRoute } from '@angular/router';
 import { DeploymentsService } from '../deployment.service';
+import { DateRangePickerComponent } from '../../../shared/components/date-range-picker/date-range-picker.component';
 
 @Component({
   selector: 'app-deployment-observability',
@@ -15,12 +16,12 @@ import { DeploymentsService } from '../deployment.service';
   imports: [CommonModule, CardGroupComponent, CardComponent, CardBodyComponent, ReactiveFormsModule,
     MatSelectModule,
     MatFormFieldModule, FormsModule,
-    MatCheckboxModule, HighlightPipe],
+    MatCheckboxModule, HighlightPipe, DateRangePickerComponent],
   providers: [DeploymentsService],
   templateUrl: './deployment-observability.component.html',
   styleUrl: './deployment-observability.component.scss'
 })
-export class DeploymentObservabilityComponent implements OnInit {
+export class DeploymentObservabilityComponent implements OnInit, OnDestroy {
   isLightMode: boolean = false;
   parsedLogs: { timestamp: string; message: string }[] = [];
   filteredLogs: any[] = [];
@@ -43,6 +44,14 @@ export class DeploymentObservabilityComponent implements OnInit {
   ];
   deploymentLogs: any;
   isAutoRefresh: boolean = false;
+  refreshIntervals = [
+    { label: 'Off', value: 0 },
+    { label: '10s', value: 10000 },
+    { label: '30s', value: 30000 },
+    { label: '1m', value: 60000 }
+  ];
+  selectedRefreshInterval = 0;
+  private refreshTimer: ReturnType<typeof setInterval> | null = null;
   deploymentId: any;
   pageSizes: number[] = [200, 250, 300];
   itemsPerPage: number = 300;
@@ -75,16 +84,8 @@ export class DeploymentObservabilityComponent implements OnInit {
       timeZone: ['IST']
     });
 
-    this.filterForm.get('duration')?.valueChanges.subscribe(value => {
-      if (value !== 'custom') {
-        this.filterForm.patchValue({
-          fromTimestamp: fromTimestamp,
-          toTimestamp: toTimestamp
-        });
-      }
-    });
-
     this.getApplicationLogs(this.deploymentId, '15m');
+    this.startAutoRefresh();
 
     this.filterForm.get('searchText')?.valueChanges.subscribe(search => {
       const keyword = (search || '').toLowerCase();
@@ -161,7 +162,7 @@ export class DeploymentObservabilityComponent implements OnInit {
       container.scrollTop = container.scrollHeight;
   }
 
-  getApplicationLogs(deploymentId: string, duration?: string) {
+  getApplicationLogs(deploymentId: string, duration?: string, skipLoader = false) {
     const environmentStr = localStorage.getItem('environment');
     const environmentId = environmentStr ? JSON.parse(environmentStr).id : '';
     const timeZone = this.getTimezoneOffset(this.filterForm.value.timeZone || 'IST');
@@ -181,7 +182,7 @@ export class DeploymentObservabilityComponent implements OnInit {
       timeZone: timeZone
     };
 
-    this.deploymentService.getSelectedDeploymentLogs(req).subscribe(
+    this.deploymentService.getSelectedDeploymentLogs(req, { skipLoader }).subscribe(
       (response: any) => {
         if (response.status.toLowerCase() === 'success') {
           this.deploymentLogs = response.data;
@@ -215,17 +216,12 @@ export class DeploymentObservabilityComponent implements OnInit {
     const filterValues = this.filterForm.value;
 
     let duration: string | undefined = '';
-    let fromTimestamp: string | undefined = '';
-    let toTimestamp: string | undefined = '';
     let keyword: string | undefined = '';
     if (filterValues.searchText) {
       keyword = filterValues.searchText;
     }
     if (filterValues.duration && filterValues.duration !== 'custom') {
       duration = filterValues.duration;
-    } else if (filterValues.duration === 'custom') {
-      fromTimestamp = `${filterValues.fromTimestamp}:00Z`;
-      toTimestamp = `${filterValues.toTimestamp}:00Z`;
     }
 
     const environmentStr = localStorage.getItem('environment');
@@ -278,9 +274,87 @@ export class DeploymentObservabilityComponent implements OnInit {
     this.onFilter();
   }
 
+  onRefreshIntervalChange(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    this.selectedRefreshInterval = Number(select.value);
+
+    if (!this.selectedRefreshInterval) {
+      this.clearAutoRefresh();
+      this.getApplicationLogs(this.deploymentId, this.getAutoRefreshTimeRange());
+      return;
+    }
+
+    this.getApplicationLogs(this.deploymentId, this.getAutoRefreshTimeRange());
+    this.startAutoRefresh();
+  }
+
+  private startAutoRefresh(): void {
+    this.clearAutoRefresh();
+    if (!this.selectedRefreshInterval) return;
+
+    this.refreshTimer = setInterval(() => {
+      this.getApplicationLogs(this.deploymentId, this.getAutoRefreshTimeRange(), true);
+    }, this.selectedRefreshInterval);
+  }
+
+  private clearAutoRefresh(): void {
+    if (this.refreshTimer) {
+      clearInterval(this.refreshTimer);
+      this.refreshTimer = null;
+    }
+  }
+
+  private getAutoRefreshTimeRange(): string | undefined {
+    const duration = this.filterForm?.value?.duration;
+    return duration && duration !== 'custom' ? duration : undefined;
+  }
+
+  onDurationSelect(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    const value = select.value;
+
+    this.filterForm.get('duration')?.setValue(value);
+    this.currentPage = 1;
+
+    if (value !== 'custom') {
+      const toTimestamp = new Date();
+      const fromTimestamp = this.getRangeStart(value, toTimestamp);
+      this.filterForm.patchValue({
+        fromTimestamp: this.formatDateForDatetimeLocal(fromTimestamp),
+        toTimestamp: this.formatDateForDatetimeLocal(toTimestamp)
+      }, { emitEvent: false });
+      this.onFilter();
+    }
+  }
+
+  onCustomRangeApplied(event: { fromTimestamp: string; toTimestamp: string }): void {
+    this.filterForm.patchValue({
+      fromTimestamp: this.normalizeCustomPickerTimestamp(event.fromTimestamp),
+      toTimestamp: this.normalizeCustomPickerTimestamp(event.toTimestamp)
+    });
+    this.currentPage = 1;
+    this.onFilter();
+  }
+
+  private normalizeCustomPickerTimestamp(value: string): string {
+    if (!value) return value;
+
+    const date = new Date(`${value}:00`);
+    if (isNaN(date.getTime())) return value;
+
+    const localWallClockDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
+    return this.formatDateForDatetimeLocal(localWallClockDate);
+  }
+
+  onTimeZoneSelect(): void {
+    this.currentPage = 1;
+    this.onFilter();
+  }
+
   toggleAutoRefresh(event: Event) {
     this.isAutoRefresh = !this.isAutoRefresh;
   }
+
   scrollToTop(): void {
     const container = document.getElementById('logContainer');
     if (container)
@@ -291,9 +365,22 @@ export class DeploymentObservabilityComponent implements OnInit {
     this.getApplicationLogs(this.deploymentId);
   }
   onChangePageSize(event: any) {
-    this.itemsPerPage = event.target.value;
+    this.itemsPerPage = Number(event.target.value);
+    this.pageSize = Number(event.target.value);
     this.currentPage = 1;
     this.getApplicationLogs(this.deploymentId);
+  }
+
+  private getRangeStart(duration: string, toDate: Date): Date {
+    switch (duration) {
+      case '15m': return new Date(toDate.getTime() - 15 * 60000);
+      case '30m': return new Date(toDate.getTime() - 30 * 60000);
+      case '1h': return new Date(toDate.getTime() - 60 * 60000);
+      case '1d': return new Date(toDate.getTime() - 24 * 60 * 60000);
+      case '7d': return new Date(toDate.getTime() - 7 * 24 * 60 * 60000);
+      case '30d': return new Date(toDate.getTime() - 30 * 24 * 60 * 60000);
+      default: return new Date(toDate.getTime() - 15 * 60000);
+    }
   }
 
   get pages(): number[] {
@@ -386,5 +473,9 @@ export class DeploymentObservabilityComponent implements OnInit {
       }
     );
 
+  }
+
+  ngOnDestroy(): void {
+    this.clearAutoRefresh();
   }
 }

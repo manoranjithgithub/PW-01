@@ -73,6 +73,43 @@
   background-size: 16px 16px;
 }
 
+.filter-group app-date-range-picker {
+  width: 100%;
+}
+
+.filter-group app-date-range-picker::ng-deep .daterange-wrapper {
+  min-width: auto !important;
+  max-width: none !important;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.filter-group app-date-range-picker::ng-deep .form-label {
+  font-size: 12px;
+  color: #6b7a90;
+  font-weight: 600;
+  margin: 0;
+  display: block;
+}
+
+.filter-group app-date-range-picker::ng-deep .form-control {
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid #dfe6f0 !important;
+  padding: 6px 36px 6px 12px !important;
+  font-size: 13px;
+  color: #1f2d3d;
+  background: #ffffff !important;
+  min-width: 280px;
+  max-width: 320px;
+  box-sizing: border-box;
+}
+
+.filter-group app-date-range-picker::ng-deep .bi-calendar3 {
+  color: #6b7a90 !important;
+}
+
 .filter-cta {
   margin-left: auto;
   height: 36px;

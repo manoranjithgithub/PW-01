@@ -19,6 +19,7 @@ import {
 } from 'chart.js';
 import { DeploymentsService } from '../../deployments/deployment.service';
 import { LoaderComponent } from '../../../shared/components/loader/loader.component';
+import { DateRangePickerComponent } from '../../../shared/components/date-range-picker/date-range-picker.component';
 import { DURATIONS, INTERVALS, METRICS_REFRESH_INTERVALS } from '../../../shared/constants/nimbuz.constant';
 import 'chartjs-adapter-date-fns';
 import { Subject, takeUntil } from 'rxjs';
@@ -34,7 +35,8 @@ Chart.register(LineElement, LineController, CategoryScale, LinearScale, PointEle
     MatSelectModule,
     MatFormFieldModule,
     MatCheckboxModule,
-    LoaderComponent
+    LoaderComponent,
+    DateRangePickerComponent
   ],
   providers: [DeploymentsService],
   templateUrl: './tool-metrics.component.html',
@@ -620,6 +622,14 @@ export class ToolMetricsComponent implements OnInit, AfterViewInit, OnChanges, O
 
     this.onFilterCpu(params);
     this.onFilterMem(params);
+  }
+
+  onDateRangeApply(event: { fromTimestamp: string; toTimestamp: string }): void {
+    this.filterForm.patchValue({
+      fromTimestamp: event.fromTimestamp,
+      toTimestamp: event.toTimestamp
+    });
+    this.onFilter();
   }
 
   private computeFilterParams(): { fromISO: string; toISO: string; timeIntervalSeconds: number } | null {

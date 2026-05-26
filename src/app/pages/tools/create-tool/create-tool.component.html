@@ -83,7 +83,7 @@
                                 <span>
                                     {{ formatCurrency(selectedResource[field.label]?.instanceHourRate || 0, selectedResource[field.label]?.currency) }} /
                                     hr<br>
-                                    {{ formatCurrency(selectedResource[field.label]?.instanceHourRate || 0 * 720, selectedResource[field.label]?.currency || 'USD') }} /mo</span>
+                                    {{ formatCurrency(getMonthlyRate(field.label), selectedResource[field.label]?.currency || 'USD') }} /mo</span>
                             </span>
                         </div>
                     </ng-container>

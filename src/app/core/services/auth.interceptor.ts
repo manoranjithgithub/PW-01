@@ -4,7 +4,8 @@ import {
   HttpInterceptor,
   HttpHandler,
   HttpRequest,
-  HttpErrorResponse
+  HttpErrorResponse,
+  HttpContextToken
 } from '@angular/common/http';
 import { Observable, throwError, BehaviorSubject } from 'rxjs';
 import {
@@ -19,6 +20,8 @@ import { ToastrService } from 'ngx-toastr';
 import { NavigationEnd, NavigationError, NavigationCancel, NavigationStart, Router } from '@angular/router';
 import { SharedService } from '../../shared/services/shared.service';
 let activeRequests = 0;
+
+export const SKIP_LOADER = new HttpContextToken<boolean>(() => false);
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
@@ -56,7 +59,7 @@ export class AuthInterceptor implements HttpInterceptor {
   }
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    const skipLoader = this.shouldSkipLoader(req.url);
+    const skipLoader = req.context.get(SKIP_LOADER) || this.shouldSkipLoader(req.url);
   
     if (!skipLoader) {
       activeRequests++;

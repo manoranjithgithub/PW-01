@@ -29,7 +29,7 @@ export class BillsComponent implements OnInit, OnChanges {
   activeBillTab: BillTab = 'service';
   billServiceFilter = '';
   billTaxFilter = '';
-  selectedMonth = this.getPreviousMonthValue();
+  selectedMonth = this.getCurrentMonthValue();
   private getPreviousMonthValue(): string {
     const now = new Date();
     let year = now.getFullYear();
@@ -353,7 +353,7 @@ export class BillsComponent implements OnInit, OnChanges {
   }
 
   ngOnInit(): void {
-    this.selectedMonth = this.getPreviousMonthValue();
+    this.selectedMonth = this.getCurrentMonthValue();
     this.syncMonthPickerFromSelected();
     this.applyMonthSelection(this.selectedMonth);
 
@@ -496,7 +496,7 @@ export class BillsComponent implements OnInit, OnChanges {
   }
 
   refreshBills(): void {
-    this.selectedMonth = this.getPreviousMonthValue();
+    this.selectedMonth = this.getCurrentMonthValue();
     this.syncMonthPickerFromSelected();
     this.applyMonthSelection(this.selectedMonth);
     this.billOffset = 0;
@@ -704,7 +704,9 @@ export class BillsComponent implements OnInit, OnChanges {
     this.http.getCostByService(
       accountId,
       this.startDate,
-      this.endDate
+      this.endDate,
+      this.selectedEnvironmentId !== 'all' && this.selectedProjectId !== 'all' ? String(this.selectedEnvironmentId) : undefined,
+      this.selectedProjectId !== 'all' ? String(this.selectedProjectId) : undefined
     ).pipe(
       catchError(() => of({ data: [] }))
     ).subscribe({

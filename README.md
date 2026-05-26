@@ -1,9 +1,19 @@
 # nimbuz-portal-fe
 
 ## latest version
-1.0.8
+1.0.10
 
 ## change log
+### 1.0.10
+implementation: tool monthly calculation, qb ui changes, application logs changes, billing filter fix and bugfixes
+- Added Display Current Project and Environment in the Dashboard
+- Updated Tools Metrics with reusable Datepicker changes
+- Removed Usage Analytics refresh loading behavior
+
+
+### 1.0.9
+implementation: Auto load Usage Analytics Filters, Reusable Date Range Picker Component & UI/UX Bug Fix
+
 ### 1.0.8
 implementation: Credit balance Api integration & ui/ux bug fixes
 
