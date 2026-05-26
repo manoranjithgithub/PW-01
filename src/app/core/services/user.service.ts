@@ -68,4 +68,7 @@ export class UserService {
                 })
             );
     }
+    getForgotPasswordLink(data: any): Observable<any> {
+        return this.http.post<any>(`${this.apiUrl}/user/v1/user/forgot-password`, data);
+    }
 }

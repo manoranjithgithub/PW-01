@@ -308,7 +308,22 @@ export class ToolsComponent implements OnInit, OnDestroy {
 
   isToolInstalling(params: any): boolean {
     const status = String(params?.status || '').toLowerCase();
-    return status === 'deploying' || status === 'not available';
+    const isInstallingStatus =
+      status === 'deploying' || status === 'not available';
+
+    if (!isInstallingStatus) {
+      return false;
+    }
+    const createdAt = new Date(params?.createdAt);
+    const now = new Date();
+
+    const diffInHours =
+      (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60);
+
+    const isToday =
+      createdAt.toDateString() === now.toDateString();
+
+    return isToday && diffInHours <= 5;
   }
 
   getAvailableTools(envId: string): void {
