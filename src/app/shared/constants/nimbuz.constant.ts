@@ -50,7 +50,7 @@ export const DEPLOY_OPTIONS = [
   },
   {
     logo: 'assets/images/logos/zip.png',
-    name: 'Deploy zip/tar/rar',
+    name: 'Deploy zip/tar',
     value: 'zip',
   },
   // {

@@ -186,7 +186,7 @@ describe('CreateDeploymentsComponent', () => {
   it('should set fileError when onZipUpload called with invalid zip form', () => {
     component.zipUploadForm.get('zipfileInput')?.setErrors({ required: true });
     component.onZipUpload();
-    expect(component.fileError).toBe('Please choose a valid zip, tar, or rar file');
+    expect(component.fileError).toBe('Please choose a valid zip or tar file');
     expect(component.zipUploadForm.get('zipfileInput')?.touched).toBeTrue();
   });
 
