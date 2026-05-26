@@ -21,7 +21,7 @@ export class UserService {
         return this.http.post<any>(`${this.apiUrl}/user/v1/user/login`, data);
     }
     forgotPassword(data: LoginData): Observable<any> {
-        return this.http.post<any>(`${this.apiUrl}/user/v1/user/forgot-password`, data);
+        return this.http.post<any>(`${this.apiUrl}/user/v1/user/forgot-password/reset`, data);
     }
     resetPassword(req: ResetPasswordData): Observable<any> {
         const accessToken = localStorage.getItem('accessToken');
@@ -67,5 +67,8 @@ export class UserService {
                     return throwError(() => error);
                 })
             );
+    }
+    getForgotPasswordLink(data: any): Observable<any> {
+        return this.http.post<any>(`${this.apiUrl}/user/v1/user/forgot-password`, data);
     }
 }

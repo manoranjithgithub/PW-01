@@ -23,6 +23,7 @@ export class ForgotPasswordComponent implements OnInit {
   successMessage: string = '';
   loading: boolean = false;
   visiblePasswordFields = new Set<string>();
+  resetToken: string | null = null;
   forgotPasswordForm !: FormGroup;
 
 
@@ -30,14 +31,11 @@ export class ForgotPasswordComponent implements OnInit {
     private fb: FormBuilder,
     private http: UserService,
     private router: Router,
+    private route: ActivatedRoute,
     private toaster: ToastrService,
     private authService: AuthService
   ) {
-    this.forgotPasswordForm = this.fb.group({
-      username: ['', [Validators.required]],
-      password: ['', [Validators.required, Validators.pattern(VALIDATION_REGEX.NEW_PASSWORD)]],
-      confirmPassword: ['', [Validators.required]],
-    }, { validators: this.passwordMatchValidator });
+    // form will be initialized in ngOnInit based on presence of reset token
   }
 
   passwordMatchValidator(form: FormGroup) {
@@ -61,6 +59,18 @@ export class ForgotPasswordComponent implements OnInit {
 
   ngOnInit(): void {
     this.currentUrl = this.router.url;
+    this.resetToken = this.route.snapshot.queryParamMap.get('token') || this.route.snapshot.paramMap.get('token') || null;
+    // Initialize form based on whether user is landing on reset page (has token)
+    if (this.resetToken) {
+      this.forgotPasswordForm = this.fb.group({
+        password: ['', [Validators.required, Validators.pattern(VALIDATION_REGEX.NEW_PASSWORD)]],
+        confirmPassword: ['', [Validators.required]],
+      }, { validators: this.passwordMatchValidator });
+    } else {
+      this.forgotPasswordForm = this.fb.group({
+        username: ['', [Validators.required]],
+      });
+    }
   }
 
   private handleSuccess(): void {
@@ -86,15 +96,27 @@ Please check your email for instructions to reset your password.`;
   submitForgotPassword(): void {
     this.submitted = true;
     if (this.forgotPasswordForm.invalid) return;
-    const type = this.getSubDomain().clientId;
     this.loading = true;
-    delete this.forgotPasswordForm.value.confirmPassword;
-    const finalPayload = {
-      ...this.forgotPasswordForm.value,
+    if (this.resetToken) {
+      const payload = { ...this.forgotPasswordForm.value, token: this.resetToken };
+      delete (payload as any).confirmPassword;
+      this.http.forgotPassword(payload).subscribe({
+        next: () => {
+          this.handleSuccess();
+        },
+        error: (error) => {
+          this.handleError(error);
+        },
+      });
+      return;
+    }
+    const type = this.getSubDomain().clientId;
+    const payload = {
+      username: this.forgotPasswordForm.value.username,
       type: type === 'nimbuz' ? 'individual' : 'business',
       orgName: type === 'nimbuz' ? 'nimbuz' : type
     };
-    this.http.forgotPassword(finalPayload).subscribe({
+    this.http.getForgotPasswordLink(payload).subscribe({
       next: () => {
         this.handleSuccess();
       },
