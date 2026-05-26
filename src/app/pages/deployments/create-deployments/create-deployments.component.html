@@ -40,7 +40,7 @@
               </div>
               <div class="text-danger my-1" data-testid="error-zip-file-required"
                 *ngIf="selectedVCS === 'zip' && showZipDropdownError">
-                Please choose a valid zip, tar, or rar file
+                Please choose a valid zip or tar file
               </div>
             </div>
             <div class="col-md-8" *ngIf=" selectedVCS && (selectedVCS === 'github' || selectedVCS === 'gitlab')">
@@ -420,17 +420,17 @@
     <div class="container">
       <form [formGroup]="zipUploadForm">
         <div class="form-group">
-          <label for="zipfileInput" data-testid="label-zip-upload">Select a file to upload(in .zip, .tar, .rar format)
+          <label for="zipfileInput" data-testid="label-zip-upload">Select a file to upload(in .zip, .tar format)
             :</label>
           <input #zipFileInput type="file" id="zipfileInput" data-testid="input-zip-file"
-            class="form-control mt-2" [accept]="'.zip,.tar,.rar'" (change)="onZipFileSelect($event)" />
+            class="form-control mt-2" [accept]="'.zip,.tar'" (change)="onZipFileSelect($event)" />
           <div
             *ngIf="zipUploadForm.get('zipfileInput')?.hasError('required') && (zipUploadForm.get('zipfileInput')?.dirty || zipUploadForm.get('zipfileInput')?.touched)"
             class="text-danger mt-2">
-            Please choose a valid zip, tar, or rar file
+            Please choose a valid zip or tar file
           </div>
           <div *ngIf="zipUploadForm.get('zipfileInput')?.hasError('invalidFileType')" class="text-danger mt-2">
-            Invalid file type. Only .zip, .tar, and .rar files are allowed.
+            Invalid file type. Only .zip and .tar files are allowed.
           </div>
           <div *ngIf="zipUploadForm.get('zipfileInput')?.hasError('emptyFile')" class="text-danger mt-2">
             Uploaded file is empty. Please upload a valid application package
@@ -442,7 +442,7 @@
         <div class="d-flex justify-content-center mt-2">
           <button class="btn btn-primary btn-visible-disabled" data-testid="btn-zip-submit"
             [disabled]="zipUploadForm.get('zipfileInput')?.hasError('fileSizeExceeded') || zipUploadForm.get('zipfileInput')?.hasError('invalidFileType') || zipUploadForm.get('zipfileInput')?.hasError('emptyFile')"
-            [attr.title]="(zipUploadForm.get('zipfileInput')?.hasError('fileSizeExceeded') || zipUploadForm.get('zipfileInput')?.hasError('invalidFileType') || zipUploadForm.get('zipfileInput')?.hasError('emptyFile')) ? 'Please choose a valid zip, tar, or rar file.' : null"
+            [attr.title]="(zipUploadForm.get('zipfileInput')?.hasError('fileSizeExceeded') || zipUploadForm.get('zipfileInput')?.hasError('invalidFileType') || zipUploadForm.get('zipfileInput')?.hasError('emptyFile')) ? 'Please choose a valid zip or tar file.' : null"
             (click)="onZipUpload()">Submit</button>
         </div>
       </form>

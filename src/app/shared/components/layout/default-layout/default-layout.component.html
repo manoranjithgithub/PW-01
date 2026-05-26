@@ -91,12 +91,12 @@
             </button>
             <ul cDropdownMenu class="dropdown-menu dropdown-menu-end" style="padding: 0;">
               <li *ngIf="isApplicationDetailsPage()"
-                [attr.title]="!canPerformApplicationRedeploy() ? (pageActionState?.sourceType === 'file' ? 'Redeploy is not available for zip/tar/rar deployments.' : 'You are not authorized to perform this action.') : null">
+                [attr.title]="!canPerformApplicationRedeploy() ? (pageActionState?.sourceType === 'file' ? 'Redeploy is not available for zip/tar deployments.' : 'You are not authorized to perform this action.') : null">
                 <a class="dropdown-item" role="button"
                   (click)="canPerformApplicationRedeploy() && onPageActionClick('redeploy')"
                   [class.disabled]="!canPerformApplicationRedeploy()"
                   [attr.aria-disabled]="!canPerformApplicationRedeploy()"
-                  [attr.title]="!canPerformApplicationRedeploy() ? (pageActionState?.sourceType === 'file' ? 'Redeploy is not available for zip/tar/rar deployments.' : 'You are not authorized to perform this action.') : null">
+                  [attr.title]="!canPerformApplicationRedeploy() ? (pageActionState?.sourceType === 'file' ? 'Redeploy is not available for zip/tar deployments.' : 'You are not authorized to perform this action.') : null">
                   Redeploy
                 </a>
               </li>
