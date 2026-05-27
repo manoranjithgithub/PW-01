@@ -445,7 +445,7 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
   onZipUpload(): void {
     if (this.selectedFile === null) {
       this.showZipFileRequiredError();
-      this.fileError = 'Please choose a valid zip, tar, or rar file';
+      this.fileError = 'Please choose a valid zip or tar file';
       return;
     }
     if (this.zipUploadForm.invalid) {
@@ -487,7 +487,7 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
       } else {
         this.showZipDropdownError = true;
       }
-      this.fileError = 'Please choose a valid zip, tar, or rar file';
+      this.fileError = 'Please choose a valid zip or tar file';
       this.clearPendingZipFile();
     }
   }
@@ -513,7 +513,7 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
   onZipFileSelect(event: any): void {
     const file = event.target.files[0];
     const zipfileinput = this.zipUploadForm.get('zipfileInput');
-    const allowedExtensions = ['zip', 'tar', 'rar'];
+    const allowedExtensions = ['zip', 'tar'];
     zipfileinput?.setValidators([
       Validators.required,
       this.fileValidator(allowedExtensions),
@@ -643,7 +643,7 @@ export class CreateDeploymentsComponent implements OnInit, AfterViewInit {
             } else {
               this.showZipDropdownError = true;
             }
-            this.fileError = 'Please choose a valid zip, tar, or rar file';
+            this.fileError = 'Please choose a valid zip or tar file';
             hasGeneralError = true;
           }
         }
