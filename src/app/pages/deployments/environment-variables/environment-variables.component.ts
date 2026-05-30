@@ -24,6 +24,7 @@ export class EnvironmentVariablesComponent implements OnInit {
   showNewVariableForm: boolean = false;
   storedEnvironment: any;
   @Input() deploymentdetails: any;
+  fileUploadError: string = '';
 
   envList: any = [];
 
@@ -114,6 +115,7 @@ export class EnvironmentVariablesComponent implements OnInit {
   }
 
   cancelVariableForm(): void {
+    this.fileUploadError = '';
     this.showNewVariableForm = !this.showNewVariableForm;
     this.editIndex = null;
     if (this.showNewVariableForm) {
@@ -170,10 +172,48 @@ export class EnvironmentVariablesComponent implements OnInit {
   }
   
   openRawEditor() {
+    this.fileUploadError = '';
     this.rawEditorModel.open();
   }
   closeModal(data: any) {
     this.rawEditorModel.dismiss();
+  }
+
+  onFileUploaded(event: any): void {
+    this.fileUploadError = '';
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e: any) => {
+      const content = e.target.result;
+      try {
+        const parsed = JSON.parse(content);
+        if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+          throw new Error('Not a valid JSON object');
+        }
+
+        const newVars = Object.entries(parsed).map(([key, value]) => ({
+          EnvVariable: key,
+          Value: String(value)
+        }));
+
+        this.envList = [...this.envList, ...newVars];
+        const uniqueMap = new Map<string, any>();
+        this.envList.forEach((item: any) => {
+          uniqueMap.set(item.EnvVariable, item);
+        });
+        this.envList = Array.from(uniqueMap.values());
+        this.addEnvVariables(this.envList);
+
+        this.toaster.success('Environment variables loaded from file');
+      } catch (err) {
+        this.fileUploadError = 'Invalid JSON format. Please upload a valid JSON file.';
+        this.toaster.error(this.fileUploadError);
+      }
+    };
+    reader.readAsText(file);
+    event.target.value = '';
   }
 
   onVariablesUpdated(updated: { EnvVariable: string; Value: string }[]) {
@@ -284,7 +324,9 @@ export class EnvironmentVariablesComponent implements OnInit {
     this.deploymentsService.updateDeployment(this.deploymentId, req).subscribe({
       next: (res: any) => {
         this.envList = this.mapEnvVariables(res.data.environment || {});
-        this.deploymentdetails.environment = res.data.environment || {};
+        if (this.deploymentdetails) {
+          this.deploymentdetails.environment = res.data.environment || {};
+        }
         this.toaster.success('Environment variables updated successfully');
       },
       error: (err) => {

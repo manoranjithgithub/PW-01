@@ -12,14 +12,25 @@
   </div>
 </c-alert>
 
+<c-alert color="danger" *ngIf="fileUploadError" class="mb-3">
+  <div class="warn-text" data-testid="error-env-file-upload">
+    <i class="bi bi-exclamation-triangle-fill"></i>
+    {{ fileUploadError }}
+  </div>
+</c-alert>
+
 <form [formGroup]="newVariableForm">
   <div class="card-child">
     <fieldset [disabled]="freezeAddNewData" class="mb-2">
       <div class="d-flex justify-content-end mb-2 gap-3" *ngIf="!showNewVariableForm && !deploymentResourceExhausted && (permissionService.canWriteGlobal() || permissionService.canAdminGlobal() || permissionService.canDeleteForCurrentUser(null, null))">
-        <button class="btn button-format-solid custom-label mt-2" data-testid="btn-env-new" (click)="cancelVariableForm()">
+        <button type="button" class="btn button-format-solid custom-label mt-2" data-testid="btn-env-new" (click)="cancelVariableForm()">
           <i class="bi bi-plus mx-1"></i> New Variables
         </button>
-        <button class="btn button-format-solid custom-label mt-2" data-testid="btn-env-raw-editor" (click)="openRawEditor()">Raw Editor</button>
+        <button type="button" class="btn button-format-solid custom-label mt-2" data-testid="btn-env-raw-editor" (click)="openRawEditor()">Raw Editor</button>
+        <button type="button" class="btn button-format-solid custom-label mt-2" data-testid="btn-env-upload" (click)="envFileInput.click()">
+          <i class="bi bi-upload mx-1"></i> Upload File
+        </button>
+        <input type="file" #envFileInput data-testid="input-env-file" style="display: none;" (change)="onFileUploaded($event)" accept=".json">
       </div>
 
       <c-callout color="light" *ngIf="showNewVariableForm">

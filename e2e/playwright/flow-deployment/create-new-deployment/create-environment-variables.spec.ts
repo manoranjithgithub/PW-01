@@ -226,4 +226,21 @@ test.describe('4.2 - Negative Create Environment variables', () => {
         await expect(page.getByTestId('step-secrets')).toHaveClass(/active/);
     });
 
+    test('4.2.12 – Upload Invalid JSON Environment File', async ({ page }) => {
+        const [fileChooser] = await Promise.all([
+            page.waitForEvent('filechooser'),
+            page.getByTestId('btn-env-upload').click(),
+        ]);
+
+        const invalidJson = '{\n  "NODE_ENV": "production",\n  "PORT": 3000,';
+        await fileChooser.setFiles({
+            name: 'invalid-env.json',
+            mimeType: 'application/json',
+            buffer: Buffer.from(invalidJson),
+        });
+
+        await expect(page.getByTestId('error-env-file-upload')).toHaveText('Invalid JSON format. Please upload a valid JSON file.');
+        await expect(page.getByTestId(/env-name-\d+/)).toHaveCount(0);
+    });
+
 });

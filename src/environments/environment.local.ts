@@ -11,6 +11,10 @@ export const environment = {
         authUrl: 'https://gitlab.com/oauth/authorize',
         tokenUrl: 'https://gitlab.com/oauth/token',
     },
+    github: {
+        clientId: 'Ov23lizhCMt2Ih4SgeyJ',
+        redirectUri: 'http://localhost:4200/vcs/callback',
+    },
     domain: 'dev.nimbuz.tech',
     wss: 'wss://api.dev.nimbuz.tech/job-executor',
 
@@ -24,5 +28,6 @@ export const environment = {
     pricingManagement: `${base}/pricing/v1`,
     userManagement: `${base}/user/v1/business/organisation`,
     logServiceUrl: `${base}/logs`,
+    metricsUrl: `${base}/metrics/v1`,
     llmGatewayBaseUrl: `${base}/llmgateway/v1`,
 };

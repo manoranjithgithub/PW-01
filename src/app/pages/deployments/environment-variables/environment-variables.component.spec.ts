@@ -158,4 +158,34 @@ describe('EnvironmentVariablesComponent', () => {
       { EnvVariable: 'K2', Value: 'v2' }
     ]));
   });
+
+  it('should upload a valid JSON environment file and parse variables', () => {
+    const event = { target: { files: [new File(['{"KEY1":"val1","KEY2":"val2"}'], 'env.json')], value: 'env.json' } };
+    
+    spyOn(FileReader.prototype, 'readAsText').and.callFake(function(this: FileReader) {
+      if (this.onload) {
+        this.onload({ target: { result: '{"KEY1":"val1","KEY2":"val2"}' } } as any);
+      }
+    });
+
+    component.onFileUploaded(event);
+    expect(component.fileUploadError).toBe('');
+    expect(component.envList).toContain({ EnvVariable: 'KEY1', Value: 'val1' });
+    expect(component.envList).toContain({ EnvVariable: 'KEY2', Value: 'val2' });
+    expect(mockToastr.success).toHaveBeenCalledWith('Environment variables loaded from file');
+  });
+
+  it('should handle invalid JSON file upload', () => {
+    const event = { target: { files: [new File(['{'], 'invalid.json')], value: 'invalid.json' } };
+    
+    spyOn(FileReader.prototype, 'readAsText').and.callFake(function(this: FileReader) {
+      if (this.onload) {
+        this.onload({ target: { result: '{' } } as any);
+      }
+    });
+
+    component.onFileUploaded(event);
+    expect(component.fileUploadError).toBe('Invalid JSON format. Please upload a valid JSON file.');
+    expect(mockToastr.error).toHaveBeenCalledWith('Invalid JSON format. Please upload a valid JSON file.');
+  });
 });
