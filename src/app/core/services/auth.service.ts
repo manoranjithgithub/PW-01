@@ -88,7 +88,9 @@ export class AuthService {
     // const redirectUri = `http://localhost:4200`;
     const redirectUri = environment.production
       ? `https://${subdomain}.nimbuz.tech`
-      : `https://${subdomain}.dev.nimbuz.tech`;
+      : subdomain === 'localhost'
+        ? 'http://localhost:4200'
+        : `https://${subdomain}.dev.nimbuz.tech`;
     return { clientId, state, redirectUri };
   }
 

@@ -104,6 +104,42 @@ test.describe('4.1 - Positive Create Environment variables', () => {
         await expect(page.getByTestId('step-secrets')).toHaveClass(/active/);
     });
 
+    test('4.1.4 – Add Environment Variables by Uploading File', async ({ page }) => {
+        const envContent = 'NODE_ENV=production\nPORT=3000\nAPI_URL=https://api.example.com';
+        await page.locator('input[data-testid="input-env-file-upload"]').setInputFiles({
+            name: '.env',
+            mimeType: 'text/plain',
+            buffer: Buffer.from(envContent),
+        });
+
+        await expect(page.getByTestId(/env-name-\d+/).filter({ hasText: 'NODE_ENV' })).toBeVisible();
+        await expect(page.getByTestId(/env-name-\d+/).filter({ hasText: 'PORT' })).toBeVisible();
+        await expect(page.getByTestId(/env-name-\d+/).filter({ hasText: 'API_URL' })).toBeVisible();
+
+        await page.getByTestId('btn-next').click();
+        await expect(page.getByTestId('step-secrets')).toHaveClass(/active/);
+    });
+
+    test('4.1.5 – Add Environment Variables by Uploading JSON File', async ({ page }) => {
+        const jsonContent = `{
+            "NODE_ENV": "production",
+            "PORT": "3000",
+            "API_URL": "https://api.example.com"
+        }`;
+        await page.locator('input[data-testid="input-env-file-upload"]').setInputFiles({
+            name: 'env.json',
+            mimeType: 'application/json',
+            buffer: Buffer.from(jsonContent),
+        });
+
+        await expect(page.getByTestId(/env-name-\d+/).filter({ hasText: 'NODE_ENV' })).toBeVisible();
+        await expect(page.getByTestId(/env-name-\d+/).filter({ hasText: 'PORT' })).toBeVisible();
+        await expect(page.getByTestId(/env-name-\d+/).filter({ hasText: 'API_URL' })).toBeVisible();
+
+        await page.getByTestId('btn-next').click();
+        await expect(page.getByTestId('step-secrets')).toHaveClass(/active/);
+    });
+
     test('4.1.6 – Auto-Save Environment Variable on Continue Without Clicking Add Env to List', async ({ page }) => {
         await page.getByTestId('btn-env-new').click();
         await page.locator('input[formcontrolname="name"]').fill('AUTO_SAVE_VAR');
@@ -224,6 +260,18 @@ test.describe('4.2 - Negative Create Environment variables', () => {
         await page.getByTestId('btn-next').click();
 
         await expect(page.getByTestId('step-secrets')).toHaveClass(/active/);
+    });
+
+    test('4.2.12 – Upload Invalid JSON Environment File', async ({ page }) => {
+        const invalidJson = '{\n  "NODE_ENV": "production",\n  "PORT": 3000,';
+        await page.locator('input[data-testid="input-env-file-upload"]').setInputFiles({
+            name: 'invalid-env.json',
+            mimeType: 'application/json',
+            buffer: Buffer.from(invalidJson),
+        });
+
+        await expect(page.getByTestId('error-env-file-upload')).toHaveText('Invalid JSON format. Please upload a valid JSON file.');
+        await expect(page.getByTestId(/env-name-\d+/)).toHaveCount(0);
     });
 
 });

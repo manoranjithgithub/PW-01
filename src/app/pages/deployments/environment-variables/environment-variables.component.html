@@ -20,6 +20,13 @@
           <i class="bi bi-plus mx-1"></i> New Variables
         </button>
         <button class="btn button-format-solid custom-label mt-2" data-testid="btn-env-raw-editor" (click)="openRawEditor()">Raw Editor</button>
+        <button class="btn button-format-solid custom-label mt-2" data-testid="btn-env-upload" (click)="envFileInput.click()">
+          <i class="bi bi-upload mx-1"></i> Upload File
+        </button>
+        <input type="file" #envFileInput style="display: none" (change)="onFileUploaded($event)" accept=".env,.json" data-testid="input-env-file-upload">
+      </div>
+      <div *ngIf="fileUploadError" class="text-danger mt-1 text-end" data-testid="error-env-file-upload">
+        {{ fileUploadError }}
       </div>
 
       <c-callout color="light" *ngIf="showNewVariableForm">

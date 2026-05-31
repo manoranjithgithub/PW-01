@@ -91,6 +91,14 @@ describe('AuthService', () => {
     expect(info.redirectUri).toContain('.dev.nimbuz.tech');
   });
 
+  it('getClientInfo returns localhost redirectUri when subdomain is localhost and not production', () => {
+    spyOn<any>(service, 'getSubdomain').and.returnValue('localhost');
+    (environment as any).production = false;
+    const info = service.getClientInfo();
+    expect(info.clientId).toBe('localhost');
+    expect(info.redirectUri).toBe('http://localhost:4200');
+  });
+
   it('getTokenExpirationDate returns null for invalid token and logs', () => {
     const spy = spyOn(console, 'error');
     const res = service.getTokenExpirationDate('bad');

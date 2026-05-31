@@ -50,6 +50,7 @@ export class EnvironmentVariablesComponent implements OnInit {
   freezeAddNewData: boolean = false;
   isBuilding: boolean = false;
   deploymentId: string = '';
+  fileUploadError: string | null = null;
 
   constructor(private fb: FormBuilder, private deploymentsService: DeploymentsService,
    private toaster: ToastrService, private modalService: NgbModal,
@@ -114,6 +115,7 @@ export class EnvironmentVariablesComponent implements OnInit {
   }
 
   cancelVariableForm(): void {
+    this.fileUploadError = null;
     this.showNewVariableForm = !this.showNewVariableForm;
     this.editIndex = null;
     if (this.showNewVariableForm) {
@@ -170,6 +172,7 @@ export class EnvironmentVariablesComponent implements OnInit {
   }
   
   openRawEditor() {
+    this.fileUploadError = null;
     this.rawEditorModel.open();
   }
   closeModal(data: any) {
@@ -292,5 +295,102 @@ export class EnvironmentVariablesComponent implements OnInit {
       }
     });
    
+  }
+
+  onFileUploaded(event: Event) {
+    this.fileUploadError = null;
+    const input = event.target as HTMLInputElement;
+    if (!input || !input.files || input.files.length === 0) {
+      return;
+    }
+    const file = input.files[0];
+    const fileName = file.name;
+    const extension = fileName.split('.').pop()?.toLowerCase();
+
+    // Validate the uploaded file format.
+    if (extension !== 'env' && extension !== 'json' && !fileName.endsWith('.env')) {
+      this.fileUploadError = 'Invalid file type. Only .env and .json files are allowed.';
+      this.toaster.error('Invalid file type. Only .env and .json files are allowed.');
+      input.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const content = e.target?.result as string;
+      const namePattern = /^[A-Za-z0-9._-]+$/;
+      const newVars: { EnvVariable: string; Value: string }[] = [];
+
+      if (extension === 'json') {
+        try {
+          const parsed = JSON.parse(content);
+          if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+            throw new Error('Invalid JSON format');
+          }
+          // Validate JSON keys and values
+          for (const [key, value] of Object.entries(parsed)) {
+            if (!namePattern.test(key) || key.length > 253) {
+              this.toaster.error(`Invalid key format in JSON: ${key}`);
+              input.value = '';
+              return;
+            }
+            newVars.push({ EnvVariable: key, Value: String(value) });
+          }
+        } catch (err) {
+          this.fileUploadError = 'Invalid JSON format. Please upload a valid JSON file.';
+          this.toaster.error('Invalid environment variable JSON format');
+          input.value = '';
+          return;
+        }
+      } else {
+        // Parse .env format
+        try {
+          const lines = content.split(/\r?\n/);
+          for (let i = 0; i < lines.length; i++) {
+            const line = lines[i].trim();
+            if (!line || line.startsWith('#')) {
+              continue;
+            }
+            const match = line.match(/^([\w.-]+)\s*=\s*(.*)$/);
+            if (!match) {
+              this.toaster.error('Invalid environment variable format');
+              input.value = '';
+              return;
+            }
+            const key = match[1];
+            let value = match[2].trim();
+            // remove quotes if present
+            if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+              value = value.substring(1, value.length - 1);
+            }
+            if (!namePattern.test(key) || key.length > 253) {
+              this.toaster.error(`Invalid key format: ${key}`);
+              input.value = '';
+              return;
+            }
+            newVars.push({ EnvVariable: key, Value: value });
+          }
+        } catch (err) {
+          this.toaster.error('Invalid environment variable format');
+          input.value = '';
+          return;
+        }
+      }
+
+      // Merge and deduplicate
+      this.envList = [...this.envList];
+      const uniqueMap = new Map<string, any>();
+      this.envList.forEach((item: any) => {
+        uniqueMap.set(item.EnvVariable, item);
+      });
+      newVars.forEach((item: any) => {
+        uniqueMap.set(item.EnvVariable, item);
+      });
+      this.envList = Array.from(uniqueMap.values());
+      this.addEnvVariables(this.envList);
+      this.toaster.success('Environment variables uploaded successfully');
+      input.value = '';
+    };
+    reader.readAsText(file);
   }
 }
