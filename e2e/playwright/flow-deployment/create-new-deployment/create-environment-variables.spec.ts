@@ -14,6 +14,23 @@ async function navigateToEnvironmentVariables(page: Page) {
         await page.waitForLoadState('networkidle');
     }
 
+    const projectCard = page.getByTestId('project-card').first();
+    await expect(projectCard).toBeVisible({ timeout: 60000 });
+    await projectCard.click();
+
+    const envCard = page.getByTestId('environment-card').first();
+    await expect(envCard).toBeVisible({ timeout: 60000 });
+    await envCard.click();
+
+    const proceedBtn = page.getByTestId('proceed-btn');
+    await expect(proceedBtn).toBeEnabled({ timeout: 60000 });
+    await proceedBtn.click();
+    await page.waitForURL(/.*\/applications$/, { timeout: 60000 });
+    await page.waitForLoadState('networkidle');
+
+
+
+
     await page.goto('/applications/create-application', { waitUntil: 'domcontentloaded', timeout: 60000 });
     await page.waitForLoadState('networkidle');
 
