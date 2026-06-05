@@ -2,7 +2,7 @@ import { chromium, FullConfig } from '@playwright/test';
 import { envConfig } from './e2e/playwright/env';
 
 async function globalSetup(config: FullConfig) {
-  const baseURL = `https://app.${envConfig.domain}`;
+  const baseURL = `http://localhost:4200/`;
 
   const browser = await chromium.launch();
   const context = await browser.newContext();

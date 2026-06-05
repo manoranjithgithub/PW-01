@@ -17,11 +17,18 @@ export default defineConfig({
   retries: 1,
 
   use: {
-    baseURL: `https://app.${envConfig.domain}`,
+    baseURL: `http://localhost:4200/`,
     headless: true,
     viewport: { width: 1280, height: 800 },
     ignoreHTTPSErrors: true,
     storageState: 'playwright/.auth/user.json',
+  },
+
+  webServer: {
+    command: 'npm run local',
+    url: 'http://localhost:4200/',
+    reuseExistingServer: !process.env.CI,
+    timeout: 180 * 1000,
   },
 
   projects: [
