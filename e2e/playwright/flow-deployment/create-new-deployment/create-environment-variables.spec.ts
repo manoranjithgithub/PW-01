@@ -279,6 +279,51 @@ test.describe('4.2 - Negative Create Environment variables', () => {
         await expect(page.getByTestId('step-secrets')).toHaveClass(/active/);
     });
 
+    test('4.2.10 – Upload Environment File with Invalid or Malformed Entries', async ({ page }) => {
+        const malformedEnvContent = 'NODE_ENV=production\nPORT\n=3000\nAPI URL=https://api.example';
+        await page.locator('input[data-testid="input-env-file-upload"]').setInputFiles({
+            name: 'malformed.env',
+            mimeType: 'text/plain',
+            buffer: Buffer.from(malformedEnvContent),
+        });
+
+        await expect(page.getByTestId('error-env-file-upload')).toHaveText('Some environment variables are invalid and were not added.');
+
+        // Valid key-value pairs are processed and shown
+        await expect(page.getByTestId(/env-name-\d+/).filter({ hasText: 'NODE_ENV' })).toBeVisible();
+
+        // Invalid entries are not added
+        await expect(page.getByTestId(/env-name-\d+/).filter({ hasText: 'PORT' })).toHaveCount(0);
+        await expect(page.getByTestId(/env-name-\d+/).filter({ hasText: '3000' })).toHaveCount(0);
+        await expect(page.getByTestId(/env-name-\d+/).filter({ hasText: 'API URL' })).toHaveCount(0);
+
+        // System does not block navigation
+        await page.getByTestId('btn-next').click();
+        await expect(page.getByTestId('step-secrets')).toHaveClass(/active/);
+    });
+
+    test('4.2.11 – Upload Unsupported Environment File Format', async ({ page }) => {
+        const fileContent = 'NODE_ENV=production';
+        
+        // Test with .txt
+        await page.locator('input[data-testid="input-env-file-upload"]').setInputFiles({
+            name: 'unsupported.txt',
+            mimeType: 'text/plain',
+            buffer: Buffer.from(fileContent),
+        });
+        await expect(page.getByTestId('error-env-file-upload')).toHaveText('Unsupported file format. Only .env and .json files are supported.');
+        await expect(page.getByTestId(/env-name-\d+/)).toHaveCount(0);
+
+        // Test with .yaml
+        await page.locator('input[data-testid="input-env-file-upload"]').setInputFiles({
+            name: 'unsupported.yaml',
+            mimeType: 'text/yaml',
+            buffer: Buffer.from(fileContent),
+        });
+        await expect(page.getByTestId('error-env-file-upload')).toHaveText('Unsupported file format. Only .env and .json files are supported.');
+        await expect(page.getByTestId(/env-name-\d+/)).toHaveCount(0);
+    });
+
     test('4.2.12 – Upload Invalid JSON Environment File', async ({ page }) => {
         const invalidJson = '{\n  "NODE_ENV": "production",\n  "PORT": 3000,';
         await page.locator('input[data-testid="input-env-file-upload"]').setInputFiles({

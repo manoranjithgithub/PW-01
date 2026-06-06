@@ -309,8 +309,8 @@ export class EnvironmentVariablesComponent implements OnInit {
 
     // Validate the uploaded file format.
     if (extension !== 'env' && extension !== 'json' && !fileName.endsWith('.env')) {
-      this.fileUploadError = 'Invalid file type. Only .env and .json files are allowed.';
-      this.toaster.error('Invalid file type. Only .env and .json files are allowed.');
+      this.fileUploadError = 'Unsupported file format. Only .env and .json files are supported.';
+      this.toaster.error('Unsupported file format. Only .env and .json files are supported.');
       input.value = '';
       return;
     }
@@ -320,6 +320,7 @@ export class EnvironmentVariablesComponent implements OnInit {
       const content = e.target?.result as string;
       const namePattern = /^[A-Za-z0-9._-]+$/;
       const newVars: { EnvVariable: string; Value: string }[] = [];
+      let hasInvalid = false;
 
       if (extension === 'json') {
         try {
@@ -353,9 +354,8 @@ export class EnvironmentVariablesComponent implements OnInit {
             }
             const match = line.match(/^([\w.-]+)\s*=\s*(.*)$/);
             if (!match) {
-              this.toaster.error('Invalid environment variable format');
-              input.value = '';
-              return;
+              hasInvalid = true;
+              continue;
             }
             const key = match[1];
             let value = match[2].trim();
@@ -364,13 +364,13 @@ export class EnvironmentVariablesComponent implements OnInit {
               value = value.substring(1, value.length - 1);
             }
             if (!namePattern.test(key) || key.length > 253) {
-              this.toaster.error(`Invalid key format: ${key}`);
-              input.value = '';
-              return;
+              hasInvalid = true;
+              continue;
             }
             newVars.push({ EnvVariable: key, Value: value });
           }
         } catch (err) {
+          this.fileUploadError = 'Invalid environment variable format';
           this.toaster.error('Invalid environment variable format');
           input.value = '';
           return;
@@ -388,7 +388,13 @@ export class EnvironmentVariablesComponent implements OnInit {
       });
       this.envList = Array.from(uniqueMap.values());
       this.addEnvVariables(this.envList);
-      this.toaster.success('Environment variables uploaded successfully');
+
+      if (hasInvalid) {
+        this.fileUploadError = 'Some environment variables are invalid and were not added.';
+        this.toaster.error('Some environment variables are invalid and were not added.');
+      } else {
+        this.toaster.success('Environment variables uploaded successfully');
+      }
       input.value = '';
     };
     reader.readAsText(file);
